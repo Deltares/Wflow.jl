@@ -114,8 +114,10 @@ function update_bc_sediment_to_river_model!(
     @. deposition_clay = sediment_transport_model.variables.deposition_clay
     @. deposition_silt = sediment_transport_model.variables.deposition_silt
     @. deposition_sand = sediment_transport_model.variables.deposition_sand
-    @. deposition_small_aggregates = sediment_transport_model.variables.deposition_small_aggregates
-    @. deposition_large_aggregates = sediment_transport_model.variables.deposition_large_aggregates
+    @. deposition_small_aggregates =
+        sediment_transport_model.variables.deposition_small_aggregates
+    @. deposition_large_aggregates =
+        sediment_transport_model.variables.deposition_large_aggregates
 end
 
 "Update differentiated sediment reaching the river model for a single timestep"
@@ -131,8 +133,14 @@ function update_sediment_to_river_model!(
         deposition_small_aggregates,
         deposition_large_aggregates,
     ) = sediment_to_river_model.boundary_conditions
-    (; sediment_rate, clay_rate, silt_rate, sand_rate, small_aggregates_rate, large_aggregates_rate) =
-        sediment_to_river_model.variables
+    (;
+        sediment_rate,
+        clay_rate,
+        silt_rate,
+        sand_rate,
+        small_aggregates_rate,
+        large_aggregates_rate,
+    ) = sediment_to_river_model.variables
 
     for (i, river) in enumerate(rivers)
         if river
@@ -149,5 +157,6 @@ function update_sediment_to_river_model!(
             large_aggregates_rate[i] = 0.0
         end
     end
-    @. sediment_rate = clay_rate + silt_rate + sand_rate + small_aggregates_rate + large_aggregates_rate
+    @. sediment_rate =
+        clay_rate + silt_rate + sand_rate + small_aggregates_rate + large_aggregates_rate
 end

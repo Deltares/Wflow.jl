@@ -429,12 +429,11 @@ end
     ]
     @test all(x -> collect(x) ≈ input_particles_expected, input_particles)
 
-    sediment_need =
-        max.(
-            sediment_flux.boundary_conditions.transport_capacity .-
-            sum(input_particles_expected),
-            0.0,
-        )
+    sediment_need = max.(
+        sediment_flux.boundary_conditions.transport_capacity .-
+        sum(input_particles_expected),
+        0.0,
+    )
     sediment_need[2] = 0.0
     @test sediment_need ≈ [5.390625e-9, 0.0, 5.390625e-9, 0.0]
 
@@ -444,14 +443,13 @@ end
     )
     @test all(≈(5.3e-6), store_sediment)
 
-    erosion_particles =
-        Wflow.compute_direct_river_erosion.(
-            Ref(sediment_flux),
-            sediment_need,
-            store_sediment,
-            dt,
-            order,
-        )
+    erosion_particles = Wflow.compute_direct_river_erosion.(
+        Ref(sediment_flux),
+        sediment_need,
+        store_sediment,
+        dt,
+        order,
+    )
     erosion_particles_expected = [
         5.208333333333333e-11,
         8.680555555555555e-11,
@@ -463,13 +461,12 @@ end
     @test collect.(erosion_particles) ≈
           [erosion_particles_expected, zeros(6), erosion_particles_expected, zeros(6)]
 
-    store_erosion =
-        Wflow.compute_store_erosion!.(
-            Ref(sediment_flux.variables),
-            sediment_need,
-            dt,
-            order,
-        )
+    store_erosion = Wflow.compute_store_erosion!.(
+        Ref(sediment_flux.variables),
+        sediment_need,
+        dt,
+        order,
+    )
     store_erosion_expected = [0.0, 0.0, 0.0, 0.0, 0.0, 6.134259259259259e-11]
     @test collect.(store_erosion) ≈
           [store_erosion_expected, zeros(6), store_erosion_expected, zeros(6)]
@@ -545,14 +542,13 @@ end
         deposition_particles_4,
     ]
 
-    fwaterout =
-        Wflow.water_outflow_fraction.(
-            sediment_flux.boundary_conditions.waterlevel,
-            sediment_flux.boundary_conditions.q,
-            domain.parameters.flow_width,
-            domain.parameters.flow_length,
-            dt,
-        )
+    fwaterout = Wflow.water_outflow_fraction.(
+        sediment_flux.boundary_conditions.waterlevel,
+        sediment_flux.boundary_conditions.q,
+        domain.parameters.flow_width,
+        domain.parameters.flow_length,
+        dt,
+    )
     @test fwaterout ≈ [1.0, 1.0, 1.0, 0.49915507604315607]
 
     Wflow.update_variables!.(

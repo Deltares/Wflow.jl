@@ -236,7 +236,8 @@ end
     ])
 
     @test keys(storage_waterlevel_curve[1]) == (:H, :S)
-    @test typeof(values(storage_waterlevel_curve[1])) == Tuple{Vector{Float64}, Vector{Float64}}
+    @test typeof(values(storage_waterlevel_curve[1])) ==
+          Tuple{Vector{Float64}, Vector{Float64}}
 
     res_params = Wflow.ReservoirParameters(;
         id = [1, 2],
@@ -244,7 +245,10 @@ end
         area = [472461536.0, 60851088.0],
         threshold = [393.7, NaN],
         storage_curve_type = fill(ReservoirProfileType.interpolation, 2),
-        outflow_curve_type = [ReservoirOutflowType.free_weir, ReservoirOutflowType.rating_curve],
+        outflow_curve_type = [
+            ReservoirOutflowType.free_weir,
+            ReservoirOutflowType.rating_curve,
+        ],
         rating_curve_coefficient = [140.0, NaN],
         rating_curve_exponent = [1.5, NaN],
         storage_waterlevel_curve,

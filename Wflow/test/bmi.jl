@@ -73,7 +73,11 @@
             fill(300.0, length(model.land.soil.variables.water_table_depth)),
         )
         var_name = "soil_water_saturated_zone_top__depth"
-        BMI.set_value(model, var_name, fill(300.0, length(model.land.soil.variables.water_table_depth)))
+        BMI.set_value(
+            model,
+            var_name,
+            fill(300.0, length(model.land.soil.variables.water_table_depth)),
+        )
         @test mean(
             BMI.get_value(
                 model,

@@ -145,7 +145,14 @@ function GroundwaterFlowParameters(
     else
         hydraulic_conductivity_scale_parameter = Float64[]
     end
-    parameters = GroundwaterFlowParameters(; hydraulic_conductivity, top, bottom, area, specific_yield, hydraulic_conductivity_scale_parameter)
+    parameters = GroundwaterFlowParameters(;
+        hydraulic_conductivity,
+        top,
+        bottom,
+        area,
+        specific_yield,
+        hydraulic_conductivity_scale_parameter,
+    )
     return parameters
 end
 
@@ -270,13 +277,24 @@ function GroundwaterFlowModel(
             n_unsatlayers,
             total_soil_water_storage,
         ) = soil.variables
-        (; theta_s, theta_r, soil_thickness, soil_water_capacity, cumulative_layer_depth, actual_layer_thickness) =
-            soil.parameters
+        (;
+            theta_s,
+            theta_r,
+            soil_thickness,
+            soil_water_capacity,
+            cumulative_layer_depth,
+            actual_layer_thickness,
+        ) = soil.parameters
 
         @. water_table_depth = elevation - min(elevation, initial_head)
-        @. saturated_water_depth = (soil_thickness - water_table_depth) * (theta_s - theta_r)
+        @. saturated_water_depth =
+            (soil_thickness - water_table_depth) * (theta_s - theta_r)
         @. unsaturated_store_capacity = soil_water_capacity - saturated_water_depth
-        @. unsaturated_layer_thickness = set_layerthickness(water_table_depth, cumulative_layer_depth, actual_layer_thickness)
+        @. unsaturated_layer_thickness = set_layerthickness(
+            water_table_depth,
+            cumulative_layer_depth,
+            actual_layer_thickness,
+        )
         @. n_unsatlayers = number_of_active_layers.(unsaturated_layer_thickness)
         @. total_soil_water_storage = saturated_water_depth
     end
@@ -450,11 +468,21 @@ function conductance(
         thickness2 = gwf.parameters.top[j] - gwf.parameters.bottom[j]
         # calculate conductivity values corrected for depth of water table
         kH1 =
-            (gwf.parameters.hydraulic_conductivity[i] / gwf.parameters.hydraulic_conductivity_scale_parameter[i]) *
-            (exp(-gwf.parameters.hydraulic_conductivity_scale_parameter[i] * zi1) - exp(-gwf.parameters.hydraulic_conductivity_scale_parameter[i] * thickness1))
+            (
+                gwf.parameters.hydraulic_conductivity[i] /
+                gwf.parameters.hydraulic_conductivity_scale_parameter[i]
+            ) * (
+                exp(-gwf.parameters.hydraulic_conductivity_scale_parameter[i] * zi1) -
+                exp(-gwf.parameters.hydraulic_conductivity_scale_parameter[i] * thickness1)
+            )
         kH2 =
-            (gwf.parameters.hydraulic_conductivity[j] / gwf.parameters.hydraulic_conductivity_scale_parameter[j]) *
-            (exp(-gwf.parameters.hydraulic_conductivity_scale_parameter[j] * zi2) - exp(-gwf.parameters.hydraulic_conductivity_scale_parameter[j] * thickness2))
+            (
+                gwf.parameters.hydraulic_conductivity[j] /
+                gwf.parameters.hydraulic_conductivity_scale_parameter[j]
+            ) * (
+                exp(-gwf.parameters.hydraulic_conductivity_scale_parameter[j] * zi2) -
+                exp(-gwf.parameters.hydraulic_conductivity_scale_parameter[j] * thickness2)
+            )
         return harmonicmean_conductance(
             kH1,
             kH2,
@@ -521,8 +549,18 @@ function stable_timestep(
             water_table_depth = gwf.parameters.top[i] - gwf.variables.head[i]
             thickness = gwf.parameters.top[i] - gwf.parameters.bottom[i]
             value =
-                (gwf.parameters.hydraulic_conductivity[i] / gwf.parameters.hydraulic_conductivity_scale_parameter[i]) *
-                (exp(-gwf.parameters.hydraulic_conductivity_scale_parameter[i] * water_table_depth) - exp(-gwf.parameters.hydraulic_conductivity_scale_parameter[i] * thickness))
+                (
+                    gwf.parameters.hydraulic_conductivity[i] /
+                    gwf.parameters.hydraulic_conductivity_scale_parameter[i]
+                ) * (
+                    exp(
+                        -gwf.parameters.hydraulic_conductivity_scale_parameter[i] *
+                        water_table_depth,
+                    ) - exp(
+                        -gwf.parameters.hydraulic_conductivity_scale_parameter[i] *
+                        thickness,
+                    )
+                )
         elseif conductivity_profile == GwfConductivityProfileType.uniform
             value = gwf.parameters.hydraulic_conductivity[i] * saturated_thickness(gwf, i)
         end

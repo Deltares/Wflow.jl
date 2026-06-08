@@ -200,10 +200,9 @@ end
 
 no_nan(x::Float64) = isnan(x) ? 0.0 : x
 get_mean(f::Vector{Float64}) = mean(filter(!isnan, f)) |> no_nan
-get_mean(f::Vector{SVector{N, Float64}}) where {N} =
-    no_nan.(
-        SVector{N}([mean(filter(!isnan, [v[i] for v in f])) for i in 1:length(first(f))])
-    )
+get_mean(f::Vector{SVector{N, Float64}}) where {N} = no_nan.(
+    SVector{N}([mean(filter(!isnan, [v[i] for v in f])) for i in 1:length(first(f))]),
+)
 
 function get_means(obj)
     d = Dict{Symbol, Union{Float64, SVector{N, Float64} where N}}()
