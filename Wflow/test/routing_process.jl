@@ -498,7 +498,7 @@ end
             network = Wflow.NetworkReservoir(; river_indices = [2]),
         ),
     )
-    dt = Wflow.stable_timestep(river_flow_model, domain.river.parameters)
+    dt = Wflow.stable_timestep(river_flow_model, domain.river.parameters.flow_length)
 
     Wflow.update_river_channel_flow!(river_flow_model, domain.river, dt)
 
@@ -665,7 +665,7 @@ end
         ),
         reservoir = Wflow.DomainReservoir(; network = Wflow.NetworkReservoir()),
     )
-    dt = Wflow.stable_timestep(river_flow_model, domain.river.parameters)
+    dt = Wflow.stable_timestep(river_flow_model, domain.river.parameters.flow_length)
 
     Wflow.update_river_channel_flow!(river_flow_model, domain.river, dt)
 
@@ -879,7 +879,7 @@ end
         ),
     )
 
-    dt = Wflow.stable_timestep(river_flow_model, domain.river.parameters)
+    dt = Wflow.stable_timestep(river_flow_model, domain.river.parameters.flow_length)
     @test dt ≈ 201.394687315008
 
     # Test functions called by function update_river_and_land_storage_and_depth!
@@ -1042,10 +1042,11 @@ end
 
     # run until steady state is reached
     epsilon = 1e-12
+    (; flow_length) = domain_river.parameters
     while true
         sw_river.boundary_conditions.inwater[1] = 20.0
         h0 = mean(sw_river.variables.h)
-        dt = Wflow.stable_timestep(sw_river, domain_river.parameters)
+        dt = Wflow.stable_timestep(sw_river, flow_length)
         Wflow.staggered_scheme_river_update!(sw_river, domain, dt, true)
         d = abs(h0 - mean(sw_river.variables.h))
         if d <= epsilon

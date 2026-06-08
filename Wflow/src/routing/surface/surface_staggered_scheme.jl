@@ -808,7 +808,7 @@ function update_river_flow_model!(
     update_h = true,
 )
     (; reservoir) = river_flow_model.boundary_conditions
-    (; parameters) = domain.river
+    (; flow_length) = domain.river.parameters
 
     set_reservoir_vars!(reservoir)
     update_index_hq!(reservoir, clock)
@@ -820,7 +820,7 @@ function update_river_flow_model!(
 
     t = 0.0
     while t < dt
-        dt_s = stable_timestep(river_flow_model, parameters)
+        dt_s = stable_timestep(river_flow_model, flow_length)
         dt_s = check_timestepsize(dt_s, t, dt)
         staggered_scheme_river_update!(river_flow_model, domain, dt_s, update_h)
         t += dt_s
@@ -993,7 +993,7 @@ function init_local_inertial_overland_flow(
 end
 
 """
-    stable_timestep(river_flow_model::RiverFlowModel{<:LocalInertial}, parameters::RiverParameters)
+    stable_timestep(river_flow_model::RiverFlowModel{<:LocalInertial}, flow_length::Vector{Float64})
     stable_timestep(overland_flow_model::OverlandFlowModel{<:LocalInertial}, parameters::LandParameters)
 
 Compute stable timestep size for the local inertial approach, based on Bates et al. (2010).
@@ -1002,14 +1002,13 @@ dt = α * (Δx / sqrt(g max(h))
 """
 function stable_timestep(
     river_flow_model::RiverFlowModel{<:LocalInertial},
-    parameters::RiverParameters,
+    flow_length::Vector{Float64},
 )
     dt_min = Inf
     dt_min_default = 60.0
     (; alpha_coefficient) = river_flow_model.timestepping
     (; n) = river_flow_model.parameters
     (; h) = river_flow_model.variables
-    (; flow_length) = parameters
     @batch per = thread reduction = ((min, dt_min),) for i in 1:(n)
         @fastmath @inbounds dt =
             alpha_coefficient * flow_length[i] / sqrt(GRAVITATIONAL_ACCELERATION * h[i])
@@ -1043,14 +1042,11 @@ function stable_timestep(
 end
 
 """
-    stable_timestep(river_flow_model::RiverFlowModel{<:ManningStaggered}, parameters::RiverParameters)
+    stable_timestep(river_flow_model::RiverFlowModel{<:ManningStaggered}, _)
 
 Compute stable timestep size for a river flow model using the Manning's equation on staggered grid.
 """
-function stable_timestep(
-    river_flow_model::RiverFlowModel{<:ManningStaggered},
-    parameters::RiverParameters,
-)
+function stable_timestep(river_flow_model::RiverFlowModel{<:ManningStaggered}, _)
     dt_min = Inf
     dt_min_default = 60.0
     (; alpha_coefficient) = river_flow_model.timestepping
@@ -1161,7 +1157,7 @@ function update_overland_flow_model!(
     update_h = false,
 )
     (; reservoir) = river_flow_model.boundary_conditions
-    river_parameters = domain.river.parameters
+    (; flow_length) = domain.river.parameters
     land_parameters = domain.land.parameters
 
     set_reservoir_vars!(reservoir)
@@ -1171,7 +1167,7 @@ function update_overland_flow_model!(
 
     t = 0.0
     while t < dt
-        dt_river = stable_timestep(river_flow_model, river_parameters)
+        dt_river = stable_timestep(river_flow_model, flow_length)
         dt_land = stable_timestep(overland_flow_model, land_parameters)
         dt_s = min(dt_river, dt_land)
         dt_s = check_timestepsize(dt_s, t, dt)
