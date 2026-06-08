@@ -552,7 +552,11 @@ function kinwave_river_update!(
     end
 end
 
-function river_floodplain_exchange!(
+"""
+Exchange of channel-floodpain water (assumed instantaneously) based on total storage and
+river channel capacity (`bankfull_storage`).
+"""
+function river_channel_floodplain_exchange!(
     river_flow_model::RiverFlowModel{T, F},
     parameters::RiverParameters,
     dt::Float64,
@@ -583,7 +587,7 @@ function river_floodplain_exchange!(
     end
 end
 
-river_floodplain_exchange!(
+river_channel_floodplain_exchange!(
     river_flow_model::RiverFlowModel{T, F},
     parameters::RiverParameters,
     dt::Float64,
@@ -621,7 +625,7 @@ function update_river_flow_model!(
             adaptive ? stable_timestep(river_flow_model, flow_length, 0.05) :
             river_flow_model.timestepping.dt_fixed
         dt_s = check_timestepsize(dt_s, t, dt)
-        river_floodplain_exchange!(river_flow_model, domain.river.parameters, dt_s)
+        river_channel_floodplain_exchange!(river_flow_model, domain.river.parameters, dt_s)
         kinwave_river_update!(river_flow_model, domain.river, dt_s)
         update_floodplain_model!(river_flow_model, domain.river, dt)
         t += dt_s
