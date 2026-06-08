@@ -14,7 +14,7 @@
     streamorder = Wflow.stream_order(domain.land.network.graph, domain.land.network.order)
     subbas_order, indices_subbas, topo_subbas = Wflow.kinwave_set_subdomains(
         domain.land.network.graph,
-        domain.land.network.cell_order,
+        domain.land.network.order,
         index_pit,
         streamorder,
         land_streamorder__min_count,
@@ -25,8 +25,8 @@
     if nthreads() == 1
         @testset "Nonparallel (nthreads = 1)" begin
             @test subbas_order == [[1]]
-            @test indices_subbas == [[1:length(domain.land.network.cell_order);]]
-            @test topo_subbas == [domain.land.network.cell_order]
+            @test indices_subbas == [[1:length(domain.land.network.order);]]
+            @test topo_subbas == [domain.land.network.order]
         end
     else
         @testset "Parallel (nthreads > 1)" begin
