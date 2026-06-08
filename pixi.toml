@@ -52,7 +52,7 @@ test-wflow-server = { cmd = "julia --project=server --eval 'using Pkg; Pkg.test(
 	"download-test-data",
 ] }
 # Formatting
-format-code = { cmd = "julia --project --eval 'using JuliaFormatter; format(\".\") || exit(1)'" }
+format-code = { cmd = "julia --project --eval 'using Pkg, JuliaFormatter; Pkg.instantiate(); format(\".\") || exit(1)'" }
 # Docs
 install-ci = { depends-on = ["install-julia", "update-registry-julia"] }
 quarto-check = { cmd = "quarto check all" }
