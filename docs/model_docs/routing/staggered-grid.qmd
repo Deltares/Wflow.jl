@@ -69,8 +69,7 @@ model_boundary_condition_river_bank_water__depth = "riverdepth_bc"  # optional r
 These boundary conditions and river bed elevation and Manning's roughness coefficient are
 copied to a ghost node (downstream of the river outlet node) in the code.
 
-It is possible to include a [1D floodplain
-schematization](#optional-1d-floodplain-schematization) for this routing type.
+It is possible to include a [1D floodplain schematization] for this routing type.
 
 The momentum equation is most stable for low slope environments, and to keep the simulation
 stable for (partly) steep environments the `river_water_flow__froude_limit_flag` option is
@@ -104,9 +103,9 @@ hydraulic radius at the previous time step,  $c_\mathrm{river\ slope}$ is the ri
 slope between nodes and $\SIb{A_t}{m^2}$ is the cross sectional flow area at the previous
 time step.
 
-As for the [local inertial model](#local-inertial-river-and-floodplain-routing), the
-momentum equation is applied to each edge between two river nodes, while the continuity
-equation over $\Delta t$ is applied to each river node.
+As for the [local inertial model](#local-inertial-approximation), the momentum equation is
+applied to each edge between two river nodes, while the continuity equation over $\Delta t$
+is applied to each river node.
 
 The model time step $\Delta t$ for Manning's equation on a staggered grid is estimated as
 follows assuming a wide rectangular river channel:
@@ -132,8 +131,7 @@ river_staggered_manning_flow__alpha_coefficient = 0.5 # alpha coefficient for mo
 floodplain_1d__flag = true                            # include 1D floodplain schematization (default = false)
 ```
 
-It is possible to include a [1D floodplain
-schematization](#optional-1d-floodplain-schematization) for this routing type.
+It is possible to include a [1D floodplain schematization] for this routing type.
 
 ## 1D floodplain schematization
 The optional 1D floodplain schematization is based on provided flood volumes as a function
