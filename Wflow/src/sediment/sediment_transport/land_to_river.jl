@@ -63,9 +63,9 @@ end
     # Sand rate [kg s⁻¹]
     sand_rate::Vector{Float64} = fill(MISSING_VALUE, n)
     # Small aggregates rate [kg s⁻¹]
-    sagg_rate::Vector{Float64} = fill(MISSING_VALUE, n)
+    small_aggregates_rate::Vector{Float64} = fill(MISSING_VALUE, n)
     # Large aggregates rate [kg s⁻¹]
-    lagg_rate::Vector{Float64} = fill(MISSING_VALUE, n)
+    large_aggregates_rate::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct to store differentiated sediment reaching the river model boundary conditions"
@@ -78,9 +78,9 @@ end
     # Sand deposition rate [kg s⁻¹]
     deposition_sand::Vector{Float64} = fill(MISSING_VALUE, n)
     # Small aggregates deposition rate [kg s⁻¹]
-    deposition_sagg::Vector{Float64} = fill(MISSING_VALUE, n)
+    deposition_small_aggregates::Vector{Float64} = fill(MISSING_VALUE, n)
     # Large aggregates deposition rate [kg s⁻¹]
-    deposition_lagg::Vector{Float64} = fill(MISSING_VALUE, n)
+    deposition_large_aggregates::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct to store differentiated sediment reaching the river model"
@@ -108,14 +108,14 @@ function update_bc_sediment_to_river_model!(
         deposition_clay,
         deposition_silt,
         deposition_sand,
-        deposition_sagg,
-        deposition_lagg,
+        deposition_small_aggregates,
+        deposition_large_aggregates,
     ) = sediment_to_river_model.boundary_conditions
     @. deposition_clay = sediment_transport_model.variables.deposition_clay
     @. deposition_silt = sediment_transport_model.variables.deposition_silt
     @. deposition_sand = sediment_transport_model.variables.deposition_sand
-    @. deposition_sagg = sediment_transport_model.variables.deposition_sagg
-    @. deposition_lagg = sediment_transport_model.variables.deposition_lagg
+    @. deposition_small_aggregates = sediment_transport_model.variables.deposition_small_aggregates
+    @. deposition_large_aggregates = sediment_transport_model.variables.deposition_large_aggregates
 end
 
 "Update differentiated sediment reaching the river model for a single timestep"
@@ -128,10 +128,10 @@ function update_sediment_to_river_model!(
         deposition_clay,
         deposition_silt,
         deposition_sand,
-        deposition_sagg,
-        deposition_lagg,
+        deposition_small_aggregates,
+        deposition_large_aggregates,
     ) = sediment_to_river_model.boundary_conditions
-    (; sediment_rate, clay_rate, silt_rate, sand_rate, sagg_rate, lagg_rate) =
+    (; sediment_rate, clay_rate, silt_rate, sand_rate, small_aggregates_rate, large_aggregates_rate) =
         sediment_to_river_model.variables
 
     for (i, river) in enumerate(rivers)
@@ -139,15 +139,15 @@ function update_sediment_to_river_model!(
             clay_rate[i] = deposition_clay[i]
             silt_rate[i] = deposition_silt[i]
             sand_rate[i] = deposition_sand[i]
-            sagg_rate[i] = deposition_sagg[i]
-            lagg_rate[i] = deposition_lagg[i]
+            small_aggregates_rate[i] = deposition_small_aggregates[i]
+            large_aggregates_rate[i] = deposition_large_aggregates[i]
         else
             clay_rate[i] = 0.0
             silt_rate[i] = 0.0
             sand_rate[i] = 0.0
-            sagg_rate[i] = 0.0
-            lagg_rate[i] = 0.0
+            small_aggregates_rate[i] = 0.0
+            large_aggregates_rate[i] = 0.0
         end
     end
-    @. sediment_rate = clay_rate + silt_rate + sand_rate + sagg_rate + lagg_rate
+    @. sediment_rate = clay_rate + silt_rate + sand_rate + small_aggregates_rate + large_aggregates_rate
 end

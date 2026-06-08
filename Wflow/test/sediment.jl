@@ -9,8 +9,8 @@
     waterlevel = 0.0
     soil_detachability = 0.002
     eurosem_exponent = 2000.0
-    canopyheight = 0.0
-    canopygapfraction = 0.1
+    canopy_height = 0.0
+    canopy_gap_fraction = 0.1
     soilcover_fraction = 0.0
     @test Wflow.rainfall_erosion_eurosem(
         precip,
@@ -18,8 +18,8 @@
         waterlevel,
         soil_detachability,
         eurosem_exponent,
-        canopyheight,
-        canopygapfraction,
+        canopy_height,
+        canopy_gap_fraction,
         soilcover_fraction,
         area,
         dt,
@@ -166,21 +166,21 @@ end
 @testitem "unit: differentiation (Yalin)" begin
     waterlevel = 30.0
     density = 3020.0
-    dm_clay = 2.0e-6
-    dm_silt = 9.999999999999999e-6
-    dm_sand = 0.00019999999999999998
-    dm_sagg = 2.9999999999999997e-5
-    dm_lagg = 0.0005
+    median_diameter_clay = 2.0e-6
+    median_diameter_silt = 9.999999999999999e-6
+    median_diameter_sand = 0.00019999999999999998
+    median_diameter_small_aggregates = 2.9999999999999997e-5
+    median_diameter_large_aggregates = 0.0005
     slope = 0.15
 
     @test Wflow.transportability_yalin_differentiation(
         waterlevel,
         density,
-        dm_clay,
-        dm_silt,
-        dm_sand,
-        dm_sagg,
-        dm_lagg,
+        median_diameter_clay,
+        median_diameter_silt,
+        median_diameter_sand,
+        median_diameter_small_aggregates,
+        median_diameter_large_aggregates,
         slope,
     ) ≈ 2.3511712003217816e7
 
@@ -298,17 +298,17 @@ end
             clay = [0.0],
             silt = [0.0],
             sand = [1.1574074074074074e-12],
-            sagg = [0.0],
-            lagg = [2.3148148148148147e-14],
+            small_aggregates = [0.0],
+            large_aggregates = [2.3148148148148147e-14],
             gravel = [3.472222222222222e-16],
         ),
         parameters = Wflow.SedimentConcentrationsRiverParameters(;
-            dm_clay = [2.0e-6],
-            dm_silt = [9.999999999999999e-6],
-            dm_sand = [0.00019999999999999998], # dm < dsuspf
-            dm_sagg = [2.9999999999999997e-5],
-            dm_lagg = [0.0005], # dsuspf < dm < dbedf
-            dm_gravel = [0.002], # dbedf < dm
+            median_diameter_clay = [2.0e-6],
+            median_diameter_silt = [9.999999999999999e-6],
+            median_diameter_sand = [0.00019999999999999998], # dm < dsuspf
+            median_diameter_small_aggregates = [2.9999999999999997e-5],
+            median_diameter_large_aggregates = [0.0005], # dsuspf < dm < dbedf
+            median_diameter_gravel = [0.002], # dbedf < dm
         ),
     )
     parameters = Wflow.RiverParameters(; slope = [1e-3])
@@ -344,8 +344,8 @@ end
                 erosion_land_clay = fill(6.655092592592592e-11, n),
                 erosion_land_silt = fill(6.655092592592592e-11, n),
                 erosion_land_sand = fill(6.655092592592592e-11, n),
-                erosion_land_sagg = fill(6.655092592592592e-11, n),
-                erosion_land_lagg = fill(6.655092592592592e-11, n),
+                erosion_land_small_aggregates = fill(6.655092592592592e-11, n),
+                erosion_land_large_aggregates = fill(6.655092592592592e-11, n),
                 potential_erosion_river_bed = fill(1.1574074074074074e-10, n),
                 potential_erosion_river_bank = fill(2.3148148148148147e-10, n),
             ),
@@ -354,12 +354,12 @@ end
                 silt_fraction = fill(0.25, n),
                 sand_fraction = fill(0.35, n),
                 gravel_fraction = fill(0.45, n),
-                dm_clay = fill(2.0e-6, n),
-                dm_silt = fill(9.999999999999999e-6, n),
-                dm_sand = fill(0.00019999999999999998, n),
-                dm_sagg = fill(2.9999999999999997e-5, n),
-                dm_lagg = fill(0.0005, n),
-                dm_gravel = fill(0.002, n),
+                median_diameter_clay = fill(2.0e-6, n),
+                median_diameter_silt = fill(9.999999999999999e-6, n),
+                median_diameter_sand = fill(0.00019999999999999998, n),
+                median_diameter_small_aggregates = fill(2.9999999999999997e-5, n),
+                median_diameter_large_aggregates = fill(0.0005, n),
+                median_diameter_gravel = fill(0.002, n),
                 reservoir_outlet = [true, false, false, false],
                 reservoir_area = fill(6e5, n),
                 reservoir_trapping_efficiency = fill(0.5, n),
@@ -394,9 +394,9 @@ end
               [0.0, 6.655092592592592e-11, 3.6523294471267653e-19, 3.3219232491298004e-11]
         @test variables.sand_rate ≈
               [0.0, 6.655092592592592e-11, 0.0, 1.4443144561433946e-12]
-        @test variables.sagg_rate ≈
+        @test variables.small_aggregates_rate ≈
               [0.0, 6.655092592592592e-11, 0.0, 3.3219232491298004e-11]
-        @test variables.lagg_rate ≈ [0.0, 6.655092592592592e-11, 0.0, 0.0]
+        @test variables.large_aggregates_rate ≈ [0.0, 6.655092592592592e-11, 0.0, 0.0]
         @test variables.gravel_rate ≈ [0.0, 0.0, 0.0, 0.0]
         @test variables.deposition ≈
               [8.744212962962962e-10, 0.0, 7.920375513095351e-10, 1.3020833333333334e-10]
@@ -404,14 +404,14 @@ end
         @test variables.leftover_clay ≈ [0.0, 0.0, 0.0, 5.634505394514494e-6]
         @test variables.leftover_silt ≈ [0.0, 0.0, 0.0, 2.8798583127518524e-6]
         @test variables.leftover_sand ≈ [0.0, 0.0, 0.0, 1.2521123098921127e-7]
-        @test variables.leftover_sagg ≈ [0.0, 0.0, 0.0, 2.8798583127518524e-6]
-        @test variables.leftover_lagg ≈ zeros(4)
+        @test variables.leftover_small_aggregates ≈ [0.0, 0.0, 0.0, 2.8798583127518524e-6]
+        @test variables.leftover_large_aggregates ≈ zeros(4)
         @test variables.leftover_gravel ≈ zeros(4)
         @test variables.store_clay ≈ [1.575e-5, 0.0, 8.63204446469996e-6, 0.0]
         @test variables.store_silt ≈ [1.325e-5, 0.0, 1.3249999968443874e-5, 0.0]
         @test variables.store_sand ≈ [1.625e-5, 0.0, 1.625e-5, 5.5e-6]
-        @test variables.store_sagg ≈ [5.75e-6, 0.0, 5.75e-6, 0.0]
-        @test variables.store_lagg ≈ [5.75e-6, 0.0, 5.75e-6, 5.75e-6]
+        @test variables.store_small_aggregates ≈ [5.75e-6, 0.0, 5.75e-6, 0.0]
+        @test variables.store_large_aggregates ≈ [5.75e-6, 0.0, 5.75e-6, 5.75e-6]
         @test variables.store_gravel ≈ [1.88e-5, 5.3e-6, 1.88e-5, 5.3e-6]
     end
 

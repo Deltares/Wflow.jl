@@ -5,17 +5,17 @@
     # Storage woody part of vegetation [m]
     storage_wood::Union{Vector{Float64}, Nothing} = nothing
     # Extinction coefficient [-] (to calculate canopy gap fraction)
-    kext::Union{Vector{Float64}, Nothing} = nothing
+    light_extinction_coefficient::Union{Vector{Float64}, Nothing} = nothing
     # Specific leaf storage [m]
     storage_specific_leaf::Union{Vector{Float64}, Nothing} = nothing
     # Canopy gap fraction [-]
-    canopygapfraction::Vector{Float64}
+    canopy_gap_fraction::Vector{Float64}
     # Maximum canopy storage [m]
-    cmax::Vector{Float64}
+    maximum_canopy_storage::Vector{Float64}
     # Rooting depth [m]
-    rootingdepth::Vector{Float64} = []
+    rooting_depth::Vector{Float64} = []
     # Crop coefficient Kc [-]
-    kc::Vector{Float64} = []
+    crop_coefficient::Vector{Float64} = []
 end
 
 "Initialize (shared) vegetation parameters"
@@ -25,9 +25,9 @@ function VegetationParameters(
     indices::Vector{CartesianIndex{2}},
 )
     n = length(indices)
-    rootingdepth =
+    rooting_depth =
         ncread(dataset, config, "vegetation_root__depth", LandHydrologySBM; sel = indices)
-    kc = ncread(dataset, config, "vegetation__crop_factor", LandHydrologySBM; sel = indices)
+    crop_coefficient = ncread(dataset, config, "vegetation__crop_factor", LandHydrologySBM; sel = indices)
     if do_cyclic(config) && haskey(config.input.cyclic, "vegetation__leaf_area_index")
         storage_specific_leaf = ncread(
             dataset,
@@ -43,7 +43,7 @@ function VegetationParameters(
             LandHydrologySBM;
             sel = indices,
         )
-        kext = ncread(
+        light_extinction_coefficient = ncread(
             dataset,
             config,
             "vegetation_canopy__light_extinction_coefficient",
@@ -53,22 +53,22 @@ function VegetationParameters(
         vegetation_parameter_set = VegetationParameters(;
             leaf_area_index = fill(MISSING_VALUE, n),
             storage_wood,
-            kext,
+            light_extinction_coefficient,
             storage_specific_leaf,
-            canopygapfraction = fill(MISSING_VALUE, n),
-            cmax = fill(MISSING_VALUE, n),
-            rootingdepth,
-            kc,
+            canopy_gap_fraction = fill(MISSING_VALUE, n),
+            maximum_canopy_storage = fill(MISSING_VALUE, n),
+            rooting_depth,
+            crop_coefficient,
         )
     else
-        canopygapfraction = ncread(
+        canopy_gap_fraction = ncread(
             dataset,
             config,
             "vegetation_canopy__gap_fraction",
             LandHydrologySBM;
             sel = indices,
         )
-        cmax = ncread(
+        maximum_canopy_storage = ncread(
             dataset,
             config,
             "vegetation_water__storage_capacity",
@@ -78,12 +78,12 @@ function VegetationParameters(
         vegetation_parameter_set = VegetationParameters(;
             leaf_area_index = nothing,
             storage_wood = nothing,
-            kext = nothing,
+            light_extinction_coefficient = nothing,
             storage_specific_leaf = nothing,
-            canopygapfraction,
-            cmax,
-            rootingdepth,
-            kc,
+            canopy_gap_fraction,
+            maximum_canopy_storage,
+            rooting_depth,
+            crop_coefficient,
         )
     end
     return vegetation_parameter_set

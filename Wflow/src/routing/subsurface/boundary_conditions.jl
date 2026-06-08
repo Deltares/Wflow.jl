@@ -11,8 +11,8 @@ end
 
 function check_flux(flux::Float64, subsurface_flow_model::LateralSSFModel, index::Int)
     # Check if cell is dry
-    if subsurface_flow_model.variables.zi[index] >=
-       subsurface_flow_model.parameters.soilthickness[index]
+    if subsurface_flow_model.variables.water_table_depth[index] >=
+       subsurface_flow_model.parameters.soil_thickness[index]
         # If cell is dry, no negative flux is allowed
         return max(0, flux)
     else

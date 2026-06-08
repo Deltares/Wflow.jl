@@ -18,7 +18,7 @@ end
 "Struct for storing Gash interception model parameters"
 @with_kw struct GashParameters
     # ratio [-] of wet canopy [m s⁻¹] and the average precipitation intensity [m s⁻¹] on a saturated canopy
-    e_r::Vector{Float64}
+    evaporation_to_precipitation_ratio::Vector{Float64}
     vegetation_parameter_set::VegetationParameters
 end
 
@@ -36,7 +36,7 @@ function GashInterceptionModel(
     indices::Vector{CartesianIndex{2}},
     vegetation_parameter_set::VegetationParameters,
 )
-    e_r = ncread(
+    evaporation_to_precipitation_ratio = ncread(
         dataset,
         config,
         "vegetation_canopy_water__mean_evaporation_to_mean_precipitation_ratio",
@@ -44,7 +44,7 @@ function GashInterceptionModel(
         sel = indices,
     )
     n = length(indices)
-    parameters = GashParameters(; e_r, vegetation_parameter_set)
+    parameters = GashParameters(; evaporation_to_precipitation_ratio, vegetation_parameter_set)
     model = GashInterceptionModel(; n, parameters)
     return model
 end
@@ -55,8 +55,8 @@ function update_interception_model!(
     atmospheric_forcing::AtmosphericForcing,
     dt::Float64,
 )
-    (; e_r, vegetation_parameter_set) = interception_model.parameters
-    (; leaf_area_index, canopygapfraction, cmax, kc) = vegetation_parameter_set
+    (; evaporation_to_precipitation_ratio, vegetation_parameter_set) = interception_model.parameters
+    (; leaf_area_index, canopy_gap_fraction, maximum_canopy_storage, crop_coefficient) = vegetation_parameter_set
     (; canopy_potevap, throughfall, interception_rate, stemflow, canopy_storage) =
         interception_model.variables
     (; precipitation, potential_evaporation) = atmospheric_forcing
@@ -64,9 +64,9 @@ function update_interception_model!(
     if !isnothing(leaf_area_index)
         update_canopy_parameters!(interception_model.parameters.vegetation_parameter_set)
         threaded_foreach(1:n; basesize = 1000) do i
-            canopyfraction = 1.0 - canopygapfraction[i]
-            ewet = canopyfraction * potential_evaporation[i] * kc[i]
-            e_r[i] =
+            canopyfraction = 1.0 - canopy_gap_fraction[i]
+            ewet = canopyfraction * potential_evaporation[i] * crop_coefficient[i]
+            evaporation_to_precipitation_ratio[i] =
                 precipitation[i] > 0.0 ?
                 min(
                     0.25,
@@ -78,12 +78,12 @@ function update_interception_model!(
         end
     end
     threaded_foreach(1:n; basesize = 1000) do i
-        canopy_potevap[i] = kc[i] * potential_evaporation[i] * (1.0 - canopygapfraction[i])
+        canopy_potevap[i] = crop_coefficient[i] * potential_evaporation[i] * (1.0 - canopy_gap_fraction[i])
         throughfall[i], interception_rate[i], stemflow[i], canopy_storage[i] =
             rainfall_interception_gash(
-                cmax[i],
-                e_r[i],
-                canopygapfraction[i],
+                maximum_canopy_storage[i],
+                evaporation_to_precipitation_ratio[i],
+                canopy_gap_fraction[i],
                 precipitation[i],
                 canopy_storage[i],
                 canopy_potevap[i],
@@ -113,7 +113,7 @@ function update_interception_model!(
     atmospheric_forcing::AtmosphericForcing,
     dt::Float64,
 )
-    (; leaf_area_index, canopygapfraction, cmax, kc) = interception_model.parameters
+    (; leaf_area_index, canopy_gap_fraction, maximum_canopy_storage, crop_coefficient) = interception_model.parameters
     (; canopy_potevap, throughfall, interception_rate, stemflow, canopy_storage) =
         interception_model.variables
     (; precipitation, potential_evaporation) = atmospheric_forcing
@@ -122,34 +122,34 @@ function update_interception_model!(
     end
     n = length(precipitation)
     threaded_foreach(1:n; basesize = 1000) do i
-        canopy_potevap[i] = kc[i] * potential_evaporation[i] * (1.0 - canopygapfraction[i])
+        canopy_potevap[i] = crop_coefficient[i] * potential_evaporation[i] * (1.0 - canopy_gap_fraction[i])
         throughfall[i], interception_rate[i], stemflow[i], canopy_storage[i] =
             rainfall_interception_modrut(
                 precipitation[i],
                 canopy_potevap[i],
                 canopy_storage[i],
-                canopygapfraction[i],
-                cmax[i],
+                canopy_gap_fraction[i],
+                maximum_canopy_storage[i],
             )
     end
     return nothing
 end
 
-"Update canopy parameters `cmax` and `canopygapfraction` based on `leaf_area_index` for a single timestep"
+"Update canopy parameters `maximum_canopy_storage` and `canopy_gap_fraction` based on `leaf_area_index` for a single timestep"
 function update_canopy_parameters!(parameters::VegetationParameters)
     (;
         leaf_area_index,
         storage_wood,
-        kext,
+        light_extinction_coefficient,
         storage_specific_leaf,
-        canopygapfraction,
-        cmax,
+        canopy_gap_fraction,
+        maximum_canopy_storage,
     ) = parameters
 
     n = length(leaf_area_index)
     threaded_foreach(1:n; basesize = 1000) do i
-        cmax[i] = storage_specific_leaf[i] * leaf_area_index[i] + storage_wood[i]
-        canopygapfraction[i] = exp(-kext[i] * leaf_area_index[i])
+        maximum_canopy_storage[i] = storage_specific_leaf[i] * leaf_area_index[i] + storage_wood[i]
+        canopy_gap_fraction[i] = exp(-light_extinction_coefficient[i] * leaf_area_index[i])
     end
     return nothing
 end

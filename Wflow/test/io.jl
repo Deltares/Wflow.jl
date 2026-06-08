@@ -408,14 +408,14 @@ end
         Wflow.load_dynamic_input!(model)
 
         (; land) = model
-        @test land.snow.parameters.cfmax[1] == 2.3148148148148148e-8
-        @test land.soil.parameters.soilthickness[1] ≈ 6.1000000000000005
+        @test land.snow.parameters.degree_day_factor[1] == 2.3148148148148148e-8
+        @test land.soil.parameters.soil_thickness[1] ≈ 6.1000000000000005
         @test isapprox(
             land.atmospheric_forcing.precipitation[49951],
             3.8368056217829386e-8,
             rtol = 1e-7,
         )
-        @test land.soil.parameters.c[1] ≈ [
+        @test land.soil.parameters.brooks_corey_exponent[1] ≈ [
             2.0 * 9.152995289601465,
             8.919674421902961,
             3.0 * 8.70537452585209,

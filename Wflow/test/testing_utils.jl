@@ -67,12 +67,12 @@ function homogenous_aquifer(nrow, ncol)
     timestepping = Wflow.TimeStepping()
 
     parameters = Wflow.GroundwaterFlowParameters(;
-        k = fill(10.0 / 86400.0, ncell),
+        hydraulic_conductivity = fill(10.0 / 86400.0, ncell),
         top = fill(10.0, ncell),
         bottom = fill(0.0, ncell),
         area = fill(100.0, ncell),
         specific_yield = fill(0.15, ncell),
-        f = fill(3.0, ncell),
+        hydraulic_conductivity_scale_parameter = fill(3.0, ncell),
     )
     variables = Wflow.GroundwaterFlowVariables(;
         n = ncell,
@@ -103,32 +103,32 @@ function init_sbm_soil_model(n, N; kwargs...)
 
     if !haskey(kwargs, :vegetation_parameter_set)
         kwargs[:vegetation_parameter_set] = Wflow.VegetationParameters(;
-            rootingdepth = get(kwargs, :rootingdepth, []),
+            rooting_depth = get(kwargs, :rooting_depth, []),
             leaf_area_index = nothing,
             storage_wood = nothing,
-            kext = nothing,
+            light_extinction_coefficient = nothing,
             storage_specific_leaf = nothing,
-            canopygapfraction = [],
-            cmax = [],
-            kc = [],
+            canopy_gap_fraction = [],
+            maximum_canopy_storage = [],
+            crop_coefficient = [],
         )
     end
 
-    if !haskey(kwargs, :maxlayers)
-        kwargs[:maxlayers] = 0
+    if !haskey(kwargs, :maximum_number_of_layers)
+        kwargs[:maximum_number_of_layers] = 0
     end
 
     # Vectors of SVectors
     for field_name in [
-        :ustorelayerdepth,
-        :ustorelayerthickness,
-        :vwc,
-        :vwc_perc,
-        :act_thickl,
+        :unsaturated_layer_depth,
+        :unsaturated_layer_thickness,
+        :volumetric_water_content,
+        :relative_volumetric_water_content,
+        :actual_layer_thickness,
         :rootfraction,
-        :kvfrac,
-        :c,
-        :sumlayers,
+        :vertical_hydraulic_conductivity_factor,
+        :brooks_corey_exponent,
+        :cumulative_layer_depth,
     ]
         if !haskey(kwargs, field_name)
             kwargs[field_name] = SVector{N, Float64}[]
@@ -138,29 +138,29 @@ function init_sbm_soil_model(n, N; kwargs...)
     # Vectors of other types
     for field_name in [
         # Variables
-        :ustorecapacity,
-        :satwaterdepth,
-        :drainable_waterdepth,
-        :zi,
+        :unsaturated_store_capacity,
+        :saturated_water_depth,
+        :drainable_water_depth,
+        :water_table_depth,
         :n_unsatlayers,
-        :total_soilwater_storage,
+        :total_soil_water_storage,
         # Parameters
-        :nlayers,
+        :number_of_layers,
         :theta_s,
         :theta_r,
         :theta_fc,
-        :soilwatercapacity,
-        :hb,
-        :soilthickness,
-        :infiltcappath,
-        :infiltcapsoil,
-        :maxleakage,
+        :soil_water_capacity,
+        :air_entry_pressure,
+        :soil_thickness,
+        :infiltration_capacity_compacted_soil,
+        :infiltration_capacity_soil,
+        :maximum_leakage,
         :cap_hmax,
         :cap_n,
         :w_soil,
         :cf_soil,
-        :pathfrac,
-        :rootdistpar,
+        :compacted_soil_area_fraction,
+        :wet_root_distribution_parameter,
         :h1,
         :h2,
         :h3_high,

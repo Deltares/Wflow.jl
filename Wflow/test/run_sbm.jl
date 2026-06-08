@@ -79,18 +79,21 @@
 
         @test model.clock.iteration == 1
 
-        @test test_means(interception.parameters, Dict(:e_r => 0.2381398056521972))
+        @test test_means(
+            interception.parameters,
+            Dict(:evaporation_to_precipitation_ratio => 0.2381398056521972),
+        )
         @test test_means(
             interception.parameters.vegetation_parameter_set,
             Dict(
-                :kc => 1.0,
+                :crop_coefficient => 1.0,
                 :storage_wood => 0.00019583714217432435,
-                :canopygapfraction => 0.5076891913529586,
+                :canopy_gap_fraction => 0.5076891913529586,
                 :storage_specific_leaf => 8.942700997221185e-5,
                 :leaf_area_index => 1.0624380387861794,
-                :cmax => 0.0002888534265722341,
-                :kext => 0.6741606033862981,
-                :rootingdepth => 0.3701426593311398,
+                :maximum_canopy_storage => 0.0002888534265722341,
+                :light_extinction_coefficient => 0.6741606033862981,
+                :rooting_depth => 0.3701426593311398,
             ),
         )
         @test test_means(
@@ -109,22 +112,22 @@
         (; snow) = model.land
 
         @test snow.variables.snow_storage[5] ≈ 0.003768513390588815
-        @test snow.parameters.tt[50063] ≈ 273.14999999999998
+        @test snow.parameters.temperature_threshold_snowfall[50063] ≈ 273.14999999999998
 
         @test test_means(
             snow.parameters,
             Dict(
-                :whc => 0.1,
-                :cfmax => 4.3478356481481481e-8,
-                :tt => 273.14999999999998,
-                :ttm => 273.14999999999998,
-                :tti => 2.0,
+                :water_holding_capacity => 0.1,
+                :degree_day_factor => 4.3478356481481481e-8,
+                :temperature_threshold_snowfall => 273.14999999999998,
+                :temperature_threshold_melt => 273.14999999999998,
+                :temperature_interval_snowfall => 2.0,
             ),
         )
         @test test_means(
             snow.variables,
             Dict(
-                :swe => 4.059539652492171e-5,
+                :snow_water_equivalent => 4.059539652492171e-5,
                 :runoff => 1.9304548512364964e-8,
                 :snow_in => 4.268605599818533e-15,
                 :snow_melt => 0.0,
@@ -149,10 +152,10 @@
         @test test_means(
             runoff.variables,
             Dict(
-                :ae_openw_r => 0.0,
+                :actual_open_water_evaporation_river => 0.0,
                 :runoff_river => 2.5374936291954614e-10,
                 :net_runoff_river => 2.5374936291954614e-10,
-                :ae_openw_l => 0.0,
+                :actual_open_water_evaporation_land => 0.0,
                 :runoff_land => 1.749511189351324e-11,
             ),
         )
@@ -178,17 +181,17 @@
             soil.parameters,
             Dict(
                 :theta_s => 0.4409211971535584,
-                :soilthickness => 1.837833713668117,
+                :soil_thickness => 1.837833713668117,
                 :h1 => 0.0,
                 :cap_n => 2.0,
-                :sumlayers => SVector((
+                :cumulative_layer_depth => SVector((
                     0.0,
                     0.1,
                     0.39997241953958815,
                     1.1566640303676966,
                     1.9842496012545644,
                 )),
-                :c => SVector((
+                :brooks_corey_exponent => SVector((
                     9.428788533549843,
                     9.821687673542042,
                     10.240060684266773,
@@ -196,28 +199,28 @@
                 )),
                 :h4 => -160,
                 :w_soil => 0.11249999999999985,
-                :hb => -0.10000000000000001,
-                :kvfrac => SVector((1.0, 1.0, 1.0, 1.0)),
+                :air_entry_pressure => -0.10000000000000001,
+                :vertical_hydraulic_conductivity_factor => SVector((1.0, 1.0, 1.0, 1.0)),
                 :h3_low => -10,
                 :soil_fraction => 0.49508064804427593,
                 :cap_hmax => 2.0,
-                :act_thickl => SVector((
+                :actual_layer_thickness => SVector((
                     0.1,
                     0.29997241953958815,
                     0.7566640303676965,
                     0.7842496012545644,
                 )),
-                :pathfrac => 0.0129736199199603,
+                :compacted_soil_area_fraction => 0.0129736199199603,
                 :h3_high => -4,
-                :infiltcappath => 5.7870370370370404e-8,
-                :infiltcapsoil => 4.8456216809760705e-6,
+                :infiltration_capacity_compacted_soil => 5.7870370370370404e-8,
+                :infiltration_capacity_soil => 4.8456216809760705e-6,
                 :cf_soil => 0.038,
                 :theta_fc => 0.30670581485821735,
-                :maxleakage => 0.0,
+                :maximum_leakage => 0.0,
                 :h2 => -1,
-                :rootdistpar => -500000.0,
+                :wet_root_distribution_parameter => -500000.0,
                 :alpha_h1 => 1.0,
-                :soilwatercapacity => 0.5057182462428663,
+                :soil_water_capacity => 0.5057182462428663,
                 :rootfraction => SVector((
                     0.2769545250424278,
                     0.7118645592933596,
@@ -231,10 +234,10 @@
             soil.variables,
             Dict(
                 :transfer => 1.3761602372536785e-16,
-                :drainable_waterdepth => 0.21027893230146349,
-                :infiltexcess => 0.0,
-                :actinfilt => 1.9033304037551905e-8,
-                :ustorelayerdepth => SVector((
+                :drainable_water_depth => 0.21027893230146349,
+                :infiltration_excess => 0.0,
+                :actual_infiltration => 1.9033304037551905e-8,
+                :unsaturated_layer_depth => SVector((
                     0.0016280832346593193,
                     0.0006460862670135344,
                     0.00023103976228101625,
@@ -242,40 +245,40 @@
                 )),
                 :h3 => -10,
                 :recharge => -2.6124780468763912e-11,
-                :ustorelayerthickness => SVector((
+                :unsaturated_layer_thickness => SVector((
                     0.0993509423527741,
                     0.19022782953886028,
                     0.0898015331913427,
                     0.0,
                 )),
-                :soilevap => 2.4568273505664539e-10,
+                :soil_evaporation => 2.4568273505664539e-10,
                 :net_runoff => 4.6686362399155382e-10,
-                :actinfiltpath => 2.4817112828889956e-10,
-                :ustorecapacity => 0.074421716916843156,
-                :ae_ustore => 0.0,
-                :vwc_root => 0.24099999255961077,
+                :actual_infiltration_compacted_soil => 2.4817112828889956e-10,
+                :unsaturated_store_capacity => 0.074421716916843156,
+                :actual_evaporation_unsaturated_store => 0.0,
+                :volumetric_water_content_root_zone => 0.24099999255961077,
                 :runoff => 4.6686362399155382e-10,
-                :exfiltsatwater => 4.4936851209804049e-10,
-                :total_soilwater_storage => 0.43129652932602325,
-                :soilevapsat => 2.211499042312533e-11,
-                :ustoredepth => 0.0025052092639538705,
-                :rootstore => 0.029037374113238562,
-                :infiltsoilpath => 1.9033304037551905e-8,
-                :zi => 0.27873782910028516,
-                :vwc_percroot => 54.55735722947444,
+                :exfiltration_saturated_water => 4.4936851209804049e-10,
+                :total_soil_water_storage => 0.43129652932602325,
+                :soil_evaporation_saturated_zone => 2.211499042312533e-11,
+                :unsaturated_store_depth => 0.0025052092639538705,
+                :root_zone_storage => 0.029037374113238562,
+                :infiltration => 1.9033304037551905e-8,
+                :water_table_depth => 0.27873782910028516,
+                :relative_volumetric_water_content_root_zone => 54.55735722947444,
                 :total_storage => 0.43155732894128607,
-                :actleakage => 0.0,
-                :actevap => 3.8825953512676096e-9,
-                :satwaterdepth => 0.42879132006206927,
+                :actual_leakage => 0.0,
+                :actual_evapotranspiration => 3.8825953512676096e-9,
+                :saturated_water_depth => 0.42879132006206927,
                 :transpiration => 4.0099276616623107e-12,
-                :actinfiltsoil => 1.8785132909263007e-8,
-                :actcapflux => 0.0,
-                :vwc_perc =>
+                :actual_infiltration_soil => 1.8785132909263007e-8,
+                :actual_capillary_flux => 0.0,
+                :relative_volumetric_water_content =>
                     [41.86055714460927, 63.23920727815791, 99.92432179078311, 100.0],
-                :tsoil => 282.39366827336522,
+                :soil_surface_temperature => 282.39366827336522,
                 :f_infiltration_reduction => 1.0,
-                :actevapsat => 4.0099276616623107e-12,
-                :vwc => [
+                :actual_evaporation_saturated_zone => 4.0099276616623107e-12,
+                :volumetric_water_content => [
                     0.1842331927167544,
                     0.27939237676857903,
                     0.4405326102482261,
@@ -291,19 +294,22 @@
         @test test_means(
             subsurface_flow.parameters,
             Dict(
-                :soilthickness => 1.8378337136681173,
+                :soil_thickness => 1.8378337136681173,
                 :specific_yield => 0.134215382295341,
-                :khfrac => 100.0,
+                :horizontal_to_vertical_hydraulic_conductivity_ratio => 100.0,
             ),
         )
         @test test_means(
             subsurface_flow.parameters.kh_profile,
-            Dict(:f => 3.303715296489842, :kh_0 => 0.00048456216809760719),
+            Dict(
+                :hydraulic_conductivity_scale_parameter => 3.303715296489842,
+                :kh_0 => 0.00048456216809760719,
+            ),
         )
         @test test_means(
             subsurface_flow.variables,
             Dict(
-                :zi => 0.2787378291002851,
+                :water_table_depth => 0.2787378291002851,
                 :to_river_average => 0.00097200732537938705,
                 :q_in => 0.01395379236964431,
                 :storage => 118195.04455118616,
@@ -395,7 +401,7 @@
         @test test_means(
             snow.variables,
             Dict(
-                :swe => 3.583038054459421e-5,
+                :snow_water_equivalent => 3.583038054459421e-5,
                 :runoff => 1.0425158326992447e-9,
                 :snow_in => 4.371605031101146e-15,
                 :snow_melt => 6.19370856351947e-11,
@@ -427,10 +433,10 @@
         @test test_means(
             runoff.variables,
             Dict(
-                :ae_openw_r => 7.314418628894106e-11,
+                :actual_open_water_evaporation_river => 7.314418628894106e-11,
                 :runoff_river => 1.3009557837753908e-11,
                 :net_runoff_river => -6.013462845118714e-11,
-                :ae_openw_l => 4.264605809694288e-12,
+                :actual_open_water_evaporation_land => 4.264605809694288e-12,
                 :runoff_land => 1.6461563909942252e-12,
             ),
         )
@@ -449,10 +455,10 @@
             soil.variables,
             Dict(
                 :transfer => 1.5567149457984323e-10,
-                :drainable_waterdepth => 0.20950390590615132,
-                :infiltexcess => 0.0,
-                :actinfilt => 1.0256861822245556e-9,
-                :ustorelayerdepth => SVector((
+                :drainable_water_depth => 0.20950390590615132,
+                :infiltration_excess => 0.0,
+                :actual_infiltration => 1.0256861822245556e-9,
+                :unsaturated_layer_depth => SVector((
                     0.0017064168532989077,
                     0.0010896449436965638,
                     0.0006820793025801899,
@@ -460,47 +466,47 @@
                 )),
                 :h3 => -10,
                 :recharge => -1.9009727917816603e-9,
-                :ustorelayerthickness => SVector((
+                :unsaturated_layer_thickness => SVector((
                     0.099409226268861529,
                     0.19270470155860653,
                     0.17182135284713667,
                     0.030507142365925574,
                 )),
-                :soilevap => 2.1687761811933483e-10,
+                :soil_evaporation => 2.1687761811933483e-10,
                 :net_runoff => 2.5569736341548426e-9,
-                :actinfiltpath => 1.6788849455513738e-11,
-                :ustorecapacity => 0.074899232539565163,
-                :ae_ustore => 5.8410546538801915e-11,
-                :vwc_root => 0.24143642302182922,
+                :actual_infiltration_compacted_soil => 1.6788849455513738e-11,
+                :unsaturated_store_capacity => 0.074899232539565163,
+                :actual_evaporation_unsaturated_store => 5.8410546538801915e-11,
+                :volumetric_water_content_root_zone => 0.24143642302182922,
                 :runoff => 2.5612382399645373e-9,
-                :exfiltsatwater => 2.5574181473276022e-9,
-                :total_soilwater_storage => 0.4308190137033012,
-                :soilevapsat => 2.0584284119007964e-11,
-                :excesswatersoil => 2.1739362459410241e-12,
-                :ustoredepth => 0.0034782427521511345,
-                :rootstore => 0.029196404187600344,
-                :infiltsoilpath => 1.0256861822245556e-9,
-                :zi => 0.2831713993535127,
-                :vwc_percroot => 54.646709985548235,
+                :exfiltration_saturated_water => 2.5574181473276022e-9,
+                :total_soil_water_storage => 0.4308190137033012,
+                :soil_evaporation_saturated_zone => 2.0584284119007964e-11,
+                :excess_water_soil => 2.1739362459410241e-12,
+                :unsaturated_store_depth => 0.0034782427521511345,
+                :root_zone_storage => 0.029196404187600344,
+                :infiltration => 1.0256861822245556e-9,
+                :water_table_depth => 0.2831713993535127,
+                :relative_volumetric_water_content_root_zone => 54.646709985548235,
                 # Total storage is affected by all modules, not just soil
                 :total_storage => 0.43144808509560123,
-                :actleakage => 0.0,
-                :actevap => 3.1762875630098438e-9,
-                :satwaterdepth => 0.42734077095115,
+                :actual_leakage => 0.0,
+                :actual_evapotranspiration => 3.1762875630098438e-9,
+                :saturated_water_depth => 0.42734077095115,
                 :transpiration => 2.0748866407854196e-9,
-                :actinfiltsoil => 1.0088973327690417e-9,
-                :actcapflux => 1.9583907995878329e-11,
-                :vwc_perc => [
+                :actual_infiltration_soil => 1.0088973327690417e-9,
+                :actual_capillary_flux => 1.9583907995878329e-11,
+                :relative_volumetric_water_content => [
                     42.213917397074624,
                     63.201354128983084,
                     99.7692631420567,
                     99.99996110706128,
                 ],
-                :tsoil => 281.70200654167354,
-                :excesswater => 2.1739362459410189e-12,
+                :soil_surface_temperature => 281.70200654167354,
+                :saturation_excess_water => 2.1739362459410189e-12,
                 :f_infiltration_reduction => 1.0,
-                :actevapsat => 2.016476094246616e-9,
-                :vwc => [
+                :actual_evaporation_saturated_zone => 2.016476094246616e-9,
+                :volumetric_water_content => [
                     0.18585985815835235,
                     0.27925583454823527,
                     0.4397834998887272,
@@ -583,7 +589,7 @@
         @test snow.variables.snow_storage[5] ≈ 0.0037686103651001375
         @test mean(snow.variables.snow_storage) ≈ 3.801972367609432e-5
         @test mean(snow.variables.snow_water) ≈ 2.5756728488273866e-6
-        @test mean(snow.variables.swe) ≈ 4.05953965249217e-5
+        @test mean(snow.variables.snow_water_equivalent) ≈ 4.05953965249217e-5
     end
 
     # test without snow model
@@ -870,7 +876,7 @@ end
     (; river_flow) = model.routing
     dh = diff(profile.depth)
     Δv = diff(profile.storage[:, 3])
-    Δa = diff(profile.a[:, 3])
+    Δa = diff(profile.flow_area[:, 3])
 
     @testset "river flow (local inertial) floodplain schematization" begin
         # floodplain geometry checks (index 3)
@@ -883,7 +889,7 @@ end
             231.6754039497307,
             330.9730700179533,
         ]
-        @test profile.p[:, 3] ≈ [
+        @test profile.wetted_perimeter[:, 3] ≈ [
             69.28617594254938,
             70.28617594254938,
             91.15260323159785,
@@ -891,7 +897,7 @@ end
             205.6754039497307,
             305.9730700179533,
         ]
-        @test profile.a[:, 3] ≈ [
+        @test profile.flow_area[:, 3] ≈ [
             0.0,
             49.64308797127469,
             109.21938958707361,
@@ -900,7 +906,7 @@ end
             463.35655296229805,
         ]
         @test dh .* profile.width[2:end, 3] * flow_length[3] ≈ Δv
-        @test profile.a[:, 3] * flow_length[3] ≈ profile.storage[:, 3]
+        @test profile.flow_area[:, 3] * flow_length[3] ≈ profile.storage[:, 3]
         # flood depth from flood storage (8000.0)
         flood_vol = 8000.0
         river_flow.variables.storage[3] =
@@ -937,60 +943,78 @@ end
         i1, i2 = Wflow.interpolation_indices(h, profile.depth)
         @test Wflow.flow_area(
             profile.width[i2, 3],
-            profile.a[i1, 3],
+            profile.flow_area[i1, 3],
             profile.depth[i1],
             h,
         ) ≈ 49.64308797127469
-        @test Wflow.wetted_perimeter(profile.p[i1, 3], profile.depth[i1], h) ≈
-              70.28617594254938
+        @test Wflow.wetted_perimeter(
+            profile.wetted_perimeter[i1, 3],
+            profile.depth[i1],
+            h,
+        ) ≈ 70.28617594254938
         h = 1.5
         i1, i2 = Wflow.interpolation_indices(h, profile.depth)
         @test Wflow.flow_area(
             profile.width[i2, 3],
-            profile.a[i1, 3],
+            profile.flow_area[i1, 3],
             profile.depth[i1],
             h,
         ) ≈ 182.032315978456
-        @test Wflow.wetted_perimeter(profile.p[i1, 3], profile.depth[i1], h) ≈
-              118.62585278276481
+        @test Wflow.wetted_perimeter(
+            profile.wetted_perimeter[i1, 3],
+            profile.depth[i1],
+            h,
+        ) ≈ 118.62585278276481
         h = 1.7
         i1, i2 = Wflow.interpolation_indices(h, profile.depth)
         @test Wflow.flow_area(
             profile.width[i2, 3],
-            profile.a[i1, 3],
+            profile.flow_area[i1, 3],
             profile.depth[i1],
             h,
         ) ≈ 228.36739676840216
-        @test Wflow.wetted_perimeter(profile.p[i1, 3], profile.depth[i1], h) ≈
-              119.02585278276482
+        @test Wflow.wetted_perimeter(
+            profile.wetted_perimeter[i1, 3],
+            profile.depth[i1],
+            h,
+        ) ≈ 119.02585278276482
         h = 3.2
         i1, i2 = Wflow.interpolation_indices(h, profile.depth)
         @test Wflow.flow_area(
             profile.width[i2, 3],
-            profile.a[i1, 3],
+            profile.flow_area[i1, 3],
             profile.depth[i1],
             h,
         ) ≈ 695.0377019748654
-        @test Wflow.wetted_perimeter(profile.p[i1, 3], profile.depth[i1], h) ≈
-              307.3730700179533
+        @test Wflow.wetted_perimeter(
+            profile.wetted_perimeter[i1, 3],
+            profile.depth[i1],
+            h,
+        ) ≈ 307.3730700179533
         h = 4.0
         i1, i2 = Wflow.interpolation_indices(h, profile.depth)
         @test Wflow.flow_area(
             profile.width[i2, 3],
-            profile.a[i1, 3],
+            profile.flow_area[i1, 3],
             profile.depth[i1],
             h,
         ) ≈ 959.816157989228
-        @test Wflow.wetted_perimeter(profile.p[i1, 3], profile.depth[i1], h) ≈
-              308.9730700179533
+        @test Wflow.wetted_perimeter(
+            profile.wetted_perimeter[i1, 3],
+            profile.depth[i1],
+            h,
+        ) ≈ 308.9730700179533
         @test Wflow.flow_area(
             profile.width[i2, 4],
-            profile.a[i1, 4],
+            profile.flow_area[i1, 4],
             profile.depth[i1],
             h,
         ) ≈ 407.6395313908081
-        @test Wflow.wetted_perimeter(profile.p[i1, 4], profile.depth[i1], h) ≈
-              90.11775307900271
+        @test Wflow.wetted_perimeter(
+            profile.wetted_perimeter[i1, 4],
+            profile.depth[i1],
+            h,
+        ) ≈ 90.11775307900271
     end
 
     Wflow.run_timestep!(model)
@@ -1056,10 +1080,20 @@ end
             (; soil) = model.land
             (; kv_profile) = soil.parameters
             (; subsurface_flow) = model.routing
-            z = soil.variables.zi[i]
-            kvfrac = soil.parameters.kvfrac
-            kv_z = Wflow.hydraulic_conductivity_at_depth(kv_profile, kvfrac, z, i, 2)
-            @test kv_z ≈ kvfrac[i][2] * kv_profile.kv_0[i] * exp(-kv_profile.f[i] * z)
+            z = soil.variables.water_table_depth[i]
+            vertical_hydraulic_conductivity_factor =
+                soil.parameters.vertical_hydraulic_conductivity_factor
+            kv_z = Wflow.hydraulic_conductivity_at_depth(
+                kv_profile,
+                vertical_hydraulic_conductivity_factor,
+                z,
+                i,
+                2,
+            )
+            @test kv_z ≈
+                  vertical_hydraulic_conductivity_factor[i][2] *
+                  kv_profile.kv_0[i] *
+                  exp(-kv_profile.hydraulic_conductivity_scale_parameter[i] * z)
             @test subsurface_flow.variables.q_max[i] ≈ 0.00032786118096951182
             @test subsurface_flow.variables.q[i] ≈ 0.13522373477495839
         end
@@ -1071,15 +1105,34 @@ end
             (; soil) = model.land
             (; kv_profile) = soil.parameters
             (; subsurface_flow) = model.routing
-            z = soil.variables.zi[i]
-            kvfrac = soil.parameters.kvfrac
-            kv_z = Wflow.hydraulic_conductivity_at_depth(kv_profile, kvfrac, z, i, 2)
+            z = soil.variables.water_table_depth[i]
+            vertical_hydraulic_conductivity_factor =
+                soil.parameters.vertical_hydraulic_conductivity_factor
+            kv_z = Wflow.hydraulic_conductivity_at_depth(
+                kv_profile,
+                vertical_hydraulic_conductivity_factor,
+                z,
+                i,
+                2,
+            )
             @test kv_z ≈
-                  kvfrac[i][2] *
+                  vertical_hydraulic_conductivity_factor[i][2] *
                   kv_profile.exponential.kv_0[i] *
-                  exp(-kv_profile.exponential.f[i] * z)
-            kv_400 = Wflow.hydraulic_conductivity_at_depth(kv_profile, kvfrac, 0.4, i, 2)
-            kv_1000 = Wflow.hydraulic_conductivity_at_depth(kv_profile, kvfrac, 1.0, i, 3)
+                  exp(-kv_profile.exponential.hydraulic_conductivity_scale_parameter[i] * z)
+            kv_400 = Wflow.hydraulic_conductivity_at_depth(
+                kv_profile,
+                vertical_hydraulic_conductivity_factor,
+                0.4,
+                i,
+                2,
+            )
+            kv_1000 = Wflow.hydraulic_conductivity_at_depth(
+                kv_profile,
+                vertical_hydraulic_conductivity_factor,
+                1.0,
+                i,
+                3,
+            )
             @test kv_400 ≈ kv_1000
             @test all(kv_profile.z_exp .== 0.4)
             @test subsurface_flow.variables.q_max[i] ≈ 0.00057159242768384559
@@ -1093,10 +1146,16 @@ end
             (; soil) = model.land
             (; kv_profile) = soil.parameters
             (; subsurface_flow) = model.routing
-            z = soil.variables.zi[i]
-            kvfrac = soil.parameters.kvfrac
-            @test Wflow.hydraulic_conductivity_at_depth(kv_profile, kvfrac, z, i, 2) ≈
-                  kv_profile.kv[i][2]
+            z = soil.variables.water_table_depth[i]
+            vertical_hydraulic_conductivity_factor =
+                soil.parameters.vertical_hydraulic_conductivity_factor
+            @test Wflow.hydraulic_conductivity_at_depth(
+                kv_profile,
+                vertical_hydraulic_conductivity_factor,
+                z,
+                i,
+                2,
+            ) ≈ kv_profile.kv[i][2]
             Wflow.kh_layered_profile!(soil, subsurface_flow, kv_profile)
             @test subsurface_flow.parameters.kh_profile.kh[i] ≈ 0.00054987190595639297
             @test subsurface_flow.variables.q_max[i] ≈ 0.00034996637014004996
@@ -1111,10 +1170,16 @@ end
             (; soil) = model.land
             (; kv_profile) = soil.parameters
             (; subsurface_flow) = model.routing
-            z = soil.variables.zi[i]
-            kvfrac = soil.parameters.kvfrac
-            @test Wflow.hydraulic_conductivity_at_depth(kv_profile, kvfrac, z, i, 2) ≈
-                  kv_profile.kv[i][2]
+            z = soil.variables.water_table_depth[i]
+            vertical_hydraulic_conductivity_factor =
+                soil.parameters.vertical_hydraulic_conductivity_factor
+            @test Wflow.hydraulic_conductivity_at_depth(
+                kv_profile,
+                vertical_hydraulic_conductivity_factor,
+                z,
+                i,
+                2,
+            ) ≈ kv_profile.kv[i][2]
             @test kv_profile.nlayers_kv[i] == 2
             Wflow.kh_layered_profile!(soil, subsurface_flow, kv_profile)
             @test subsurface_flow.parameters.kh_profile.kh[i] ≈ 0.00039074377416687143
@@ -1194,12 +1259,18 @@ end
     (; river_water_balance) = model.mass_balance.routing
     Wflow.run_timestep!(model)
     @testset "water balance first timestep" begin
-        @test all(e -> abs(e) < 1e-9, river_water_balance.error)
+        @test all(
+            rating_curve_exponent -> abs(rating_curve_exponent) < 1e-9,
+            river_water_balance.error,
+        )
         @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
     end
     Wflow.run_timestep!(model)
     @testset "water balance second timestep" begin
-        @test all(e -> abs(e) < 1e-9, river_water_balance.error)
+        @test all(
+            rating_curve_exponent -> abs(rating_curve_exponent) < 1e-9,
+            river_water_balance.error,
+        )
         @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
     end
     Wflow.close_files(model; delete_output = false)
@@ -1214,12 +1285,18 @@ end
     (; river_water_balance) = model.mass_balance.routing
     Wflow.run_timestep!(model)
     @testset "water balance first timestep" begin
-        @test all(e -> abs(e) < 1e-9, river_water_balance.error)
+        @test all(
+            rating_curve_exponent -> abs(rating_curve_exponent) < 1e-9,
+            river_water_balance.error,
+        )
         @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
     end
     Wflow.run_timestep!(model)
     @testset "water balance second timestep" begin
-        @test all(e -> abs(e) < 1e-9, river_water_balance.error)
+        @test all(
+            rating_curve_exponent -> abs(rating_curve_exponent) < 1e-9,
+            river_water_balance.error,
+        )
         @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
     end
     Wflow.close_files(model; delete_output = false)
@@ -1234,12 +1311,18 @@ end
     (; overland_water_balance) = model.mass_balance.routing
     Wflow.run_timestep!(model)
     @testset "water balance first timestep" begin
-        @test all(e -> abs(e) < 1e-9, overland_water_balance.error)
+        @test all(
+            rating_curve_exponent -> abs(rating_curve_exponent) < 1e-9,
+            overland_water_balance.error,
+        )
         @test all(re -> abs(re) < 1e-9, overland_water_balance.relative_error)
     end
     Wflow.run_timestep!(model)
     @testset "water balance second timestep" begin
-        @test all(e -> abs(e) < 1e-9, overland_water_balance.error)
+        @test all(
+            rating_curve_exponent -> abs(rating_curve_exponent) < 1e-9,
+            overland_water_balance.error,
+        )
         @test all(re -> abs(re) < 1e-9, overland_water_balance.relative_error)
     end
     Wflow.close_files(model; delete_output = false)

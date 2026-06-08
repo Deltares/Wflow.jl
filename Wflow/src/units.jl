@@ -74,24 +74,21 @@ end
 end
 
 function Unit(; absolute_temperature = false, kwargs...)
-    powers = ntuple(
-        i -> begin
-            unit = Units[i]
-            powers = return if unit in keys(kwargs)
-                val = kwargs[unit]
+    powers = ntuple(i -> begin
+        unit = Units[i]
+        powers = return if unit in keys(kwargs)
+            val = kwargs[unit]
 
-                if val isa Number
-                    val > 0 ? (0, val) : (-val, 0)
-                else
-                    val
-                end
+            if val isa Number
+                val > 0 ? (0, val) : (-val, 0)
             else
-                (0 // 1, 0 // 1)
+                val
             end
-            PowersType(powers)
-        end,
-        N_UNITS,
-    )
+        else
+            (0 // 1, 0 // 1)
+        end
+        PowersType(powers)
+    end, N_UNITS)
     for unit in keys(kwargs)
         (unit ∉ Units) && argument_error("Unrecognized unit $unit.")
     end

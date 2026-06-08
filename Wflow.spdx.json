@@ -3,12 +3,12 @@
     "dataLicense": "CC0-1.0",
     "SPDXID": "SPDXRef-DOCUMENT",
     "name": "Wflow.jl",
-    "documentNamespace": "https://github.com/Deltares/Wflow.jl/Wflow.spdx.json-424227a7-758e-492c-bbe6-df6c98a9c92a",
+    "documentNamespace": "https://github.com/Deltares/Wflow.jl/Wflow.spdx.json-f79f7694-9025-4b31-a1a9-456819284ca6",
     "creationInfo": {
         "creators": [
             "Organization:  Deltares  (software@deltares.nl)"
         ],
-        "created": "2026-05-11T11:31:14Z",
+        "created": "2026-06-02T04:38:47Z",
         "comment": "Target Platform: Platform(\"x86_64\", \"linux\"; libgfortran_version = \"5.0.0\", julia_version = \"1.12.5\", libc = \"glibc\", libstdcxx_version = \"3.4.30\", cxxstring_abi = \"cxx11\")"
     },
     "comment": "Registries used for populating Package data:\nGeneral registry: https://github.com/JuliaRegistries/General.git\nOfficial general Julia package registry where people can\nregister any package they want without too much debate about\nnaming and without enforced standards on documentation or\ntesting. We nevertheless encourage documentation, testing and\nsome amount of consideration when choosing package names.\n",
@@ -613,13 +613,13 @@
         {
             "name": "DataStructures",
             "SPDXID": "SPDXRef-DataStructures-864edb3b-99cc-5e75-8d2d-829cb0a9cfe8",
-            "versionInfo": "0.19.4",
+            "versionInfo": "0.19.5",
             "supplier": "NOASSERTION",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaCollections/DataStructures.jl.git@e86f4a2805f7f19bec5129bc9150c38208e5dc23",
+            "downloadLocation": "git+https://github.com/JuliaCollections/DataStructures.jl.git@6fb53a69613a0b2b68a0d12671717d307ab8b24e",
             "filesAnalyzed": true,
             "packageVerificationCode": {
-                "packageVerificationCodeValue": "57dff6ecaf0e8aba8493f4912db57ffe86cfe176"
+                "packageVerificationCodeValue": "90ec2ea3c85631d8db45560c09367773aafcd86b"
             },
             "homepage": "https://github.com/JuliaCollections/DataStructures.jl.git",
             "licenseConcluded": "NOASSERTION",
@@ -634,7 +634,7 @@
                 {
                     "referenceCategory": "PACKAGE-MANAGER",
                     "referenceType": "purl",
-                    "referenceLocator": "pkg:julia/DataStructures@0.19.4?uuid=864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
+                    "referenceLocator": "pkg:julia/DataStructures@0.19.5?uuid=864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
                 }
             ]
         },
@@ -698,13 +698,13 @@
         {
             "name": "PrecompileTools",
             "SPDXID": "SPDXRef-PrecompileTools-aea7be01-6a6a-4083-8856-8a6e6704d82a",
-            "versionInfo": "1.3.3",
+            "versionInfo": "1.3.4",
             "supplier": "NOASSERTION",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaLang/PrecompileTools.jl.git@07a921781cab75691315adc645096ed5e370cb77",
+            "downloadLocation": "git+https://github.com/JuliaLang/PrecompileTools.jl.git@edbeefc7a4889f528644251bdb5fc9ab5348bc2c",
             "filesAnalyzed": true,
             "packageVerificationCode": {
-                "packageVerificationCodeValue": "9d2efd393a125041ef199d98bf3b889511f0bff6"
+                "packageVerificationCodeValue": "d5baf5959e6db9d990ff413de40d09afef50b8e2"
             },
             "homepage": "https://github.com/JuliaLang/PrecompileTools.jl.git",
             "licenseConcluded": "NOASSERTION",
@@ -719,7 +719,7 @@
                 {
                     "referenceCategory": "PACKAGE-MANAGER",
                     "referenceType": "purl",
-                    "referenceLocator": "pkg:julia/PrecompileTools@1.3.3?uuid=aea7be01-6a6a-4083-8856-8a6e6704d82a"
+                    "referenceLocator": "pkg:julia/PrecompileTools@1.3.4?uuid=aea7be01-6a6a-4083-8856-8a6e6704d82a"
                 }
             ]
         },
@@ -1056,13 +1056,13 @@
         {
             "name": "SimpleTraits",
             "SPDXID": "SPDXRef-SimpleTraits-699a6c99-e7fa-54fc-8d76-47d257e15c1d",
-            "versionInfo": "0.9.5",
+            "versionInfo": "0.9.6",
             "supplier": "NOASSERTION",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/mauro3/SimpleTraits.jl.git@be8eeac05ec97d379347584fa9fe2f5f76795bcb",
+            "downloadLocation": "git+https://github.com/mauro3/SimpleTraits.jl.git@7ddb0b49c109481b046972c0e4ab02b2127d6a75",
             "filesAnalyzed": true,
             "packageVerificationCode": {
-                "packageVerificationCodeValue": "d5645c4ac1dba70f5e0d115be07384183e6a00f5"
+                "packageVerificationCodeValue": "44f96d650023e485e1c838df6e7465b1b598ee36"
             },
             "homepage": "https://github.com/mauro3/SimpleTraits.jl.git",
             "licenseConcluded": "NOASSERTION",
@@ -1077,7 +1077,7 @@
                 {
                     "referenceCategory": "PACKAGE-MANAGER",
                     "referenceType": "purl",
-                    "referenceLocator": "pkg:julia/SimpleTraits@0.9.5?uuid=699a6c99-e7fa-54fc-8d76-47d257e15c1d"
+                    "referenceLocator": "pkg:julia/SimpleTraits@0.9.6?uuid=699a6c99-e7fa-54fc-8d76-47d257e15c1d"
                 }
             ]
         },
@@ -1223,13 +1223,13 @@
         {
             "name": "ThreadingUtilities",
             "SPDXID": "SPDXRef-ThreadingUtilities-8290d209-cae3-49c0-8002-c8c24d57dab5",
-            "versionInfo": "0.5.5",
+            "versionInfo": "0.5.6",
             "supplier": "NOASSERTION",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaSIMD/ThreadingUtilities.jl.git@d969183d3d244b6c33796b5ed01ab97328f2db85",
+            "downloadLocation": "git+https://github.com/JuliaSIMD/ThreadingUtilities.jl.git@7c73336785b21f723f5b143f6e99cf6c43b37dc1",
             "filesAnalyzed": true,
             "packageVerificationCode": {
-                "packageVerificationCodeValue": "8e0171276e026e4b0770ab36cd3209ce95b3a081"
+                "packageVerificationCodeValue": "4c11e2bf54d34c03e26f4c96866651340794bec4"
             },
             "homepage": "https://github.com/JuliaSIMD/ThreadingUtilities.jl.git",
             "licenseConcluded": "NOASSERTION",
@@ -1244,7 +1244,7 @@
                 {
                     "referenceCategory": "PACKAGE-MANAGER",
                     "referenceType": "purl",
-                    "referenceLocator": "pkg:julia/ThreadingUtilities@0.5.5?uuid=8290d209-cae3-49c0-8002-c8c24d57dab5"
+                    "referenceLocator": "pkg:julia/ThreadingUtilities@0.5.6?uuid=8290d209-cae3-49c0-8002-c8c24d57dab5"
                 }
             ]
         },
@@ -1473,43 +1473,15 @@
             ]
         },
         {
-            "name": "Requires",
-            "SPDXID": "SPDXRef-Requires-ae029012-a4dd-5104-9daa-d747884805df",
-            "versionInfo": "1.3.1",
-            "supplier": "NOASSERTION",
-            "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaPackaging/Requires.jl.git@62389eeff14780bfe55195b7204c0d8738436d64",
-            "filesAnalyzed": true,
-            "packageVerificationCode": {
-                "packageVerificationCodeValue": "0789c1a699ee68273416455e5906d305fdf7383a"
-            },
-            "homepage": "https://github.com/JuliaPackaging/Requires.jl.git",
-            "licenseConcluded": "NOASSERTION",
-            "licenseInfoFromFiles": [
-                "MIT"
-            ],
-            "licenseDeclared": "MIT",
-            "copyrightText": "NOASSERTION",
-            "summary": "This is a Julia package, written in the Julia language.",
-            "comment": "The SPDX ID field is derived from the UUID that all Julia packages are assigned by their developer to uniquely identify it.",
-            "externalRefs": [
-                {
-                    "referenceCategory": "PACKAGE-MANAGER",
-                    "referenceType": "purl",
-                    "referenceLocator": "pkg:julia/Requires@1.3.1?uuid=ae029012-a4dd-5104-9daa-d747884805df"
-                }
-            ]
-        },
-        {
             "name": "Adapt",
             "SPDXID": "SPDXRef-Adapt-79e6a3ab-5dfb-504d-930d-738a2a938a0e",
-            "versionInfo": "4.5.2",
+            "versionInfo": "4.6.0",
             "supplier": "NOASSERTION",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaGPU/Adapt.jl.git@0761717147821d696c9470a7a86364b2fbd22fd8",
+            "downloadLocation": "git+https://github.com/JuliaGPU/Adapt.jl.git@28e1637322d4019ed2577cbec9268fab9b7da117",
             "filesAnalyzed": true,
             "packageVerificationCode": {
-                "packageVerificationCodeValue": "c99749120f4961ece814a54d407bdaed7a83aa9d"
+                "packageVerificationCodeValue": "f0e3031603f7e9a3f4bd06bacb300eb44cd24b97"
             },
             "homepage": "https://github.com/JuliaGPU/Adapt.jl.git",
             "licenseConcluded": "NOASSERTION",
@@ -1524,20 +1496,20 @@
                 {
                     "referenceCategory": "PACKAGE-MANAGER",
                     "referenceType": "purl",
-                    "referenceLocator": "pkg:julia/Adapt@4.5.2?uuid=79e6a3ab-5dfb-504d-930d-738a2a938a0e"
+                    "referenceLocator": "pkg:julia/Adapt@4.6.0?uuid=79e6a3ab-5dfb-504d-930d-738a2a938a0e"
                 }
             ]
         },
         {
             "name": "ArrayInterface",
             "SPDXID": "SPDXRef-ArrayInterface-4fba245c-0d91-5ea0-9b3e-6abc04ee57a9",
-            "versionInfo": "7.24.0",
+            "versionInfo": "7.25.0",
             "supplier": "NOASSERTION",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaArrays/ArrayInterface.jl.git@54f895554d05c83e3dd59f6a396671dae8999573",
+            "downloadLocation": "git+https://github.com/JuliaArrays/ArrayInterface.jl.git@3d0cabd25fab32390e3bcb82cd67e700aebd9816",
             "filesAnalyzed": true,
             "packageVerificationCode": {
-                "packageVerificationCodeValue": "eb3d8fe3a58dd7102cf63441bd9d4b7db6a47217"
+                "packageVerificationCodeValue": "19bb685091610f447e0d63a0e23310d925533815"
             },
             "homepage": "https://github.com/JuliaArrays/ArrayInterface.jl.git",
             "licenseConcluded": "NOASSERTION",
@@ -1552,7 +1524,7 @@
                 {
                     "referenceCategory": "PACKAGE-MANAGER",
                     "referenceType": "purl",
-                    "referenceLocator": "pkg:julia/ArrayInterface@7.24.0?uuid=4fba245c-0d91-5ea0-9b3e-6abc04ee57a9"
+                    "referenceLocator": "pkg:julia/ArrayInterface@7.25.0?uuid=4fba245c-0d91-5ea0-9b3e-6abc04ee57a9"
                 }
             ]
         },
@@ -2036,13 +2008,13 @@
         {
             "name": "DiskArrays",
             "SPDXID": "SPDXRef-DiskArrays-3c3547ce-8d99-4f5e-a174-61eb10b00ae3",
-            "versionInfo": "0.4.19",
+            "versionInfo": "0.4.20",
             "supplier": "NOASSERTION",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaIO/DiskArrays.jl.git@e5d9ce1b751ddf9bcd9d36b51249dce8ea73cd55",
+            "downloadLocation": "git+https://github.com/JuliaIO/DiskArrays.jl.git@ead53bf0bbcd2e487495b2462feaa6043c4bc8c1",
             "filesAnalyzed": true,
             "packageVerificationCode": {
-                "packageVerificationCodeValue": "382332c1ad8b833c59e4556f387140d421b60f34"
+                "packageVerificationCodeValue": "62fed77ea8604ae10117668054fc5e72c18a625a"
             },
             "homepage": "https://github.com/JuliaIO/DiskArrays.jl.git",
             "licenseConcluded": "NOASSERTION",
@@ -2057,7 +2029,7 @@
                 {
                     "referenceCategory": "PACKAGE-MANAGER",
                     "referenceType": "purl",
-                    "referenceLocator": "pkg:julia/DiskArrays@0.4.19?uuid=3c3547ce-8d99-4f5e-a174-61eb10b00ae3"
+                    "referenceLocator": "pkg:julia/DiskArrays@0.4.20?uuid=3c3547ce-8d99-4f5e-a174-61eb10b00ae3"
                 }
             ]
         },
@@ -2120,13 +2092,13 @@
         {
             "name": "JLLWrappers",
             "SPDXID": "SPDXRef-JLLWrappers-692b3bcd-3c85-4b1f-b108-f13ce0eb3210",
-            "versionInfo": "1.7.1",
+            "versionInfo": "1.8.0",
             "supplier": "NOASSERTION",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaPackaging/JLLWrappers.jl.git@0533e564aae234aff59ab625543145446d8b6ec2",
+            "downloadLocation": "git+https://github.com/JuliaPackaging/JLLWrappers.jl.git@7204148362dafe5fe6a273f855b8ccbe4df8173e",
             "filesAnalyzed": true,
             "packageVerificationCode": {
-                "packageVerificationCodeValue": "77d4959450d4d13b4d1e94669956c9801acad316"
+                "packageVerificationCodeValue": "e195b7d0c0000b651d095edf6e581c9940b709d7"
             },
             "homepage": "https://github.com/JuliaPackaging/JLLWrappers.jl.git",
             "licenseConcluded": "NOASSERTION",
@@ -2141,7 +2113,7 @@
                 {
                     "referenceCategory": "PACKAGE-MANAGER",
                     "referenceType": "purl",
-                    "referenceLocator": "pkg:julia/JLLWrappers@1.7.1?uuid=692b3bcd-3c85-4b1f-b108-f13ce0eb3210"
+                    "referenceLocator": "pkg:julia/JLLWrappers@1.8.0?uuid=692b3bcd-3c85-4b1f-b108-f13ce0eb3210"
                 }
             ]
         },
@@ -2679,27 +2651,27 @@
         },
         {
             "name": "libaec_source",
-            "SPDXID": "SPDXRef-222f15681e44e2b70671d45df8c625297afc11cd",
+            "SPDXID": "SPDXRef-6d0be097d935144bfb3f989ac41e83899e6fd61e",
             "supplier": "NOASSERTION",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaPackaging/Yggdrasil.git@222f15681e44e2b70671d45df8c625297afc11cd#/L/libaec/",
+            "downloadLocation": "git+https://github.com/JuliaPackaging/Yggdrasil.git@6d0be097d935144bfb3f989ac41e83899e6fd61e#/L/libaec/",
             "filesAnalyzed": false,
-            "sourceInfo": "The location of this repository was extracted from the README.md file of SPDXRef-6d1a77e51584c6ae5747149080022ec2d18a6af1",
+            "sourceInfo": "The location of this repository was extracted from the README.md file of SPDXRef-652bcad5e465b1a8de98f0ba178aa3a582d3e5cf",
             "licenseConcluded": "NOASSERTION",
             "licenseDeclared": "NOASSERTION",
             "copyrightText": "NOASSERTION",
-            "summary": "The binary artifact SPDXRef-6d1a77e51584c6ae5747149080022ec2d18a6af1 is built using the scripts and source files in this package.\nThe build system is called Yggdrasil, the Julia community build tree.",
+            "summary": "The binary artifact SPDXRef-652bcad5e465b1a8de98f0ba178aa3a582d3e5cf is built using the scripts and source files in this package.\nThe build system is called Yggdrasil, the Julia community build tree.",
             "comment": "The SPDX ID field is derived from the Git hash in the DownloadLocation"
         },
         {
             "name": "libaec",
-            "SPDXID": "SPDXRef-6d1a77e51584c6ae5747149080022ec2d18a6af1",
+            "SPDXID": "SPDXRef-652bcad5e465b1a8de98f0ba178aa3a582d3e5cf",
             "supplier": "NOASSERTION",
             "originator": "NOASSERTION",
-            "downloadLocation": "https://github.com/JuliaBinaryWrappers/libaec_jll.jl/releases/download/libaec-v1.1.6+0/libaec.v1.1.6.x86_64-linux-gnu.tar.gz",
+            "downloadLocation": "https://github.com/JuliaBinaryWrappers/libaec_jll.jl/releases/download/libaec-v1.1.7+0/libaec.v1.1.7.x86_64-linux-gnu.tar.gz",
             "filesAnalyzed": true,
             "packageVerificationCode": {
-                "packageVerificationCodeValue": "25d390bfa09d0f0671c4864110ee852659f7107c",
+                "packageVerificationCodeValue": "c0cc8388be63b2cb0361b69c84fb676448c3be92",
                 "packageVerificationCodeExcludedFiles": [
                     "lib/libaec.so",
                     "lib/libaec.so.0",
@@ -2710,7 +2682,7 @@
             "checksums": [
                 {
                     "algorithm": "SHA256",
-                    "checksumValue": "1afe8762138afcd78d71eae6d0482314b42b4b321cead426bb8700fc471adf38"
+                    "checksumValue": "c9389fd3f3fa0341b40f822496abf00d317a72d26469c7cbd70960771bb91446"
                 }
             ],
             "homepage": "NOASSERTION",
@@ -2727,13 +2699,13 @@
         {
             "name": "libaec_jll",
             "SPDXID": "SPDXRef-libaec_jll-477f73a3-ac25-53e9-8cc3-50b2fa2566f0",
-            "versionInfo": "1.1.6+0",
+            "versionInfo": "1.1.7+0",
             "supplier": "NOASSERTION",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaBinaryWrappers/libaec_jll.jl.git@1411bc34c180946d3cef591de1384012afa6edee",
+            "downloadLocation": "git+https://github.com/JuliaBinaryWrappers/libaec_jll.jl.git@60f4792734488db6f42e2c7699f1d4594780bd03",
             "filesAnalyzed": true,
             "packageVerificationCode": {
-                "packageVerificationCodeValue": "745c491b295450535c69e1ce4fcff8beebd58cdd"
+                "packageVerificationCodeValue": "2b59c08b9f5f7dc2d0b9d1681593314c004d1034"
             },
             "homepage": "https://github.com/JuliaBinaryWrappers/libaec_jll.jl.git",
             "licenseConcluded": "NOASSERTION",
@@ -2748,7 +2720,7 @@
                 {
                     "referenceCategory": "PACKAGE-MANAGER",
                     "referenceType": "purl",
-                    "referenceLocator": "pkg:julia/libaec_jll@1.1.6+0?uuid=477f73a3-ac25-53e9-8cc3-50b2fa2566f0"
+                    "referenceLocator": "pkg:julia/libaec_jll@1.1.7+0?uuid=477f73a3-ac25-53e9-8cc3-50b2fa2566f0"
                 }
             ]
         },
@@ -4491,16 +4463,6 @@
             "relatedSpdxElement": "SPDXRef-Adapt-79e6a3ab-5dfb-504d-930d-738a2a938a0e"
         },
         {
-            "spdxElementId": "SPDXRef-UUIDs-cf7118a7-6976-5b1a-9a39-7adc72f591a4",
-            "relationshipType": "DEPENDENCY_OF",
-            "relatedSpdxElement": "SPDXRef-Requires-ae029012-a4dd-5104-9daa-d747884805df"
-        },
-        {
-            "spdxElementId": "SPDXRef-Requires-ae029012-a4dd-5104-9daa-d747884805df",
-            "relationshipType": "DEPENDENCY_OF",
-            "relatedSpdxElement": "SPDXRef-Adapt-79e6a3ab-5dfb-504d-930d-738a2a938a0e"
-        },
-        {
             "spdxElementId": "SPDXRef-Adapt-79e6a3ab-5dfb-504d-930d-738a2a938a0e",
             "relationshipType": "DEPENDENCY_OF",
             "relatedSpdxElement": "SPDXRef-ArrayInterface-4fba245c-0d91-5ea0-9b3e-6abc04ee57a9"
@@ -4991,12 +4953,12 @@
             "relatedSpdxElement": "SPDXRef-libaec_jll-477f73a3-ac25-53e9-8cc3-50b2fa2566f0"
         },
         {
-            "spdxElementId": "SPDXRef-6d1a77e51584c6ae5747149080022ec2d18a6af1",
+            "spdxElementId": "SPDXRef-652bcad5e465b1a8de98f0ba178aa3a582d3e5cf",
             "relationshipType": "GENERATED_FROM",
-            "relatedSpdxElement": "SPDXRef-222f15681e44e2b70671d45df8c625297afc11cd"
+            "relatedSpdxElement": "SPDXRef-6d0be097d935144bfb3f989ac41e83899e6fd61e"
         },
         {
-            "spdxElementId": "SPDXRef-6d1a77e51584c6ae5747149080022ec2d18a6af1",
+            "spdxElementId": "SPDXRef-652bcad5e465b1a8de98f0ba178aa3a582d3e5cf",
             "relationshipType": "RUNTIME_DEPENDENCY_OF",
             "relatedSpdxElement": "SPDXRef-libaec_jll-477f73a3-ac25-53e9-8cc3-50b2fa2566f0"
         },
