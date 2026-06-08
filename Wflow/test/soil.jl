@@ -74,7 +74,9 @@ end
         n,
         N;
         n,
-        unsaturated_layer_thickness = [SVector((0.05, 0.005081648613929929, NaN, NaN, NaN, NaN))],
+        unsaturated_layer_thickness = [
+            SVector((0.05, 0.005081648613929929, NaN, NaN, NaN, NaN)),
+        ],
         unsaturated_layer_depth = [
             SVector(0.0012855527211118947, 0.00020814868098590806, 0.0, 0.0, 0.0, 0.0),
         ],
@@ -112,7 +114,9 @@ end
         n,
         N;
         potential_soilevaporation = [3.2407407407407403e-8],
-        unsaturated_layer_thickness = [SVector((0.05, 0.021472680450878443, NaN, NaN, NaN, NaN))],
+        unsaturated_layer_thickness = [
+            SVector((0.05, 0.021472680450878443, NaN, NaN, NaN, NaN)),
+        ],
         unsaturated_layer_depth = [
             SVector(0.001537249298366254, 4.8213268138994254e-11, 0.0, 0.0, 0.0, 0.0),
         ],
@@ -147,7 +151,9 @@ end
         n_unsatlayers = [2],
         water_table_depth = [0.10689587841733061],
         unsaturated_layer_thickness = [SVector((0.1, 0.006895878417330607, NaN, NaN))],
-        unsaturated_layer_depth = [SVector(0.010932797715287601, 0.000862043215499364, 0.0, 0.0)],
+        unsaturated_layer_depth = [
+            SVector(0.010932797715287601, 0.000862043215499364, 0.0, 0.0),
+        ],
         rooting_depth = [0.453],
         rootfraction = [
             SVector(0.22075055187637968, 0.6622516556291391, 0.11699779249448124, 0.0),
@@ -176,7 +182,8 @@ end
 
     Wflow.transpiration!(soil_model, dt)
 
-    @test soil_model.variables.actual_evaporation_unsaturated_store[1] ≈ 5.965093586654767e-10
+    @test soil_model.variables.actual_evaporation_unsaturated_store[1] ≈
+          5.965093586654767e-10
     @test soil_model.variables.actual_evaporation_saturated_zone[1] ≈ 0.0
     @test soil_model.variables.drainable_water_depth[1] ≈ 0.07240310797113221
     @test soil_model.variables.transpiration[1] ≈ 5.965093586654767e-10
@@ -269,7 +276,8 @@ end
         infiltration_excess = [0.0],
     )
 
-    runoff = (; variables = (; runoff_land = [0.0], actual_open_water_evaporation_land = [0.0]))
+    runoff =
+        (; variables = (; runoff_land = [0.0], actual_open_water_evaporation_land = [0.0]))
 
     demand = Wflow.DemandModel(;
         domestic = Wflow.NoDemandModel(; n),
@@ -295,6 +303,7 @@ end
     @test soil_model.variables.relative_volumetric_water_content[1] ≈
           [55.42837989378741, 39.03268341595556, 58.18091279434587, 97.72939072000436]
     @test soil_model.variables.volumetric_water_content_root_zone[1] ≈ 0.20944108733203426
-    @test soil_model.variables.relative_volumetric_water_content_root_zone[1] ≈ 43.34734038380604
+    @test soil_model.variables.relative_volumetric_water_content_root_zone[1] ≈
+          43.34734038380604
     @test soil_model.variables.total_soil_water_storage[1] ≈ 0.43856081721959095
 end

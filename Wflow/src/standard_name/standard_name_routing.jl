@@ -1,4 +1,4 @@
-﻿# NOTE: The order of the entries determines the order in the docs tables
+# NOTE: The order of the entries determines the order in the docs tables
 """
 Mapping of (CSDMS) standard names to the metadata associated with the corresponding
 routing parameter. For more details and default values see `ParameterMetadata`.

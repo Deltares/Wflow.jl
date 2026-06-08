@@ -240,9 +240,12 @@ function TransportCapacityYalinDifferentiationParameters(
 )
     density =
         ncread(dataset, config, "sediment__particle_density", SoilLossModel; sel = indices)
-    median_diameter_clay = ncread(dataset, config, "clay__mean_diameter", SoilLossModel; sel = indices)
-    median_diameter_silt = ncread(dataset, config, "silt__mean_diameter", SoilLossModel; sel = indices)
-    median_diameter_sand = ncread(dataset, config, "sand__mean_diameter", SoilLossModel; sel = indices)
+    median_diameter_clay =
+        ncread(dataset, config, "clay__mean_diameter", SoilLossModel; sel = indices)
+    median_diameter_silt =
+        ncread(dataset, config, "silt__mean_diameter", SoilLossModel; sel = indices)
+    median_diameter_sand =
+        ncread(dataset, config, "sand__mean_diameter", SoilLossModel; sel = indices)
     median_diameter_small_aggregates = ncread(
         dataset,
         config,
@@ -298,8 +301,14 @@ function update_transport_capacity_model!(
     dt::Float64,
 )
     (; q, waterlevel) = transport_capacity_model.boundary_conditions
-    (; density, median_diameter_clay, median_diameter_silt, median_diameter_sand, median_diameter_small_aggregates, median_diameter_large_aggregates) =
-        transport_capacity_model.parameters
+    (;
+        density,
+        median_diameter_clay,
+        median_diameter_silt,
+        median_diameter_sand,
+        median_diameter_small_aggregates,
+        median_diameter_large_aggregates,
+    ) = transport_capacity_model.parameters
     (; sediment_transport_capacity, clay, silt, sand, small_aggregates, large_aggregates) =
         transport_capacity_model.variables
 
@@ -377,7 +386,8 @@ function update_transport_capacity_model!(
             dtot,
             dt,
         )
-        sediment_transport_capacity[i] = clay[i] + silt[i] + sand[i] + small_aggregates[i] + large_aggregates[i]
+        sediment_transport_capacity[i] =
+            clay[i] + silt[i] + sand[i] + small_aggregates[i] + large_aggregates[i]
     end
 end
 

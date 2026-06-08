@@ -106,23 +106,35 @@ end
     temperature = 273.69
     temperature_interval_snowfall = 2.0
     temperature_threshold_snowfall = 273.15
-    snow_precip, liquid_precip =
-        Wflow.precipitation_hbv(precipitation, temperature, temperature_interval_snowfall, temperature_threshold_snowfall)
+    snow_precip, liquid_precip = Wflow.precipitation_hbv(
+        precipitation,
+        temperature,
+        temperature_interval_snowfall,
+        temperature_threshold_snowfall,
+    )
     @test snow_precip ≈ 8.012731481481482e-8
     @test liquid_precip ≈ 2.682523148148148e-7
 
     ## Case temperature_interval_snowfall == 0
     # Case temperature > tt
     temperature_interval_snowfall = 0.0
-    snow_precip, liquid_precip =
-        Wflow.precipitation_hbv(precipitation, temperature, temperature_interval_snowfall, temperature_threshold_snowfall)
+    snow_precip, liquid_precip = Wflow.precipitation_hbv(
+        precipitation,
+        temperature,
+        temperature_interval_snowfall,
+        temperature_threshold_snowfall,
+    )
     @test snow_precip == 0.0
     @test liquid_precip == precipitation
 
     # Case temperate < tt
     temperature = 272.15
-    snow_precip, liquid_precip =
-        Wflow.precipitation_hbv(precipitation, temperature, temperature_interval_snowfall, temperature_threshold_snowfall)
+    snow_precip, liquid_precip = Wflow.precipitation_hbv(
+        precipitation,
+        temperature,
+        temperature_interval_snowfall,
+        temperature_threshold_snowfall,
+    )
     @test snow_precip == precipitation
     @test liquid_precip == 0.0
 end
@@ -256,13 +268,26 @@ end
     theta_r = 0.15
     c = 10.5
     air_entry_pressure = -0.1
-    h = Wflow.head_brooks_corey(volumetric_water_content, theta_s, theta_r, c, air_entry_pressure)
+    h = Wflow.head_brooks_corey(
+        volumetric_water_content,
+        theta_s,
+        theta_r,
+        c,
+        air_entry_pressure,
+    )
     @test h ≈ -0.9062998208338441
-    @test Wflow.vwc_brooks_corey(h, air_entry_pressure, theta_s, theta_r, c) ≈ volumetric_water_content + theta_r
+    @test Wflow.vwc_brooks_corey(h, air_entry_pressure, theta_s, theta_r, c) ≈
+          volumetric_water_content + theta_r
 
     # Case par_lambda < 0
     c = 2.0
-    h = Wflow.head_brooks_corey(volumetric_water_content, theta_s, theta_r, c, air_entry_pressure)
+    h = Wflow.head_brooks_corey(
+        volumetric_water_content,
+        theta_s,
+        theta_r,
+        c,
+        air_entry_pressure,
+    )
     @test h == air_entry_pressure
     @test Wflow.vwc_brooks_corey(h, air_entry_pressure, theta_s, theta_r, c) ≈ theta_s
 end
@@ -448,27 +473,29 @@ end
 
     # Case actual_infiltration > 0
     actual_infiltration = 1.883101851851852e-8
-    actual_infiltration_soil, actual_infiltration_compacted_soil = Wflow.actual_infiltration_soil_path(
-        potential_infiltration,
-        actual_infiltration,
-        compacted_soil_area_fraction,
-        infiltration_capacity_soil,
-        infiltration_capacity_compacted_soil,
-        f_infiltration_reduction,
-    )
+    actual_infiltration_soil, actual_infiltration_compacted_soil =
+        Wflow.actual_infiltration_soil_path(
+            potential_infiltration,
+            actual_infiltration,
+            compacted_soil_area_fraction,
+            infiltration_capacity_soil,
+            infiltration_capacity_compacted_soil,
+            f_infiltration_reduction,
+        )
     @test actual_infiltration_soil ≈ 1.6947916666666665e-8
     @test actual_infiltration_compacted_soil ≈ 1.883101851851852e-9
 
     # Case actual_infiltration == 0
     actual_infiltration = 0
-    actual_infiltration_soil, actual_infiltration_compacted_soil = Wflow.actual_infiltration_soil_path(
-        potential_infiltration,
-        actual_infiltration,
-        compacted_soil_area_fraction,
-        infiltration_capacity_soil,
-        infiltration_capacity_compacted_soil,
-        f_infiltration_reduction,
-    )
+    actual_infiltration_soil, actual_infiltration_compacted_soil =
+        Wflow.actual_infiltration_soil_path(
+            potential_infiltration,
+            actual_infiltration,
+            compacted_soil_area_fraction,
+            infiltration_capacity_soil,
+            infiltration_capacity_compacted_soil,
+            f_infiltration_reduction,
+        )
     @test actual_infiltration_soil == 0.0
     @test actual_infiltration_compacted_soil == 0.0
 end

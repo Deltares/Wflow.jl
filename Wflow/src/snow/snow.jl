@@ -97,7 +97,13 @@ function SnowHbvParameters(
         LandHydrologySBM;
         sel = indices,
     )
-    snow_hbv_params = SnowHbvParameters(; degree_day_factor, temperature_threshold_snowfall, temperature_interval_snowfall, temperature_threshold_melt, water_holding_capacity)
+    snow_hbv_params = SnowHbvParameters(;
+        degree_day_factor,
+        temperature_threshold_snowfall,
+        temperature_interval_snowfall,
+        temperature_threshold_melt,
+        water_holding_capacity,
+    )
     return snow_hbv_params
 end
 
@@ -133,27 +139,39 @@ function update_snow_model!(
     dt::Float64,
 )
     (; temperature) = atmospheric_forcing
-    (; snow_storage, snow_water, snow_water_equivalent, snow_melt, runoff) = snow_model.variables
+    (; snow_storage, snow_water, snow_water_equivalent, snow_melt, runoff) =
+        snow_model.variables
     (; effective_precip, snow_precip, liquid_precip) = snow_model.boundary_conditions
-    (; temperature_threshold_snowfall, temperature_interval_snowfall, temperature_threshold_melt, degree_day_factor, water_holding_capacity) = snow_model.parameters
+    (;
+        temperature_threshold_snowfall,
+        temperature_interval_snowfall,
+        temperature_threshold_melt,
+        degree_day_factor,
+        water_holding_capacity,
+    ) = snow_model.parameters
 
     n = length(temperature)
     threaded_foreach(1:n; basesize = 1000) do i
-        snow_precip[i], liquid_precip[i] =
-            precipitation_hbv(effective_precip[i], temperature[i], temperature_interval_snowfall[i], temperature_threshold_snowfall[i])
+        snow_precip[i], liquid_precip[i] = precipitation_hbv(
+            effective_precip[i],
+            temperature[i],
+            temperature_interval_snowfall[i],
+            temperature_threshold_snowfall[i],
+        )
     end
     threaded_foreach(1:n; basesize = 1000) do i
-        snow_storage[i], snow_water[i], snow_water_equivalent[i], snow_melt[i], runoff[i] = snowpack_hbv(
-            snow_storage[i],
-            snow_water[i],
-            snow_precip[i],
-            liquid_precip[i],
-            temperature[i],
-            temperature_threshold_melt[i],
-            degree_day_factor[i],
-            water_holding_capacity[i],
-            dt,
-        )
+        snow_storage[i], snow_water[i], snow_water_equivalent[i], snow_melt[i], runoff[i] =
+            snowpack_hbv(
+                snow_storage[i],
+                snow_water[i],
+                snow_precip[i],
+                liquid_precip[i],
+                temperature[i],
+                temperature_threshold_melt[i],
+                degree_day_factor[i],
+                water_holding_capacity[i],
+                dt,
+            )
     end
     return nothing
 end

@@ -89,14 +89,22 @@ function update_open_water_runoff_model!(
 )
     (; boundary_conditions, variables) = open_water_runoff_model
     (; water_flux_surface, waterdepth_river, waterdepth_land) = boundary_conditions
-    (; runoff_river, net_runoff_river, runoff_land, actual_open_water_evaporation_river, actual_open_water_evaporation_land) = variables
+    (;
+        runoff_river,
+        net_runoff_river,
+        runoff_land,
+        actual_open_water_evaporation_river,
+        actual_open_water_evaporation_land,
+    ) = variables
     (; potential_evaporation) = atmospheric_forcing
     (; river_fraction, water_fraction) = parameters
 
     @. runoff_river = min(1.0, river_fraction) * water_flux_surface
     @. runoff_land = min(1.0, water_fraction) * water_flux_surface
-    @. actual_open_water_evaporation_river = river_fraction * min(waterdepth_river / dt, potential_evaporation)
-    @. actual_open_water_evaporation_land = water_fraction * min(waterdepth_land / dt, potential_evaporation)
+    @. actual_open_water_evaporation_river =
+        river_fraction * min(waterdepth_river / dt, potential_evaporation)
+    @. actual_open_water_evaporation_land =
+        water_fraction * min(waterdepth_land / dt, potential_evaporation)
     @. net_runoff_river = runoff_river - actual_open_water_evaporation_river
 
     return nothing

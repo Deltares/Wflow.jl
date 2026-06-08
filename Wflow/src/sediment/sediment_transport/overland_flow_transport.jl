@@ -56,13 +56,7 @@ function update_sediment_overland_model!(
     (; sediment_rate, deposition) = sediment_transport_model.variables
 
     # All inputs and outputs are rates [kg s⁻¹]
-    accucapacityflux_rate!(
-        sediment_rate,
-        deposition,
-        erosion,
-        network,
-        transport_capacity,
-    )
+    accucapacityflux_rate!(sediment_rate, deposition, erosion, network, transport_capacity)
 end
 
 "Struct to store differentiated sediment flux in overland flow model variables"
@@ -167,7 +161,8 @@ function update_bc_sediment_land_transport_model!(
     @. erosion_small_aggregates = small_aggregates_erosion_rate
     @. erosion_large_aggregates = large_aggregates_erosion_rate
 
-    (; clay, silt, sand, small_aggregates, large_aggregates) = transport_capacity_model.variables
+    (; clay, silt, sand, small_aggregates, large_aggregates) =
+        transport_capacity_model.variables
     @. transport_capacity_clay = clay
     @. transport_capacity_silt = silt
     @. transport_capacity_sand = sand
@@ -215,8 +210,18 @@ function update_sediment_overland_model!(
     do_accucapacityflux!(clay, deposition_clay, erosion_clay, transport_capacity_clay)
     do_accucapacityflux!(silt, deposition_silt, erosion_silt, transport_capacity_silt)
     do_accucapacityflux!(sand, deposition_sand, erosion_sand, transport_capacity_sand)
-    do_accucapacityflux!(small_aggregates, deposition_small_aggregates, erosion_small_aggregates, transport_capacity_small_aggregates)
-    do_accucapacityflux!(large_aggregates, deposition_large_aggregates, erosion_large_aggregates, transport_capacity_large_aggregates)
+    do_accucapacityflux!(
+        small_aggregates,
+        deposition_small_aggregates,
+        erosion_small_aggregates,
+        transport_capacity_small_aggregates,
+    )
+    do_accucapacityflux!(
+        large_aggregates,
+        deposition_large_aggregates,
+        erosion_large_aggregates,
+        transport_capacity_large_aggregates,
+    )
 
     @. sediment_rate = clay + silt + sand + small_aggregates + large_aggregates
     @. deposition =
