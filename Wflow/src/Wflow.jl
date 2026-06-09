@@ -68,6 +68,20 @@ using Statistics: mean, median, quantile!, quantile
 using TerminalLoggers
 using TOML: TOML
 
+import SharedHydrology:
+    AbstractSoilModel,
+    SharedHydrology,
+    MISSING_VALUE,
+    VegetationParameters,
+    SbmSoilParameters,
+    SbmSoilVariables,
+    SbmSoilBC,
+    KvExponential,
+    KvExponentialConstant,
+    KvLayered,
+    KvLayeredExponential,
+    SbmSoilModel
+
 const CFDataset = Union{NCDataset, NCDatasets.MFDataset}
 const CFVariable_MF = Union{NCDatasets.CFVariable, NCDatasets.MFCFVariable}
 const VERSION =
@@ -184,8 +198,6 @@ end
 
 # prevent a large printout of model components and arrays
 Base.show(io::IO, ::AbstractModel{T}) where {T} = print(io, "model of type ", T)
-
-const MISSING_VALUE = Float64(NaN)
 
 include("forcing.jl")
 include("vegetation/parameters.jl")
