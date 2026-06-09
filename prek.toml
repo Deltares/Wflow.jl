@@ -1,0 +1,33 @@
+# Configuration file for `prek`, a git hook framework written in Rust.
+# See https://prek.j178.dev for more information.
+#:schema https://www.schemastore.org/prek.json
+
+[[repos]]
+repo = "builtin"
+hooks = [
+    { id = "check-added-large-files" },
+    { id = "check-case-conflict" },
+    { id = "check-json" },
+    { id = "check-merge-conflict" },
+    { id = "check-toml" },
+    { id = "check-yaml" },
+    { id = "end-of-file-fixer" },
+    { id = "trailing-whitespace" },
+]
+
+[[repos]]
+repo = "https://github.com/crate-ci/typos"
+rev = "v1.43.5"
+hooks = [{ id = "typos" }]
+
+[[repos]]
+repo = "local"
+
+[[repos.hooks]]
+id = "format-code"
+name = "format julia code"
+entry = "pixi run format-code"
+language = "system"
+types = ["julia"]
+pass_filenames = true
+require_serial = true
