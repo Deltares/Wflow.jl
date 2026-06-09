@@ -14,6 +14,7 @@
         parameters = Wflow.GashParameters(;
             evaporation_to_precipitation_ratio = [0.25],
             vegetation_parameter_set = Wflow.VegetationParameters(;
+                n,
                 leaf_area_index = [1.5],
                 storage_wood = [2.0e-4],
                 light_extinction_coefficient = [0.67],

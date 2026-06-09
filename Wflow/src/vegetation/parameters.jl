@@ -32,6 +32,7 @@ function SharedHydrology.VegetationParameters(
             sel = indices,
         )
         vegetation_parameter_set = VegetationParameters(;
+            n,
             leaf_area_index = fill(MISSING_VALUE, n),
             storage_wood,
             light_extinction_coefficient,
@@ -57,6 +58,7 @@ function SharedHydrology.VegetationParameters(
             sel = indices,
         )
         vegetation_parameter_set = VegetationParameters(;
+            n,
             leaf_area_index = nothing,
             storage_wood = nothing,
             light_extinction_coefficient = nothing,

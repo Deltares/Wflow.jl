@@ -28,6 +28,7 @@ function SharedHydrology.SbmSoilVariables(n::Int, parameters::SbmSoilParameters)
 
     vars = SbmSoilVariables(;
         n,
+        maximum_number_of_layers,
         unsaturated_layer_depth = zero(actual_layer_thickness),
         unsaturated_store_capacity = soil_water_capacity .- saturated_water_depth,
         unsaturated_layer_thickness,
@@ -383,6 +384,7 @@ function SharedHydrology.SbmSoilParameters(
 
     n = length(indices)
     sbm_params = SbmSoilParameters(;
+        n,
         maximum_number_of_layers,
         number_of_layers,
         soil_water_capacity,
@@ -432,7 +434,8 @@ function SharedHydrology.SbmSoilModel(
     n = length(indices)
     parameters = SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, dt)
     variables = SbmSoilVariables(n, parameters)
-    soil_model = SbmSoilModel(; n, parameters, variables)
+    (; maximum_number_of_layers) = parameters
+    soil_model = SbmSoilModel(; n, maximum_number_of_layers, parameters, variables)
     return soil_model
 end
 

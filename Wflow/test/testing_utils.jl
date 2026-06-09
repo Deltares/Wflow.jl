@@ -103,6 +103,7 @@ function init_sbm_soil_model(n, N; kwargs...)
 
     if !haskey(kwargs, :vegetation_parameter_set)
         kwargs[:vegetation_parameter_set] = Wflow.VegetationParameters(;
+            n,
             rooting_depth = get(kwargs, :rooting_depth, []),
             leaf_area_index = nothing,
             storage_wood = nothing,
@@ -115,7 +116,7 @@ function init_sbm_soil_model(n, N; kwargs...)
     end
 
     if !haskey(kwargs, :maximum_number_of_layers)
-        kwargs[:maximum_number_of_layers] = 0
+        kwargs[:maximum_number_of_layers] = N
     end
 
     # Vectors of SVectors
@@ -187,7 +188,13 @@ function init_sbm_soil_model(n, N; kwargs...)
     kwargs_bc = filter(pair -> pair.first ∈ fieldnames(Wflow.SbmSoilBC), kwargs)
     boundary_conditions = Wflow.SbmSoilBC(; kwargs_bc...)
 
-    return Wflow.SbmSoilModel(; n, variables, parameters, boundary_conditions)
+    return Wflow.SbmSoilModel(;
+        n,
+        maximum_number_of_layers = get(kwargs, :maximum_number_of_layers, 0),
+        variables,
+        parameters,
+        boundary_conditions,
+    )
 end
 
 """

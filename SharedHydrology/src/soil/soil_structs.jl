@@ -4,22 +4,25 @@ abstract type AbstractVerticalConductivityProfile end
 "Struct for storing SBM soil model variables"
 @kwdef struct SbmSoilVariables{N}
     n::Int
+    maximum_number_of_layers::Int
     # Calculated soil water pressure head h3 of the root water uptake reduction function (Feddes) [m]
     h3::Vector{Float64} = fill(MISSING_VALUE, n)
     # Unsaturated store capacity [m]
-    unsaturated_store_capacity::Vector{Float64}
+    unsaturated_store_capacity::Vector{Float64} = fill(MISSING_VALUE, n)
     # Amount of water in the unsaturated store, per layer [m]
-    unsaturated_layer_depth::Vector{SVector{N, Float64}}
+    unsaturated_layer_depth::Vector{SVector{N, Float64}} =
+        fill(zeros(SVector{maximum_number_of_layers, Float64}), n)
     # Thickness of unsaturated zone, per layer [m]
-    unsaturated_layer_thickness::Vector{SVector{N, Float64}}
+    unsaturated_layer_thickness::Vector{SVector{N, Float64}} =
+        fill(zeros(SVector{maximum_number_of_layers, Float64}), n)
     # Saturated store [m]
-    saturated_water_depth::Vector{Float64}
+    saturated_water_depth::Vector{Float64} = fill(MISSING_VALUE, n)
     # Drainable water store [m]
-    drainable_water_depth::Vector{Float64}
+    drainable_water_depth::Vector{Float64} = fill(MISSING_VALUE, n)
     # Pseudo-water table depth [m] (top of the saturated zone)
-    water_table_depth::Vector{Float64}
+    water_table_depth::Vector{Float64} = fill(MISSING_VALUE, n)
     # Number of unsaturated soil layers
-    n_unsatlayers::Vector{Int}
+    n_unsatlayers::Vector{Int} = zeros(Int, n)
     # Transpiration [m s⁻¹]
     transpiration::Vector{Float64} = fill(MISSING_VALUE, n)
     # Actual evaporation from unsaturated store [m s⁻¹]
@@ -57,9 +60,11 @@ abstract type AbstractVerticalConductivityProfile end
     # Net surface runoff (surface runoff - actual open water evaporation) [m s⁻¹]
     net_runoff::Vector{Float64} = fill(MISSING_VALUE, n)
     # Volumetric water content [-] per soil layer (including theta_r and saturated zone)
-    volumetric_water_content::Vector{SVector{N, Float64}}
+    volumetric_water_content::Vector{SVector{N, Float64}} =
+        fill(zeros(SVector{maximum_number_of_layers, Float64}), n)
     # Volumetric water content [%] per soil layer (including theta_r and saturated zone)
-    relative_volumetric_water_content::Vector{SVector{N, Float64}}
+    relative_volumetric_water_content::Vector{SVector{N, Float64}} =
+        fill(zeros(SVector{maximum_number_of_layers, Float64}), n)
     # Root water storage [m] in unsaturated and saturated zone (excluding theta_r)
     root_zone_storage::Vector{Float64} = fill(MISSING_VALUE, n)
     # Volumetric water content [-] in root zone (including theta_r and saturated zone)
@@ -77,7 +82,7 @@ abstract type AbstractVerticalConductivityProfile end
     # Total water storage (excluding floodplain volume and reservoirs) [m]
     total_storage::Vector{Float64} = zeros(Float64, n)
     # Total soil water storage [m]
-    total_soil_water_storage::Vector{Float64}
+    total_soil_water_storage::Vector{Float64} = fill(MISSING_VALUE, n)
     # Top soil temperature [K]
     soil_surface_temperature::Vector{Float64} = fill(283.15, n)
     # Soil infiltration reduction factor (when soil is frozen) [-]
@@ -123,68 +128,74 @@ end
     M,
     Kv <: Union{AbstractVerticalConductivityProfile, Nothing},
 }
+    n::Int
     # Maximum number of soil layers [-]
     maximum_number_of_layers::Int
     # Number of soil layers [-]
-    number_of_layers::Vector{Int}
+    number_of_layers::Vector{Int} = zeros(Int, n)
     # Saturated water content (porosity) [-]
-    theta_s::Vector{Float64}
+    theta_s::Vector{Float64} = fill(MISSING_VALUE, n)
     # Residual water content [-]
-    theta_r::Vector{Float64}
+    theta_r::Vector{Float64} = fill(MISSING_VALUE, n)
     # Field capacity water content [-]
-    theta_fc::Vector{Float64}
+    theta_fc::Vector{Float64} = fill(MISSING_VALUE, n)
     # Soilwater capacity [m]
-    soil_water_capacity::Vector{Float64}
+    soil_water_capacity::Vector{Float64} = fill(MISSING_VALUE, n)
     # Multiplication factor [-] applied to kv_z (vertical flow)
-    vertical_hydraulic_conductivity_factor::Vector{SVector{N, Float64}}
+    vertical_hydraulic_conductivity_factor::Vector{SVector{N, Float64}} =
+        fill(ones(SVector{maximum_number_of_layers, Float64}), n)
     # Air entry pressure [m] of soil (Brooks-Corey)
-    air_entry_pressure::Vector{Float64}
+    air_entry_pressure::Vector{Float64} = fill(MISSING_VALUE, n)
     # Soil thickness [m]
-    soil_thickness::Vector{Float64}
+    soil_thickness::Vector{Float64} = fill(MISSING_VALUE, n)
     # Thickness of soil layers [m]
-    actual_layer_thickness::Vector{SVector{N, Float64}}
+    actual_layer_thickness::Vector{SVector{N, Float64}} =
+        fill(zeros(SVector{maximum_number_of_layers, Float64}), n)
     # Cumulative sum of soil layers [m], starting at soil surface (0)
-    cumulative_layer_depth::Vector{SVector{M, Float64}}
+    cumulative_layer_depth::Vector{SVector{M, Float64}} =
+        fill(zeros(SVector{maximum_number_of_layers + 1, Float64}), n)
     # Infiltration capacity of the compacted areas [m s⁻¹]
-    infiltration_capacity_compacted_soil::Vector{Float64}
+    infiltration_capacity_compacted_soil::Vector{Float64} = fill(MISSING_VALUE, n)
     # Soil infiltration capacity [m s⁻¹]
-    infiltration_capacity_soil::Vector{Float64}
+    infiltration_capacity_soil::Vector{Float64} = fill(MISSING_VALUE, n)
     # Maximum leakage [m s⁻¹] from saturated zone
-    maximum_leakage::Vector{Float64}
+    maximum_leakage::Vector{Float64} = fill(MISSING_VALUE, n)
     # Parameter [m] controlling capillary rise
-    cap_hmax::Vector{Float64}
+    cap_hmax::Vector{Float64} = fill(MISSING_VALUE, n)
     # Coefficient [-] controlling capillary rise
-    cap_n::Vector{Float64}
+    cap_n::Vector{Float64} = fill(MISSING_VALUE, n)
     # Brooks-Corey power coefficient [-] for each soil layer
-    brooks_corey_exponent::Vector{SVector{N, Float64}}
+    brooks_corey_exponent::Vector{SVector{N, Float64}} =
+        fill(zeros(SVector{maximum_number_of_layers, Float64}), n)
     # Soil temperature smooth factor [-]
-    w_soil::Vector{Float64}
+    w_soil::Vector{Float64} = fill(MISSING_VALUE, n)
     # Controls soil infiltration reduction factor when soil is frozen [-]
-    cf_soil::Vector{Float64}
+    cf_soil::Vector{Float64} = fill(MISSING_VALUE, n)
     # Fraction of compacted area  [-]
-    compacted_soil_area_fraction::Vector{Float64}
+    compacted_soil_area_fraction::Vector{Float64} = fill(MISSING_VALUE, n)
     # Controls how roots are linked to water table [m⁻¹]
-    wet_root_distribution_parameter::Vector{Float64}
+    wet_root_distribution_parameter::Vector{Float64} = fill(MISSING_VALUE, n)
     # Fraction of the root length density in each soil layer [-]
-    rootfraction::Vector{SVector{N, Float64}}
+    rootfraction::Vector{SVector{N, Float64}} =
+        fill(zeros(SVector{maximum_number_of_layers, Float64}), n)
     # Soil water pressure head h1 of the root water uptake reduction function (Feddes) [m]
-    h1::Vector{Float64}
+    h1::Vector{Float64} = fill(MISSING_VALUE, n)
     # Soil water pressure head h2 of the root water uptake reduction function (Feddes) [m]
-    h2::Vector{Float64}
+    h2::Vector{Float64} = fill(MISSING_VALUE, n)
     # Soil water pressure head h3_high of the root water uptake reduction function (Feddes) [m]
-    h3_high::Vector{Float64}
+    h3_high::Vector{Float64} = fill(MISSING_VALUE, n)
     # Soil water pressure head h3_low of the root water uptake reduction function (Feddes) [m]
-    h3_low::Vector{Float64}
+    h3_low::Vector{Float64} = fill(MISSING_VALUE, n)
     # Soil water pressure head h4 of the root water uptake reduction function (Feddes) [m]
-    h4::Vector{Float64}
+    h4::Vector{Float64} = fill(MISSING_VALUE, n)
     # Root water uptake reduction at soil water pressure head h1 (0.0 or 1.0) [-]
-    alpha_h1::Vector{Float64}
+    alpha_h1::Vector{Float64} = fill(MISSING_VALUE, n)
     # Bare soil fraction [-]
-    bare_soil_fraction::Vector{Float64}
+    bare_soil_fraction::Vector{Float64} = fill(MISSING_VALUE, n)
     # Vertical hydraulic conductivity profile type
-    kv_profile::Kv
+    kv_profile::Kv = nothing
     # Vegetation parameter set
-    vegetation_parameter_set::VegetationParameters
+    vegetation_parameter_set::VegetationParameters = VegetationParameters(; n)
 end
 
 "Struct for storing SBM soil model boundary conditions"
@@ -201,7 +212,9 @@ end
 "SBM soil model"
 @kwdef struct SbmSoilModel{N, M, Kv} <: AbstractSoilModel
     n::Int
+    maximum_number_of_layers::Int
     boundary_conditions::SbmSoilBC = SbmSoilBC(; n)
-    parameters::SbmSoilParameters{N, M, Kv}
-    variables::SbmSoilVariables{N}
+    parameters::SbmSoilParameters{N, M, Kv} =
+        SbmSoilParameters(; n, maximum_number_of_layers)
+    variables::SbmSoilVariables{N} = SbmSoilVariables(; n, maximum_number_of_layers)
 end
