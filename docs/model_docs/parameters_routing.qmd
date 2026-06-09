@@ -70,6 +70,25 @@ generate_table(Wflow.Routing, :kinematic_wave_river_state; relative_widths = [3,
 generate_table(Wflow.Routing, :kinematic_wave_river_output; relative_widths = [3, 3, 1, 1, 2])
 ```
 
+### 1D floodplain flow
+#### Input
+```{julia}
+# | code-fold: true
+generate_table(Wflow.Routing, :kinematic_wave_floodplain_1D_flow_input; relative_widths = [6, 4, 2, 2, 2, 2])
+```
+
+#### States
+```{julia}
+# | code-fold: true
+generate_table(Wflow.Routing, :kinematic_wave_floodplain_1D_flow_state; relative_widths = [3, 3, 1, 1, 2])
+```
+
+#### Output
+```{julia}
+# | code-fold: true
+generate_table(Wflow.Routing, :kinematic_wave_floodplain_1D_flow_output; relative_widths = [3, 3, 1, 1, 2])
+```
+
 ### Overland flow
 #### Input
 ```{julia}

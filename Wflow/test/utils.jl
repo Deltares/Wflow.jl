@@ -189,6 +189,9 @@ end
                     "soil_exponential_vertical_saturated_hydraulic_conductivity_profile_below_surface__depth",
                     "soil_layer_water__vertical_saturated_hydraulic_conductivity",
                 ])
+            elseif map_name == "routing"
+                # The lens of this standard name is valid but not part of any test model.
+                Set(["floodplain__slope"])
             else
                 Set{String}()
             end

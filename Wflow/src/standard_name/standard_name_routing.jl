@@ -408,14 +408,26 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
         unit = Unit(; m = 3),
         dimname = :flood_depth,
         description = "Floodplain profile (cumulative volume per flood depth)",
-        tags = [:local_inertial_floodplain_1D_flow_input],
+        tags = [
+            :local_inertial_floodplain_1D_flow_input,
+            :kinematic_wave_floodplain_1D_flow_input,
+        ],
     ),
     "floodplain_water_flow__manning_n_parameter" => ParameterMetadata(;
         lens = @optic(_.routing.river_flow.floodplain.parameters.mannings_n),
         unit = Unit(; s = 1, m = -1 // 3),
         default = 0.072,
         description = "Manning's roughness",
-        tags = [:local_inertial_floodplain_1D_flow_input],
+        tags = [
+            :local_inertial_floodplain_1D_flow_input,
+            :kinematic_wave_floodplain_1D_flow_input,
+        ],
+    ),
+    "floodplain__slope" => ParameterMetadata(;
+        lens = @optic(_.routing.river_flow.floodplain.parameters.slope),
+        unit = Unit(; m = (1, 1)),
+        description = "Floodplain slope",
+        tags = [:kinematic_wave_floodplain_1D_flow_input],
     ),
     #### States
     "floodplain_water__instantaneous_volume_flow_rate" => ParameterMetadata(;
@@ -425,6 +437,7 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
         tags = [
             :local_inertial_floodplain_1D_flow_state,
             :local_inertial_floodplain_1D_flow_output,
+            :kinematic_wave_floodplain_1D_flow_output,
         ],
     ),
     "floodplain_water__depth" => ParameterMetadata(;
@@ -434,6 +447,8 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
         tags = [
             :local_inertial_floodplain_1D_flow_state,
             :local_inertial_floodplain_1D_flow_output,
+            :kinematic_wave_floodplain_1D_flow_state,
+            :kinematic_wave_floodplain_1D_flow_output,
         ],
     ),
     #### Output
@@ -441,13 +456,19 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
         lens = @optic(_.routing.river_flow.floodplain.variables.storage),
         unit = Unit(; m = 3),
         description = "Floodplain water volume",
-        tags = [:local_inertial_floodplain_1D_flow_output],
+        tags = [
+            :local_inertial_floodplain_1D_flow_output,
+            :kinematic_wave_floodplain_1D_flow_output,
+        ],
     ),
     "floodplain_water__volume_flow_rate" => ParameterMetadata(;
         lens = @optic(_.routing.river_flow.floodplain.variables.q_average),
         unit = Unit(; m = 3, s = -1),
         description = "Floodplain discharge",
-        tags = [:local_inertial_floodplain_1D_flow_output],
+        tags = [
+            :local_inertial_floodplain_1D_flow_output,
+            :kinematic_wave_floodplain_1D_flow_output,
+        ],
     ),
     ### Overland flow
     #### Input
