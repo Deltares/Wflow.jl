@@ -1,4 +1,9 @@
 @testitem "Aqua" begin
     import Aqua
-    Aqua.test_all(WflowServer; persistent_tasks = false)
+    import SharedHydrology
+    Aqua.test_all(
+        WflowServer;
+        persistent_tasks = false,
+        piracies = (treat_as_own = [SharedHydrology],),
+    )
 end
