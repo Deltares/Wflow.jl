@@ -520,7 +520,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul class="collapse">
   <li><a href="#kinematic-wave" id="toc-kinematic-wave" class="nav-link" data-scroll-target="#kinematic-wave">Kinematic wave</a></li>
   <li><a href="#groundwater-flow" id="toc-groundwater-flow" class="nav-link" data-scroll-target="#groundwater-flow">Groundwater flow</a></li>
-  <li><a href="#local-inertial-river" id="toc-local-inertial-river" class="nav-link" data-scroll-target="#local-inertial-river">Local inertial river</a></li>
+  <li><a href="#river-flow-on-a-staggered-grid" id="toc-river-flow-on-a-staggered-grid" class="nav-link" data-scroll-target="#river-flow-on-a-staggered-grid">River flow on a staggered grid</a></li>
   <li><a href="#local-inertial-river-1d-and-land-2d" id="toc-local-inertial-river-1d-and-land-2d" class="nav-link" data-scroll-target="#local-inertial-river-1d-and-land-2d">Local inertial river (1D) and land (2D)</a></li>
   </ul></li>
   <li><a href="#wflow_sediment" id="toc-wflow_sediment" class="nav-link" data-scroll-target="#wflow_sediment">wflow_sediment</a>
@@ -556,15 +556,22 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <p>There are several model configurations supported by wflow. These model configurations require slightly different input requirements, yet the general structure is similar for each model. A wflow model configuration consists of a <a href="../model_docs/land/landhydrology_sbm.html">Land hydrology SBM</a> model in combination with <code>routing</code> concepts that control how water is routed for example over the land or river domain. For the wflow_sbm model different model configurations are possible. The following model configurations are supported in wflow:</p>
 <ul>
-<li>wflow_sbm:
+<li><p>wflow_sbm:</p>
+<p>The Land Hydrology <code>SBM</code> concept can be combined with the following subsurface flow concepts:</p>
 <ul>
-<li>Land Hydrology <code>SBM</code> + kinematic wave for subsurface and surface flow</li>
-<li>Land Hydrology <code>SBM</code> + kinematic wave for subsurface and overland flow + local inertial river (+ optional floodplain)</li>
-<li>Land Hydrology <code>SBM</code> + kinematic wave for subsurface flow + local inertial river (1D) and land (2D)</li>
-<li>Land Hydrology <code>SBM</code> + groundwater flow + kinematic wave for surface flow</li>
-</ul></li>
-<li>wflow_sediment as post processing of wflow_sbm output</li>
+<li>kinematic wave lateral subsurface flow routing</li>
+<li>groundwater flow routing</li>
 </ul>
+<p>and with the following surface routing schemes:</p>
+<ul>
+<li>kinematic wave for overland and river flow</li>
+<li>kinematic wave for overland flow + local inertial river</li>
+<li>kinematic wave for overland flow + river flow on a staggered grid using Manning’s equation</li>
+<li>local inertial river (1D) and land (2D)</li>
+</ul></li>
+<li><p>wflow_sediment as post processing of wflow_sbm output</p></li>
+</ul>
+<p>The river flow routing schemes support an optional 1D floodplain schematization (routing is done separately for the river channel and floodplain).</p>
 <p>Below, some explanation will be given on how to prepare a basic wflow_sbm model. Example data for other model configurations is provided in the section with <a href="../getting_started/download_example_models.html">sample data</a>.</p>
 <section id="wflow_sbm" class="level2">
 <h2 class="anchored" data-anchor-id="wflow_sbm">wflow_sbm</h2>
@@ -587,12 +594,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dt">type</span> <span class="op">=</span> <span class="st">"sbm_gwf"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
-<section id="local-inertial-river" class="level3">
-<h3 class="anchored" data-anchor-id="local-inertial-river">Local inertial river</h3>
-<p>By default the model types <code>sbm</code> and <code>sbm_gwf</code> use the kinematic wave approach for river flow. There is also the option to use the local inertial model for river flow with an optional 1D floodplain schematization (routing is done separately for the river channel and floodplain), by providing the following in the TOML file:</p>
+<section id="river-flow-on-a-staggered-grid" class="level3">
+<h3 class="anchored" data-anchor-id="river-flow-on-a-staggered-grid">River flow on a staggered grid</h3>
+<p>By default the model types <code>sbm</code> and <code>sbm_gwf</code> use the kinematic wave approach for river flow, including an optional 1D floodplain schematization. There is also the option to use river flow routing on a staggered grid, with the following two routing schemes:</p>
+<ul>
+<li>Local inertial routing</li>
+<li>Mannings flow</li>
+</ul>
+<p>Both support an optional 1D floodplain schematization. The river routing scheme can be set as follows in the TOML file:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="dt">river_routing</span> <span class="op">=</span> <span class="st">"local_inertial"</span>    <span class="co"># optional, default is "kinematic_wave"</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="dt">floodplain_1d__flag</span> <span class="op">=</span> <span class="cn">true</span>                <span class="co"># optional, default is false</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="dt">river_routing</span> <span class="op">=</span> <span class="st">"local_inertial"</span>    <span class="co"># one of ["kinematic_wave", "local_inertial", "manning_staggered"], default is "kinematic_wave"</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="dt">floodplain_1d__flag</span> <span class="op">=</span> <span class="cn">true</span>          <span class="co"># optional, default is false</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="local-inertial-river-1d-and-land-2d" class="level3">
 <h3 class="anchored" data-anchor-id="local-inertial-river-1d-and-land-2d">Local inertial river (1D) and land (2D)</h3>
