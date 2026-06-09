@@ -5,7 +5,7 @@
     n = 1
     dt = 86400.0
 
-    soil_model = init_sbm_soil_model(1, 1; soil_fraction = [0.2397957498236932])
+    soil_model = init_sbm_soil_model(1, 1; bare_soil_fraction = [0.2397957498236932])
     atmospheric_forcing =
         Wflow.AtmosphericForcing(; n, potential_evaporation = [6.712962769799762e-9])
 

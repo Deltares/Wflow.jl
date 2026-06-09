@@ -202,7 +202,7 @@
                 :air_entry_pressure => -0.10000000000000001,
                 :vertical_hydraulic_conductivity_factor => SVector((1.0, 1.0, 1.0, 1.0)),
                 :h3_low => -10,
-                :soil_fraction => 0.49508064804427593,
+                :bare_soil_fraction => 0.49508064804427593,
                 :cap_hmax => 2.0,
                 :actual_layer_thickness => SVector((
                     0.1,

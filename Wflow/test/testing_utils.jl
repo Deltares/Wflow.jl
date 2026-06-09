@@ -169,7 +169,7 @@ function init_sbm_soil_model(n, N; kwargs...)
                 :h3_low,
                 :h4,
                 :alpha_h1,
-                :soil_fraction,
+                :bare_soil_fraction,
             )
                 kwargs[field_name] = field_type()
             end

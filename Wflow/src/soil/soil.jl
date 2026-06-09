@@ -414,7 +414,7 @@ function SharedHydrology.SbmSoilParameters(
         brooks_corey_exponent,
         w_soil,
         cf_soil,
-        soil_fraction = fill(MISSING_VALUE, n),
+        bare_soil_fraction = fill(MISSING_VALUE, n),
         kv_profile,
         vegetation_parameter_set,
     )
@@ -422,7 +422,7 @@ function SharedHydrology.SbmSoilParameters(
 end
 
 "Initialize SBM soil model"
-function SbmSoilModel(
+function SharedHydrology.SbmSoilModel(
     dataset::NCDataset,
     config::Config,
     vegetation_parameter_set::VegetationParameters,
@@ -437,16 +437,16 @@ function SbmSoilModel(
 end
 
 "Return soil fraction"
-function soil_fraction!(
+function update_bare_soil_fraction!(
     soil_model::AbstractSoilModel,
     glacier_model::AbstractGlacierModel,
     parameters::LandParameters,
 )
     (; canopy_gap_fraction) = soil_model.parameters.vegetation_parameter_set
-    (; soil_fraction) = soil_model.parameters
+    (; bare_soil_fraction) = soil_model.parameters
     (; water_fraction, river_fraction) = parameters
     glacier_fraction = get_glacier_fraction(glacier_model)
-    @. soil_fraction =
+    @. bare_soil_fraction =
         max(canopy_gap_fraction - water_fraction - river_fraction - glacier_fraction, 0.0)
     return nothing
 end
@@ -465,7 +465,7 @@ function update_bc_soil_model!(
     potential_transpiration .= get_potential_transpiration(interception)
 
     @. potential_soilevaporation =
-        soil_model.parameters.soil_fraction * atmospheric_forcing.potential_evaporation
+        soil_model.parameters.bare_soil_fraction * atmospheric_forcing.potential_evaporation
 
     evaporation!(demand.paddy, potential_soilevaporation, dt)
     potential_soilevaporation .-= get_evaporation(demand.paddy)

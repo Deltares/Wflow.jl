@@ -118,7 +118,11 @@ struct KvLayeredExponential{N} <: AbstractVerticalConductivityProfile
 end
 
 "Struct for storing SBM soil model parameters"
-@kwdef struct SbmSoilParameters{N, M, Kv <: AbstractVerticalConductivityProfile}
+@kwdef struct SbmSoilParameters{
+    N,
+    M,
+    Kv <: Union{AbstractVerticalConductivityProfile, Nothing},
+}
     # Maximum number of soil layers [-]
     maximum_number_of_layers::Int
     # Number of soil layers [-]
@@ -175,8 +179,8 @@ end
     h4::Vector{Float64}
     # Root water uptake reduction at soil water pressure head h1 (0.0 or 1.0) [-]
     alpha_h1::Vector{Float64}
-    # Soil fraction [-]
-    soil_fraction::Vector{Float64}
+    # Bare soil fraction [-]
+    bare_soil_fraction::Vector{Float64}
     # Vertical hydraulic conductivity profile type
     kv_profile::Kv
     # Vegetation parameter set

@@ -118,7 +118,7 @@ function update_land_hydrology_model!(
     update_water_demand_model!(demand, soil, dt)
     update_water_allocation_model!(allocation, demand, routing, domain, dt)
 
-    soil_fraction!(soil, glacier, parameters)
+    update_bare_soil_fraction!(soil, glacier, parameters)
     update_bc_soil_model!(
         soil,
         atmospheric_forcing,
