@@ -24,7 +24,7 @@ supported in wflow:
     - local inertial river (1D) and land (2D)
  - wflow\_sediment as post processing of wflow\_sbm output
 
- The river flow routing schemes support an optional 1D floodplain schematization (routing is
+The river flow routing schemes support an optional 1D floodplain schematization (routing is
 done separately for the river channel and floodplain).
 
 Below, some explanation will be given on how to prepare a basic wflow\_sbm model. Example
