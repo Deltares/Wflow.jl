@@ -5,7 +5,7 @@ struct NoMassBalance <: AbstractMassBalance end
 Store mass balance error results (balance error and relative error), and storage at previous
 time step `storage_prev` required for mass balance computation.
 """
-@with_kw struct MassBalance <: AbstractMassBalance
+@kwdef struct MassBalance <: AbstractMassBalance
     n::Int # number of cells/nodes
     storage_prev::Vector{Float64} = zeros(n)
     error::Vector{Float64} = zeros(n)
@@ -21,10 +21,8 @@ end
 Water mass balance error results (balance error and relative error) for river, overland,
 subsurface and reservoir flow routing.
 """
-@with_kw struct FlowRoutingMassBalance{
-    R <: AbstractMassBalance,
-    RT <: AbstractMassBalance,
-} <: AbstractMassBalance
+@kwdef struct FlowRoutingMassBalance{R <: AbstractMassBalance, RT <: AbstractMassBalance} <:
+              AbstractMassBalance
     river_water_balance::R
     reservoir_water_balance::RT
     overland_water_balance::MassBalance
@@ -41,7 +39,7 @@ model time step dt for a hydrological model.
 - `routing`: Water mass balance results for river, overland, subsurface and reservoir flow
     routing.
 """
-@with_kw struct HydrologicalMassBalance <: AbstractMassBalance
+@kwdef struct HydrologicalMassBalance <: AbstractMassBalance
     land_water_balance::MassBalance
     routing::FlowRoutingMassBalance
 end

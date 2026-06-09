@@ -1,5 +1,5 @@
 "Sediment transport in overland flow model"
-@with_kw struct OverlandFlowSedimentModel{
+@kwdef struct OverlandFlowSedimentModel{
     TT <: AbstractTransportCapacityModel,
     SF <: AbstractSedimentLandTransportModel,
     TR <: AbstractSedimentToRiverModel,
@@ -115,7 +115,7 @@ end
 
 ### River ###
 "Sediment transport in river model"
-@with_kw struct RiverSedimentModel{
+@kwdef struct RiverSedimentModel{
     TTR <: AbstractTransportCapacityModel,
     ER <: AbstractRiverErosionModel,
     SFR <: AbstractSedimentRiverTransportModel,

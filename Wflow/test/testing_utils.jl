@@ -135,42 +135,44 @@ function init_sbm_soil_model(n, N; kwargs...)
         end
     end
 
-    # Vectors of other types
-    for field_name in [
-        # Variables
-        :unsaturated_store_capacity,
-        :saturated_water_depth,
-        :drainable_water_depth,
-        :water_table_depth,
-        :n_unsatlayers,
-        :total_soil_water_storage,
-        # Parameters
-        :number_of_layers,
-        :theta_s,
-        :theta_r,
-        :theta_fc,
-        :soil_water_capacity,
-        :air_entry_pressure,
-        :soil_thickness,
-        :infiltration_capacity_compacted_soil,
-        :infiltration_capacity_soil,
-        :maximum_leakage,
-        :cap_hmax,
-        :cap_n,
-        :w_soil,
-        :cf_soil,
-        :compacted_soil_area_fraction,
-        :wet_root_distribution_parameter,
-        :h1,
-        :h2,
-        :h3_high,
-        :h3_low,
-        :h4,
-        :alpha_h1,
-        :soil_fraction,
-    ]
-        if !haskey(kwargs, field_name)
-            kwargs[field_name] = []
+    for T in (Wflow.SbmSoilParameters, Wflow.SbmSoilVariables)
+        for (field_name, field_type) in zip(fieldnames(T), fieldtypes(T))
+            if !haskey(kwargs, field_name) &&
+               field_name ∈ (
+                # Variables
+                :unsaturated_store_capacity,
+                :saturated_water_depth,
+                :drainable_water_depth,
+                :water_table_depth,
+                :n_unsatlayers,
+                :total_soil_water_storage,
+                # Parameters
+                :number_of_layers,
+                :theta_s,
+                :theta_r,
+                :theta_fc,
+                :soil_water_capacity,
+                :air_entry_pressure,
+                :soil_thickness,
+                :infiltration_capacity_compacted_soil,
+                :infiltration_capacity_soil,
+                :maximum_leakage,
+                :cap_hmax,
+                :cap_n,
+                :w_soil,
+                :cf_soil,
+                :compacted_soil_area_fraction,
+                :wet_root_distribution_parameter,
+                :h1,
+                :h2,
+                :h3_high,
+                :h3_low,
+                :h4,
+                :alpha_h1,
+                :soil_fraction,
+            )
+                kwargs[field_name] = field_type()
+            end
         end
     end
 

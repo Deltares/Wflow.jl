@@ -1,7 +1,7 @@
 abstract type AbstractFloodPlainModel end
 
 "Struct for storing local inertial river flow model parameters"
-@with_kw struct LocalInertialRiverFlowParameters
+@kwdef struct LocalInertialRiverFlowParameters
     # number of cells [-]
     n::Int
     # number of edges [-]
@@ -120,7 +120,7 @@ function LocalInertialRiverFlowParameters(
 end
 
 "Struct for storing local inertial river flow model variables"
-@with_kw struct LocalInertialRiverFlowVariables
+@kwdef struct LocalInertialRiverFlowVariables
     n_cells::Int
     n_edges::Int
     # river discharge at edge (subgrid channel) [m³ s⁻¹]
@@ -194,7 +194,7 @@ function LocalInertialRiverFlowVariables(
 end
 
 "Shallow water river flow model using the local inertial method"
-@with_kw struct LocalInertialRiverFlowModel{
+@kwdef struct LocalInertialRiverFlowModel{
     R <: RiverFlowBC,
     F <: Union{AbstractFloodPlainModel, Nothing},
     A <: AbstractAllocationModel,
@@ -742,7 +742,7 @@ function update_river_flow_model!(
 end
 
 "Struct to store local inertial overland flow model variables"
-@with_kw struct LocalInertialOverlandFlowVariables
+@kwdef struct LocalInertialOverlandFlowVariables
     n::Int
     # flow in y direction at edge at previous time step [m³ s⁻¹]
     qy0::Vector{Float64} = zeros(n + 1)
@@ -769,7 +769,7 @@ end
 end
 
 "Struct to store local inertial overland flow model parameters"
-@with_kw struct LocalInertialOverlandFlowParameters
+@kwdef struct LocalInertialOverlandFlowParameters
     # number of cells [-]
     n::Int
     # effective flow width x direction at edge (floodplain) [m]
@@ -861,14 +861,14 @@ function LocalInertialOverlandFlowParameters(
 end
 
 "Struct to store local inertial overland flow model boundary conditions"
-@with_kw struct LocalInertialOverlandFlowBC
+@kwdef struct LocalInertialOverlandFlowBC
     n::Int
     # runoff from hydrological model [m³ s⁻¹]
     runoff::Vector{Float64} = zeros(n)
 end
 
 "Local inertial overland flow model using the local inertial method"
-@with_kw struct LocalInertialOverlandFlowModel <: AbstractOverlandFlowModel
+@kwdef struct LocalInertialOverlandFlowModel <: AbstractOverlandFlowModel
     timestepping::TimeStepping
     boundary_conditions::LocalInertialOverlandFlowBC
     parameters::LocalInertialOverlandFlowParameters
@@ -1418,7 +1418,7 @@ Floodplain `storage` is flow_area function of `depth` (flood depth intervals). B
 cumulative floodplain `storage` flow_area floodplain profile as flow_area function of `flood_depth` is
 derived with floodplain area `flow_area` (cumulative) and wetted perimeter radius `wetted_perimeter` (cumulative).
 """
-@with_kw struct FloodPlainProfile
+@kwdef struct FloodPlainProfile
     depth::Vector{Float64}        # Flood depth [m]
     storage::Matrix{Float64}      # Flood storage (cumulative) [m³]
     width::Matrix{Float64}        # Flood width [m]
@@ -1527,7 +1527,7 @@ function FloodPlainProfile(
 end
 
 "Struct to store floodplain flow model parameters"
-@with_kw struct FloodPlainParameters
+@kwdef struct FloodPlainParameters
     profile::FloodPlainProfile          # floodplain profile
     mannings_n::Vector{Float64}         # manning's roughness [s m-1/3]
     mannings_n_sq::Vector{Float64}      # manning's roughness squared at edge [(s m-1/3)2]
@@ -1574,7 +1574,7 @@ function FloodPlainParameters(
 end
 
 "Struct to store floodplain flow model variables"
-@with_kw struct FloodPlainVariables
+@kwdef struct FloodPlainVariables
     n::Int
     n_edges::Int
     # storage [m³]
@@ -1602,7 +1602,7 @@ end
 end
 
 "Floodplain flow model"
-@with_kw struct FloodPlainModel <: AbstractFloodPlainModel
+@kwdef struct FloodPlainModel <: AbstractFloodPlainModel
     parameters::FloodPlainParameters
     variables::FloodPlainVariables
 end

@@ -3,7 +3,7 @@
 @enumx ReservoirOutflowType rating_curve = 1 free_weir = 2 modified_puls = 3 simple = 4
 
 "Struct for storing reservoir model parameters"
-@with_kw struct ReservoirParameters
+@kwdef struct ReservoirParameters
     # reservoir location id
     id::Vector{Int}
     # type of reservoir storage curve, 1: S = AH, 2: S = f(H) from reservoir data and
@@ -198,7 +198,7 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
 end
 
 "Struct for storing reservoir model variables"
-@with_kw struct ReservoirVariables
+@kwdef struct ReservoirVariables
     # waterlevel H [m] of reservoir
     waterlevel::Vector{Float64}
     # reservoir storage [m³]
@@ -248,7 +248,7 @@ function ReservoirVariables(
 end
 
 "Struct for storing reservoir model boundary conditions"
-@with_kw struct ReservoirBC
+@kwdef struct ReservoirBC
     n::Int
     # inflow from subsurface flow into reservoir [m³ s⁻¹]
     inflow_subsurface::Vector{Float64} = fill(MISSING_VALUE, n)
@@ -286,7 +286,7 @@ function ReservoirBC(dataset::NCDataset, config::Config, network::NetworkReservo
 end
 
 "Reservoir model"
-@with_kw struct ReservoirModel
+@kwdef struct ReservoirModel
     boundary_conditions::ReservoirBC
     parameters::ReservoirParameters
     variables::ReservoirVariables

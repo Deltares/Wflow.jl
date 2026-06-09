@@ -71,7 +71,7 @@ cannot (easily) be implemented via the flux, but the head is set directly
 instead.
 """
 
-@with_kw struct GroundwaterFlowVariables
+@kwdef struct GroundwaterFlowVariables
     n::Int
     # hydraulic head [m]
     head::Vector{Float64}
@@ -101,7 +101,7 @@ instead.
     exfiltwater_average::Vector{Float64} = zeros(n)
 end
 
-@with_kw struct GroundwaterFlowParameters
+@kwdef struct GroundwaterFlowParameters
     # reference horizontal conductivity [m s⁻¹]
     hydraulic_conductivity::Vector{Float64}
     # top of groundwater layer [m]
@@ -156,12 +156,12 @@ function GroundwaterFlowParameters(
     return parameters
 end
 
-@with_kw struct ConstantHeadVariables
+@kwdef struct ConstantHeadVariables
     # [m]
     head::Vector{Float64}
 end
 
-@with_kw struct ConstantHead
+@kwdef struct ConstantHead
     variables::ConstantHeadVariables
     # [-]
     index::Vector{Int}

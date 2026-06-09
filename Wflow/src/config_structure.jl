@@ -147,7 +147,7 @@ variable_name(var::InputEntry) =
     isnothing(var.netcdf_variable_name) ? var.external_name : var.netcdf_variable_name
 
 @kwdef mutable struct InputEntries <: AbstractConfigSection
-    dict::Dict{String, InputEntry} = Dict()
+    dict::Dict{String, InputEntry} = Dict{String, InputEntry}()
 end
 
 Base.haskey(input_entries::InputEntries, key) = haskey(input_entries.dict, key)

@@ -1,7 +1,7 @@
 abstract type AbstractSedimentLandTransportModel end
 
 "Struct to store total sediment flux in overland flow model variables"
-@with_kw struct SedimentLandTransportVariables
+@kwdef struct SedimentLandTransportVariables
     n::Int
     # Total sediment rate [kg s⁻¹]
     sediment_rate::Vector{Float64} = fill(MISSING_VALUE, n)
@@ -10,7 +10,7 @@ abstract type AbstractSedimentLandTransportModel end
 end
 
 "Struct to store total sediment flux in overland flow model boundary conditions"
-@with_kw struct SedimentLandTransportBC
+@kwdef struct SedimentLandTransportBC
     n::Int
     # Erosion rate material [kg s⁻¹]
     erosion::Vector{Float64} = fill(MISSING_VALUE, n)
@@ -19,7 +19,7 @@ end
 end
 
 "Struct to store total sediment flux in overland flow model"
-@with_kw struct SedimentLandTransportModel <: AbstractSedimentLandTransportModel
+@kwdef struct SedimentLandTransportModel <: AbstractSedimentLandTransportModel
     n::Int
     boundary_conditions::SedimentLandTransportBC = SedimentLandTransportBC(; n)
     variables::SedimentLandTransportVariables = SedimentLandTransportVariables(; n)
@@ -60,7 +60,7 @@ function update_sediment_overland_model!(
 end
 
 "Struct to store differentiated sediment flux in overland flow model variables"
-@with_kw struct SedimentLandTransportDifferentiationVariables
+@kwdef struct SedimentLandTransportDifferentiationVariables
     n::Int
     # Total sediment rate [kg s⁻¹]
     sediment_rate::Vector{Float64} = fill(MISSING_VALUE, n)
@@ -89,7 +89,7 @@ end
 end
 
 "Struct to store differentiated sediment flux in overland flow model boundary conditions"
-@with_kw struct SedimentLandTransportDifferentiationBC
+@kwdef struct SedimentLandTransportDifferentiationBC
     n::Int
     # Erosion rate clay [kg s⁻¹]
     erosion_clay::Vector{Float64} = fill(MISSING_VALUE, n)
@@ -114,8 +114,8 @@ end
 end
 
 "Struct to store differentiated sediment flux in overland flow model"
-@with_kw struct SedimentLandTransportDifferentiationModel <:
-                AbstractSedimentLandTransportModel
+@kwdef struct SedimentLandTransportDifferentiationModel <:
+              AbstractSedimentLandTransportModel
     n::Int
     boundary_conditions::SedimentLandTransportDifferentiationBC =
         SedimentLandTransportDifferentiationBC(; n)
