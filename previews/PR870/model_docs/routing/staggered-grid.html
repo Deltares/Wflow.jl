@@ -550,7 +550,7 @@ window.Quarto = {
   <li><a href="#local-inertial-approximation" id="toc-local-inertial-approximation" class="nav-link" data-scroll-target="#local-inertial-approximation">Local inertial approximation</a></li>
   <li><a href="#using-mannings-equation" id="toc-using-mannings-equation" class="nav-link" data-scroll-target="#using-mannings-equation">Using Manning’s equation</a></li>
   </ul></li>
-  <li><a href="#d-floodplain-schematization" id="toc-d-floodplain-schematization" class="nav-link" data-scroll-target="#d-floodplain-schematization">1D floodplain schematization</a></li>
+  <li><a href="#floodplain-schematization" id="toc-floodplain-schematization" class="nav-link" data-scroll-target="#floodplain-schematization">Floodplain schematization</a></li>
   <li><a href="#reservoirs" id="toc-reservoirs" class="nav-link" data-scroll-target="#reservoirs">Reservoirs</a></li>
   <li><a href="#local-inertial-overland-flow-2d" id="toc-local-inertial-overland-flow-2d" class="nav-link" data-scroll-target="#local-inertial-overland-flow-2d">Local inertial overland flow (2D)</a></li>
   <li><a href="#external-inflows" id="toc-external-inflows" class="nav-link" data-scroll-target="#external-inflows">External inflows</a></li>
@@ -615,7 +615,7 @@ h^{t+\Delta t} = h^t + \Delta t \frac{\subtext{Q^{t+\Delta t}}{src} - \subtext{Q
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="dt">model_boundary_condition_river__length</span> <span class="op">=</span> <span class="st">"riverlength_bc"</span>           <span class="co"># optional river length [m], default = 1e04</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="dt">model_boundary_condition_river_bank_water__depth</span> <span class="op">=</span> <span class="st">"riverdepth_bc"</span>  <span class="co"># optional river depth [m], default = 0.0</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>These boundary conditions and river bed elevation and Manning’s roughness coefficient are copied to a ghost node (downstream of the river outlet node) in the code.</p>
-<p>It is possible to include a <a href="#d-floodplain-schematization">1D floodplain schematization</a> for this routing type.</p>
+<p>It is possible to include a <a href="#floodplain-schematization">floodplain schematization</a> for this routing type.</p>
 <p>The momentum equation is most stable for low slope environments, and to keep the simulation stable for (partly) steep environments the <code>river_water_flow__froude_limit_flag</code> option is set to true by default. This setting limits flow conditions to subcritical-critical conditions based on the Froude number (<span class="math inline">\(\le 1\)</span>), similar to Coulthard et al.&nbsp;(2013) in the CAESAR-LISFLOOD model and Adams et al.&nbsp;(2017) in the Landlab v1.0 OverlandFlow component. The froude number <span class="math inline">\(\mathrm{Fr}\)</span> on a link is calculated as follows:</p>
 <p><span class="math display">\[
   \mathrm{Fr} = \frac{u}{\sqrt{gh_f}}
@@ -643,11 +643,11 @@ c_i = \frac{5}{3} n^{-1} R^{2/3} \sqrt{c_\mathrm{river\ slope}},\\
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="dt">river_routing</span> <span class="op">=</span> <span class="st">"manning_staggered"</span>                   <span class="co"># default is "kinematic_wave"</span></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="dt">river_staggered_manning_flow__alpha_coefficient</span> <span class="op">=</span> <span class="fl">0.5</span> <span class="co"># alpha coefficient for model stability (default = 0.7)</span></span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="dt">floodplain_1d__flag</span> <span class="op">=</span> <span class="cn">true</span>                            <span class="co"># include 1D floodplain schematization (default = false)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>It is possible to include a <a href="#d-floodplain-schematization">1D floodplain schematization</a> for this routing type.</p>
+<p>It is possible to include a <a href="#floodplain-schematization">floodplain schematization</a> for this routing type.</p>
 </section>
 </section>
-<section id="d-floodplain-schematization" class="level2">
-<h2 class="anchored" data-anchor-id="d-floodplain-schematization">1D floodplain schematization</h2>
+<section id="floodplain-schematization" class="level2">
+<h2 class="anchored" data-anchor-id="floodplain-schematization">Floodplain schematization</h2>
 <p>The optional 1D floodplain schematization is based on provided flood volumes as a function of flood depth (per flood depth interval) for each river node. Wflow calculates from these flood volumes a rectangular floodplain profile for each flood depth interval. Routing is done separately for the river channel and floodplain.</p>
 </section>
 <section id="reservoirs" class="level2">
