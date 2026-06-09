@@ -69,7 +69,7 @@ model_boundary_condition_river_bank_water__depth = "riverdepth_bc"  # optional r
 These boundary conditions and river bed elevation and Manning's roughness coefficient are
 copied to a ghost node (downstream of the river outlet node) in the code.
 
-It is possible to include a [1D floodplain schematization] for this routing type.
+It is possible to include a [floodplain schematization] for this routing type.
 
 The momentum equation is most stable for low slope environments, and to keep the simulation
 stable for (partly) steep environments the `river_water_flow__froude_limit_flag` option is
@@ -131,9 +131,9 @@ river_staggered_manning_flow__alpha_coefficient = 0.5 # alpha coefficient for mo
 floodplain_1d__flag = true                            # include 1D floodplain schematization (default = false)
 ```
 
-It is possible to include a [1D floodplain schematization] for this routing type.
+It is possible to include a [floodplain schematization] for this routing type.
 
-## 1D floodplain schematization
+## Floodplain schematization
 The optional 1D floodplain schematization is based on provided flood volumes as a function
 of flood depth (per flood depth interval) for each river node. Wflow calculates from these
 flood volumes a rectangular floodplain profile for each flood depth interval. Routing is
