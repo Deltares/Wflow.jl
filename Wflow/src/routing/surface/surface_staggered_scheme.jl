@@ -44,8 +44,10 @@ function get_river_parameters(
     (; pit_indices, indices) = domain.network
     (; flow_length, flow_width) = domain.parameters
 
-    bankfull_elevation_2d = ncread(dataset, config, "river_bank_water__elevation", Routing)
-    bankfull_depth_2d = ncread(dataset, config, "river_bank_water__depth", Routing)
+    bankfull_elevation =
+        ncread(dataset, config, "river_bank_water__elevation", Routing; sel = indices)
+    bankfull_depth =
+        ncread(dataset, config, "river_bank_water__depth", Routing; sel = indices)
     mannings_n = ncread(
         dataset,
         config,
@@ -61,9 +63,6 @@ function get_river_parameters(
         sel = pit_indices,
     )
     append!(flow_length, riverlength_bc)
-
-    bankfull_depth = bankfull_depth_2d[indices]
-    bankfull_elevation = bankfull_elevation_2d[indices]
 
     # set ghost points for boundary condition (downstream river outlet): flow width,
     # mannings n, bankfull depth and elevation is copied from the upstream cell.
@@ -920,9 +919,13 @@ function LocalInertialOverlandFlowParameters(
         Routing;
         sel = indices,
     )
-    elevation_2d =
-        ncread(dataset, config, "land_surface_water_flow__ground_elevation", Routing)
-    elevation = elevation_2d[indices]
+    elevation = ncread(
+        dataset,
+        config,
+        "land_surface_water_flow__ground_elevation",
+        Routing;
+        sel = indices,
+    )
     n = length(domain.land.network.indices)
 
     zx_max_at_edge = zeros(n)

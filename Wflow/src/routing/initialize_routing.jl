@@ -11,6 +11,7 @@ function initialize_subsurface_flow_model(
     subsurface_flow_model = LateralSSFModel(dataset, config, domain, soil_model)
 
     kh_profile_type = config.model.saturated_hydraulic_conductivity_profile
+    @info "Using saturated hydraulic conductivity profile: `$kh_profile_type`"
 
     if kh_profile_type == VerticalConductivityProfile.exponential ||
        kh_profile_type == VerticalConductivityProfile.exponential_constant

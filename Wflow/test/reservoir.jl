@@ -255,7 +255,7 @@ end
         waterlevel_discharge_curve,
         col_index_hq = [15],
     )
-    res_params.maximum_storage[2] = Wflow.maximum_storage(res_params, 2)
+    res_params.maximum_storage[2] = Wflow.get_maximum_storage(res_params, 2)
 
     waterlevel = [395.03027, 394.87833]
     res_vars = Wflow.ReservoirVariables(;
@@ -326,7 +326,7 @@ end
         waterlevel_discharge_curve,
         col_index_hq = [15],
     )
-    res_params.maximum_storage[1] = Wflow.maximum_storage(res_params, 1)
+    res_params.maximum_storage[1] = Wflow.get_maximum_storage(res_params, 1)
     res_vars = Wflow.ReservoirVariables(; waterlevel = [397.75], storage = [410_760_000])
     res = Wflow.ReservoirModel(;
         boundary_conditions = res_bc,

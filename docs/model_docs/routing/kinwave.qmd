@@ -212,7 +212,7 @@ the computation of lateral subsurface flow.
 
 The kinematic wave equation for lateral subsurface flow is solved iteratively using Newton's
 method until a stable solution is reached. The internal time stepping is based on the
-Courant number or a fixed time step size $\SIb{}{d}$. To enable a fixed internal time step
+Courant number or a fixed time step size $\SIb{}{s}$. To enable a fixed internal time step
 for the kinematic wave the following lines can be inserted in the TOML file of the model:
 
 ```toml
@@ -220,7 +220,7 @@ for the kinematic wave the following lines can be inserted in the TOML file of t
 # Adaptive (internal) time stepping for the kinematic wave
 kinematic_wave__adaptive_time_step_flag = false # optional, default is false
 # Fixed internal timestep for subsurface flow
-subsurface_kinematic_wave__time_step = 0.5 # optional, default is 1.0 day
+subsurface_kinematic_wave__time_step = 43200 # optional, default is 86400
 ```
 
 Kinematic wave adaptive (internal) timestepping can be set as follows in the TOML file of

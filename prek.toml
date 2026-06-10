@@ -30,4 +30,3 @@ entry = "pixi run format-code"
 language = "system"
 types = ["julia"]
 pass_filenames = true
-require_serial = true
