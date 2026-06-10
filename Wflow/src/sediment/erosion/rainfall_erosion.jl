@@ -3,16 +3,16 @@ abstract type AbstractRainfallErosionModel end
 "Struct for storing rainfall erosion model variables"
 @with_kw struct RainfallErosionModelVariables
     n::Int
-    # Total soil erosion rate [t dt-1] from rainfall (splash)
+    # Total soil erosion rate [kg s⁻¹] from rainfall (splash)
     soil_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct for storing EUROSEM rainfall erosion model boundary conditions"
 @with_kw struct RainfallErosionEurosemBC
     n::Int
-    # precipitation [mm dt-1]
+    # precipitation [m s⁻¹]
     precipitation::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Interception [mm dt-1]
+    # Interception [m s⁻¹]
     interception::Vector{Float64} = fill(MISSING_VALUE, n)
     # Waterlevel on land [m]
     waterlevel::Vector{Float64} = fill(MISSING_VALUE, n)
@@ -20,14 +20,14 @@ end
 
 "Struct for storing EUROSEM rainfall erosion model parameters"
 @with_kw struct RainfallErosionEurosemParameters
-    # Soil detachability factor [g J-1]
+    # Soil detachability factor [kg (kg m² s⁻²)⁻¹]
     soil_detachability::Vector{Float64}
-    # Exponent EUROSEM [-]
+    # Exponent EUROSEM [m⁻¹]
     eurosem_exponent::Vector{Float64}
     # Canopy height [m]
-    canopyheight::Vector{Float64}
+    canopy_height::Vector{Float64}
     # Canopy gap fraction [-]
-    canopygapfraction::Vector{Float64}
+    canopy_gap_fraction::Vector{Float64}
     # Fraction of the soil that is covered (eg paved, snow, etc) [-]
     soilcover_fraction::Vector{Float64}
 end
@@ -52,9 +52,9 @@ function RainfallErosionEurosemParameters(
         SoilLossModel;
         sel = indices,
     )
-    canopyheight =
+    canopy_height =
         ncread(dataset, config, "vegetation_canopy__height", SoilLossModel; sel = indices)
-    canopygapfraction = ncread(
+    canopy_gap_fraction = ncread(
         dataset,
         config,
         "vegetation_canopy__gap_fraction",
@@ -72,8 +72,8 @@ function RainfallErosionEurosemParameters(
     eurosem_parameters = RainfallErosionEurosemParameters(;
         soil_detachability,
         eurosem_exponent,
-        canopyheight,
-        canopygapfraction,
+        canopy_height,
+        canopy_gap_fraction,
         soilcover_fraction,
     )
     return eurosem_parameters
@@ -121,8 +121,8 @@ function update_rainfall_erosion_model!(
     (;
         soil_detachability,
         eurosem_exponent,
-        canopyheight,
-        canopygapfraction,
+        canopy_height,
+        canopy_gap_fraction,
         soilcover_fraction,
     ) = rainfall_erosion_model.parameters
     (; soil_erosion_rate) = rainfall_erosion_model.variables
@@ -135,8 +135,8 @@ function update_rainfall_erosion_model!(
             waterlevel[i],
             soil_detachability[i],
             eurosem_exponent[i],
-            canopyheight[i],
-            canopygapfraction[i],
+            canopy_height[i],
+            canopy_gap_fraction[i],
             soilcover_fraction[i],
             parameters.area[i],
             dt,
@@ -147,7 +147,7 @@ end
 "Struct for storing ANSWERS rainfall erosion model boundary conditions"
 @with_kw struct RainfallErosionAnswersBC
     n::Int
-    # precipitation [mm dt-1]
+    # precipitation [m s⁻¹]
     precipitation::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
@@ -232,7 +232,6 @@ function update_rainfall_erosion_model!(
             usle_c[i],
             answers_rainfall_factor[i],
             parameters.area[i],
-            dt,
         )
     end
 end

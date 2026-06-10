@@ -7,20 +7,21 @@
     config.dir_output = mktempdir()
 
     model = Wflow.Model(config)
+    dt = Wflow.tosecond(model.clock.dt)
     (; domain) = model
 
     @testset "initial states and depending variables" begin
         # test if states and depending variables are consistent between soil and groundwater
         # flow models
         (; subsurface_flow) = model.routing
-        (; zi, ustorecapacity) = model.land.soil.variables
+        (; water_table_depth, unsaturated_store_capacity) = model.land.soil.variables
         (; land_indices) = model.domain.river.network
         @test all(
-            0.001 * zi .==
+            water_table_depth .==
             subsurface_flow.parameters.top .-
             min.(subsurface_flow.variables.head, subsurface_flow.parameters.top),
         )
-        @test all(ustorecapacity[land_indices] .== 0.0)
+        @test all(unsaturated_store_capacity[land_indices] .== 0.0)
         @test all(
             subsurface_flow.variables.head[land_indices] .==
             subsurface_flow.parameters.top[land_indices],
@@ -30,9 +31,9 @@
     Wflow.run_timestep!(model)
 
     # test if the first timestep was written to the CSV file
-    flush(model.writer.csv_io)  # ensure the buffer is written fully to disk
+    flush(model.writer.csv_writer.output_io)  # ensure the buffer is written fully to disk
     @testset "CSV output" begin
-        row = csv_first_row(model.writer.csv_path)
+        row = csv_first_row(model.writer.csv_writer.output_path)
 
         @test row.time == DateTime("2000-06-01T00:00:00")
         @test row.Q_av ≈ 0.01619703129434486
@@ -45,10 +46,10 @@
         @test model.clock.iteration == 1
         @test soil.parameters.theta_s[1] ≈ 0.44999998807907104
         @test soil.variables.runoff[1] == 0.0
-        @test soil.variables.soilevap[1] == 0.0
-        @test soil.variables.transpiration[1] ≈ 0.30587632831650247
-        @test soil.variables.total_storage[1] ≈ 594.859200902034
-        @test soil.variables.total_storage[6] ≈ 665.0260781409222 # river cell
+        @test soil.variables.soil_evaporation[1] == 0.0
+        @test soil.variables.transpiration[1] ≈ 3.5402352814410006e-9
+        @test soil.variables.total_storage[1] ≈ 0.594859200902034
+        @test soil.variables.total_storage[6] ≈ 0.6650260781409222 # river cell
     end
 
     # run the second timestep
@@ -58,19 +59,19 @@
         (; soil) = model.land
         @test soil.parameters.theta_s[1] ≈ 0.44999998807907104
         @test soil.variables.runoff[1] == 0.0
-        @test soil.variables.soilevap[1] == 0.0
-        @test soil.variables.transpiration[4] ≈ 0.9545461724219301
-        @test soil.variables.total_storage[1] ≈ 594.6412481941371
-        @test soil.variables.total_storage[6] ≈ 646.8344274025224 # river cell
+        @test soil.variables.soil_evaporation[1] == 0.0
+        @test soil.variables.transpiration[4] ≈ 1.1047988106735302e-8
+        @test soil.variables.total_storage[1] ≈ 0.5946412481941371
+        @test soil.variables.total_storage[6] ≈ 0.6468344274025224 # river cell
     end
 
     @testset "overland flow (kinematic wave)" begin
-        q = model.routing.overland_flow.variables.q_av
+        q = model.routing.overland_flow.variables.q_average
         @test sum(q) ≈ 2.2319312569903814e-7
     end
 
     @testset "river domain (kinematic wave)" begin
-        q = model.routing.river_flow.variables.q_av
+        q = model.routing.river_flow.variables.q_average
         river = model.routing.river_flow
         @test sum(q) ≈ 0.03025208375758796
         @test q[6] ≈ 0.006665169891136884
@@ -90,9 +91,9 @@
             1.6201330681295285,
             1.3726090475101977,
         ]
-        @test gwf.boundary_conditions.river.variables.flux[1] ≈ -44.36320056565769
+        @test gwf.boundary_conditions.river.variables.flux[1] ≈ -0.000513462969509927
         @test gwf.boundary_conditions.drain.variables.flux[1] ≈ 0.0
-        @test gwf.boundary_conditions.recharge.variables.rate[19] ≈ -0.0014241196552847502
+        @test gwf.boundary_conditions.recharge.variables.rate[19] ≈ -1.6482866380610536e-8
     end
 
     @testset "no drains" begin
@@ -124,11 +125,13 @@ end
     config.input.static["river_bank_water__depth"] = "bankfull_depth"
 
     model = Wflow.Model(config)
+    dt = Wflow.tosecond(model.clock.dt)
+
     Wflow.run_timestep!(model)
     Wflow.run_timestep!(model)
 
     @testset "river domain (local inertial)" begin
-        q = model.routing.river_flow.variables.q_av
+        q = model.routing.river_flow.variables.q_average
         river = model.routing.river_flow
         @test sum(q) ≈ 0.021521084547539975
         @test q[6] ≈ 0.004598563634057708
@@ -159,7 +162,7 @@ end
     Wflow.run_timestep!(model)
 
     @testset "river and land domain (local inertial)" begin
-        q = model.routing.river_flow.variables.q_av
+        q = model.routing.river_flow.variables.q_average
         @test sum(q) ≈ 0.021521072635048613
         @test q[6] ≈ 0.004598566560558798
         @test q[13] ≈ 0.00038996995865291496
@@ -187,19 +190,19 @@ end
     Wflow.run_timestep!(model)
 
     @testset "second timestep warm start" begin
-        (; variables) = model.land.soil
-        @test variables.runoff[1] == 0.0
-        @test variables.soilevap[1] ≈ 0.28488618656022874
-        @test variables.transpiration[1] ≈ 1.0122634204681036
+        sbm = model.land
+        @test sbm.soil.variables.runoff[1] == 0.0
+        @test sbm.soil.variables.soil_evaporation[1] ≈ 3.2972938259285734e-9
+        @test sbm.soil.variables.transpiration[1] ≈ 1.171601181097342e-8
     end
 
     @testset "river domain warm start (kinematic wave)" begin
-        q = model.routing.river_flow.variables.q_av
-        (; river_flow) = model.routing
+        q = model.routing.river_flow.variables.q_average
+        river_flow_model = model.routing.river_flow
         @test sum(q) ≈ 0.011927558704212266
         @test q[6] ≈ 0.002439237560893128
-        @test river_flow.variables.storage[6] ≈ 2.2297897880708595
-        @test river_flow.boundary_conditions.inwater[6] ≈ -1.4361419680049275e-5
+        @test river_flow_model.variables.storage[6] ≈ 2.2297897880708595
+        @test river_flow_model.boundary_conditions.inwater[6] ≈ -1.4361419680049275e-5
         @test q[13] ≈ 6.915367636708339e-5
         @test q[domain.river.network.order[end]] ≈ 0.0024769176125029905
     end
@@ -216,10 +219,10 @@ end
             1.2068931431179248,
         ]
         @test subsurface_flow.boundary_conditions.river.variables.flux[1] ≈
-              -6.472282449944586
+              -7.491067650398826e-5
         @test subsurface_flow.boundary_conditions.drain.variables.flux[1] ≈ 0.0
         @test subsurface_flow.boundary_conditions.recharge.variables.rate[19] ≈
-              -0.0014241196552847502
+              -1.6482866380610536e-8
     end
 
     Wflow.close_files(model; delete_output = false)
@@ -236,7 +239,7 @@ end
     Wflow.run_timestep!(model)
     Wflow.run_timestep!(model)
 
-    q = model.routing.overland_flow.variables.q_av
+    q = model.routing.overland_flow.variables.q_average
     @test sum(q) ≈ 1.4233852635648338e-5
 end
 
