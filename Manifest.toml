@@ -1050,9 +1050,9 @@ version = "3.1.5+0"
 
 [[deps.JuliaFormatter]]
 deps = ["CommonMark", "Glob", "JuliaSyntax", "PrecompileTools", "TOML", "Test"]
-git-tree-sha1 = "0e83ad8e12c6946c2006b9e0ce7bd6fb6f28704e"
+git-tree-sha1 = "f1b4a405806b687587b0ee0c26e6820a0f93f815"
 uuid = "98e50ef6-434e-11e9-1051-2b60c6c9e899"
-version = "2.6.5"
+version = "2.6.10"
 
 [[deps.JuliaInterpreter]]
 deps = ["CodeTracking", "InteractiveUtils", "Random", "UUIDs"]
