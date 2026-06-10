@@ -130,6 +130,7 @@ function update_interception_model!(
                 canopy_storage[i],
                 canopy_gap_fraction[i],
                 maximum_canopy_storage[i],
+                dt,
             )
     end
     return nothing

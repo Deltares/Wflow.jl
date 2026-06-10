@@ -169,7 +169,7 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
                 "Read a rating curve from CSV file `$csv_path`, for reservoir location `$resloc`"
             )
             parameters.waterlevel_discharge_curve[i] = read_hq_csv(csv_path)
-            parameters.maximum_storage[i] = maximum_storage(parameters, i)
+            parameters.maximum_storage[i] = get_maximum_storage(parameters, i)
         elseif outflow_curve_type[i] == ReservoirOutflowType.free_weir ||
                outflow_curve_type[i] == ReservoirOutflowType.modified_puls
             parameters.threshold[i] = threshold[i]
@@ -310,7 +310,7 @@ function waterlevel(
 end
 
 "Determine the maximum storage for reservoirs with a rating curve of type 1"
-function maximum_storage(parameters::ReservoirParameters, i::Int)
+function get_maximum_storage(parameters::ReservoirParameters, i::Int)
     (; storage_curve_type, waterlevel_discharge_curve, storage_waterlevel_curve, area) = parameters
 
     # maximum storage is based on the maximum water level (H) value in the H-Q table
@@ -496,7 +496,7 @@ function update_reservoir_free_weir(
     if diff_wl < 0.0
         lower_res_storage = res_v.storage[lo] + outflow * dt
         lower_res_waterlevel = if storage_curve_type[lo] == ReservoirProfileType.linear
-            waterlevel[lo] + (lower_res_storage - storage[lo]) / area[lo]
+            waterlevel[lo] + (lower_res_storage - res_v.storage[lo]) / area[lo]
         else # ReservoirProfileType.interpolation
             interpolate_linear(lower_res_storage, storage_waterlevel_curve[lo].S, storage_waterlevel_curve[lo].H)
         end
