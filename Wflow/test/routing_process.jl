@@ -553,7 +553,7 @@ end
     @test river_flow_model.variables.h ≈ [0.03653704705843743, 0.0, 0.10966599406601261]
 end
 
-@testitem "unit: local inertial river flow with flow_area floodplain" begin
+@testitem "unit: local inertial river flow with floodplain" begin
     # Test local inertial river routing with a floodplain on a 3-node graph (1 → 2 → 3).
     # Each sub-step of the local inertial update is called and verified individually:
     #   1. update_river_channel_flow!  — edge discharge, water surface elevations
