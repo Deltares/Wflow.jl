@@ -77,9 +77,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-87ac4a3308277090b547c6f55b66fd42.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../site_libs/bootstrap/bootstrap-dark-2c58d53b24add42715e2f3fc0f1a4a60.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="../site_libs/bootstrap/bootstrap-87ac4a3308277090b547c6f55b66fd42.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-456590698c3c54fc61fdc624c2418dba.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-0ac10d74e4943a33dc67abbdb9faa848.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-456590698c3c54fc61fdc624c2418dba.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -1348,6 +1348,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">-</td>
 </tr>
 <tr class="dataRow even">
+<td style="text-align: left;"><code>soil_water__field_capacity_volume_fraction</code></td>
+<td style="text-align: left;">Field capacity</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">✓</td>
+<td style="text-align: left;">-</td>
+</tr>
+<tr class="dataRow odd">
 <td style="text-align: left;"><code>soil_water_saturated_zone_bottom__max_leakage_volume_flux</code></td>
 <td style="text-align: left;">Maximum leakage from saturated zone</td>
 <td style="text-align: left;">mm day⁻¹</td>
@@ -1355,7 +1363,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">✓</td>
 <td style="text-align: left;">0.0</td>
 </tr>
-<tr class="dataRow odd">
+<tr class="dataRow even">
 <td style="text-align: left;"><code>soil_water_saturated_zone_top__capillary_rise_max_water_table_depth</code></td>
 <td style="text-align: left;">Maximum water table depth for capillary rise</td>
 <td style="text-align: left;">mm</td>
@@ -1363,7 +1371,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">✓</td>
 <td style="text-align: left;">2000.0</td>
 </tr>
-<tr class="dataRow even">
+<tr class="dataRow odd">
 <td style="text-align: left;"><code>soil_water_saturated_zone_top__capillary_rise_averianov_exponent</code></td>
 <td style="text-align: left;">Averianov exponent controlling capillary rise</td>
 <td style="text-align: left;">-</td>
@@ -1371,7 +1379,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">✓</td>
 <td style="text-align: left;">2.0</td>
 </tr>
-<tr class="dataRow odd">
+<tr class="dataRow even">
 <td style="text-align: left;"><code>soil_wet_root__sigmoid_function_shape_parameter</code></td>
 <td style="text-align: left;">Controls sharpness of transition between fully wet and fully dry roots</td>
 <td style="text-align: left;">mm⁻¹</td>
@@ -1379,7 +1387,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">✓</td>
 <td style="text-align: left;">-500.0</td>
 </tr>
-<tr class="dataRow even">
+<tr class="dataRow odd">
 <td style="text-align: left;"><code>vegetation_root__feddes_critical_pressure_head_h1</code></td>
 <td style="text-align: left;">Critical pressure head h1 of the root water uptake reduction function (Feddes)</td>
 <td style="text-align: left;">cm</td>
@@ -1387,7 +1395,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">✓</td>
 <td style="text-align: left;">0.0</td>
 </tr>
-<tr class="dataRow odd">
+<tr class="dataRow even">
 <td style="text-align: left;"><code>vegetation_root__feddes_critical_pressure_head_h1_reduction_coefficient</code></td>
 <td style="text-align: left;">Root water uptake reduction at soil water pressure head h1 (0.0 or 1.0)</td>
 <td style="text-align: left;">-</td>
@@ -1395,7 +1403,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">✓</td>
 <td style="text-align: left;">1.0</td>
 </tr>
-<tr class="dataRow even">
+<tr class="dataRow odd">
 <td style="text-align: left;"><code>vegetation_root__feddes_critical_pressure_head_h2</code></td>
 <td style="text-align: left;">Critical pressure head h2 of the root water uptake reduction function (Feddes)</td>
 <td style="text-align: left;">cm</td>
@@ -1403,7 +1411,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">✓</td>
 <td style="text-align: left;">-100.0</td>
 </tr>
-<tr class="dataRow odd">
+<tr class="dataRow even">
 <td style="text-align: left;"><code>vegetation_root__feddes_critical_pressure_head_h3_high</code></td>
 <td style="text-align: left;">Critical pressure head h3_high of the root water uptake reduction function (Feddes)</td>
 <td style="text-align: left;">cm</td>
@@ -1411,7 +1419,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">✓</td>
 <td style="text-align: left;">-400.0</td>
 </tr>
-<tr class="dataRow even">
+<tr class="dataRow odd">
 <td style="text-align: left;"><code>vegetation_root__feddes_critical_pressure_head_h3_low</code></td>
 <td style="text-align: left;">Critical pressure head h3_low of the root water uptake reduction function (Feddes)</td>
 <td style="text-align: left;">cm</td>
@@ -1419,7 +1427,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">✓</td>
 <td style="text-align: left;">-1000.0</td>
 </tr>
-<tr class="dataRow odd">
+<tr class="dataRow even">
 <td style="text-align: left;"><code>vegetation_root__feddes_critical_pressure_head_h4</code></td>
 <td style="text-align: left;">Critical pressure head h4 of the root water uptake reduction function (Feddes)</td>
 <td style="text-align: left;">cm</td>

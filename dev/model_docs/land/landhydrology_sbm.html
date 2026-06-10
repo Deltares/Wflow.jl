@@ -77,9 +77,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-87ac4a3308277090b547c6f55b66fd42.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../../site_libs/bootstrap/bootstrap-dark-2c58d53b24add42715e2f3fc0f1a4a60.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="../../site_libs/bootstrap/bootstrap-87ac4a3308277090b547c6f55b66fd42.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-456590698c3c54fc61fdc624c2418dba.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-0ac10d74e4943a33dc67abbdb9faa848.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../../site_libs/bootstrap/bootstrap-456590698c3c54fc61fdc624c2418dba.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -1257,6 +1257,19 @@ n}\)</span> declines exponentially (if <span class="math inline">\(f_{\mathrm{Kv
 <p><img src="../../images/sbm_ksat_profiles.png" class="img-fluid figure-img"></p>
 <figcaption>Overview of available <code>saturated_hydraulic_conductivity_profile</code> options, for a soil column with five layers</figcaption>
 </figure>
+</div>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Important
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>When using the “layered_exponential” profile setting, please note that the depth you provide for <span class="math inline">\(z_\mathrm{layered}\)</span> is being snapped to the closest soil layer, as this profile needs to be applied to an entire soil layer. If the specific depth is important for your simulation, please ensure that you have a soil layer present at/near this depth.</p>
+</div>
 </div>
 <p>The potential transfer of water from the unsaturated store to the saturated store is in that case controlled by the vertical saturated hydraulic conductivity at the water table depth <span class="math inline">\(\SIb{z_\mathrm{watertable}}{mm}\)</span>, an optional multiplication factor <span class="math inline">\(\SIb{f_\mathrm{Kv,
 1}}{-}\)</span> to correct the vertical saturated hydraulic conductivity, and the ratio between <span class="math inline">\(\SIb{S_\mathrm{unsat}}{mm}\)</span> and <span class="math inline">\(\SIb{S_\mathrm{deficit}}{mm}\)</span>:</p>
