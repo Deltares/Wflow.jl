@@ -30,10 +30,6 @@ function init_kinematic_wave_timestepping(config::Config, n::Int; domain::String
         end
     else
         dt_fixed = getfield(config.model, Symbol("$(domain)_kinematic_wave__time_step"))
-        if domain == "subsurface"
-            # Config value is in days, convert to seconds
-            dt_fixed = to_SI(dt_fixed, DAY)
-        end
         @info "Using a fixed internal timestep (seconds) $dt_fixed for kinematic wave $domain flow."
         timestepping = TimeStepping(; dt_fixed, adaptive)
     end
