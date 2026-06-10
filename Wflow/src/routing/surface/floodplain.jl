@@ -248,6 +248,8 @@ end
     profile::FloodPlainProfile
     # manning's roughness[s m-1/3]
     mannings_n::Vector{Float64} = Float64[]
+    # slope  [m m⁻¹]
+    slope::Vector{Float64} = Float64[]
 end
 
 "Struct to store floodplain variables"
@@ -413,7 +415,9 @@ function FloodPlainModel(dataset::NCDataset, config::Config, domain::DomainRiver
         Routing;
         sel = indices,
     )
-    parameters = FloodPlainParameters(; profile, mannings_n)
+    slope = ncread(dataset, config, "floodplain__slope", Routing; sel = indices)
+    clamp!(slope, 0.00001, Inf)
+    parameters = FloodPlainParameters(; profile, mannings_n, slope)
     variables = FloodPlainVariables(; n)
     floodplain_model =
         FloodPlainModel(; routing_method = KinematicWave(), parameters, variables)

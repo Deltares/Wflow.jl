@@ -390,8 +390,8 @@ function update_floodplain_model!(
     dt::Float64,
 ) where {T <: KinematicWave, F <: FloodPlainModel{<:KinematicWave}}
     (; floodplain) = river_flow_model
-    (; slope, flow_length) = domain.parameters
-    (; profile, mannings_n) = floodplain.parameters
+    (; flow_length) = domain.parameters
+    (; profile, mannings_n, slope) = floodplain.parameters
     (; flow_capacity, h, q, q_cumulative, qin, qin_cumulative, storage) =
         floodplain.variables
 
