@@ -641,12 +641,14 @@ function set_effective_flowwidth!(
         elseif dir == CartesianIndex(-1, 0)
             if edge_indices.idx_left[idx] <= n
                 we_y[edge_indices.idx_left[idx]] =
-                    reservoir_outlet[v] ? 0.0 : max(we_y[edge_indices.idx_left[idx]] - w, 0.0)
+                    reservoir_outlet[v] ? 0.0 :
+                    max(we_y[edge_indices.idx_left[idx]] - w, 0.0)
             end
         elseif dir == CartesianIndex(0, -1)
             if edge_indices.idx_down[idx] <= n
                 we_x[edge_indices.idx_down[idx]] =
-                    reservoir_outlet[v] ? 0.0 : max(we_x[edge_indices.idx_down[idx]] - w, 0.0)
+                    reservoir_outlet[v] ? 0.0 :
+                    max(we_x[edge_indices.idx_down[idx]] - w, 0.0)
             end
         elseif dir == CartesianIndex(1, -1)
             we_y[idx] = max(we_y[idx] - 0.5 * w, 0.0)
@@ -721,32 +723,67 @@ end
 Return vertical hydraulic conductivity `kv_z` at depth `z` for index `i` using multiplication
 factor `kv_frac` at soil layer `n` and vertical hydraulic conductivity profile `p`.
 """
-function hydraulic_conductivity_at_depth(p::KvExponential, vertical_hydraulic_conductivity_factor, z, i, n)
-    kv_z = vertical_hydraulic_conductivity_factor[i][n] * p.kv_0[i] * exp(-p.hydraulic_conductivity_scale_parameter[i] * z)
+function hydraulic_conductivity_at_depth(
+    p::KvExponential,
+    vertical_hydraulic_conductivity_factor,
+    z,
+    i,
+    n,
+)
+    kv_z =
+        vertical_hydraulic_conductivity_factor[i][n] *
+        p.kv_0[i] *
+        exp(-p.hydraulic_conductivity_scale_parameter[i] * z)
     return kv_z
 end
 
-function hydraulic_conductivity_at_depth(p::KvExponentialConstant, vertical_hydraulic_conductivity_factor, z, i, n)
+function hydraulic_conductivity_at_depth(
+    p::KvExponentialConstant,
+    vertical_hydraulic_conductivity_factor,
+    z,
+    i,
+    n,
+)
     (; kv_0, hydraulic_conductivity_scale_parameter) = p.exponential
     if z < p.z_exp[i]
-        kv_z = vertical_hydraulic_conductivity_factor[i][n] * kv_0[i] * exp(-hydraulic_conductivity_scale_parameter[i] * z)
+        kv_z =
+            vertical_hydraulic_conductivity_factor[i][n] *
+            kv_0[i] *
+            exp(-hydraulic_conductivity_scale_parameter[i] * z)
     else
-        kv_z = vertical_hydraulic_conductivity_factor[i][n] * kv_0[i] * exp(-hydraulic_conductivity_scale_parameter[i] * p.z_exp[i])
+        kv_z =
+            vertical_hydraulic_conductivity_factor[i][n] *
+            kv_0[i] *
+            exp(-hydraulic_conductivity_scale_parameter[i] * p.z_exp[i])
     end
     return kv_z
 end
 
-function hydraulic_conductivity_at_depth(p::KvLayered, vertical_hydraulic_conductivity_factor, z, i, n)
+function hydraulic_conductivity_at_depth(
+    p::KvLayered,
+    vertical_hydraulic_conductivity_factor,
+    z,
+    i,
+    n,
+)
     kv_z = vertical_hydraulic_conductivity_factor[i][n] * p.kv[i][n]
     return kv_z
 end
 
-function hydraulic_conductivity_at_depth(p::KvLayeredExponential, vertical_hydraulic_conductivity_factor, z, i, n)
+function hydraulic_conductivity_at_depth(
+    p::KvLayeredExponential,
+    vertical_hydraulic_conductivity_factor,
+    z,
+    i,
+    n,
+)
     return if z < p.z_layered[i]
         vertical_hydraulic_conductivity_factor[i][n] * p.kv[i][n]
     else
         n = p.nlayers_kv[i]
-        vertical_hydraulic_conductivity_factor[i][n] * p.kv[i][n] * exp(-p.hydraulic_conductivity_scale_parameter[i] * (z - p.z_layered[i]))
+        vertical_hydraulic_conductivity_factor[i][n] *
+        p.kv[i][n] *
+        exp(-p.hydraulic_conductivity_scale_parameter[i] * (z - p.z_layered[i]))
     end
 end
 
@@ -762,10 +799,12 @@ function kh_layered_profile!(
     subsurface_flow_model::LateralSSFModel,
     kv_profile::KvLayered,
 )
-    (; number_of_layers, cumulative_layer_depth, actual_layer_thickness, soil_thickness) = soil_model.parameters
+    (; number_of_layers, cumulative_layer_depth, actual_layer_thickness, soil_thickness) =
+        soil_model.parameters
     (; n_unsatlayers, water_table_depth) = soil_model.variables
     (; kh) = subsurface_flow_model.parameters.kh_profile
-    (; horizontal_to_vertical_hydraulic_conductivity_ratio) = subsurface_flow_model.parameters
+    (; horizontal_to_vertical_hydraulic_conductivity_ratio) =
+        subsurface_flow_model.parameters
 
     for i in eachindex(kh)
         m = number_of_layers[i]
@@ -780,9 +819,12 @@ function kh_layered_profile!(
                 transmissivity += actual_layer_thickness[i][n] * kv_profile.kv[i][n]
                 n += 1
             end
-            kh[i] = (transmissivity / (soil_thickness[i] - water_table_depth[i])) * horizontal_to_vertical_hydraulic_conductivity_ratio[i]
+            kh[i] =
+                (transmissivity / (soil_thickness[i] - water_table_depth[i])) *
+                horizontal_to_vertical_hydraulic_conductivity_ratio[i]
         else
-            kh[i] = kv_profile.kv[i][m] * horizontal_to_vertical_hydraulic_conductivity_ratio[i]
+            kh[i] =
+                kv_profile.kv[i][m] * horizontal_to_vertical_hydraulic_conductivity_ratio[i]
         end
     end
     return nothing
@@ -793,11 +835,13 @@ function kh_layered_profile!(
     subsurface_flow_model::LateralSSFModel,
     kv_profile::KvLayeredExponential,
 )
-    (; number_of_layers, cumulative_layer_depth, actual_layer_thickness, soil_thickness) = soil_model.parameters
+    (; number_of_layers, cumulative_layer_depth, actual_layer_thickness, soil_thickness) =
+        soil_model.parameters
     (; nlayers_kv, z_layered, kv, hydraulic_conductivity_scale_parameter) = kv_profile
     (; n_unsatlayers, water_table_depth) = soil_model.variables
     (; kh) = subsurface_flow_model.parameters.kh_profile
-    (; horizontal_to_vertical_hydraulic_conductivity_ratio) = subsurface_flow_model.parameters
+    (; horizontal_to_vertical_hydraulic_conductivity_ratio) =
+        subsurface_flow_model.parameters
 
     for i in eachindex(kh)
         m = number_of_layers[i]
@@ -809,8 +853,12 @@ function kh_layered_profile!(
                 zt = soil_thickness[i] - z_layered[i]
                 j = nlayers_kv[i]
                 transmissivity +=
-                    kv[i][j] / hydraulic_conductivity_scale_parameter[i] *
-                    (exp(-hydraulic_conductivity_scale_parameter[i] * (water_table_depth[i] - z_layered[i])) - exp(-hydraulic_conductivity_scale_parameter[i] * zt))
+                    kv[i][j] / hydraulic_conductivity_scale_parameter[i] * (
+                        exp(
+                            -hydraulic_conductivity_scale_parameter[i] *
+                            (water_table_depth[i] - z_layered[i]),
+                        ) - exp(-hydraulic_conductivity_scale_parameter[i] * zt)
+                    )
                 n = m
             else
                 _sumlayers = @view cumulative_layer_depth[i][2:end]
@@ -821,18 +869,28 @@ function kh_layered_profile!(
                 if n > nlayers_kv[i]
                     zt = soil_thickness[i] - z_layered[i]
                     j = nlayers_kv[i]
-                    transmissivity += kv[i][j] / hydraulic_conductivity_scale_parameter[i] * (1.0 - exp(-hydraulic_conductivity_scale_parameter[i] * zt))
+                    transmissivity +=
+                        kv[i][j] / hydraulic_conductivity_scale_parameter[i] *
+                        (1.0 - exp(-hydraulic_conductivity_scale_parameter[i] * zt))
                     n = m
                 else
                     transmissivity += actual_layer_thickness[i][n] * kv[i][n]
                 end
                 n += 1
             end
-            kh[i] = (transmissivity / (soil_thickness[i] - water_table_depth[i])) * horizontal_to_vertical_hydraulic_conductivity_ratio[i]
+            kh[i] =
+                (transmissivity / (soil_thickness[i] - water_table_depth[i])) *
+                horizontal_to_vertical_hydraulic_conductivity_ratio[i]
         else
             if water_table_depth[i] >= z_layered[i]
                 j = nlayers_kv[i]
-                kh[i] = kv[i][j] * exp(-hydraulic_conductivity_scale_parameter[i] * (water_table_depth[i] - z_layered[i])) * horizontal_to_vertical_hydraulic_conductivity_ratio[i]
+                kh[i] =
+                    kv[i][j] *
+                    exp(
+                        -hydraulic_conductivity_scale_parameter[i] *
+                        (water_table_depth[i] - z_layered[i]),
+                    ) *
+                    horizontal_to_vertical_hydraulic_conductivity_ratio[i]
             else
                 kh[i] = kv[i][m] * horizontal_to_vertical_hydraulic_conductivity_ratio[i]
             end
@@ -864,8 +922,16 @@ function initialize_lateral_ssf_model!(
     (; soil_thickness) = subsurface_flow_model.parameters
     (; slope, flow_width) = parameters
 
-    @. q_max = ((kh_0 * slope) / hydraulic_conductivity_scale_parameter) * (1.0 - exp(-hydraulic_conductivity_scale_parameter * soil_thickness))
-    @. q = ((kh_0 * slope) / hydraulic_conductivity_scale_parameter) * (exp(-hydraulic_conductivity_scale_parameter * water_table_depth) - exp(-hydraulic_conductivity_scale_parameter * soil_thickness)) * flow_width
+    @. q_max =
+        ((kh_0 * slope) / hydraulic_conductivity_scale_parameter) *
+        (1.0 - exp(-hydraulic_conductivity_scale_parameter * soil_thickness))
+    @. q =
+        ((kh_0 * slope) / hydraulic_conductivity_scale_parameter) *
+        (
+            exp(-hydraulic_conductivity_scale_parameter * water_table_depth) -
+            exp(-hydraulic_conductivity_scale_parameter * soil_thickness)
+        ) *
+        flow_width
     return nothing
 end
 
@@ -880,15 +946,24 @@ function initialize_lateral_ssf_model!(
     (; soil_thickness) = subsurface_flow_model.parameters
     (; slope, flow_width) = parameters
 
-    q_constant = @. kh_0 * exp(-hydraulic_conductivity_scale_parameter * z_exp) * slope * (soil_thickness - z_exp)
+    q_constant = @. kh_0 *
+       exp(-hydraulic_conductivity_scale_parameter * z_exp) *
+       slope *
+       (soil_thickness - z_exp)
     for i in eachindex(q)
         q_max[i] =
-            ((kh_0[i] * slope[i]) / hydraulic_conductivity_scale_parameter[i]) * (1.0 - exp(-hydraulic_conductivity_scale_parameter[i] * z_exp[i])) + q_constant[i]
+            ((kh_0[i] * slope[i]) / hydraulic_conductivity_scale_parameter[i]) *
+            (1.0 - exp(-hydraulic_conductivity_scale_parameter[i] * z_exp[i])) +
+            q_constant[i]
         if water_table_depth[i] < z_exp[i]
             q[i] =
                 (
-                    ((kh_0[i] * slope[i]) / hydraulic_conductivity_scale_parameter[i]) *
-                    (exp(-hydraulic_conductivity_scale_parameter[i] * water_table_depth[i]) - exp(-hydraulic_conductivity_scale_parameter[i] * z_exp[i])) + q_constant[i]
+                    ((kh_0[i] * slope[i]) / hydraulic_conductivity_scale_parameter[i]) * (
+                        exp(
+                            -hydraulic_conductivity_scale_parameter[i] *
+                            water_table_depth[i],
+                        ) - exp(-hydraulic_conductivity_scale_parameter[i] * z_exp[i])
+                    ) + q_constant[i]
                 ) * flow_width[i]
         else
             q[i] =
@@ -919,7 +994,8 @@ function initialize_lateral_ssf_model!(
     (; kh) = subsurface_flow_model.parameters.kh_profile
     (; number_of_layers, actual_layer_thickness) = soil_model.parameters
     (; q, q_max, water_table_depth) = subsurface_flow_model.variables
-    (; horizontal_to_vertical_hydraulic_conductivity_ratio, soil_thickness) = subsurface_flow_model.parameters
+    (; horizontal_to_vertical_hydraulic_conductivity_ratio, soil_thickness) =
+        subsurface_flow_model.parameters
     (; slope, flow_width) = parameters
 
     kh_layered_profile!(soil_model, subsurface_flow_model, kv_profile)
@@ -943,7 +1019,8 @@ function initialize_lateral_ssf_model!(
     dt,
 )
     (; q, q_max, water_table_depth) = subsurface_flow_model.variables
-    (; horizontal_to_vertical_hydraulic_conductivity_ratio, soil_thickness) = subsurface_flow_model.parameters
+    (; horizontal_to_vertical_hydraulic_conductivity_ratio, soil_thickness) =
+        subsurface_flow_model.parameters
     (; slope, flow_width) = parameters
     (; number_of_layers, actual_layer_thickness) = soil_model.parameters
     (; kh) = subsurface_flow_model.parameters.kh_profile
@@ -959,7 +1036,9 @@ function initialize_lateral_ssf_model!(
             else
                 zt = soil_model.parameters.soil_thickness[i] - z_layered[i]
                 k = max(j - 1, 1)
-                kh_max += kv[i][k] / hydraulic_conductivity_scale_parameter[i] * (1.0 - exp(-hydraulic_conductivity_scale_parameter[i] * zt))
+                kh_max +=
+                    kv[i][k] / hydraulic_conductivity_scale_parameter[i] *
+                    (1.0 - exp(-hydraulic_conductivity_scale_parameter[i] * zt))
                 break
             end
         end
@@ -1014,7 +1093,8 @@ function water_table_change(
     i::Int,
     dt::Float64,
 )
-    (; n_unsatlayers, unsaturated_layer_thickness, unsaturated_layer_depth) = soil_model.variables
+    (; n_unsatlayers, unsaturated_layer_thickness, unsaturated_layer_depth) =
+        soil_model.variables
     (; theta_s, theta_r) = soil_model.parameters
 
     # effective porosity (difference between saturated and residual water content)
@@ -1026,13 +1106,19 @@ function water_table_change(
         dh = 0.0
         for k in n_unsatlayers[i]:-1:1
             capacity =
-                max(unsaturated_layer_thickness[i][k] * theta_e - unsaturated_layer_depth[i][k], 0.0) / dt
+                max(
+                    unsaturated_layer_thickness[i][k] * theta_e -
+                    unsaturated_layer_depth[i][k],
+                    0.0,
+                ) / dt
             flux_layer = min(net_flux, capacity)
             if capacity <= net_flux
                 # if unsaturated layer is fully saturated dh equals layer thickness
                 dh += unsaturated_layer_thickness[i][k]
             else
-                sy = theta_e - (unsaturated_layer_depth[i][k] / unsaturated_layer_thickness[i][k])
+                sy =
+                    theta_e -
+                    (unsaturated_layer_depth[i][k] / unsaturated_layer_thickness[i][k])
                 dh += flux_layer * dt / sy
             end
             net_flux -= flux_layer

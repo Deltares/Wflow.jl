@@ -127,8 +127,13 @@ function update_glacier_model!(
     (; temperature) = atmospheric_forcing
     (; glacier_store, glacier_melt) = glacier_model.variables
     (; snow_storage) = glacier_model.boundary_conditions
-    (; temperature_threshold_melt, degree_day_factor, snow_to_ice_fraction, glacier_fraction, maximum_snow_to_ice_rate) =
-        glacier_model.parameters
+    (;
+        temperature_threshold_melt,
+        degree_day_factor,
+        snow_to_ice_fraction,
+        glacier_fraction,
+        maximum_snow_to_ice_rate,
+    ) = glacier_model.parameters
 
     n = length(temperature)
 

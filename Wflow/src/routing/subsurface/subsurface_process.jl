@@ -3,9 +3,20 @@
 Return kinematic wave `celerity` of lateral subsurface flow based on hydraulic conductivity
 profile `KhExponential`
 """
-function ssf_celerity(water_table_depth, slope, specific_yield, kh_profile::KhExponential, i)
+function ssf_celerity(
+    water_table_depth,
+    slope,
+    specific_yield,
+    kh_profile::KhExponential,
+    i,
+)
     (; kh_0, hydraulic_conductivity_scale_parameter) = kh_profile
-    celerity = (kh_0[i] * exp(-hydraulic_conductivity_scale_parameter[i] * water_table_depth) * slope) / specific_yield
+    celerity =
+        (
+            kh_0[i] *
+            exp(-hydraulic_conductivity_scale_parameter[i] * water_table_depth) *
+            slope
+        ) / specific_yield
     return celerity
 end
 
@@ -13,11 +24,19 @@ end
 Return kinematic wave `celerity` of lateral subsurface flow based on hydraulic conductivity
 profile `KhExponentialConstant`
 """
-function ssf_celerity(water_table_depth, slope, specific_yield, kh_profile::KhExponentialConstant, i)
+function ssf_celerity(
+    water_table_depth,
+    slope,
+    specific_yield,
+    kh_profile::KhExponentialConstant,
+    i,
+)
     (; z_exp) = kh_profile
     (; kh_0, hydraulic_conductivity_scale_parameter) = kh_profile.exponential
     z = water_table_depth < z_exp[i] ? water_table_depth : z_exp[i]
-    celerity = (kh_0[i] * exp(-hydraulic_conductivity_scale_parameter[i] * z) * slope) / specific_yield
+    celerity =
+        (kh_0[i] * exp(-hydraulic_conductivity_scale_parameter[i] * z) * slope) /
+        specific_yield
     return celerity
 end
 
@@ -43,7 +62,8 @@ function kw_ssf_newton_raphson(q, constant_term, celerity, dt, dx)
     celerity_inv = inv(celerity)
     df = dt_dx + celerity_inv
     while true
-        hydraulic_conductivity_scale_parameter = dt_dx * q + celerity_inv * q - constant_term
+        hydraulic_conductivity_scale_parameter =
+            dt_dx * q + celerity_inv * q - constant_term
         q -= (hydraulic_conductivity_scale_parameter / df)
         if isnan(q)
             q = 0.0
@@ -107,7 +127,9 @@ function kinematic_wave_ssf(
         # constrain water table depth change to 0.1 m per (sub) timestep based on first `zi`
         # computation
         max_delta_zi = 0.1
-        its = Int(ceil(round(abs(water_table_depth - zi_prev) / max_delta_zi; sigdigits = 12)))
+        its = Int(
+            ceil(round(abs(water_table_depth - zi_prev) / max_delta_zi; sigdigits = 12)),
+        )
         if its > 1
             dt_s = dt / its
             q_sum = 0.0

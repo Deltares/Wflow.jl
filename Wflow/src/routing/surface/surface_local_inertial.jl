@@ -333,7 +333,8 @@ function update_river_channel_flow!(
 
     river_v.q_previous .= river_v.q
     if !isnothing(river_flow_model.floodplain)
-        river_flow_model.floodplain.variables.q_previous .= river_flow_model.floodplain.variables.q
+        river_flow_model.floodplain.variables.q_previous .=
+            river_flow_model.floodplain.variables.q
     end
 
     @batch per = thread minbatch = 1000 for j in eachindex(river_p.active_e)
@@ -346,8 +347,11 @@ function update_river_channel_flow!(
         river_v.zs_max[i] = max(river_v.zs_src[i], river_v.zs_dst[i])
         river_v.water_depth_at_edge[i] = (river_v.zs_max[i] - river_p.zb_max[i])
 
-        river_v.flow_area[i] = river_p.flow_width_at_edge[i] * river_v.water_depth_at_edge[i] # flow area (rectangular channel)
-        river_v.hydraulic_radius[i] = river_v.flow_area[i] / (river_p.flow_width_at_edge[i] + 2 * river_v.water_depth_at_edge[i]) # hydraulic radius (rectangular channel)
+        river_v.flow_area[i] =
+            river_p.flow_width_at_edge[i] * river_v.water_depth_at_edge[i] # flow area (rectangular channel)
+        river_v.hydraulic_radius[i] =
+            river_v.flow_area[i] /
+            (river_p.flow_width_at_edge[i] + 2 * river_v.water_depth_at_edge[i]) # hydraulic radius (rectangular channel)
 
         river_v.q[i] = ifelse(
             river_v.water_depth_at_edge[i] > river_p.h_thresh,
@@ -392,7 +396,8 @@ function update_floodplain_flow!(
     floodplain_v = river_flow_model.floodplain.variables
 
     @batch per = thread minbatch = 1000 for i in 1:length(floodplain_v.water_depth_at_edge)
-        floodplain_v.water_depth_at_edge[i] = max(river_v.zs_max[i] - floodplain_p.zb_max[i], 0.0)
+        floodplain_v.water_depth_at_edge[i] =
+            max(river_v.zs_max[i] - floodplain_p.zb_max[i], 0.0)
     end
 
     n = 0
@@ -1516,7 +1521,13 @@ function FloodPlainProfile(
     wetted_perimeter = hcat(wetted_perimeter, wetted_perimeter[:, index_pit])
 
     # initialize floodplain profile parameters
-    profile = FloodPlainProfile(; storage, width, depth = flood_depths, flow_area, wetted_perimeter)
+    profile = FloodPlainProfile(;
+        storage,
+        width,
+        depth = flood_depths,
+        flow_area,
+        wetted_perimeter,
+    )
     return profile
 end
 

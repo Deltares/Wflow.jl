@@ -25,9 +25,11 @@
     # rating curve exponent [-]
     rating_curve_exponent::Vector{Float64} = fill(MISSING_VALUE, length(area))
     # data for storage curve
-    storage_waterlevel_curve::Vector{Union{SH, Missing}} = Vector{Union{SH, Missing}}(missing, length(area))
+    storage_waterlevel_curve::Vector{Union{SH, Missing}} =
+        Vector{Union{SH, Missing}}(missing, length(area))
     # data for rating curve
-    waterlevel_discharge_curve::Vector{Union{HQ, Missing}} = Vector{Union{HQ, Missing}}(missing, length(area))
+    waterlevel_discharge_curve::Vector{Union{HQ, Missing}} =
+        Vector{Union{HQ, Missing}}(missing, length(area))
     # column index of rating curve data hq
     col_index_hq::Vector{Int} = [1]
     # maximum amount that can be released if below spillway for rating curve type 4 [m³ s⁻¹]
@@ -82,7 +84,8 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
         ncread(dataset, config, "reservoir_location__count", Routing; sel = indices_outlet)
     @info "Read `$n_reservoirs` reservoir locations."
 
-    parameters = ReservoirParameters(; id = reslocs, area, outflow_curve_type, storage_curve_type)
+    parameters =
+        ReservoirParameters(; id = reslocs, area, outflow_curve_type, storage_curve_type)
 
     if ReservoirOutflowType.free_weir in outflow_curve_type ||
        ReservoirOutflowType.modified_puls in outflow_curve_type
@@ -233,7 +236,12 @@ function ReservoirVariables(
     )
     variables = ReservoirVariables(;
         waterlevel,
-        storage = initialize_storage(storage_curve_type, area, waterlevel, storage_waterlevel_curve),
+        storage = initialize_storage(
+            storage_curve_type,
+            area,
+            waterlevel,
+            storage_waterlevel_curve,
+        ),
         outflow_obs,
     )
     return variables
@@ -304,18 +312,26 @@ function waterlevel(
     if storage_curve_type == ReservoirProfileType.linear
         waterlevel = storage / area
     else # storage_curve_type == ReservoirProfileType.interpolation
-        waterlevel = interpolate_linear(storage, storage_waterlevel_curve.S, storage_waterlevel_curve.H)
+        waterlevel = interpolate_linear(
+            storage,
+            storage_waterlevel_curve.S,
+            storage_waterlevel_curve.H,
+        )
     end
     return waterlevel
 end
 
 "Determine the maximum storage for reservoirs with a rating curve of type 1"
 function get_maximum_storage(parameters::ReservoirParameters, i::Int)
-    (; storage_curve_type, waterlevel_discharge_curve, storage_waterlevel_curve, area) = parameters
-
+    (; storage_curve_type, waterlevel_discharge_curve, storage_waterlevel_curve, area) =
+        parameters
     # maximum storage is based on the maximum water level (H) value in the H-Q table
     if storage_curve_type[i] == ReservoirProfileType.interpolation
-        maximum_storage = interpolate_linear(maximum(waterlevel_discharge_curve[i].H), storage_waterlevel_curve[i].H, storage_waterlevel_curve[i].S)
+        maximum_storage = interpolate_linear(
+            maximum(waterlevel_discharge_curve[i].H),
+            storage_waterlevel_curve[i].H,
+            storage_waterlevel_curve[i].S,
+        )
     else # storage_curve_type[i] == ReservoirProfileType.linear
         maximum_storage = area[i] * maximum(waterlevel_discharge_curve[i].H)
     end
@@ -335,7 +351,11 @@ function initialize_storage(
         if storage_curve_type[i] == ReservoirProfileType.linear
             storage[i] = area[i] * waterlevel[i]
         else # storage_curve_type[i] == ReservoirProfileType.interpolation
-            storage[i] = interpolate_linear(waterlevel[i], storage_waterlevel_curve[i].H, storage_waterlevel_curve[i].S)
+            storage[i] = interpolate_linear(
+                waterlevel[i],
+                storage_waterlevel_curve[i].H,
+                storage_waterlevel_curve[i].S,
+            )
         end
     end
     return storage
@@ -372,8 +392,13 @@ function update_reservoir_simple(
     boundary_vars::NamedTuple,
     dt::Float64,
 )
-    (; maximum_storage, target_minimum_fraction, target_full_fraction, demand, maximum_release) =
-        reservoir_model.parameters
+    (;
+        maximum_storage,
+        target_minimum_fraction,
+        target_full_fraction,
+        demand,
+        maximum_release,
+    ) = reservoir_model.parameters
     res_v = reservoir_model.variables
     (; precipitation, evaporation, inflow) = boundary_vars
 
@@ -436,12 +461,17 @@ function update_reservoir_hq(
     boundary_vars::NamedTuple,
     dt::Float64,
 )
-    (; waterlevel_discharge_curve, col_index_hq, maximum_storage) = reservoir_model.parameters
+    (; waterlevel_discharge_curve, col_index_hq, maximum_storage) =
+        reservoir_model.parameters
     (; storage, waterlevel) = reservoir_model.variables
     (; precipitation, evaporation, inflow) = boundary_vars
 
     storage_input = storage[i] / dt + precipitation - evaporation + inflow
-    outflow = interpolate_linear(waterlevel[i], waterlevel_discharge_curve[i].H, waterlevel_discharge_curve[i].Q[:, col_index_hq[1]])
+    outflow = interpolate_linear(
+        waterlevel[i],
+        waterlevel_discharge_curve[i].H,
+        waterlevel_discharge_curve[i].Q[:, col_index_hq[1]],
+    )
     outflow = min(outflow, storage_input)
     storage = (storage_input - outflow) * dt
 
@@ -459,8 +489,15 @@ function update_reservoir_free_weir(
     boundary_vars::NamedTuple,
     dt::Float64,
 )
-    (; threshold, rating_curve_coefficient, rating_curve_exponent, area, storage_curve_type, storage_waterlevel_curve, lower_reservoir_ind) =
-        reservoir_model.parameters
+    (;
+        threshold,
+        rating_curve_coefficient,
+        rating_curve_exponent,
+        area,
+        storage_curve_type,
+        storage_waterlevel_curve,
+        lower_reservoir_ind,
+    ) = reservoir_model.parameters
     res_v = reservoir_model.variables
     (; waterlevel) = res_v
     (; precipitation, evaporation, inflow) = boundary_vars
@@ -498,7 +535,11 @@ function update_reservoir_free_weir(
         lower_res_waterlevel = if storage_curve_type[lo] == ReservoirProfileType.linear
             waterlevel[lo] + (lower_res_storage - res_v.storage[lo]) / area[lo]
         else # ReservoirProfileType.interpolation
-            interpolate_linear(lower_res_storage, storage_waterlevel_curve[lo].S, storage_waterlevel_curve[lo].H)
+            interpolate_linear(
+                lower_res_storage,
+                storage_waterlevel_curve[lo].S,
+                storage_waterlevel_curve[lo].H,
+            )
         end
 
         # update values for the lower reservoir in place
@@ -564,7 +605,11 @@ function update_reservoir_model!(
     waterlevel = if res_p.storage_curve_type[i] == ReservoirProfileType.linear
         res_v.waterlevel[i] + (storage - res_v.storage[i]) / res_p.area[i]
     else # res_p.storage_curve_type[i] == ReservoirProfileType.interpolation
-        interpolate_linear(storage, res_p.storage_waterlevel_curve[i].S, res_p.storage_waterlevel_curve[i].H)
+        interpolate_linear(
+            storage,
+            res_p.storage_waterlevel_curve[i].S,
+            res_p.storage_waterlevel_curve[i].H,
+        )
     end
 
     # update values in place

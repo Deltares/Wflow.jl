@@ -27,11 +27,13 @@ end
 
     # Case kh_profile::KhExponential
     kh_profile = Wflow.KhExponential([0.0002795374658372667], [1.8001038115471601])
-    @test Wflow.ssf_celerity(water_table_depth, slope, theta_e, kh_profile, i) ≈ 3.4838105601686665e-6
+    @test Wflow.ssf_celerity(water_table_depth, slope, theta_e, kh_profile, i) ≈
+          3.4838105601686665e-6
 
     # Case kh_profile::KhExponentialConstant
     kh_profile = Wflow.KhExponentialConstant(kh_profile, [0.2])
-    @test Wflow.ssf_celerity(water_table_depth, slope, theta_e, kh_profile, i) ≈ 4.170921791220723e-6
+    @test Wflow.ssf_celerity(water_table_depth, slope, theta_e, kh_profile, i) ≈
+          4.170921791220723e-6
 end
 
 @testitem "unit: kw_ssf_newton_raphson" begin
@@ -539,7 +541,11 @@ end
     domain = Wflow.Domain(;
         land = Wflow.DomainLand(;
             network = Wflow.NetworkLand(;
-                edge_indices = Wflow.EdgeConnectivity(; n = 1, idx_right = [2], idx_left = [3]),
+                edge_indices = Wflow.EdgeConnectivity(;
+                    n = 1,
+                    idx_right = [2],
+                    idx_left = [3],
+                ),
             ),
             parameters = Wflow.LandParameters(;
                 x_length = fill(600.0, n),
@@ -616,7 +622,11 @@ end
         land = Wflow.DomainLand(;
             network = Wflow.NetworkLand(;
                 river_indices = [1],
-                edge_indices = Wflow.EdgeConnectivity(; n, idx_left = [2, 1], idx_down = [2, 1]),
+                edge_indices = Wflow.EdgeConnectivity(;
+                    n,
+                    idx_left = [2, 1],
+                    idx_down = [2, 1],
+                ),
             ),
             parameters = Wflow.LandParameters(;
                 x_length = [600.0, 600.0],
@@ -1022,9 +1032,11 @@ end
     @test river_flow_model.variables.zs_src ≈ [166.98963199894177, 166.92754760786679]
     @test river_flow_model.variables.zs_dst ≈ [166.92754760786679, 166.86980277988906]
     @test river_flow_model.variables.zs_max ≈ [166.98963199894177, 166.92754760786679]
-    @test river_flow_model.variables.water_depth_at_edge ≈ [1.8817912224982933, 1.8197068314233036]
+    @test river_flow_model.variables.water_depth_at_edge ≈
+          [1.8817912224982933, 1.8197068314233036]
     @test river_flow_model.variables.flow_area ≈ [280.7225571209805, 271.4609085323917]
-    @test river_flow_model.variables.hydraulic_radius ≈ [1.8354842671202385, 1.7763698223484754]
+    @test river_flow_model.variables.hydraulic_radius ≈
+          [1.8354842671202385, 1.7763698223484754]
     @test river_flow_model.variables.q ≈ [137.1827776559179, 133.7538757670657]
     @test river_flow_model.variables.q_cumulative ≈ [6778.106459961183, 6608.686781773178]
 
@@ -1033,7 +1045,8 @@ end
     @test river_flow_model.floodplain.variables.water_depth_at_edge ≈
           [0.2896350506995873, 0.22755065962459753]
     @test river_flow_model.floodplain.variables.hf_index == [1, 2]
-    @test river_flow_model.floodplain.variables.flow_area ≈ [55.72538543569419, 117.7803635852996]
+    @test river_flow_model.floodplain.variables.flow_area ≈
+          [55.72538543569419, 117.7803635852996]
     @test river_flow_model.floodplain.variables.hydraulic_radius ≈
           [0.28876507912737354, 0.22735103521877678]
     @test river_flow_model.floodplain.variables.q ≈ [3.3074651032168534, 6.14213116671929]

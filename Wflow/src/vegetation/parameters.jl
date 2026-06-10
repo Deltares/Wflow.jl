@@ -27,7 +27,8 @@ function VegetationParameters(
     n = length(indices)
     rooting_depth =
         ncread(dataset, config, "vegetation_root__depth", LandHydrologySBM; sel = indices)
-    crop_coefficient = ncread(dataset, config, "vegetation__crop_factor", LandHydrologySBM; sel = indices)
+    crop_coefficient =
+        ncread(dataset, config, "vegetation__crop_factor", LandHydrologySBM; sel = indices)
     if do_cyclic(config) && haskey(config.input.cyclic, "vegetation__leaf_area_index")
         storage_specific_leaf = ncread(
             dataset,
