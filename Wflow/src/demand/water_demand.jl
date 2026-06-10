@@ -168,7 +168,7 @@ function update_demand_gross!(
     (; parameters, variables) = nonpaddy_model
     (; irrigation_areas, irrigation_trigger, maximum_irrigation_rate) = parameters
     (; demand_gross) = variables
-    (; n_unsatlayers) = soil_model.variables
+    (; n_unsatlayers) = soil_model.variables.diagnostic
 
     for i in eachindex(irrigation_areas)
         if irrigation_areas[i] && irrigation_trigger[i]
@@ -213,7 +213,9 @@ function water_demand_root_zone(soil_model::SbmSoilModel, i::Int, k::Int)
         theta_fc,
         brooks_corey_exponent,
     ) = soil_model.parameters
-    (; unsaturated_layer_thickness, unsaturated_layer_depth, h3) = soil_model.variables
+    (; unsaturated_layer_thickness) = soil_model.variables.diagnostic
+    (; unsaturated_layer_depth) = soil_model.variables.states
+    (; h3) = soil_model.variables.intermediates
 
     rooting_depth = get_rootingdepth(soil_model)
 
@@ -249,7 +251,7 @@ function compute_demand_gross(
     i::Int,
 )
     (; compacted_soil_area_fraction, infiltration_capacity_soil) = soil_model.parameters
-    (; f_infiltration_reduction) = soil_model.variables
+    (; f_infiltration_reduction) = soil_model.variables.intermediates
     (; irrigation_efficiency, maximum_irrigation_rate) = nonpaddy_model.parameters
 
     infiltration_capacity =

@@ -164,8 +164,8 @@
     @testset "First timestep: soil" begin
         (; soil) = model.land
 
-        @test soil.variables.total_storage[50063] ≈ 0.559886196102425
-        @test soil.variables.total_storage[429] ≈ 0.5989948259600009 # river cell
+        @test model.land.variables.total_storage[50063] ≈ 0.559886196102425
+        @test model.land.variables.total_storage[429] ≈ 0.5989948259600009 # river cell
         @test soil.parameters.theta_s[50063] ≈ 0.48755401372909546
         @test soil.parameters.theta_r[50063] ≈ 0.15943120419979095
 
@@ -448,8 +448,8 @@
         @test soil.parameters.theta_s[50063] ≈ 0.48755401372909546
         @test soil.parameters.theta_r[50063] ≈ 0.15943120419979095
         # Total storage is affected by all modules, not just soil
-        @test soil.variables.total_storage[50063] ≈ 0.5599633189802773
-        @test soil.variables.total_storage[429] ≈ 0.6209840187839495  # river cell
+        @test model.land.variables.total_storage[50063] ≈ 0.5599633189802773
+        @test model.land.variables.total_storage[429] ≈ 0.6209840187839495  # river cell
 
         @test test_means(
             soil.variables,
@@ -1080,7 +1080,7 @@ end
             (; soil) = model.land
             (; kv_profile) = soil.parameters
             (; subsurface_flow) = model.routing
-            z = soil.variables.water_table_depth[i]
+            z = soil.variables.diagnostic.water_table_depth[i]
             vertical_hydraulic_conductivity_factor =
                 soil.parameters.vertical_hydraulic_conductivity_factor
             kv_z = Wflow.hydraulic_conductivity_at_depth(
@@ -1105,7 +1105,7 @@ end
             (; soil) = model.land
             (; kv_profile) = soil.parameters
             (; subsurface_flow) = model.routing
-            z = soil.variables.water_table_depth[i]
+            z = soil.variables.diagnostic.water_table_depth[i]
             vertical_hydraulic_conductivity_factor =
                 soil.parameters.vertical_hydraulic_conductivity_factor
             kv_z = Wflow.hydraulic_conductivity_at_depth(
@@ -1146,7 +1146,7 @@ end
             (; soil) = model.land
             (; kv_profile) = soil.parameters
             (; subsurface_flow) = model.routing
-            z = soil.variables.water_table_depth[i]
+            z = soil.variables.diagnostic.water_table_depth[i]
             vertical_hydraulic_conductivity_factor =
                 soil.parameters.vertical_hydraulic_conductivity_factor
             @test Wflow.hydraulic_conductivity_at_depth(
@@ -1170,7 +1170,7 @@ end
             (; soil) = model.land
             (; kv_profile) = soil.parameters
             (; subsurface_flow) = model.routing
-            z = soil.variables.water_table_depth[i]
+            z = soil.variables.diagnostic.water_table_depth[i]
             vertical_hydraulic_conductivity_factor =
                 soil.parameters.vertical_hydraulic_conductivity_factor
             @test Wflow.hydraulic_conductivity_at_depth(

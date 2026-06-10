@@ -76,7 +76,7 @@ function update_model!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
 
     # exchange of recharge between SBM soil model and groundwater flow domain
     # recharge rate groundwater is required in units [m s⁻¹]
-    @. boundary_conditions.recharge.variables.rate = soil.variables.recharge
+    @. boundary_conditions.recharge.variables.rate = soil.variables.fluxes.recharge
 
     if do_water_demand(config)
         @. boundary_conditions.recharge.variables.rate -=

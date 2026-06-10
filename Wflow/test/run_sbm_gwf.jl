@@ -45,11 +45,11 @@
 
         @test model.clock.iteration == 1
         @test soil.parameters.theta_s[1] ≈ 0.44999998807907104
-        @test soil.variables.runoff[1] == 0.0
-        @test soil.variables.soil_evaporation[1] == 0.0
-        @test soil.variables.transpiration[1] ≈ 3.5402352814410006e-9
-        @test soil.variables.total_storage[1] ≈ 0.594859200902034
-        @test soil.variables.total_storage[6] ≈ 0.6650260781409222 # river cell
+        @test soil.variables.fluxes.runoff[1] == 0.0
+        @test soil.variables.fluxes.soil_evaporation[1] == 0.0
+        @test soil.variables.fluxes.transpiration[1] ≈ 3.5402352814410006e-9
+        @test model.land.variables.total_storage[1] ≈ 0.594859200902034
+        @test model.land.variables.total_storage[6] ≈ 0.6650260781409222 # river cell
     end
 
     # run the second timestep
@@ -58,11 +58,11 @@
     @testset "second timestep" begin
         (; soil) = model.land
         @test soil.parameters.theta_s[1] ≈ 0.44999998807907104
-        @test soil.variables.runoff[1] == 0.0
-        @test soil.variables.soil_evaporation[1] == 0.0
-        @test soil.variables.transpiration[4] ≈ 1.1047988106735302e-8
-        @test soil.variables.total_storage[1] ≈ 0.5946412481941371
-        @test soil.variables.total_storage[6] ≈ 0.6468344274025224 # river cell
+        @test soil.variables.fluxes.runoff[1] == 0.0
+        @test soil.variables.fluxes.soil_evaporation[1] == 0.0
+        @test soil.variables.fluxes.transpiration[4] ≈ 1.1047988106735302e-8
+        @test model.land.variables.total_storage[1] ≈ 0.5946412481941371
+        @test model.land.variables.total_storage[6] ≈ 0.6468344274025224 # river cell
     end
 
     @testset "overland flow (kinematic wave)" begin
@@ -191,9 +191,9 @@ end
 
     @testset "second timestep warm start" begin
         sbm = model.land
-        @test sbm.soil.variables.runoff[1] == 0.0
-        @test sbm.soil.variables.soil_evaporation[1] ≈ 3.2972938259285734e-9
-        @test sbm.soil.variables.transpiration[1] ≈ 1.171601181097342e-8
+        @test sbm.soil.variables.fluxes.runoff[1] == 0.0
+        @test sbm.soil.variables.fluxes.soil_evaporation[1] ≈ 3.2972938259285734e-9
+        @test sbm.soil.variables.fluxes.transpiration[1] ≈ 1.171601181097342e-8
     end
 
     @testset "river domain warm start (kinematic wave)" begin

@@ -93,7 +93,7 @@ end
 "Compute total storage of land hydrolology model `LandHydrologySBM` at index `i`."
 function compute_total_storage(land_hydrology_model::LandHydrologySBM, i::Int)
     (; soil, interception, snow, glacier, demand) = land_hydrology_model
-    (; total_soil_water_storage) = soil.variables
+    (; total_soil_water_storage) = soil.variables.diagnostic
     (; canopy_storage) = interception.variables
 
     snow_storage = get_snow_storage(snow)[i] + get_snow_water(snow)[i]
@@ -198,7 +198,7 @@ end
 "Compute total outgoing vertical flux of land hydrology `SBM` at index `i`."
 function vertical_out(land_hydrology_model::LandHydrologySBM, i::Int)
     (; allocation, soil, runoff) = land_hydrology_model
-    (; net_runoff, actual_evapotranspiration, actual_leakage) = soil.variables
+    (; net_runoff, actual_evapotranspiration, actual_leakage) = soil.variables.fluxes
     (; net_runoff_river) = runoff.variables
     total_out =
         net_runoff[i] +

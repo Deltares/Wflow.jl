@@ -624,7 +624,7 @@ function update_lateral_inflow!(
     dt::Float64,
 )
     (; soil, subsurface_flow, allocation) = external_models
-    (; net_runoff) = soil.variables
+    (; net_runoff) = soil.variables.fluxes
     (; inwater) = overland_flow_model.boundary_conditions
 
     (; area) = domain.land.parameters

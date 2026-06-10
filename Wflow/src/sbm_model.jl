@@ -71,14 +71,14 @@ function update_model!(model::AbstractModel{<:SbmModel})
     update_river_storage_stage!(boundary_conditions.river, routing.river_flow)
 
     # exchange of recharge [m s⁻¹] between SBM soil model and subsurface flow domain
-    boundary_conditions.recharge.variables.rate .= land.soil.variables.recharge
+    boundary_conditions.recharge.variables.rate .= land.soil.variables.fluxes.recharge
     if do_water_demand(config)
         @. boundary_conditions.recharge.variables.rate -=
             land.allocation.variables.actual_groundwater_abstraction
     end
 
     routing.subsurface_flow.variables.water_table_depth .=
-        land.soil.variables.water_table_depth
+        land.soil.variables.diagnostic.water_table_depth
 
     # update lateral subsurface flow domain (kinematic wave)
     kh_layered_profile!(land.soil, routing.subsurface_flow, kv_profile)
@@ -148,7 +148,7 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
         if config.model.type == ModelType.sbm
             (; water_table_depth, storage, head) = routing.subsurface_flow.variables
             (; specific_yield, soil_thickness, top) = routing.subsurface_flow.parameters
-            @. water_table_depth = land.soil.variables.water_table_depth
+            @. water_table_depth = land.soil.variables.diagnostic.water_table_depth
             @. head = top - water_table_depth
             @. storage =
                 specific_yield *

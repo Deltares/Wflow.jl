@@ -153,7 +153,7 @@ function LateralSSFModel(
     n = length(indices)
     timestepping = init_kinematic_wave_timestepping(config, n; domain = "subsurface")
     parameters = LateralSsfParameters(dataset, config, indices, soil.parameters, area)
-    water_table_depth = copy(soil.variables.water_table_depth)
+    water_table_depth = copy(soil.variables.diagnostic.water_table_depth)
     variables = LateralSsfVariables(parameters, water_table_depth)
     recharge = RechargeModel(; n)
     if config.model.river_subsurface_exchange_head_based__flag

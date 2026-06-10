@@ -953,7 +953,7 @@ function update_bc_overland_flow_model!(
     dt::Float64,
 )
     (; soil, runoff, subsurface_flow) = external_models
-    (; net_runoff) = soil.variables
+    (; net_runoff) = soil.variables.fluxes
     (; net_runoff_river) = runoff.variables
     (; area) = domain.land.parameters
     river_indices = domain.river.network.land_indices

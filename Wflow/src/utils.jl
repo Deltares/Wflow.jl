@@ -801,7 +801,7 @@ function kh_layered_profile!(
 )
     (; number_of_layers, cumulative_layer_depth, actual_layer_thickness, soil_thickness) =
         soil_model.parameters
-    (; n_unsatlayers, water_table_depth) = soil_model.variables
+    (; n_unsatlayers, water_table_depth) = soil_model.variables.diagnostic
     (; kh) = subsurface_flow_model.parameters.kh_profile
     (; horizontal_to_vertical_hydraulic_conductivity_ratio) =
         subsurface_flow_model.parameters
@@ -838,7 +838,7 @@ function kh_layered_profile!(
     (; number_of_layers, cumulative_layer_depth, actual_layer_thickness, soil_thickness) =
         soil_model.parameters
     (; nlayers_kv, z_layered, kv, hydraulic_conductivity_scale_parameter) = kv_profile
-    (; n_unsatlayers, water_table_depth) = soil_model.variables
+    (; n_unsatlayers, water_table_depth) = soil_model.variables.diagnostic
     (; kh) = subsurface_flow_model.parameters.kh_profile
     (; horizontal_to_vertical_hydraulic_conductivity_ratio) =
         subsurface_flow_model.parameters
@@ -1093,8 +1093,8 @@ function water_table_change(
     i::Int,
     dt::Float64,
 )
-    (; n_unsatlayers, unsaturated_layer_thickness, unsaturated_layer_depth) =
-        soil_model.variables
+    (; n_unsatlayers, unsaturated_layer_thickness) = soil_model.variables.diagnostic
+    (; unsaturated_layer_depth) = soil_model.variables.states
     (; theta_s, theta_r) = soil_model.parameters
 
     # effective porosity (difference between saturated and residual water content)
