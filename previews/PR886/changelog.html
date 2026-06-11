@@ -77,9 +77,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-87ac4a3308277090b547c6f55b66fd42.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="site_libs/bootstrap/bootstrap-dark-2c58d53b24add42715e2f3fc0f1a4a60.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="site_libs/bootstrap/bootstrap-87ac4a3308277090b547c6f55b66fd42.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-456590698c3c54fc61fdc624c2418dba.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-dark-0ac10d74e4943a33dc67abbdb9faa848.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="site_libs/bootstrap/bootstrap-456590698c3c54fc61fdc624c2418dba.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -520,6 +520,9 @@ window.Quarto = {
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="dt">subsurface_water__instantaneous_volume_flow_rate</span> <span class="op">=</span> <span class="st">"ssf"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <section id="fixed" class="level3">
 <h3 class="anchored" data-anchor-id="fixed">Fixed</h3>
+<ul>
+<li>Fixed a bug where the maximum subsurface flow was not adjusted for subdaily timesteps (only when using <code>layered</code> or <code>layered_exponential</code> profiles)</li>
+</ul>
 </section>
 <section id="changed" class="level3">
 <h3 class="anchored" data-anchor-id="changed">Changed</h3>
@@ -535,6 +538,7 @@ window.Quarto = {
 <ul>
 <li>Support internal timestepping for kinematic wave lateral subsurface flow concept <code>LateralSSF</code>.</li>
 <li>Support including river and drainage head-dependent flux boundary conditions for kinematic wave lateral subsurface flow concept <code>LateralSSF</code>.</li>
+<li>Support for running only a subsection of the model, either by using a smaller active domain via <code>input.subbasin_location__count</code>, or specify specific subcatchments by linking <code>input.subbasin_location__count</code> to a subcatchment map, and indicate which subbasins should be active by providing their IDs in <code>input.subbasin_active_location__count</code>.</li>
 </ul>
 </section>
 </section>
