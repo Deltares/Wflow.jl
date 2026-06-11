@@ -521,17 +521,17 @@ end
 
 "Struct to store river allocation model variables"
 @with_kw struct AllocationRiverVariables
-    n_river_cells::Int
-    actual_surfacewater_abstraction::Vector{Float64} = zeros(n_river_cells)       # actual surface water abstraction [m s⁻¹]
-    actual_surfacewater_abstraction_volume::Vector{Float64} = zeros(n_river_cells)   # actual surface water abstraction [m³ s⁻¹]
-    available_surfacewater::Vector{Float64} = zeros(n_river_cells)      # available surface water [m³]
-    non_irrigation_returnflow::Vector{Float64} = zeros(n_river_cells)          # return flow from non irrigation [m s⁻¹]
+    n_river::Int
+    actual_surfacewater_abstraction::Vector{Float64} = zeros(n_river)       # actual surface water abstraction [m s⁻¹]
+    actual_surfacewater_abstraction_volume::Vector{Float64} = zeros(n_river)   # actual surface water abstraction [m³ s⁻¹]
+    available_surfacewater::Vector{Float64} = zeros(n_river)      # available surface water [m³]
+    non_irrigation_returnflow::Vector{Float64} = zeros(n_river)          # return flow from non irrigation [m s⁻¹]
 end
 
 "River allocation model"
 @with_kw struct AllocationRiverModel <: AbstractAllocationModel
-    n_river_cells::Int
-    variables::AllocationRiverVariables = AllocationRiverVariables(; n_river_cells)
+    n_river::Int
+    variables::AllocationRiverVariables = AllocationRiverVariables(; n_river)
 end
 
 get_nonirrigation_returnflow(allocation_model::AllocationRiverModel) =

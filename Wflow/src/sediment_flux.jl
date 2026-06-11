@@ -57,10 +57,10 @@ function OverlandFlowSedimentModel(
 
     if do_river || land_transport == LandTransportType.yalinpart
         sediment_flux = SedimentLandTransportDifferentiationModel(; n)
-        to_river = SedimentToRiverDifferentiationModel(; n_river_cells = n)
+        to_river = SedimentToRiverDifferentiationModel(; n_river = n)
     else
         sediment_flux = SedimentLandTransportModel(; n)
-        to_river = SedimentToRiverModel(; n_river_cells = n)
+        to_river = SedimentToRiverModel(; n_river = n)
     end
 
     overland_flow_sediment = OverlandFlowSedimentModel(;

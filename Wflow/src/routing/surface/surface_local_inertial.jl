@@ -3,7 +3,7 @@ abstract type AbstractFloodPlainModel end
 "Struct for storing local inertial river flow model parameters"
 @with_kw struct LocalInertialRiverFlowParameters
     # number of cells [-]
-    n_river_cells::Int
+    n_river::Int
     # number of edges [-]
     ne::Int
     # active nodes [-]
@@ -70,7 +70,7 @@ function LocalInertialRiverFlowParameters(
         sel = indices,
     )
 
-    n_river_cells = length(indices)
+    n_river = length(indices)
     index_pit = findall(==(5), local_drain_direction)
     # set ghost points for boundary condition (downstream river outlet): river width, bed
     # elevation, manning n is copied from the upstream cell.
@@ -102,7 +102,7 @@ function LocalInertialRiverFlowParameters(
     active_index = findall(==(0), reservoir_outlet)
 
     parameters = LocalInertialRiverFlowParameters(;
-        n_river_cells,
+        n_river,
         ne = n_edges,
         active_n = active_index,
         active_e = active_index,
@@ -959,9 +959,9 @@ function stable_timestep(
 )
     dt_min = Inf
     (; alpha_coefficient) = river_flow_model.timestepping
-    (; n_river_cells) = river_flow_model.parameters
+    (; n_river) = river_flow_model.parameters
     (; h) = river_flow_model.variables
-    @batch per = thread reduction = ((min, dt_min),) for river_idx in 1:(n_river_cells)
+    @batch per = thread reduction = ((min, dt_min),) for river_idx in 1:(n_river)
         @fastmath @inbounds dt =
             alpha_coefficient * flow_length[river_idx] /
             sqrt(GRAVITATIONAL_ACCELERATION * h[river_idx])
@@ -1626,14 +1626,14 @@ end
 
 "Struct to store floodplain flow model variables"
 @with_kw struct FloodPlainVariables
-    n_river_cells::Int
+    n_river::Int
     n_edges::Int
     # storage [m³]
-    storage::Vector{Float64} = zeros(n_river_cells)
+    storage::Vector{Float64} = zeros(n_river)
     # water depth [m]
     h::Vector{Float64}
     # error storage [m³]
-    error::Vector{Float64} = zeros(n_river_cells)
+    error::Vector{Float64} = zeros(n_river)
     # flow area at edge [m²]
     flow_area::Vector{Float64} = zeros(n_edges)
     # hydraulic radius at edge [m]
@@ -1739,12 +1739,12 @@ function FloodPlainModel(
     zb_floodplain::Vector{Float64},
 )
     (; indices, local_drain_direction, graph) = domain.network
-    n_river_cells = length(indices)
+    n_river = length(indices)
     index_pit = findall(x -> x == 5, local_drain_direction)
     parameters = FloodPlainParameters(dataset, config, domain, zb_floodplain, index_pit)
-    h = zeros(n_river_cells + length(index_pit))
+    h = zeros(n_river + length(index_pit))
     n_edges = ne(graph)
-    variables = FloodPlainVariables(; n_river_cells, n_edges, h)
+    variables = FloodPlainVariables(; n_river, n_edges, h)
 
     floodplain = FloodPlainModel(; parameters, variables)
     return floodplain

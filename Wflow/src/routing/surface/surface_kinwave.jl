@@ -73,17 +73,17 @@ end
 
 "Struct for storing river flow model boundary conditions"
 @with_kw struct RiverFlowBC{R <: Union{ReservoirModel, Nothing}}
-    n_river_cells::Int
+    n_river::Int
     # External inflow (abstraction/supply/demand) [m³ s⁻¹]
     external_inflow::Vector{Float64}
     # Lateral inflow [m³ s⁻¹]
-    inwater::Vector{Float64} = zeros(n_river_cells)
+    inwater::Vector{Float64} = zeros(n_river)
     # Actual cumulative abstraction from external negative inflow [m³]
-    actual_external_abstraction_cumulative::Vector{Float64} = zeros(n_river_cells)
+    actual_external_abstraction_cumulative::Vector{Float64} = zeros(n_river)
     # Actual average abstraction from external negative inflow [m³ s⁻¹]
-    actual_external_abstraction_average::Vector{Float64} = zeros(n_river_cells)
+    actual_external_abstraction_average::Vector{Float64} = zeros(n_river)
     # Abstraction (computed as part of water demand and allocation) [m³ s⁻¹]
-    abstraction::Vector{Float64} = zeros(n_river_cells)
+    abstraction::Vector{Float64} = zeros(n_river)
     # Reservoir model struct of arrays
     reservoir::R
 end
@@ -103,8 +103,8 @@ function RiverFlowBC(
         Routing;
         sel = indices,
     )
-    n_river_cells = length(indices)
-    bc = RiverFlowBC(; n_river_cells, external_inflow, reservoir)
+    n_river = length(indices)
+    bc = RiverFlowBC(; n_river, external_inflow, reservoir)
     return bc
 end
 
@@ -127,15 +127,15 @@ function KinWaveRiverFlowModel(
     reservoir::Union{ReservoirModel, Nothing},
 )
     (; indices) = domain.network
-    n_river_cells = length(indices)
+    n_river = length(indices)
 
-    timestepping = init_kinematic_wave_timestepping(config, n_river_cells; domain = "river")
+    timestepping = init_kinematic_wave_timestepping(config, n_river; domain = "river")
 
     allocation =
-        do_water_demand(config) ? AllocationRiverModel(; n_river_cells) :
-        NoAllocationRiverModel(n_river_cells)
+        do_water_demand(config) ? AllocationRiverModel(; n_river) :
+        NoAllocationRiverModel(n_river)
 
-    variables = FlowVariables(; n = n_river_cells)
+    variables = FlowVariables(; n = n_river)
     parameters = RiverFlowParameters(dataset, config, domain)
     boundary_conditions = RiverFlowBC(dataset, config, domain.network, reservoir)
 

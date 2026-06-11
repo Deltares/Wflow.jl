@@ -488,10 +488,10 @@ function update_transport_capacity_model!(
     (; c_bagnold, e_bagnold) = transport_capacity_model.parameters
     (; sediment_transport_capacity) = transport_capacity_model.variables
 
-    n_river_cells = length(q)
+    n_river = length(q)
     # Note: slope is not used here but this allows for a consistent interface of update! functions
     # Only Bagnold does not use it
-    threaded_foreach(1:n_river_cells; basesize = 1000) do river_idx
+    threaded_foreach(1:n_river; basesize = 1000) do river_idx
         sediment_transport_capacity[river_idx] = transport_capacity_bagnold(
             q[river_idx],
             waterlevel[river_idx],
@@ -534,8 +534,8 @@ function update_transport_capacity_model!(
     (; density, d50) = transport_capacity_model.parameters
     (; sediment_transport_capacity) = transport_capacity_model.variables
 
-    n_river_cells = length(q)
-    threaded_foreach(1:n_river_cells; basesize = 1000) do river_idx
+    n_river = length(q)
+    threaded_foreach(1:n_river; basesize = 1000) do river_idx
         sediment_transport_capacity[river_idx] = transport_capacity_engelund(
             q[river_idx],
             waterlevel[river_idx],
@@ -632,8 +632,8 @@ function update_transport_capacity_model!(
     (; a_kodatie, b_kodatie, c_kodatie, d_kodatie) = transport_capacity_model.parameters
     (; sediment_transport_capacity) = transport_capacity_model.variables
 
-    n_river_cells = length(q)
-    threaded_foreach(1:n_river_cells; basesize = 1000) do river_idx
+    n_river = length(q)
+    threaded_foreach(1:n_river; basesize = 1000) do river_idx
         sediment_transport_capacity[river_idx] = transport_capacity_kodatie(
             q[river_idx],
             waterlevel[river_idx],
@@ -679,8 +679,8 @@ function update_transport_capacity_model!(
     (; density, d50) = transport_capacity_model.parameters
     (; sediment_transport_capacity) = transport_capacity_model.variables
 
-    n_river_cells = length(q)
-    threaded_foreach(1:n_river_cells; basesize = 1000) do river_idx
+    n_river = length(q)
+    threaded_foreach(1:n_river; basesize = 1000) do river_idx
         sediment_transport_capacity[river_idx] = transport_capacity_yang(
             q[river_idx],
             waterlevel[river_idx],
@@ -724,8 +724,8 @@ function update_transport_capacity_model!(
     (; density, d50) = transport_capacity_model.parameters
     (; sediment_transport_capacity) = transport_capacity_model.variables
 
-    n_river_cells = length(q)
-    threaded_foreach(1:n_river_cells; basesize = 1000) do river_idx
+    n_river = length(q)
+    threaded_foreach(1:n_river; basesize = 1000) do river_idx
         sediment_transport_capacity[river_idx] = transport_capacity_molinas(
             q[river_idx],
             waterlevel[river_idx],
