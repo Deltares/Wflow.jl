@@ -94,7 +94,8 @@ function Connectivity(
             J = cartesian_idx + neighbor
             if (1 <= J[1] <= nrow) && (1 <= J[2] <= ncol && reverse_indices[J] != 0) # Check if it's inbounds and neighbor is active
                 rowval[nnz_idx] = reverse_indices[J]
-                length1[nnz_idx], length2[nnz_idx], width[nnz_idx] = connection_geometry(cartesian_idx, J, dx, dy)
+                length1[nnz_idx], length2[nnz_idx], width[nnz_idx] =
+                    connection_geometry(cartesian_idx, J, dx, dy)
                 nnz_idx += 1
             end
         end
