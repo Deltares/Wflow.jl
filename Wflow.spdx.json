@@ -3,12 +3,12 @@
     "dataLicense": "CC0-1.0",
     "SPDXID": "SPDXRef-DOCUMENT",
     "name": "Wflow.jl",
-    "documentNamespace": "https://github.com/Deltares/Wflow.jl/Wflow.spdx.json-54a507d3-fe6b-415a-b4f3-c38eaf6ebaeb",
+    "documentNamespace": "https://github.com/Deltares/Wflow.jl/Wflow.spdx.json-ebf6cbae-54c7-4536-9cfe-c292b412628d",
     "creationInfo": {
         "creators": [
             "Organization:  Deltares  (software@deltares.nl)"
         ],
-        "created": "2026-06-02T14:43:43Z",
+        "created": "2026-06-10T07:40:42Z",
         "comment": "Target Platform: Platform(\"x86_64\", \"linux\"; libgfortran_version = \"5.0.0\", julia_version = \"1.12.5\", libc = \"glibc\", libstdcxx_version = \"3.4.30\", cxxstring_abi = \"cxx11\")"
     },
     "comment": "Registries used for populating Package data:\nGeneral registry: https://github.com/JuliaRegistries/General.git\nOfficial general Julia package registry where people can\nregister any package they want without too much debate about\nnaming and without enforced standards on documentation or\ntesting. We nevertheless encourage documentation, testing and\nsome amount of consideration when choosing package names.\n",
@@ -2008,13 +2008,13 @@
         {
             "name": "DiskArrays",
             "SPDXID": "SPDXRef-DiskArrays-3c3547ce-8d99-4f5e-a174-61eb10b00ae3",
-            "versionInfo": "0.4.20",
+            "versionInfo": "0.4.21",
             "supplier": "NOASSERTION",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaIO/DiskArrays.jl.git@ead53bf0bbcd2e487495b2462feaa6043c4bc8c1",
+            "downloadLocation": "git+https://github.com/JuliaIO/DiskArrays.jl.git@7821ce71d0b9c2948ab80f86237f1f4212dca861",
             "filesAnalyzed": true,
             "packageVerificationCode": {
-                "packageVerificationCodeValue": "62fed77ea8604ae10117668054fc5e72c18a625a"
+                "packageVerificationCodeValue": "80aea6e2d52516d15c85be70a28c4fd7c47235c0"
             },
             "homepage": "https://github.com/JuliaIO/DiskArrays.jl.git",
             "licenseConcluded": "NOASSERTION",
@@ -2029,7 +2029,7 @@
                 {
                     "referenceCategory": "PACKAGE-MANAGER",
                     "referenceType": "purl",
-                    "referenceLocator": "pkg:julia/DiskArrays@0.4.20?uuid=3c3547ce-8d99-4f5e-a174-61eb10b00ae3"
+                    "referenceLocator": "pkg:julia/DiskArrays@0.4.21?uuid=3c3547ce-8d99-4f5e-a174-61eb10b00ae3"
                 }
             ]
         },
