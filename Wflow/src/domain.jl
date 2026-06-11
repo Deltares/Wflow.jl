@@ -139,10 +139,16 @@ function Domain(dataset::NCDataset, config::Config, ::Union{SbmModel, SbmGwfMode
     @reset domain.river.parameters = river_params
 
     if config.model.drain__flag
-        (; indices) = domain.land.network
+        (; indices, modelsize) = domain.land.network
         (; surface_flow_width) = domain.land.parameters
-        @reset domain.drain.network =
-            NetworkDrain(dataset, config, indices, surface_flow_width)
+        drain_network =
+            NetworkDrain(dataset, config, indices, surface_flow_width, modelsize)
+        if length(drain_network.indices) > 0
+            @reset domain.drain.network = drain_network
+        else
+            @warn "No drain cells found in active model domain, disabling drainage model component."
+            config.model.drain__flag = false
+        end
     end
 
     if do_water_demand(config)
@@ -309,11 +315,23 @@ function get_river_fraction(
     river_location::Vector{Bool},
     area::Vector{Float64},
 )
-    river_width_2d = ncread(dataset, config, "river__width", Routing; logging = false)
-    river_width = river_width_2d[network.indices]
+    river_width = ncread(
+        dataset,
+        config,
+        "river__width",
+        Routing;
+        sel = network.indices,
+        logging = false,
+    )
 
-    river_length_2d = ncread(dataset, config, "river__length", Routing; logging = false)
-    river_length = river_length_2d[network.indices]
+    river_length = ncread(
+        dataset,
+        config,
+        "river__length",
+        Routing;
+        sel = network.indices,
+        logging = false,
+    )
 
     n = length(river_location)
     river_fraction = fill(MISSING_VALUE, n)
@@ -348,8 +366,8 @@ end
 
 "Return river mask"
 function river_mask(dataset::NCDataset, config::Config, network::NetworkLand)::Vector{Bool}
-    river_2d = ncread(dataset, config, "river_location__mask", Domain)
-    river_location = river_2d[network.indices]
+    river_location =
+        ncread(dataset, config, "river_location__mask", Domain; sel = network.indices)
     return river_location
 end
 
@@ -369,7 +387,13 @@ function reservoir_mask(
             Routing;
             sel = network.indices,
         )
-        replace!(x -> ismissing(x) ? 0 : x, reservoirs)
+        # check if any reservoirs are found in the active model domain, if not disable reservoir model component
+        if !all(x -> ismissing(x) || x == 0, reservoirs)
+            replace!(x -> ismissing(x) ? 0 : x, reservoirs)
+        else
+            config.model.reservoir__flag = false
+            @warn "No reservoirs found in active model domain, disabling reservoir model component."
+        end
     end
     reservoirs = Vector{Bool}(reservoirs .> 0)
     return reservoirs
