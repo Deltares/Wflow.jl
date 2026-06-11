@@ -931,13 +931,13 @@ function LocalInertialOverlandFlowParameters(
     zx_max_at_edge = zeros(n)
     zy_max_at_edge = zeros(n)
     for i in 1:n
-        idx_right = edge_indices.idx_right[i]
-        if idx_right <= n
-            zx_max_at_edge[i] = max(elevation[i], elevation[idx_right])
+        ind_x_up = edge_indices.ind_x_up[i]
+        if ind_x_up <= n
+            zx_max_at_edge[i] = max(elevation[i], elevation[ind_x_up])
         end
-        idx_up = edge_indices.idx_up[i]
-        if idx_up <= n
-            zy_max_at_edge[i] = max(elevation[i], elevation[idx_up])
+        ind_y_up = edge_indices.ind_y_up[i]
+        if ind_y_up <= n
+            zy_max_at_edge[i] = max(elevation[i], elevation[ind_y_up])
         end
     end
 
@@ -1197,7 +1197,8 @@ end
 
 """
 Update flow for the local inertial overland flow model at edge `i` in a single direction.
-`is_x_direction`: true for x-direction (idx_right/idx_left), false for y-direction (idx_up/idx_down)
+`is_x_direction`: true for x-direction (ind_x_up/ind_x_down), false for y-direction
+(ind_y_up/ind_y_down)
 """
 @inline function update_directional_flow!(
     overland_flow_model::OverlandFlowModel{<:LocalInertial},
@@ -1213,8 +1214,8 @@ Update flow for the local inertial overland flow model at edge `i` in a single d
 
     # Select direction-specific parameters based on the boolean flag
     if is_x_direction
-        upstream_idx = indices.idx_right[i]
-        downstream_idx = indices.idx_left[i]
+        upstream_idx = indices.ind_x_up[i]
+        downstream_idx = indices.ind_x_down[i]
         width_at_edge = land_p.ywidth_at_edge[i]
         z_max_at_edge = land_p.zx_max_at_edge[i]
         length_vec = x_length
@@ -1222,8 +1223,8 @@ Update flow for the local inertial overland flow model at edge `i` in a single d
         q_prev = land_v.qx0
         q_cumulative = land_v.qx_cumulative
     else
-        upstream_idx = indices.idx_up[i]
-        downstream_idx = indices.idx_down[i]
+        upstream_idx = indices.ind_y_up[i]
+        downstream_idx = indices.ind_y_down[i]
         width_at_edge = land_p.xwidth_at_edge[i]
         z_max_at_edge = land_p.zy_max_at_edge[i]
         length_vec = y_length
@@ -1310,11 +1311,11 @@ function update_inflow_reservoir!(
     land_v = overland_flow_model.variables
 
     for (i, j) in enumerate(reservoir_indices)
-        idx_down = indices.idx_down[j]
-        idx_left = indices.idx_left[j]
+        ind_y_down = indices.ind_y_down[j]
+        ind_x_down = indices.ind_x_down[j]
         reservoir_model.boundary_conditions.inflow_overland[i] =
             land_bc.runoff[j] +
-            (land_v.qx[idx_left] - land_v.qx[j] + land_v.qy[idx_down] - land_v.qy[j])
+            (land_v.qx[ind_x_down] - land_v.qx[j] + land_v.qy[ind_y_down] - land_v.qy[j])
     end
     return nothing
 end
@@ -1335,15 +1336,15 @@ fluxes of the local inertial river and overland flow model.
     edges_at_node = domain.river.network.edges_at_node
     river_idx = inds_river[i]
 
-    idx_down = indices.idx_down[i]
-    idx_left = indices.idx_left[i]
+    ind_y_down = indices.ind_y_down[i]
+    ind_x_down = indices.ind_x_down[i]
 
     net_river_flow =
         sum_at(river_flow_model.variables.q, edges_at_node.src[river_idx]) -
         sum_at(river_flow_model.variables.q, edges_at_node.dst[river_idx])
     net_land_flow =
-        overland_flow_model.variables.qx[idx_left] - overland_flow_model.variables.qx[i] +
-        overland_flow_model.variables.qy[idx_down] - overland_flow_model.variables.qy[i]
+        overland_flow_model.variables.qx[ind_x_down] - overland_flow_model.variables.qx[i] +
+        overland_flow_model.variables.qy[ind_y_down] - overland_flow_model.variables.qy[i]
     net_flow =
         net_river_flow + net_land_flow + overland_flow_model.boundary_conditions.runoff[i] -
         river_flow_model.boundary_conditions.abstraction[river_idx]
@@ -1427,12 +1428,12 @@ from horizontal fluxes and runoff.
     dt::Float64,
 )
     indices = network.edge_indices
-    idx_down = indices.idx_down[i]
-    idx_left = indices.idx_left[i]
+    ind_y_down = indices.ind_y_down[i]
+    ind_x_down = indices.ind_x_down[i]
 
     return (
-        overland_flow_model.variables.qx[idx_left] - overland_flow_model.variables.qx[i] +
-        overland_flow_model.variables.qy[idx_down] - overland_flow_model.variables.qy[i] +
+        overland_flow_model.variables.qx[ind_x_down] - overland_flow_model.variables.qx[i] +
+        overland_flow_model.variables.qy[ind_y_down] - overland_flow_model.variables.qy[i] +
         overland_flow_model.boundary_conditions.runoff[i]
     ) * dt
 end

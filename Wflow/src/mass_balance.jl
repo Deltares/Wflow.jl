@@ -426,14 +426,14 @@ function compute_flow_balance!(
     qy_av_average = qy_average
 
     for i in 1:(overland_flow_model.parameters.n)
-        idx_down = indices.idx_down[i]
-        idx_left = indices.idx_left[i]
+        ind_y_down = indices.ind_y_down[i]
+        ind_x_down = indices.ind_x_down[i]
         total_in = 0.0
         total_out = 0.0
         total_in, total_out = add_inflow(
             total_in,
             total_out,
-            [qx_av_average[idx_left], qy_av_average[idx_down], runoff[i]],
+            [qx_av_average[ind_x_down], qy_av_average[ind_y_down], runoff[i]],
         )
         total_in, total_out =
             add_outflow(total_in, total_out, [qx_av_average[i], qy_av_average[i]])

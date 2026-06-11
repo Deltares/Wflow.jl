@@ -1072,8 +1072,8 @@ end
             network = Wflow.NetworkLand(;
                 edge_indices = Wflow.EdgeConnectivity(;
                     n = 3,
-                    idx_right = [2, 3, 4],
-                    idx_left = [4, 1, 2],
+                    ind_x_up = [2, 3, 4],
+                    ind_x_down = [4, 1, 2],
                 ),
             ),
             parameters = Wflow.LandParameters(;
@@ -1164,8 +1164,8 @@ end
                 river_indices = [0, 0, 1],
                 edge_indices = Wflow.EdgeConnectivity(;
                     n = 3,
-                    idx_left = [4, 1, 2],
-                    idx_down = [4, 4, 4],
+                    ind_x_down = [4, 1, 2],
+                    ind_y_down = [4, 4, 4],
                 ),
             ),
             parameters = Wflow.LandParameters(;
