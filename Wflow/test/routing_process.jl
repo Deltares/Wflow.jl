@@ -728,7 +728,8 @@ end
 @testitem "unit: river flow on a staggered grid using Manning's equation with floodplain" begin
     # Test river flow on a staggered grid using Manning's equation with a floodplain on a
     # 3-node graph (1 → 2 → 3).
-    # Each sub-step of the update is called and verified individually:
+    # Each sub-step of the update of Manning's flow on staggered grid  is called and
+    # verified individually:
     #   1. update_river_channel_flow!  — edge discharge, water surface elevations
     #   2. update_floodplain_flow!     — floodplain discharge and geometry
     #   3. update_bc_reservoir_model!  — no reservoir
