@@ -81,13 +81,13 @@ function update_river_erosion_model!(
     (; d50) = parameters
     (; bed, bank) = variables
 
-    threaded_foreach(eachindex(waterlevel); basesize = 1000) do river_cell_idx
-        bed[river_cell_idx], bank[river_cell_idx] = river_erosion_julian_torres(
-            waterlevel[river_cell_idx],
-            d50[river_cell_idx],
-            parameters_river.flow_width[river_cell_idx],
-            parameters_river.flow_length[river_cell_idx],
-            parameters_river.slope[river_cell_idx],
+    threaded_foreach(eachindex(waterlevel); basesize = 1000) do river_idx
+        bed[river_idx], bank[river_idx] = river_erosion_julian_torres(
+            waterlevel[river_idx],
+            d50[river_idx],
+            parameters_river.flow_width[river_idx],
+            parameters_river.flow_length[river_idx],
+            parameters_river.slope[river_idx],
             dt,
         )
     end

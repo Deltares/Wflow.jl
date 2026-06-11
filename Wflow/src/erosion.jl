@@ -18,10 +18,10 @@ function SoilLossModel(
     indices::Vector{CartesianIndex{2}},
 )
     (; rainfall_erosion, overland_flow_erosion) = config.model
-    n_cells = length(indices)
+    n = length(indices)
 
-    atmospheric_forcing = AtmosphericForcing(; n_cells)
-    hydrological_forcing = HydrologicalForcing(; n_cells)
+    atmospheric_forcing = AtmosphericForcing(; n)
+    hydrological_forcing = HydrologicalForcing(; n)
 
     # Rainfall erosion
     if rainfall_erosion == RainfallErosionType.answers

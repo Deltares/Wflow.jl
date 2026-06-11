@@ -1,38 +1,38 @@
 "Struct for storing lateral subsurface flow model variables"
 @with_kw struct LateralSsfVariables
-    n_cells::Int
+    n::Int
     # Pseudo-water table depth [m] (top of the saturated zone)
     water_table_depth::Vector{Float64}
     # Hydraulic head [m]
     head::Vector{Float64}
     # Cumulative exfiltration [m] (groundwater above surface level, saturated excess conditions)
-    exfiltwater_cumulative::Vector{Float64} = zeros(n_cells)
+    exfiltwater_cumulative::Vector{Float64} = zeros(n)
     # Average exfiltration [m s⁻¹] (groundwater above surface level, saturated excess conditions)
-    exfiltwater_average::Vector{Float64} = zeros(n_cells)
+    exfiltwater_average::Vector{Float64} = zeros(n)
     # Subsurface flow [m³ s⁻¹]
-    q::Vector{Float64} = fill(MISSING_VALUE, n_cells)
+    q::Vector{Float64} = fill(MISSING_VALUE, n)
     # Cumulative subsurface flow [m³] for model timestep Δt
-    q_cumulative::Vector{Float64} = zeros(n_cells)
+    q_cumulative::Vector{Float64} = zeros(n)
     # Average subsurface flow [m³ s⁻¹] for model timestep Δt
-    q_average::Vector{Float64} = zeros(n_cells)
+    q_average::Vector{Float64} = zeros(n)
     # Inflow from upstream cells [m³ s⁻¹]
-    q_in::Vector{Float64} = fill(MISSING_VALUE, n_cells)
+    q_in::Vector{Float64} = fill(MISSING_VALUE, n)
     # cumulative inflow from upstream cells [m³] for model timestep dt
-    q_in_cumulative::Vector{Float64} = zeros(n_cells)
+    q_in_cumulative::Vector{Float64} = zeros(n)
     # Average inflow from upstream cells [m³ s⁻¹] for model timestep dt
-    q_in_average::Vector{Float64} = zeros(n_cells)
+    q_in_average::Vector{Float64} = zeros(n)
     # Maximum subsurface flow [m s⁻¹]
-    q_max::Vector{Float64} = fill(MISSING_VALUE, n_cells)
+    q_max::Vector{Float64} = fill(MISSING_VALUE, n)
     # Cumulative of the part of subsurface flow [m³ s⁻¹] that flows to the river
-    to_river_cumulative::Vector{Float64} = zeros(n_cells)
+    to_river_cumulative::Vector{Float64} = zeros(n)
     # Average of the part of subsurface flow [m³ s⁻¹] that flows to the river
-    to_river_average::Vector{Float64} = zeros(n_cells)
+    to_river_average::Vector{Float64} = zeros(n)
     # Net flow for boundaries subsurface flow [m³ s⁻¹]
-    q_net_bnds::Vector{Float64} = fill(MISSING_VALUE, n_cells)
+    q_net_bnds::Vector{Float64} = fill(MISSING_VALUE, n)
     # Cumulative net flow (total) [m³]
-    q_net_cumulative::Vector{Float64} = zeros(n_cells)
+    q_net_cumulative::Vector{Float64} = zeros(n)
     # Average net flow (total) [m³ s⁻¹]
-    q_net_average::Vector{Float64} = zeros(n_cells)
+    q_net_average::Vector{Float64} = zeros(n)
     # Subsurface storage that can be released [m³]
     storage::Vector{Float64}
 end
@@ -116,8 +116,8 @@ function LateralSsfParameters(
         kh_profile = KhExponentialConstant(exp_profile, z_exp)
     elseif kh_profile_type == VerticalConductivityProfile.layered ||
            kh_profile_type == VerticalConductivityProfile.layered_exponential
-        n_cells = length(horizontal_to_vertical_hydraulic_conductivity_ratio)
-        kh_profile = KhLayered(fill(MISSING_VALUE, n_cells))
+        n = length(horizontal_to_vertical_hydraulic_conductivity_ratio)
+        kh_profile = KhLayered(fill(MISSING_VALUE, n))
     end
     specific_yield = @. lower_bound_drainable_porosity(theta_s, theta_fc)
     ssf_parameters = LateralSsfParameters(;
@@ -133,10 +133,10 @@ end
 
 "Initialize lateral subsurface flow model variables"
 function LateralSsfVariables(ssf::LateralSsfParameters, water_table_depth::Vector{Float64})
-    n_cells = length(water_table_depth)
+    n = length(water_table_depth)
     storage = @. ssf.specific_yield * (ssf.soil_thickness - water_table_depth) * ssf.area
     head = ssf.top - water_table_depth
-    variables = LateralSsfVariables(; n_cells, water_table_depth, storage, head)
+    variables = LateralSsfVariables(; n, water_table_depth, storage, head)
     return variables
 end
 
@@ -150,12 +150,12 @@ function LateralSSFModel(
     (; land, river, drain) = domain
     (; indices) = land.network
     (; area) = domain.land.parameters
-    n_cells = length(indices)
-    timestepping = init_kinematic_wave_timestepping(config, n_cells; domain = "subsurface")
+    n = length(indices)
+    timestepping = init_kinematic_wave_timestepping(config, n; domain = "subsurface")
     parameters = LateralSsfParameters(dataset, config, indices, soil.parameters, area)
     water_table_depth = copy(soil.variables.water_table_depth)
     variables = LateralSsfVariables(parameters, water_table_depth)
-    recharge = RechargeModel(; n_cells)
+    recharge = RechargeModel(; n)
     if config.model.river_subsurface_exchange_head_based__flag
         river = GwfRiverModel(dataset, config, river.network.indices)
     else
@@ -320,20 +320,20 @@ function stable_timestep(subsurface_flow_model::LateralSSFModel, domain::DomainL
     (; flow_length, slope) = domain.parameters
     (; stable_timesteps, alpha_coefficient) = subsurface_flow_model.timestepping
 
-    n_cells = length(water_table_depth)
+    n = length(water_table_depth)
     stable_timesteps .= Inf
     hydraulic_conductivity = 0
-    for cell_idx in 1:n_cells
-        if water_table_depth[cell_idx] > 0.0
+    for idx in 1:n
+        if water_table_depth[idx] > 0.0
             hydraulic_conductivity += 1
             c = ssf_celerity(
-                water_table_depth[cell_idx],
-                slope[cell_idx],
-                specific_yield[cell_idx],
+                water_table_depth[idx],
+                slope[idx],
+                specific_yield[idx],
                 kh_profile,
-                cell_idx,
+                idx,
             )
-            stable_timesteps[hydraulic_conductivity] = (flow_length[cell_idx] / c)
+            stable_timesteps[hydraulic_conductivity] = (flow_length[idx] / c)
         end
     end
 

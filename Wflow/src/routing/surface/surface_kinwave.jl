@@ -1,24 +1,24 @@
 "Struct for storing (shared) variables for river and overland flow models"
 @with_kw struct FlowVariables
-    n_cells::Int
+    n::Int
     # Discharge [m³ s⁻¹]
-    q::Vector{Float64} = zeros(n_cells)
+    q::Vector{Float64} = zeros(n)
     # Lateral inflow per unit length [m² s⁻¹]
-    qlat::Vector{Float64} = zeros(n_cells)
+    qlat::Vector{Float64} = zeros(n)
     # Inflow from upstream cells [m³ s⁻¹]
-    qin::Vector{Float64} = zeros(n_cells)
+    qin::Vector{Float64} = zeros(n)
     # Cumulative inflow from upstream cells [m³] for model time step dt
-    qin_cumulative::Vector{Float64} = zeros(n_cells)
+    qin_cumulative::Vector{Float64} = zeros(n)
     # Average inflow from upstream cells  [m³ s⁻¹] for model time step dt
-    qin_average::Vector{Float64} = zeros(n_cells)
+    qin_average::Vector{Float64} = zeros(n)
     # Cumulative discharge [m³] for model timestep dt
-    q_cumulative::Vector{Float64} = zeros(n_cells)
+    q_cumulative::Vector{Float64} = zeros(n)
     # Average discharge [m³ s⁻¹] for model time step dt
-    q_average::Vector{Float64} = zeros(n_cells)
+    q_average::Vector{Float64} = zeros(n)
     # Kinematic wave storage [m³] (based on water depth h)
-    storage::Vector{Float64} = zeros(n_cells)
+    storage::Vector{Float64} = zeros(n)
     # Water depth [m]
-    h::Vector{Float64} = zeros(n_cells)
+    h::Vector{Float64} = zeros(n)
 end
 
 "Struct for storing Manning flow parameters"
@@ -135,7 +135,7 @@ function KinWaveRiverFlowModel(
         do_water_demand(config) ? AllocationRiverModel(; n_river_cells) :
         NoAllocationRiverModel(n_river_cells)
 
-    variables = FlowVariables(; n_cells = n_river_cells)
+    variables = FlowVariables(; n = n_river_cells)
     parameters = RiverFlowParameters(dataset, config, domain)
     boundary_conditions = RiverFlowBC(dataset, config, domain.network, reservoir)
 
@@ -152,12 +152,12 @@ end
 
 "Struct for storing overland flow model variables"
 @with_kw struct OverLandFlowVariables
-    n_cells::Int
-    flow::FlowVariables = FlowVariables(; n_cells)
+    n::Int
+    flow::FlowVariables = FlowVariables(; n)
     # Part of cumulative overland flow [m³ s⁻¹] that flows to the river
-    to_river_cumulative::Vector{Float64} = zeros(n_cells)
+    to_river_cumulative::Vector{Float64} = zeros(n)
     # Part of average overland flow [m³ s⁻¹] that flows to the river
-    to_river_average::Vector{Float64} = zeros(n_cells)
+    to_river_average::Vector{Float64} = zeros(n)
 end
 
 "Overload `getproperty` for overland flow model variables"
@@ -171,18 +171,18 @@ end
 
 "Struct for storing overland flow model boundary conditions"
 @with_kw struct LandFlowBC
-    n_cells::Int
+    n::Int
     # Lateral inflow [m³ s⁻¹]
-    inwater::Vector{Float64} = zeros(n_cells)
+    inwater::Vector{Float64} = zeros(n)
 end
 
 "Overland flow model using the kinematic wave method and the Manning flow{ equation"
 @with_kw struct KinWaveOverlandFlowModel <: AbstractOverlandFlowModel
-    n_cells::Int
+    n::Int
     timestepping::TimeStepping
-    boundary_conditions::LandFlowBC = LandFlowBC(; n_cells)
+    boundary_conditions::LandFlowBC = LandFlowBC(; n)
     parameters::ManningFlowParameters
-    variables::OverLandFlowVariables = OverLandFlowVariables(; n_cells)
+    variables::OverLandFlowVariables = OverLandFlowVariables(; n)
 end
 
 "Initialize Overland flow model `KinWaveOverlandFlowModel`"
@@ -197,10 +197,10 @@ function KinWaveOverlandFlowModel(dataset::NCDataset, config::Config, domain::Do
         sel = indices,
     )
 
-    n_cells = length(indices)
-    timestepping = init_kinematic_wave_timestepping(config, n_cells; domain = "land")
+    n = length(indices)
+    timestepping = init_kinematic_wave_timestepping(config, n; domain = "land")
     parameters = ManningFlowParameters(; mannings_n, slope)
-    overland_flow = KinWaveOverlandFlowModel(; n_cells, timestepping, parameters)
+    overland_flow = KinWaveOverlandFlowModel(; n, timestepping, parameters)
 
     return overland_flow
 end
@@ -572,14 +572,14 @@ function stable_timestep(
     (; alpha) = flow_model.parameters
     (; stable_timesteps) = flow_model.timestepping
 
-    n_cells = length(q)
+    n = length(q)
     stable_timesteps .= Inf
     k = 0
-    for cell_idx in 1:n_cells
-        if q[cell_idx] > KIN_WAVE_MIN_FLOW
+    for idx in 1:n
+        if q[idx] > KIN_WAVE_MIN_FLOW
             k += 1
-            c = inv(alpha[cell_idx] * BETA_KINWAVE * pow(q[cell_idx], (BETA_KINWAVE - 1.0)))
-            stable_timesteps[k] = (flow_length[cell_idx] / c)
+            c = inv(alpha[idx] * BETA_KINWAVE * pow(q[idx], (BETA_KINWAVE - 1.0)))
+            stable_timesteps[k] = (flow_length[idx] / c)
         end
     end
 

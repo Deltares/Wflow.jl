@@ -24,7 +24,7 @@ function VegetationParameters(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    n_cells = length(indices)
+    n = length(indices)
     rooting_depth =
         ncread(dataset, config, "vegetation_root__depth", LandHydrologySBM; sel = indices)
     crop_coefficient =
@@ -52,12 +52,12 @@ function VegetationParameters(
             sel = indices,
         )
         vegetation_parameter_set = VegetationParameters(;
-            leaf_area_index = fill(MISSING_VALUE, n_cells),
+            leaf_area_index = fill(MISSING_VALUE, n),
             storage_wood,
             light_extinction_coefficient,
             storage_specific_leaf,
-            canopy_gap_fraction = fill(MISSING_VALUE, n_cells),
-            maximum_canopy_storage = fill(MISSING_VALUE, n_cells),
+            canopy_gap_fraction = fill(MISSING_VALUE, n),
+            maximum_canopy_storage = fill(MISSING_VALUE, n),
             rooting_depth,
             crop_coefficient,
         )

@@ -294,14 +294,14 @@ function compute_sediment_input(
     # Add upstream contribution
     upstream_nodes = inneighbors(graph, v)
     if !isempty(upstream_nodes)
-        for river_cell_idx in upstream_nodes
-            if clay_rate[river_cell_idx] >= 0.0 # avoid NaN from upstream non-river cells
-                input_clay += clay_rate[river_cell_idx]
-                input_silt += silt_rate[river_cell_idx]
-                input_sand += sand_rate[river_cell_idx]
-                input_sagg += small_aggregates_rate[river_cell_idx]
-                input_lagg += large_aggregates_rate[river_cell_idx]
-                input_gravel += gravel_rate[river_cell_idx]
+        for river_idx in upstream_nodes
+            if clay_rate[river_idx] >= 0.0 # avoid NaN from upstream non-river cells
+                input_clay += clay_rate[river_idx]
+                input_silt += silt_rate[river_idx]
+                input_sand += sand_rate[river_idx]
+                input_sagg += small_aggregates_rate[river_idx]
+                input_lagg += large_aggregates_rate[river_idx]
+                input_gravel += gravel_rate[river_idx]
             end
         end
     end
@@ -976,15 +976,13 @@ function update_river_sediment_concentration_model!(
     (; total, suspended, bed) = sediment_transport_model.variables
     (; slope) = parameters
 
-    for (river_cell_idx, flow) in enumerate(q)
+    for (river_idx, flow) in enumerate(q)
         if flow > 0
             # Differentiation of bed and suspended load using Rouse number for suspension
             # threshold diameter between bed load and mixed load using Rouse number
             common_term =
                 0.41 * sqrt(
-                    GRAVITATIONAL_ACCELERATION *
-                    waterlevel[river_cell_idx] *
-                    slope[river_cell_idx],
+                    GRAVITATIONAL_ACCELERATION * waterlevel[river_idx] * slope[river_idx],
                 ) / STOKES_FACTOR
             dbedf = 1e-3 * sqrt(2.5 * common_term)
             # # threshold diameter between suspended load and mixed load using Rouse number
@@ -992,59 +990,59 @@ function update_river_sediment_concentration_model!(
 
             # Rouse with diameter
             SSclay = suspended_solid(
-                median_diameter_clay[river_cell_idx],
+                median_diameter_clay[river_idx],
                 dsuspf,
                 dbedf,
-                clay[river_cell_idx],
+                clay[river_idx],
             )
             SSsilt = suspended_solid(
-                median_diameter_silt[river_cell_idx],
+                median_diameter_silt[river_idx],
                 dsuspf,
                 dbedf,
-                silt[river_cell_idx],
+                silt[river_idx],
             )
             SSsand = suspended_solid(
-                median_diameter_sand[river_cell_idx],
+                median_diameter_sand[river_idx],
                 dsuspf,
                 dbedf,
-                sand[river_cell_idx],
+                sand[river_idx],
             )
             SSsagg = suspended_solid(
-                median_diameter_small_aggregates[river_cell_idx],
+                median_diameter_small_aggregates[river_idx],
                 dsuspf,
                 dbedf,
-                small_aggregates[river_cell_idx],
+                small_aggregates[river_idx],
             )
             SSlagg = suspended_solid(
-                median_diameter_large_aggregates[river_cell_idx],
+                median_diameter_large_aggregates[river_idx],
                 dsuspf,
                 dbedf,
-                large_aggregates[river_cell_idx],
+                large_aggregates[river_idx],
             )
             SSgrav = suspended_solid(
-                median_diameter_gravel[river_cell_idx],
+                median_diameter_gravel[river_idx],
                 dsuspf,
                 dbedf,
-                gravel[river_cell_idx],
+                gravel[river_idx],
             )
 
             to_conc = inv(flow)
             total_ =
-                clay[river_cell_idx] +
-                silt[river_cell_idx] +
-                small_aggregates[river_cell_idx] +
-                sand[river_cell_idx] +
-                large_aggregates[river_cell_idx] +
-                gravel[river_cell_idx]
-            total[river_cell_idx] = total_ * to_conc
+                clay[river_idx] +
+                silt[river_idx] +
+                small_aggregates[river_idx] +
+                sand[river_idx] +
+                large_aggregates[river_idx] +
+                gravel[river_idx]
+            total[river_idx] = total_ * to_conc
 
             SS = SSclay + SSsilt + SSsand + SSsagg + SSlagg + SSgrav
-            suspended[river_cell_idx] = SS * to_conc
-            bed[river_cell_idx] = (total_ - SS) * to_conc
+            suspended[river_idx] = SS * to_conc
+            bed[river_idx] = (total_ - SS) * to_conc
         else
-            suspended[river_cell_idx] = 0.0
-            bed[river_cell_idx] = 0.0
-            total[river_cell_idx] = 0.0
+            suspended[river_idx] = 0.0
+            bed[river_idx] = 0.0
+            total[river_idx] = 0.0
         end
     end
 end

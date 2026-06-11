@@ -75,7 +75,7 @@ function homogenous_aquifer(nrow, ncol)
         hydraulic_conductivity_scale_parameter = fill(3.0, ncell),
     )
     variables = Wflow.GroundwaterFlowVariables(;
-        n_cells = ncell,
+        n = ncell,
         head = [0.0, 7.5, 20.0],
         conductance = fill(0.0, connectivity.nconnection),
         storage = fill(0.0, ncell),
@@ -93,9 +93,9 @@ function homogenous_aquifer(nrow, ncol)
     return gwf_model
 end
 
-function init_sbm_soil_model(n_cells, N; kwargs...)
+function init_sbm_soil_model(n, N; kwargs...)
     kwargs = Dict{Symbol, Any}(kwargs)
-    kwargs[:n_cells] = n_cells
+    kwargs[:n] = n
 
     if !haskey(kwargs, :kv_profile)
         kwargs[:kv_profile] = nothing
@@ -185,7 +185,7 @@ function init_sbm_soil_model(n_cells, N; kwargs...)
     kwargs_bc = filter(pair -> pair.first ∈ fieldnames(Wflow.SbmSoilBC), kwargs)
     boundary_conditions = Wflow.SbmSoilBC(; kwargs_bc...)
 
-    return Wflow.SbmSoilModel(; n_cells, variables, parameters, boundary_conditions)
+    return Wflow.SbmSoilModel(; n, variables, parameters, boundary_conditions)
 end
 
 """

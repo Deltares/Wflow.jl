@@ -330,12 +330,12 @@ function NetworkReservoir(dataset::NCDataset, config::Config, network::NetworkRi
     inds_map2river = fill(0, length(indices))
     inds = CartesianIndex{2}[]
     counter = 0
-    for (river_cell_idx, ind) in enumerate(indices)
-        id = locs[river_cell_idx]
+    for (river_idx, ind) in enumerate(indices)
+        id = locs[river_idx]
         if id > 0
             push!(inds, ind)
             counter += 1
-            inds_map2river[river_cell_idx] = counter
+            inds_map2river[river_idx] = counter
             rev_inds[ind] = counter
 
             # get all indices related to this reservoir outlet
@@ -376,13 +376,12 @@ function NetworkDrain(
     surface_flow_width::Vector{Float64},
     modelsize::Tuple{Int, Int},
 )
-    n_cells = length(indices)
+    n = length(indices)
     # read drain mask only at land-domain cells; same order as `indices`
     drain = ncread(dataset, config, "land_drain_location__mask", Routing; sel = indices)
 
     # remove drains where overland flow is not possible (surface_flow_width = 0.0)
-    false_drain =
-        filter(i -> !isequal(drain[i], 0) && surface_flow_width[i] == 0.0, 1:n_cells)
+    false_drain = filter(i -> !isequal(drain[i], 0) && surface_flow_width[i] == 0.0, 1:n)
     n_false_drain = length(false_drain)
     if n_false_drain > 0
         drain[false_drain] .= 0
@@ -391,7 +390,7 @@ function NetworkDrain(
     end
 
     # land-domain positions that are drain cells
-    land_indices = filter(i -> !isequal(drain[i], 0), 1:n_cells)
+    land_indices = filter(i -> !isequal(drain[i], 0), 1:n)
 
     # 2D CartesianIndex of drain cells
     drain_indices = indices[land_indices]

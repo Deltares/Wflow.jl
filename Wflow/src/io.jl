@@ -1016,12 +1016,12 @@ function reducer(col, rev_inds, indices, x_nc, y_nc, config, dataset)
         ids = unique(skipmissing(map_1d))
         inds = Dict{Int, Vector{Int}}(id => Vector{Int}() for id in ids)
 
-        for cell_idx in eachindex(map_1d)
-            v = map_1d[cell_idx]
+        for idx in eachindex(map_1d)
+            v = map_1d[idx]
             ismissing(v) && continue
             v::Int
             # translate from land-domain position -> target-domain position
-            ind = rev_inds[indices[cell_idx]]
+            ind = rev_inds[indices[idx]]
             if iszero(ind)
                 error("""inactive cell found in requested scalar output
                     map `$map` value $v for parameter $param""")

@@ -2,32 +2,32 @@ abstract type AbstractSnowModel end
 
 "Struct for storing snow model variables"
 @with_kw struct SnowVariables
-    n_cells::Int
+    n::Int
     # Snow storage [m]
-    snow_storage::Vector{Float64} = zeros(n_cells)
+    snow_storage::Vector{Float64} = zeros(n)
     # Liquid water content in the snow pack [m]
-    snow_water::Vector{Float64} = zeros(n_cells)
+    snow_water::Vector{Float64} = zeros(n)
     # Snow water equivalent (SWE) [m]
-    snow_water_equivalent::Vector{Float64} = fill(MISSING_VALUE, n_cells)
+    snow_water_equivalent::Vector{Float64} = fill(MISSING_VALUE, n)
     # Snow melt [m s⁻¹]
-    snow_melt::Vector{Float64} = fill(MISSING_VALUE, n_cells)
+    snow_melt::Vector{Float64} = fill(MISSING_VALUE, n)
     # Runoff from snowpack [m s⁻¹]
-    runoff::Vector{Float64} = fill(MISSING_VALUE, n_cells)
+    runoff::Vector{Float64} = fill(MISSING_VALUE, n)
     # Lateral snow (SWE) transport from upstreams cells [m s⁻¹]
-    snow_in::Vector{Float64} = zeros(n_cells)
+    snow_in::Vector{Float64} = zeros(n)
     # Lateral snow (SWE) transport out of a cell [m s⁻¹]
-    snow_out::Vector{Float64} = zeros(n_cells)
+    snow_out::Vector{Float64} = zeros(n)
 end
 
 "Struct for storing snow model boundary conditions"
 @with_kw struct SnowBC
-    n_cells::Int
+    n::Int
     # Effective precipitation [m s⁻¹]
-    effective_precip::Vector{Float64} = fill(MISSING_VALUE, n_cells)
+    effective_precip::Vector{Float64} = fill(MISSING_VALUE, n)
     # Snow precipitation [m s⁻¹]
-    snow_precip::Vector{Float64} = fill(MISSING_VALUE, n_cells)
+    snow_precip::Vector{Float64} = fill(MISSING_VALUE, n)
     # Liquid precipitation [m s⁻¹]
-    liquid_precip::Vector{Float64} = fill(MISSING_VALUE, n_cells)
+    liquid_precip::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct for storing snow HBV model parameters"
@@ -46,14 +46,14 @@ end
 
 "Snow HBV model"
 @with_kw struct SnowHbvModel <: AbstractSnowModel
-    n_cells::Int
-    boundary_conditions::SnowBC = SnowBC(; n_cells)
+    n::Int
+    boundary_conditions::SnowBC = SnowBC(; n)
     parameters::SnowHbvParameters
-    variables::SnowVariables = SnowVariables(; n_cells)
+    variables::SnowVariables = SnowVariables(; n)
 end
 
 struct NoSnowModel <: AbstractSnowModel
-    n_cells::Int
+    n::Int
 end
 
 "Initialize snow HBV model parameters"
@@ -113,9 +113,9 @@ function SnowHbvModel(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    n_cells = length(indices)
+    n = length(indices)
     parameters = SnowHbvParameters(dataset, config, indices)
-    snow_model = SnowHbvModel(; n_cells, parameters)
+    snow_model = SnowHbvModel(; n, parameters)
     return snow_model
 end
 
@@ -150,29 +150,29 @@ function update_snow_model!(
         water_holding_capacity,
     ) = snow_model.parameters
 
-    n_cells = length(temperature)
-    threaded_foreach(1:n_cells; basesize = 1000) do cell_idx
-        snow_precip[cell_idx], liquid_precip[cell_idx] = precipitation_hbv(
-            effective_precip[cell_idx],
-            temperature[cell_idx],
-            temperature_interval_snowfall[cell_idx],
-            temperature_threshold_snowfall[cell_idx],
+    n = length(temperature)
+    threaded_foreach(1:n; basesize = 1000) do idx
+        snow_precip[idx], liquid_precip[idx] = precipitation_hbv(
+            effective_precip[idx],
+            temperature[idx],
+            temperature_interval_snowfall[idx],
+            temperature_threshold_snowfall[idx],
         )
     end
-    threaded_foreach(1:n_cells; basesize = 1000) do cell_idx
-        snow_storage[cell_idx],
-        snow_water[cell_idx],
-        snow_water_equivalent[cell_idx],
-        snow_melt[cell_idx],
-        runoff[cell_idx] = snowpack_hbv(
-            snow_storage[cell_idx],
-            snow_water[cell_idx],
-            snow_precip[cell_idx],
-            liquid_precip[cell_idx],
-            temperature[cell_idx],
-            temperature_threshold_melt[cell_idx],
-            degree_day_factor[cell_idx],
-            water_holding_capacity[cell_idx],
+    threaded_foreach(1:n; basesize = 1000) do idx
+        snow_storage[idx],
+        snow_water[idx],
+        snow_water_equivalent[idx],
+        snow_melt[idx],
+        runoff[idx] = snowpack_hbv(
+            snow_storage[idx],
+            snow_water[idx],
+            snow_precip[idx],
+            liquid_precip[idx],
+            temperature[idx],
+            temperature_threshold_melt[idx],
+            degree_day_factor[idx],
+            water_holding_capacity[idx],
             dt,
         )
     end
@@ -188,13 +188,13 @@ function update_snow_model!(
 end
 
 # wrapper methods
-get_runoff(snow_model::NoSnowModel) = Zeros(snow_model.n_cells)
+get_runoff(snow_model::NoSnowModel) = Zeros(snow_model.n)
 get_runoff(snow_model::AbstractSnowModel) = snow_model.variables.runoff
-get_snow_storage(snow_model::NoSnowModel) = Zeros(snow_model.n_cells)
+get_snow_storage(snow_model::NoSnowModel) = Zeros(snow_model.n)
 get_snow_storage(snow_model::AbstractSnowModel) = snow_model.variables.snow_storage
-get_snow_water(snow_model::NoSnowModel) = Zeros(snow_model.n_cells)
+get_snow_water(snow_model::NoSnowModel) = Zeros(snow_model.n)
 get_snow_water(snow_model::AbstractSnowModel) = snow_model.variables.snow_water
-get_snow_out(snow_model::NoSnowModel) = Zeros(snow_model.n_cells)
+get_snow_out(snow_model::NoSnowModel) = Zeros(snow_model.n)
 get_snow_out(snow_model::AbstractSnowModel) = snow_model.variables.snow_out
-get_snow_in(snow_model::NoSnowModel) = Zeros(snow_model.n_cells)
+get_snow_in(snow_model::NoSnowModel) = Zeros(snow_model.n)
 get_snow_in(snow_model::AbstractSnowModel) = snow_model.variables.snow_in

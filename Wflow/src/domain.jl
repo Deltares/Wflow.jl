@@ -333,11 +333,11 @@ function get_river_fraction(
         logging = false,
     )
 
-    n_cells = length(river_location)
-    river_fraction = fill(MISSING_VALUE, n_cells)
-    for cell_idx in 1:n_cells
-        river_fraction[cell_idx] = if river_location[cell_idx]
-            min((river_length[cell_idx] * river_width[cell_idx]) / (area[cell_idx]), 1.0)
+    n = length(river_location)
+    river_fraction = fill(MISSING_VALUE, n)
+    for idx in 1:n
+        river_fraction[idx] = if river_location[idx]
+            min((river_length[idx] * river_width[idx]) / (area[idx]), 1.0)
         else
             0.0
         end

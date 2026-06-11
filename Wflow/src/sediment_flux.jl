@@ -53,14 +53,14 @@ function OverlandFlowSedimentModel(
         indices,
     )
 
-    n_cells = length(indices)
+    n = length(indices)
 
     if do_river || land_transport == LandTransportType.yalinpart
-        sediment_flux = SedimentLandTransportDifferentiationModel(; n_cells)
-        to_river = SedimentToRiverDifferentiationModel(; n_river_cells = n_cells)
+        sediment_flux = SedimentLandTransportDifferentiationModel(; n)
+        to_river = SedimentToRiverDifferentiationModel(; n_river_cells = n)
     else
-        sediment_flux = SedimentLandTransportModel(; n_cells)
-        to_river = SedimentToRiverModel(; n_river_cells = n_cells)
+        sediment_flux = SedimentLandTransportModel(; n)
+        to_river = SedimentToRiverModel(; n_river_cells = n)
     end
 
     overland_flow_sediment = OverlandFlowSedimentModel(;
@@ -140,8 +140,8 @@ const river_transport_method =
 "Initialize the river sediment transport model"
 function RiverSedimentModel(dataset::NCDataset, config::Config, domain::DomainRiver)
     (; indices) = domain.network
-    n_cells = length(indices)
-    hydrological_forcing = HydrologicalForcing(; n_cells)
+    n = length(indices)
+    hydrological_forcing = HydrologicalForcing(; n)
 
     # Check what transport capacity equation will be used
     # River flow transport capacity method: ["bagnold", "engelund", "yang", "kodatie", "molinas"]

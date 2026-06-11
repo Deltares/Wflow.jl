@@ -2,7 +2,7 @@ abstract type AbstractDemandModel end
 abstract type AbstractAllocationModel end
 
 "Land hydrology model with SBM soil model"
-@with_kw struct LandHydrologySBM{D<:AbstractDemandModel,A<:AbstractAllocationModel} <:
+@with_kw struct LandHydrologySBM{D <: AbstractDemandModel, A <: AbstractAllocationModel} <:
                 AbstractLandModel
     atmospheric_forcing::AtmosphericForcing
     vegetation_parameters::VegetationParameters
@@ -19,16 +19,16 @@ end
 function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand)
     (; indices) = domain.network
     dt = Second(config.time.timestepsecs)
-    n_cells = length(indices)
+    n = length(indices)
 
-    atmospheric_forcing = AtmosphericForcing(; n_cells)
+    atmospheric_forcing = AtmosphericForcing(; n)
     vegetation_parameters = VegetationParameters(dataset, config, indices)
     if dt >= Hour(23)
         interception =
             GashInterceptionModel(dataset, config, indices, vegetation_parameters)
         @info "Using the Gash interception model since dt >= 23 hours."
     else
-        interception = RutterInterceptionModel(vegetation_parameters, n_cells)
+        interception = RutterInterceptionModel(vegetation_parameters, n)
         @info "Using the modified Rutter interception model since dt < 23 hours."
     end
 
@@ -37,21 +37,21 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
     if do_snow
         snow = SnowHbvModel(dataset, config, indices)
     else
-        snow = NoSnowModel(n_cells)
+        snow = NoSnowModel(n)
     end
     if do_snow && do_glacier
-        glacier_bc = SnowStateBC(; snow_storage=snow.variables.snow_storage)
+        glacier_bc = SnowStateBC(; snow_storage = snow.variables.snow_storage)
         glacier = GlacierHbvModel(dataset, config, indices, dt, glacier_bc)
     elseif !do_snow && do_glacier
         @warn string(
             "Glacier processes can be modelled when snow modelling is enabled. To include ",
             "glacier modelling, set `snow__flag` to `true` in the Model section of the TOML file.",
         )
-        glacier = NoGlacierModel(n_cells)
+        glacier = NoGlacierModel(n)
     else
-        glacier = NoGlacierModel(n_cells)
+        glacier = NoGlacierModel(n)
     end
-    runoff = OpenWaterRunoff(; n_cells)
+    runoff = OpenWaterRunoff(; n)
 
     soil = SbmSoilModel(dataset, config, vegetation_parameters, indices, dt)
     @. vegetation_parameters.rooting_depth =
@@ -61,8 +61,8 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
         allocation = AllocationLandModel(dataset, config, indices)
         demand = DemandModel(dataset, config, indices)
     else
-        allocation = NoAllocationLandModel(n_cells)
-        demand = NoDemandModel(; n_cells)
+        allocation = NoAllocationLandModel(n)
+        demand = NoDemandModel(; n)
     end
 
     return LandHydrologySBM(;
@@ -156,12 +156,12 @@ function update_total_water_storage!(
     fill!(total_storage, 0)
 
     # Burn the river routing values
-    for (river_cell_idx, index_river) in enumerate(domain.river.network.land_indices)
+    for (river_idx, index_river) in enumerate(domain.river.network.land_indices)
         total_storage[index_river] = (
             (
-                river_flow.variables.h[river_cell_idx] *
-                flow_width[river_cell_idx] *
-                flow_length[river_cell_idx]
+                river_flow.variables.h[river_idx] *
+                flow_width[river_idx] *
+                flow_length[river_idx]
             ) / (area[index_river])
         )
     end
@@ -173,13 +173,13 @@ function update_total_water_storage!(
         interception.variables.canopy_storage .+ get_water_depth(demand.paddy)
 
     # Chunk the data for parallel computing
-    n_cells = length(unsaturated_store_depth)
-    threaded_foreach(1:n_cells; basesize=1000) do cell_idx
-        sub_surface = unsaturated_store_depth[cell_idx] + saturated_water_depth[cell_idx]
-        lateral = overland_flow.variables.h[cell_idx] * (1 - river_fraction[cell_idx])
+    n = length(unsaturated_store_depth)
+    threaded_foreach(1:n; basesize = 1000) do idx
+        sub_surface = unsaturated_store_depth[idx] + saturated_water_depth[idx]
+        lateral = overland_flow.variables.h[idx] * (1 - river_fraction[idx])
 
         # Add everything to the total water storage
-        total_storage[cell_idx] += sub_surface + lateral
+        total_storage[idx] += sub_surface + lateral
     end
     return nothing
 end

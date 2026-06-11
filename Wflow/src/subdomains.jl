@@ -30,8 +30,8 @@ Return the Strahler streamorder based on directed acyclic graph `g` and topologi
 `toposort`.
 """
 function stream_order(g::SimpleDiGraph{Int}, toposort::Vector{Int})::Vector{Int}
-    n_cells = length(toposort)
-    strord = fill(1, n_cells)
+    n = length(toposort)
+    strord = fill(1, n)
     for v in toposort
         inds_up = inneighbors(g, v)
         if !isempty(inds_up)
@@ -58,8 +58,8 @@ function subbasins(
     toposort::Vector{Int},
     min_sto::Int,
 )::Vector{Int}
-    n_cells = length(toposort)
-    subbas = fill(0, n_cells)
+    n = length(toposort)
+    subbas = fill(0, n)
 
     subbas_id = 1
     for v in toposort
@@ -183,8 +183,8 @@ function kinwave_set_subdomains(
         # pre-allocate the Vector with indices matching the topological order of the
         # complete domain (upstream neighbors are stored at these indices)
         index_toposort = fill(0, length(toposort))
-        for (traversal_idx, cell_idx) in enumerate(toposort)
-            index_toposort[cell_idx] = traversal_idx
+        for (traversal_idx, idx) in enumerate(toposort)
+            index_toposort[idx] = traversal_idx
         end
 
         order_subbas = Vector{Vector{Int}}()

@@ -5,8 +5,8 @@ const KIN_WAVE_MIN_FLOW_QROOT = KIN_WAVE_MIN_FLOW^0.2
 drainage direction, where invalid values are set to 5 (pit)."
 function flowgraph(ldd::AbstractVector, indices::AbstractVector, PCR_DIR::AbstractVector)
     # prepare a directed graph to be filled
-    n_cells = length(indices)
-    graph = DiGraph(n_cells)
+    n = length(indices)
+    graph = DiGraph(n)
 
     # loop over ldd, adding the edge to the downstream node
     for (from_node, from_index) in enumerate(indices)

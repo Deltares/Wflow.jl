@@ -16,11 +16,11 @@ function check_timestepsize(timestepsize, currenttime, endtime)
 end
 
 "Initialize timestepping for kinematic wave river, overland and lateral subsurface flow models"
-function init_kinematic_wave_timestepping(config::Config, n_cells::Int; domain::String)
+function init_kinematic_wave_timestepping(config::Config, n::Int; domain::String)
     adaptive = config.model.kinematic_wave__adaptive_time_step_flag
     @info "Kinematic wave approach is used for $domain flow, adaptive timestepping = $adaptive."
     if adaptive
-        stable_timesteps = zeros(n_cells)
+        stable_timesteps = zeros(n)
         if domain == "subsurface"
             alpha_coefficient = config.model.subsurface_kinematic_wave__alpha_coefficient
             @info "Numerical stability coefficient for lateral subsurface flow `alpha`: `$alpha_coefficient`."

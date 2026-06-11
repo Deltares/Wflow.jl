@@ -2,11 +2,11 @@ abstract type AbstractGlacierModel end
 
 "Struct for storing glacier model variables"
 @with_kw struct GlacierVariables
-    n_cells::Int
+    n::Int
     # Water within the glacier [m]
     glacier_store::Vector{Float64}
     # Glacier melt [m s⁻¹]
-    glacier_melt::Vector{Float64} = fill(MISSING_VALUE, n_cells)
+    glacier_melt::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Initialize glacier model variables"
@@ -22,8 +22,8 @@ function GlacierVariables(
         LandHydrologySBM;
         sel = indices,
     )
-    n_cells = length(glacier_store)
-    vars = GlacierVariables(; n_cells, glacier_store)
+    n = length(glacier_store)
+    vars = GlacierVariables(; n, glacier_store)
     return vars
 end
 
@@ -55,7 +55,7 @@ end
 end
 
 struct NoGlacierModel <: AbstractGlacierModel
-    n_cells::Int
+    n::Int
 end
 
 "Initialize glacier HBV model parameters"
@@ -135,21 +135,20 @@ function update_glacier_model!(
         maximum_snow_to_ice_rate,
     ) = glacier_model.parameters
 
-    n_cells = length(temperature)
+    n = length(temperature)
 
-    threaded_foreach(1:n_cells; basesize = 1000) do cell_idx
-        snow_storage[cell_idx], _, glacier_store[cell_idx], glacier_melt[cell_idx] =
-            glacier_hbv(
-                glacier_fraction[cell_idx],
-                glacier_store[cell_idx],
-                snow_storage[cell_idx],
-                temperature[cell_idx],
-                temperature_threshold_melt[cell_idx],
-                degree_day_factor[cell_idx],
-                snow_to_ice_fraction[cell_idx],
-                maximum_snow_to_ice_rate,
-                dt,
-            )
+    threaded_foreach(1:n; basesize = 1000) do idx
+        snow_storage[idx], _, glacier_store[idx], glacier_melt[idx] = glacier_hbv(
+            glacier_fraction[idx],
+            glacier_store[idx],
+            snow_storage[idx],
+            temperature[idx],
+            temperature_threshold_melt[idx],
+            degree_day_factor[idx],
+            snow_to_ice_fraction[idx],
+            maximum_snow_to_ice_rate,
+            dt,
+        )
     end
     return nothing
 end
@@ -163,11 +162,11 @@ function update_glacier_model!(
 end
 
 # wrapper methods
-get_glacier_melt(glacier_model::NoGlacierModel) = Zeros(glacier_model.n_cells)
+get_glacier_melt(glacier_model::NoGlacierModel) = Zeros(glacier_model.n)
 get_glacier_melt(glacier_model::AbstractGlacierModel) = glacier_model.variables.glacier_melt
-get_glacier_fraction(glacier_model::NoGlacierModel) = Zeros(glacier_model.n_cells)
+get_glacier_fraction(glacier_model::NoGlacierModel) = Zeros(glacier_model.n)
 get_glacier_fraction(glacier_model::AbstractGlacierModel) =
     glacier_model.parameters.glacier_fraction
-get_glacier_store(glacier_model::NoGlacierModel) = Zeros(glacier_model.n_cells)
+get_glacier_store(glacier_model::NoGlacierModel) = Zeros(glacier_model.n)
 get_glacier_store(glacier_model::AbstractGlacierModel) =
     glacier_model.variables.glacier_store

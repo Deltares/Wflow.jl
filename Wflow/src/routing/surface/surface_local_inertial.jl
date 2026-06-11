@@ -122,7 +122,7 @@ end
 
 "Struct for storing local inertial river flow model variables"
 @with_kw struct LocalInertialRiverFlowVariables
-    n_cells::Int
+    n::Int
     n_edges::Int
     # river discharge at edge (subgrid channel) [m³ s⁻¹]
     q::Vector{Float64} = zeros(n_edges)
@@ -151,9 +151,9 @@ end
     # wetted perimeter at edge [m]
     hydraulic_radius::Vector{Float64} = zeros(n_edges)
     # river storage [m³]
-    storage::Vector{Float64} = zeros(n_cells)
+    storage::Vector{Float64} = zeros(n)
     # error storage [m³]
-    error::Vector{Float64} = zeros(n_cells)
+    error::Vector{Float64} = zeros(n)
 end
 
 "Initialize shallow water river flow model variables"
@@ -172,16 +172,16 @@ function LocalInertialRiverFlowVariables(
         sel = pit_indices,
     )
 
-    n_cells = length(indices)
+    n = length(indices)
     n_edges = ne(graph)
     # set ghost points for boundary condition (downstream river outlet): river depth `h`
-    h = zeros(n_cells)
+    h = zeros(n)
     append!(h, riverdepth_bc)
     variables = if config.model.floodplain_1d__flag
         # When floodplain is enabled, q_channel fields must be separate from q fields
         # because q_average will hold channel + floodplain combined discharge.
         LocalInertialRiverFlowVariables(;
-            n_cells,
+            n,
             n_edges,
             h,
             q_channel_cumulative = zeros(n_edges),
@@ -189,7 +189,7 @@ function LocalInertialRiverFlowVariables(
         )
     else
         # When floodplain is disabled, q_channel aliases q (they are identical)
-        LocalInertialRiverFlowVariables(; n_cells, n_edges, h)
+        LocalInertialRiverFlowVariables(; n, n_edges, h)
     end
     return variables
 end
@@ -438,8 +438,8 @@ function update_floodplain_flow!(
 
     @batch per = thread minbatch = 1000 for flood_edge_idx in 1:n_active_flood_edges
         river_edge_idx = floodplain_v.hf_index[flood_edge_idx]
-        river_cell_idx_src = nodes_at_edge.src[river_edge_idx]
-        river_cell_idx_dst = nodes_at_edge.dst[river_edge_idx]
+        river_idx_src = nodes_at_edge.src[river_edge_idx]
+        river_idx_dst = nodes_at_edge.dst[river_edge_idx]
 
         depth_count = 0
         for depth_idx in eachindex(floodplain_p.profile.depth)
@@ -452,20 +452,20 @@ function update_floodplain_flow!(
         i1 = max(depth_count, 1)
         i2 = ifelse(i1 == length(floodplain_p.profile.depth), i1, i1 + 1)
 
-        a_src = get_area(river_edge_idx, i1, i2, river_cell_idx_src)
+        a_src = get_area(river_edge_idx, i1, i2, river_idx_src)
         a_src = max(
             a_src - (
                 floodplain_v.water_depth_at_edge[river_edge_idx] *
-                flow_width[river_cell_idx_src]
+                flow_width[river_idx_src]
             ),
             0.0,
         )
 
-        a_dst = get_area(river_edge_idx, i1, i2, river_cell_idx_dst)
+        a_dst = get_area(river_edge_idx, i1, i2, river_idx_dst)
         a_dst = max(
             a_dst - (
                 floodplain_v.water_depth_at_edge[river_edge_idx] *
-                flow_width[river_cell_idx_dst]
+                flow_width[river_idx_dst]
             ),
             0.0,
         )
@@ -473,9 +473,9 @@ function update_floodplain_flow!(
         floodplain_v.flow_area[river_edge_idx] = min(a_src, a_dst)
 
         floodplain_v.hydraulic_radius[river_edge_idx] = if a_src < a_dst
-            a_src / get_wetted_perimeter(river_edge_idx, i1, river_cell_idx_src)
+            a_src / get_wetted_perimeter(river_edge_idx, i1, river_idx_src)
         else
-            a_dst / get_wetted_perimeter(river_edge_idx, i1, river_cell_idx_dst)
+            a_dst / get_wetted_perimeter(river_edge_idx, i1, river_idx_dst)
         end
 
         floodplain_v.q[river_edge_idx] = if floodplain_v.flow_area[river_edge_idx] > 1.0e-05
@@ -496,11 +496,11 @@ function update_floodplain_flow!(
         end
 
         # limit floodplain q in case water is not available
-        if floodplain_v.h[river_cell_idx_src] <= 0.0
+        if floodplain_v.h[river_idx_src] <= 0.0
             floodplain_v.q[river_edge_idx] = min(floodplain_v.q[river_edge_idx], 0.0)
         end
 
-        if floodplain_v.h[river_cell_idx_dst] <= 0.0
+        if floodplain_v.h[river_idx_dst] <= 0.0
             floodplain_v.q[river_edge_idx] = max(floodplain_v.q[river_edge_idx], 0.0)
         end
 
@@ -533,8 +533,8 @@ function update_bc_reservoir_model!(
     river_v = river_flow_model.variables
     res_bc = reservoir.boundary_conditions
 
-    for (reservoir_idx, river_cell_idx) in enumerate(inds_reservoir)
-        q_in = get_inflow_reservoir(river_flow_model, edges_at_node.src[river_cell_idx])
+    for (reservoir_idx, river_idx) in enumerate(inds_reservoir)
+        q_in = get_inflow_reservoir(river_flow_model, edges_at_node.src[river_idx])
         # If external_inflow < 0, abstraction is limited
         if res_bc.external_inflow[reservoir_idx] < 0.0
             abstraction = min(
@@ -552,9 +552,9 @@ function update_bc_reservoir_model!(
             res_bc.inflow_subsurface[reservoir_idx] +
             inflow
         update_reservoir_model!(reservoir, reservoir_idx, net_inflow, dt)
-        river_v.q[river_cell_idx] = reservoir.variables.outflow[reservoir_idx]
+        river_v.q[river_idx] = reservoir.variables.outflow[reservoir_idx]
         # average river discharge (here accumulated for model timestep dt)
-        river_v.q_cumulative[river_cell_idx] += river_v.q[river_cell_idx] * dt
+        river_v.q_cumulative[river_idx] += river_v.q[river_idx] * dt
     end
     return nothing
 end
@@ -574,8 +574,8 @@ function update_bc_reservoir_model!(
     river_v = river_flow_model.variables
     res_bc = reservoir_model.boundary_conditions
 
-    for (reservoir_idx, river_cell_idx) in enumerate(inds_reservoir)
-        q_in = get_inflow_reservoir(river_flow_model, edges_at_node.src[river_cell_idx])
+    for (reservoir_idx, river_idx) in enumerate(inds_reservoir)
+        q_in = get_inflow_reservoir(river_flow_model, edges_at_node.src[river_idx])
         # If external_inflow < 0, abstraction is limited
         if res_bc.external_inflow[reservoir_idx] < 0.0
             abstraction = min(
@@ -593,9 +593,9 @@ function update_bc_reservoir_model!(
             res_bc.inflow_subsurface[reservoir_idx] +
             inflow
         update_reservoir_model!(reservoir_model, reservoir_idx, net_inflow, dt)
-        river_v.q[river_cell_idx] = reservoir_model.variables.outflow[reservoir_idx]
+        river_v.q[river_idx] = reservoir_model.variables.outflow[reservoir_idx]
         # average river discharge (here accumulated for model timestep Δt)
-        river_v.q_cumulative[river_cell_idx] += river_v.q[river_cell_idx] * dt
+        river_v.q_cumulative[river_idx] += river_v.q[river_idx] * dt
     end
     return nothing
 end
@@ -623,39 +623,35 @@ function update_water_depth_and_storage!(
     floodplain_v = floodplain_model.variables
     floodplain_p = floodplain_model.parameters
 
-    @batch per = thread minbatch = 1000 for river_cell_idx in river_p.active_n
-        q_src = sum_at(floodplain_v.q, edges_at_node.src[river_cell_idx])
-        q_dst = sum_at(floodplain_v.q, edges_at_node.dst[river_cell_idx])
-        floodplain_v.storage[river_cell_idx] += (q_src - q_dst) * dt
-        if floodplain_v.storage[river_cell_idx] < 0.0
-            floodplain_v.error[river_cell_idx] += abs(floodplain_v.storage[river_cell_idx])
-            floodplain_v.storage[river_cell_idx] = 0.0
+    @batch per = thread minbatch = 1000 for river_idx in river_p.active_n
+        q_src = sum_at(floodplain_v.q, edges_at_node.src[river_idx])
+        q_dst = sum_at(floodplain_v.q, edges_at_node.dst[river_idx])
+        floodplain_v.storage[river_idx] += (q_src - q_dst) * dt
+        if floodplain_v.storage[river_idx] < 0.0
+            floodplain_v.error[river_idx] += abs(floodplain_v.storage[river_idx])
+            floodplain_v.storage[river_idx] = 0.0
         end
-        storage_total =
-            river_v.storage[river_cell_idx] + floodplain_v.storage[river_cell_idx]
-        if storage_total > river_p.bankfull_storage[river_cell_idx]
-            flood_storage = storage_total - river_p.bankfull_storage[river_cell_idx]
+        storage_total = river_v.storage[river_idx] + floodplain_v.storage[river_idx]
+        if storage_total > river_p.bankfull_storage[river_idx]
+            flood_storage = storage_total - river_p.bankfull_storage[river_idx]
             h = flood_depth(
                 floodplain_p.profile,
                 flood_storage,
-                flow_length[river_cell_idx],
-                river_cell_idx,
+                flow_length[river_idx],
+                river_idx,
             )
-            river_v.h[river_cell_idx] = river_p.bankfull_depth[river_cell_idx] + h
-            river_v.storage[river_cell_idx] =
-                river_v.h[river_cell_idx] *
-                flow_width[river_cell_idx] *
-                flow_length[river_cell_idx]
-            floodplain_v.storage[river_cell_idx] =
-                max(storage_total - river_v.storage[river_cell_idx], 0.0)
-            floodplain_v.h[river_cell_idx] =
-                floodplain_v.storage[river_cell_idx] > 0.0 ? h : 0.0
+            river_v.h[river_idx] = river_p.bankfull_depth[river_idx] + h
+            river_v.storage[river_idx] =
+                river_v.h[river_idx] * flow_width[river_idx] * flow_length[river_idx]
+            floodplain_v.storage[river_idx] =
+                max(storage_total - river_v.storage[river_idx], 0.0)
+            floodplain_v.h[river_idx] = floodplain_v.storage[river_idx] > 0.0 ? h : 0.0
         else
-            river_v.h[river_cell_idx] =
-                storage_total / (flow_length[river_cell_idx] * flow_width[river_cell_idx])
-            river_v.storage[river_cell_idx] = storage_total
-            floodplain_v.h[river_cell_idx] = 0.0
-            floodplain_v.storage[river_cell_idx] = 0.0
+            river_v.h[river_idx] =
+                storage_total / (flow_length[river_idx] * flow_width[river_idx])
+            river_v.storage[river_idx] = storage_total
+            floodplain_v.h[river_idx] = 0.0
+            floodplain_v.storage[river_idx] = 0.0
         end
     end
     return nothing
@@ -683,34 +679,31 @@ function update_water_depth_and_storage!(
     river_v = river_flow_model.variables
     river_p = river_flow_model.parameters
 
-    @batch per = thread minbatch = 1000 for river_cell_idx in river_p.active_n
-        q_src = sum_at(river_v.q, edges_at_node.src[river_cell_idx])
-        q_dst = sum_at(river_v.q, edges_at_node.dst[river_cell_idx])
+    @batch per = thread minbatch = 1000 for river_idx in river_p.active_n
+        q_src = sum_at(river_v.q, edges_at_node.src[river_idx])
+        q_dst = sum_at(river_v.q, edges_at_node.dst[river_idx])
         # internal abstraction (water demand) is limited by river storage and negative
         # external inflow as part of water allocation computations.
-        river_v.storage[river_cell_idx] +=
-            (q_src - q_dst + inwater[river_cell_idx] - abstraction[river_cell_idx]) * dt
+        river_v.storage[river_idx] +=
+            (q_src - q_dst + inwater[river_idx] - abstraction[river_idx]) * dt
 
-        if river_v.storage[river_cell_idx] < 0.0
-            river_v.error[river_cell_idx] =
-                river_v.error[river_cell_idx] + abs(river_v.storage[river_cell_idx])
-            river_v.storage[river_cell_idx] = 0.0 # set storage to zero
+        if river_v.storage[river_idx] < 0.0
+            river_v.error[river_idx] =
+                river_v.error[river_idx] + abs(river_v.storage[river_idx])
+            river_v.storage[river_idx] = 0.0 # set storage to zero
         end
         # limit negative external inflow
-        if external_inflow[river_cell_idx] < 0.0
-            _abstraction = min(
-                -external_inflow[river_cell_idx],
-                river_v.storage[river_cell_idx] / dt * 0.80,
-            )
-            actual_external_abstraction_cumulative[river_cell_idx] += _abstraction * dt
+        if external_inflow[river_idx] < 0.0
+            _abstraction =
+                min(-external_inflow[river_idx], river_v.storage[river_idx] / dt * 0.80)
+            actual_external_abstraction_cumulative[river_idx] += _abstraction * dt
             inflow = -_abstraction
         else
-            inflow = external_inflow[river_cell_idx]
+            inflow = external_inflow[river_idx]
         end
-        river_v.storage[river_cell_idx] += inflow * dt # add external inflow
-        river_v.h[river_cell_idx] =
-            river_v.storage[river_cell_idx] /
-            (flow_length[river_cell_idx] * flow_width[river_cell_idx])
+        river_v.storage[river_idx] += inflow * dt # add external inflow
+        river_v.h[river_idx] =
+            river_v.storage[river_idx] / (flow_length[river_idx] * flow_width[river_idx])
     end
     return nothing
 end
@@ -796,35 +789,35 @@ end
 
 "Struct to store local inertial overland flow model variables"
 @with_kw struct LocalInertialOverlandFlowVariables
-    n_cells::Int
+    n::Int
     # flow in y direction at edge at previous time step [m³ s⁻¹]
-    qy0::Vector{Float64} = zeros(n_cells + 1)
+    qy0::Vector{Float64} = zeros(n + 1)
     # flow in x direction at edge at previous time step [m³ s⁻¹]
-    qx0::Vector{Float64} = zeros(n_cells + 1)
+    qx0::Vector{Float64} = zeros(n + 1)
     # flow in x direction at edge [m³ s⁻¹]
-    qx::Vector{Float64} = zeros(n_cells + 1)
+    qx::Vector{Float64} = zeros(n + 1)
     # cumulative flow in x direction at edge [m³] for model timestep dt
-    qx_cumulative::Vector{Float64} = zeros(n_cells + 1)
+    qx_cumulative::Vector{Float64} = zeros(n + 1)
     # average flow in x direction at edge [m³ s⁻¹] for model timestep dt
-    qx_average::Vector{Float64} = zeros(n_cells + 1)
+    qx_average::Vector{Float64} = zeros(n + 1)
     # flow in y direction at edge [m³ s⁻¹]
-    qy::Vector{Float64} = zeros(n_cells + 1)
+    qy::Vector{Float64} = zeros(n + 1)
     # cumulative flow in y direction at edge [m³] for model timestep dt
-    qy_cumulative::Vector{Float64} = zeros(n_cells + 1)
+    qy_cumulative::Vector{Float64} = zeros(n + 1)
     # average flow in y direction at edge [m³ s⁻¹] for model timestep dt
-    qy_average::Vector{Float64} = zeros(n_cells + 1)
+    qy_average::Vector{Float64} = zeros(n + 1)
     # total storage of cell [m³] (including river storage for river cells)
-    storage::Vector{Float64} = zeros(n_cells)
+    storage::Vector{Float64} = zeros(n)
     # error storage [m³]
-    error::Vector{Float64} = zeros(n_cells)
+    error::Vector{Float64} = zeros(n)
     # water depth of cell [m] (for river cells the reference is the river bed elevation `zb`)
-    h::Vector{Float64} = zeros(n_cells)
+    h::Vector{Float64} = zeros(n)
 end
 
 "Struct to store local inertial overland flow model parameters"
 @with_kw struct LocalInertialOverlandFlowParameters
     # number of cells [-]
-    n_cells::Int
+    n::Int
     # effective flow width x direction at edge (floodplain) [m]
     xwidth::Vector{Float64}
     # effective flow width y direction at edge (floodplain) [m]
@@ -881,17 +874,17 @@ function LocalInertialOverlandFlowParameters(
         Routing;
         sel = indices,
     )
-    n_cells = length(domain.land.network.indices)
+    n = length(domain.land.network.indices)
 
-    zx_max = zeros(n_cells)
-    zy_max = zeros(n_cells)
-    for i in 1:n_cells
+    zx_max = zeros(n)
+    zy_max = zeros(n)
+    for i in 1:n
         idx_right = edge_indices.idx_right[i]
-        if idx_right <= n_cells
+        if idx_right <= n
             zx_max[i] = max(elevation[i], elevation[idx_right])
         end
         idx_up = edge_indices.idx_up[i]
-        if idx_up <= n_cells
+        if idx_up <= n
             zy_max[i] = max(elevation[i], elevation[idx_up])
         end
     end
@@ -903,7 +896,7 @@ function LocalInertialOverlandFlowParameters(
     we_y = copy(y_length)
     set_effective_flowwidth!(we_x, we_y, domain)
     parameters = LocalInertialOverlandFlowParameters(;
-        n_cells,
+        n,
         xwidth = we_x,
         ywidth = we_y,
         theta,
@@ -919,9 +912,9 @@ end
 
 "Struct to store local inertial overland flow model boundary conditions"
 @with_kw struct LocalInertialOverlandFlowBC
-    n_cells::Int
+    n::Int
     # runoff from hydrological model [m³ s⁻¹]
-    runoff::Vector{Float64} = zeros(n_cells)
+    runoff::Vector{Float64} = zeros(n)
 end
 
 "Local inertial overland flow model using the local inertial method"
@@ -937,10 +930,10 @@ function LocalInertialOverlandFlowModel(dataset::NCDataset, config::Config, doma
     alpha_coefficient = config.model.land_local_inertial_flow__alpha_coefficient # stability coefficient for model time step (0.2-0.7)
     timestepping = TimeStepping(; alpha_coefficient)
 
-    n_cells = length(domain.land.network.indices)
-    boundary_conditions = LocalInertialOverlandFlowBC(; n_cells)
+    n = length(domain.land.network.indices)
+    boundary_conditions = LocalInertialOverlandFlowBC(; n)
     parameters = LocalInertialOverlandFlowParameters(dataset, config, domain)
-    variables = LocalInertialOverlandFlowVariables(; n_cells)
+    variables = LocalInertialOverlandFlowVariables(; n)
 
     overland_flow_model = LocalInertialOverlandFlowModel(;
         timestepping,
@@ -968,10 +961,10 @@ function stable_timestep(
     (; alpha_coefficient) = river_flow_model.timestepping
     (; n_river_cells) = river_flow_model.parameters
     (; h) = river_flow_model.variables
-    @batch per = thread reduction = ((min, dt_min),) for river_cell_idx in 1:(n_river_cells)
+    @batch per = thread reduction = ((min, dt_min),) for river_idx in 1:(n_river_cells)
         @fastmath @inbounds dt =
-            alpha_coefficient * flow_length[river_cell_idx] /
-            sqrt(GRAVITATIONAL_ACCELERATION * h[river_cell_idx])
+            alpha_coefficient * flow_length[river_idx] /
+            sqrt(GRAVITATIONAL_ACCELERATION * h[river_idx])
         dt_min = min(dt, dt_min)
     end
     dt_min = isinf(dt_min) ? 60.0 : dt_min
@@ -984,13 +977,13 @@ function stable_timestep(
 )
     dt_min = Inf
     (; alpha_coefficient) = overland_flow_model.timestepping
-    (; n_cells) = overland_flow_model.parameters
+    (; n) = overland_flow_model.parameters
     (; x_length, y_length, river_location) = parameters
     (; h) = overland_flow_model.variables
-    @batch per = thread reduction = ((min, dt_min),) for cell_idx in 1:(n_cells)
-        @fastmath @inbounds dt = if river_location[cell_idx] == 0
-            alpha_coefficient * min(x_length[cell_idx], y_length[cell_idx]) /
-            sqrt(GRAVITATIONAL_ACCELERATION * h[cell_idx])
+    @batch per = thread reduction = ((min, dt_min),) for idx in 1:(n)
+        @fastmath @inbounds dt = if river_location[idx] == 0
+            alpha_coefficient * min(x_length[idx], y_length[idx]) /
+            sqrt(GRAVITATIONAL_ACCELERATION * h[idx])
         else
             Inf
         end
@@ -1160,7 +1153,7 @@ Update flow for flow_area single direction in the local inertial overland flow m
 
     # the effective flow width is zero when the river width exceeds the cell width and
     # floodplain flow is not calculated.
-    if upstream_idx <= land_p.n_cells && width != 0.0
+    if upstream_idx <= land_p.n && width != 0.0
         zs_current = land_p.z[i] + land_v.h[i]
         zs_upstream = land_p.z[upstream_idx] + land_v.h[upstream_idx]
         zs_max = max(zs_current, zs_upstream)
@@ -1212,12 +1205,12 @@ function local_inertial_update_fluxes!(
     land_v.qx0 .= land_v.qx
     land_v.qy0 .= land_v.qy
 
-    @batch per = thread minbatch = 6000 for cell_idx in 1:(land_p.n_cells)
+    @batch per = thread minbatch = 6000 for idx in 1:(land_p.n)
         # update qx (x-direction)
-        update_directional_flow!(overland_flow_model, domain, cell_idx, dt, true)
+        update_directional_flow!(overland_flow_model, domain, idx, dt, true)
 
         # update qy (y-direction)
-        update_directional_flow!(overland_flow_model, domain, cell_idx, dt, false)
+        update_directional_flow!(overland_flow_model, domain, idx, dt, false)
     end
     return nothing
 end
@@ -1237,14 +1230,12 @@ function update_inflow_reservoir!(
     land_bc = overland_flow_model.boundary_conditions
     land_v = overland_flow_model.variables
 
-    for (reservoir_idx, cell_idx) in enumerate(reservoir_indices)
-        idx_down = indices.idx_down[cell_idx]
-        idx_left = indices.idx_left[cell_idx]
+    for (reservoir_idx, idx) in enumerate(reservoir_indices)
+        idx_down = indices.idx_down[idx]
+        idx_left = indices.idx_left[idx]
         reservoir_model.boundary_conditions.inflow_overland[reservoir_idx] =
-            land_bc.runoff[cell_idx] + (
-                land_v.qx[idx_left] - land_v.qx[cell_idx] + land_v.qy[idx_down] -
-                land_v.qy[cell_idx]
-            )
+            land_bc.runoff[idx] +
+            (land_v.qx[idx_left] - land_v.qx[idx] + land_v.qy[idx_down] - land_v.qy[idx])
     end
     return nothing
 end
@@ -1451,28 +1442,21 @@ function local_inertial_update_water_depth!(
 )
     (; river_location, reservoir_outlet) = domain.land.parameters
 
-    @batch per = thread minbatch = 6000 for cell_idx in
-                                            1:(overland_flow_model.parameters.n_cells)
-
-        if river_location[cell_idx]
+    @batch per = thread minbatch = 6000 for idx in 1:(overland_flow_model.parameters.n)
+        if river_location[idx]
             # Process river cells (excluding reservoir outlets)
-            if !reservoir_outlet[cell_idx]
+            if !reservoir_outlet[idx]
                 update_river_cell_storage_and_depth!(
                     overland_flow_model,
                     river_flow_model,
                     domain,
-                    cell_idx,
+                    idx,
                     dt,
                 )
             end
         else
             # Process land cells (non-river)
-            update_land_cell_storage_and_depth!(
-                overland_flow_model,
-                domain.land,
-                cell_idx,
-                dt,
-            )
+            update_land_cell_storage_and_depth!(overland_flow_model, domain.land, idx, dt)
         end
     end
     return nothing

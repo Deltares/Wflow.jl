@@ -2,28 +2,28 @@ abstract type AbstractSoilErosionModel end
 
 "Struct for storing total soil erosion with differentiation model variables"
 @with_kw struct SoilErosionModelVariables
-    n_cells::Int
+    n::Int
     # Total soil erosion rate [kg s⁻¹]
-    soil_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n_cells)
+    soil_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
     # Total clay erosion rate [kg s⁻¹]
-    clay_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n_cells)
+    clay_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
     # Total silt erosion rate [kg s⁻¹]
-    silt_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n_cells)
+    silt_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
     # Total sand erosion rate [kg s⁻¹]
-    sand_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n_cells)
+    sand_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
     # Total small aggregates erosion rate [kg s⁻¹]
-    small_aggregates_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n_cells)
+    small_aggregates_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
     # Total large aggregates erosion rate [kg s⁻¹]
-    large_aggregates_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n_cells)
+    large_aggregates_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct for storing soil erosion model boundary conditions"
 @with_kw struct SoilErosionBC
-    n_cells::Int
+    n::Int
     # Rainfall erosion rate [kg s⁻¹]
-    rainfall_erosion::Vector{Float64} = fill(MISSING_VALUE, n_cells)
+    rainfall_erosion::Vector{Float64} = fill(MISSING_VALUE, n)
     # Overland flow erosion rate [kg s⁻¹]
-    overland_flow_erosion::Vector{Float64} = fill(MISSING_VALUE, n_cells)
+    overland_flow_erosion::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct for storing soil erosion model parameters"
@@ -93,10 +93,10 @@ end
 
 "Total soil erosion with differentiation model"
 @with_kw struct SoilErosionModel <: AbstractSoilErosionModel
-    n_cells::Int
-    boundary_conditions::SoilErosionBC = SoilErosionBC(; n_cells)
+    n::Int
+    boundary_conditions::SoilErosionBC = SoilErosionBC(; n)
     parameters::SoilErosionParameters
-    variables::SoilErosionModelVariables = SoilErosionModelVariables(; n_cells)
+    variables::SoilErosionModelVariables = SoilErosionModelVariables(; n)
 end
 
 "Initialize soil erosion model"
@@ -105,9 +105,9 @@ function SoilErosionModel(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    n_cells = length(indices)
+    n = length(indices)
     parameters = SoilErosionParameters(dataset, config, indices)
-    soil_erosion_model = SoilErosionModel(; n_cells, parameters)
+    soil_erosion_model = SoilErosionModel(; n, parameters)
     return soil_erosion_model
 end
 
@@ -143,21 +143,21 @@ function update_soil_erosion_model!(soil_erosion_model::SoilErosionModel)
         large_aggregates_erosion_rate,
     ) = soil_erosion_model.variables
 
-    n_cells = length(rainfall_erosion)
-    threaded_foreach(1:n_cells; basesize = 1000) do cell_idx
-        soil_erosion_rate[cell_idx],
-        clay_erosion_rate[cell_idx],
-        silt_erosion_rate[cell_idx],
-        sand_erosion_rate[cell_idx],
-        small_aggregates_erosion_rate[cell_idx],
-        large_aggregates_erosion_rate[cell_idx] = total_soil_erosion(
-            rainfall_erosion[cell_idx],
-            overland_flow_erosion[cell_idx],
-            clay_fraction[cell_idx],
-            silt_fraction[cell_idx],
-            sand_fraction[cell_idx],
-            small_aggregates_fraction[cell_idx],
-            large_aggregates_fraction[cell_idx],
+    n = length(rainfall_erosion)
+    threaded_foreach(1:n; basesize = 1000) do idx
+        soil_erosion_rate[idx],
+        clay_erosion_rate[idx],
+        silt_erosion_rate[idx],
+        sand_erosion_rate[idx],
+        small_aggregates_erosion_rate[idx],
+        large_aggregates_erosion_rate[idx] = total_soil_erosion(
+            rainfall_erosion[idx],
+            overland_flow_erosion[idx],
+            clay_fraction[idx],
+            silt_fraction[idx],
+            sand_fraction[idx],
+            small_aggregates_fraction[idx],
+            large_aggregates_fraction[idx],
         )
     end
 end
