@@ -318,7 +318,6 @@ end
     # evaporation for the reservoir.
     using Graphs: DiGraph, add_edge!
 
-    dt = 86400.0
     n = 2
     bankfull_depth = [1.0, 1.0]
     flow_width = [94.73094177246094, 94.73094177246094]
@@ -899,6 +898,138 @@ end
           [0.0, 59966.73673951485, 13225.594647371057]
     @test river_flow_model.floodplain.variables.h ≈
           [0.0, 1.3733267813810248, 0.3053669352090384]
+end
+
+@testitem "unit: kinematic river flow including 1D floodplain schematization" begin
+    # Test river kinematic wave routing with floodplain on a 2-node graph (1 → 2).
+    # Each sub-step of the update of kinematic wave routing with floodplain is called and
+    # verified individually:
+    #   1. river_channel_floodplain_exchange!
+    #   2. kinwave_river_update!
+    #   3. update_floodplain_model!
+    using Graphs: DiGraph, add_edge!
+
+    n = 2
+    flow_length = [750.953125, 851.8125]
+    flow_width = [229.91920471191406, 229.91920471191406]
+
+    river_flow_model = Wflow.RiverFlowModel(;
+        routing_method = Wflow.KinematicWave(),
+        timestepping = Wflow.TimeStepping(; stable_timesteps = zeros(n)),
+        boundary_conditions = Wflow.RiverFlowBC(;
+            n,
+            inwater = [0.02953203136486251, 0.0001849569866329713],
+            reservoir = nothing,
+        ),
+        parameters = Wflow.RiverFlowParameters(;
+            flow = Wflow.ManningFlowParameters(;
+                slope = [1.0e-5, 1.0e-5],
+                mannings_n = [0.03, 0.03],
+                alpha_pow = 0.4,
+                alpha_term = [3.8572052304976667, 3.8572052304976667],
+                alpha = [34.0789466790827, 34.0789466790827],
+            ),
+            bankfull_depth = [2.1051321029663086, 2.1051321029663086],
+            bankfull_storage = [363469.04651181493, 412286.02275520907],
+        ),
+        variables = Wflow.RiverFlowVariables(;
+            n,
+            q = [296.52948301601174, 192.8313119108856],
+            qlat = [3.9326064945614956e-5, 2.1713344971219756e-7],
+            h = [4.509741437854894, 3.4835130995322534],
+            storage = [778645.3962305915, 682239.2566234164],
+        ),
+        allocation = Wflow.NoAllocationRiverModel(n),
+        floodplain = Wflow.FloodPlainModel(;
+            routing_method = Wflow.KinematicWave(),
+            parameters = Wflow.FloodPlainParameters(;
+                profile = Wflow.FloodPlainProfile(;
+                    depth = [0.0, 0.5, 1.0, 1.5, 2.0, 2.5],
+
+                    storage = [
+                        0.0 0.0;
+                        86329.2726379633 97924.02628183365;
+                        172659.2726379633 207762.02628183365;
+                        258989.2726379633 386716.02628183365;
+                        369518.2726379633 605009.0262818336;
+                        724648.2726379633 869843.0262818336;
+                    ],
+                    width = [
+                        229.91920471191406 229.91920471191406;
+                        229.91920471191406 229.91920471191406;
+                        229.9211418821914 257.89243524836746;
+                        229.9211418821914 420.1722796977034;
+                        294.369904912507 512.5376770122533;
+                        945.8113647239966 621.8128989654414;
+                    ],
+                    flow_area = [
+                        0.0 0.0;
+                        114.95960235595703 114.95960235595703;
+                        229.9201732970527 243.90581998014076;
+                        344.8807442381484 453.99195982899244;
+                        492.06569669440194 710.260798335119;
+                        964.9713790564002 1021.1672478178398;
+                    ],
+                    wetted_perimeter = [
+                        0.0 0.0;
+                        1.0 1.0;
+                        2.00193717027733 29.9732305364534;
+                        3.00193717027733 193.25307498578934;
+                        68.45070020059296 286.61847230033925;
+                        720.8921600120825 396.8936942535273;
+                    ],
+                ),
+                mannings_n = [0.072, 0.072],
+                slope = [1.0e-5, 1.0e-5],
+            ),
+            variables = Wflow.FloodPlainVariables(;
+                n,
+                q = [1.2861909826521447, 1.9846650910027395],
+                h = [0.0, 0.0],
+                storage = [0.0, 0.0],
+            ),
+        ),
+    )
+    graph = DiGraph(2)
+    add_edge!(graph, 1, 2)
+    domain = Wflow.DomainRiver(;
+        network = Wflow.NetworkRiver(;
+            graph,
+            order = [1, 2],
+            order_of_subdomains = [[1]],
+            order_subdomain = [[1, 2]],
+            subdomain_indices = [[1, 2]],
+            upstream_nodes = [[], [1]],
+            reservoir_indices = [0, 0],
+        ),
+        parameters = Wflow.RiverParameters(; flow_width, flow_length),
+    )
+    dt = Wflow.stable_timestep(river_flow_model, domain.parameters.flow_length, 0.05)
+
+    Wflow.river_channel_floodplain_exchange!(river_flow_model, domain.parameters, dt)
+
+    @test dt ≈ 1602.881460805217
+    @test river_flow_model.variables.h ≈ [4.509741437854894, 3.4835130995322534]
+    @test river_flow_model.variables.storage ≈ [778645.3962305915, 682239.2566234164]
+    @test river_flow_model.floodplain.variables.h ≈ [2.0642836103410205, 1.1737631111525133]
+    @test river_flow_model.floodplain.variables.storage ≈
+          [58760.1445203583, 40074.01437791623]
+
+    Wflow.kinwave_river_update!(river_flow_model, domain, dt)
+
+    @test river_flow_model.variables.h ≈ [2.872002930358695, 3.1138609375883397]
+    @test river_flow_model.variables.storage ≈ [495875.84798393055, 609843.6005807515]
+    @test river_flow_model.variables.q ≈ [139.7837242183345, 159.9486203252721]
+    @test river_flow_model.variables.q_cumulative ≈ [224056.7400718776, 256378.67820075116]
+
+    Wflow.update_floodplain_model!(river_flow_model, domain, dt)
+
+    @test river_flow_model.floodplain.variables.h ≈ [0.3054891336736904, 0.2126646996773224]
+    @test river_flow_model.floodplain.variables.storage ≈
+          [52745.30941770246, 41649.967280840756]
+    @test river_flow_model.floodplain.variables.q ≈ [3.752513987924126, 2.7693140810933157]
+    @test river_flow_model.floodplain.variables.q_cumulative ≈
+          [6014.835102655834, 4438.882199731312]
 end
 
 @testitem "unit: update_directional_flow!" begin
