@@ -656,6 +656,15 @@
     "allow_missing": false,
     "allow_dynamic_input": false
   },
+  "soil_water__field_capacity_volume_fraction": {
+    "unit": "-",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Field capacity",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
   "soil_water__infiltration_volume_flux": {
     "unit": "mm Δt-1",
     "default": null,

@@ -84,6 +84,12 @@ drainage network.
 """
 function NetworkLand(dataset::NCDataset, config::Config)
     subcatch_2d = ncread(dataset, config, "subbasin_location__count", Domain)
+    # check if specific IDs are requested, and only keep those if this is the case
+    if !isnothing(config.input.subbasin_active_location__count)
+        active_ids = Set(config.input.subbasin_active_location__count)
+        @info "Only subcatchments with IDs `$(sort!(collect(active_ids)))` are active."
+        subcatch_2d = map(v -> v in active_ids ? v : missing, subcatch_2d)
+    end
     indices, reverse_indices = active_indices(subcatch_2d, missing)
     modelsize = size(subcatch_2d)
     graph, local_drain_direction =
@@ -159,7 +165,7 @@ function get_drainage_network(
         pits_2d = ncread(dataset, config, "basin_pit_location__mask", Domain)
         ldd = set_pit_ldd(pits_2d, ldd, indices)
     end
-    graph = flowgraph(ldd, indices, PCR_DIR)
+    graph, ldd = flowgraph(ldd, indices, PCR_DIR)
     return graph, ldd
 end
 
@@ -209,14 +215,31 @@ function NetworkRiver(
     network::NetworkLand;
     do_pits = false,
 )
-    river_location_2d =
-        ncread(dataset, config, "river_location__mask", Domain; logging = false)
-    indices, reverse_indices = active_indices(river_location_2d, 0)
+    # read river mask only at land-domain cells; same order as network.indices
+    river_location = ncread(
+        dataset,
+        config,
+        "river_location__mask",
+        Domain;
+        sel = network.indices,
+        logging = false,
+    )
+
+    # find the land cells that are river cells
+    land_indices = findall(!isequal(0), river_location)
+
+    # 2D CartesianIndex of river cells (a subset of network.indices)
+    indices = network.indices[land_indices]
+
+    # rebuild the 2D reverse-index map
+    reverse_indices = zeros(Int, network.modelsize)
+    for (i, ind) in enumerate(indices)
+        reverse_indices[ind] = i
+    end
+
     graph, local_drain_direction =
         get_drainage_network(dataset, config, indices; do_pits, logging = false)
     order = topological_sort_by_dfs(graph)
-    river_location = river_location_2d[network.indices]
-    land_indices = filter(i -> !isequal(river_location[i], 0), 1:length(network.indices))
     streamorder = network.streamorder[land_indices]
 
     network = NetworkRiver(;
@@ -351,24 +374,33 @@ function NetworkDrain(
     config::Config,
     indices::Vector{CartesianIndex{2}},
     surface_flow_width::Vector{Float64},
+    modelsize::Tuple{Int, Int},
 )
     n_cells = length(indices)
-    drain_2d = ncread(dataset, config, "land_drain_location__mask", Routing)
-    drain = drain_2d[indices]
+    # read drain mask only at land-domain cells; same order as `indices`
+    drain = ncread(dataset, config, "land_drain_location__mask", Routing; sel = indices)
 
-    # check if drain occurs where overland flow is not possible (surface_flow_width = 0.0)
-    # and correct if this is the case
+    # remove drains where overland flow is not possible (surface_flow_width = 0.0)
     false_drain =
         filter(i -> !isequal(drain[i], 0) && surface_flow_width[i] == 0.0, 1:n_cells)
     n_false_drain = length(false_drain)
     if n_false_drain > 0
-        drain_2d[indices[false_drain]] .= 0
         drain[false_drain] .= 0
         @info "$n_false_drain drain locations are removed that occur where overland flow
          is not possible (overland flow width is zero)"
     end
+
+    # land-domain positions that are drain cells
     land_indices = filter(i -> !isequal(drain[i], 0), 1:n_cells)
-    indices, reverse_indices = active_indices(drain_2d, 0)
-    network = NetworkDrain(; indices, reverse_indices, land_indices)
-    return network
+
+    # 2D CartesianIndex of drain cells
+    drain_indices = indices[land_indices]
+
+    # rebuild the 2D reverse-index map (model coords -> 1D drain index)
+    reverse_indices = zeros(Int, modelsize)
+    for (i, ind) in enumerate(drain_indices)
+        reverse_indices[ind] = i
+    end
+
+    return NetworkDrain(; indices = drain_indices, reverse_indices, land_indices)
 end

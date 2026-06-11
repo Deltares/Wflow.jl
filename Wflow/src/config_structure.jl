@@ -84,7 +84,7 @@ end
     kinematic_wave__adaptive_time_step_flag::Bool = false
     river_kinematic_wave__time_step::Float64 = 900.0
     land_kinematic_wave__time_step::Float64 = 3600.0
-    subsurface_kinematic_wave__time_step::Float64 = 1.0
+    subsurface_kinematic_wave__time_step::Float64 = 86400.0
     subsurface_kinematic_wave__alpha_coefficient::Float64 = 1.0
     river_subsurface_exchange_head_based__flag::Bool = false
     # Local inertial routing
@@ -170,6 +170,7 @@ Base.iterate(input_entries::InputEntries, state) = iterate(input_entries.dict, s
     reservoir_area__count::Union{Nothing, String} = nothing
     reservoir_location__count::Union{Nothing, String} = nothing
     subbasin_location__count::String
+    subbasin_active_location__count::Union{Nothing, Vector{Int}} = nothing
     # Variable name mappings
     forcing::InputEntries
     static::InputEntries

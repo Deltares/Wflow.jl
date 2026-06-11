@@ -24,6 +24,14 @@ hooks = [{ id = "typos" }]
 repo = "local"
 
 [[repos.hooks]]
+id = "instantiate-formatting"
+name = "instantiate julia formatting environment"
+entry = "pixi run instantiate-formatting"
+language = "system"
+pass_filenames = false
+always_run = true
+
+[[repos.hooks]]
 id = "format-code"
 name = "format julia code"
 entry = "pixi run format-code"

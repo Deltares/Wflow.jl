@@ -52,7 +52,11 @@ test-wflow-server = { cmd = "julia --project=server --eval 'using Pkg; Pkg.test(
 	"download-test-data",
 ] }
 # Formatting
-format-code = { cmd = "julia --project=utils/formatting --eval 'using Pkg; Pkg.instantiate(); using JuliaFormatter; format(isempty(ARGS) ? \".\" : ARGS) || exit(1)'" }
+# `instantiate-formatting` resolves and precompiles the formatting environment once.
+# `format-code` only runs JuliaFormatter, so it can safely be invoked in parallel
+# (e.g. by prek) without racing on instantiation/precompilation.
+instantiate-formatting = { cmd = "julia --project=utils/formatting --eval 'using Pkg; Pkg.instantiate(); using JuliaFormatter'" }
+format-code = { cmd = "julia --project=utils/formatting --eval 'using JuliaFormatter; format(isempty(ARGS) ? \".\" : ARGS) || exit(1)'" }
 # Docs
 install-ci = { depends-on = ["install-julia", "update-registry-julia"] }
 quarto-check = { cmd = "quarto check all" }

@@ -115,3 +115,43 @@ is using kinematic wave for land routing and either kinematic wave or local iner
 river routing. This can lead to unrealistically large water depths when the bankfull
 capacity is exceeded as there is no exchange of water between the river channel and (1D or
 2D) floodplains.
+
+### How do I run only a part of my model?
+You can easily run only a subsection of your model, by modifying the
+`subbasin_location__count` to a different layer in your staticmaps. By default, this layer
+represents your entire catchment, and all cells that have a value are interpreted as active
+cells. You can update this to another layer which contains a subset of the original data.
+
+Alternatively, you can point `subbasin_location__count` to a layer with subcatchment
+information (e.g. based on gauges with discharge observations), and use the
+`subbasin_active_location__count` setting to provide a list of IDs within that layer that
+indicate the basins that you want to simulate. See below for an example:
+
+```toml
+[input]
+subbasin_location__count = "subcatchment_gauges_obs"
+subbasin_active_location__count = [1016, 1013, 1011, 206, 203, 503]
+```
+
+::: {.callout-important}
+When using this functionality, please take the following points into account:
+
+- Ensure that all upstream regions are included (unless you make use of external inflows)
+- When using water demand and allocation: ensure that there are no allocation areas with the
+  same ID outside your active domain (a warning is shown in the logging)
+- When writing output at specific cells (`index`): note that the targeted cell (or e.g.
+  reservoir) might no longer be at the same (active) index when using a different domain. If
+  you need output at specific locations, please connect to a layer in the staticmaps, or
+  provide coordinates.
+- When using local_inertial for routing: a ghost node will be added at the end of each river
+  section (with a set distance and water level). This might cause some difference in the
+  results, as it no longer contains the "real" downstream boundary condition. If this is
+  important, either add a boundary condition at these locations (via
+  `model_boundary_condition_river__length` and
+  `model_boundary_condition_river_bank_water__depth`), or ensure that the gauges for
+  evaluation have sufficient downstream cells in your selected model domain.
+- Especially when running the `sbm_gwf` model or using "local_inertial" for `land_routing`,
+  please be aware that your active model domain covers the full relevant hydrologically
+  active area, as this can be slightly different than e.g. typical subcatchment (elevation
+  derived) maps.
+:::

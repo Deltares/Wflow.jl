@@ -1,7 +1,8 @@
 const KIN_WAVE_MIN_FLOW = 1e-30 # [m³ s⁻¹]
 const KIN_WAVE_MIN_FLOW_QROOT = KIN_WAVE_MIN_FLOW^0.2
 
-"Convert a gridded drainage direction to a directed graph"
+"Convert a gridded drainage direction to a directed graph. Also returns the possibly modified
+drainage direction, where invalid values are set to 5 (pit)."
 function flowgraph(ldd::AbstractVector, indices::AbstractVector, PCR_DIR::AbstractVector)
     # prepare a directed graph to be filled
     n = length(indices)
@@ -15,6 +16,11 @@ function flowgraph(ldd::AbstractVector, indices::AbstractVector, PCR_DIR::Abstra
         to_index = from_index + PCR_DIR[ldd_val]
         # find the node id of the downstream cell
         to_node = searchsortedfirst(indices, to_index)
+        if to_node > length(indices) || indices[to_node] != to_index
+            @warn "Invalid drainage direction value at node `$from_node` (LDD=`$ldd_val`), assign pit value at node"
+            ldd[from_node] = 5
+            continue
+        end
         add_edge!(graph, from_node, to_node)
     end
     if is_cyclic(graph)
@@ -23,7 +29,7 @@ function flowgraph(ldd::AbstractVector, indices::AbstractVector, PCR_DIR::Abstra
             Verify that each active flow cell flows towards a pit.
             """)
     end
-    return graph
+    return graph, ldd
 end
 
 """
