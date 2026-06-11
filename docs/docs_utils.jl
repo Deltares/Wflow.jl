@@ -71,7 +71,7 @@ function generate_table(
         column_labels,
         alignment = :l,
         backend = :html,
-        allow_html_in = true,
+        allow_html_in_cells = true,
         table_class = "table-striped table-hover caption-top table",
     )
     table_html = String(take!(io))
