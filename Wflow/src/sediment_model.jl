@@ -22,7 +22,7 @@ function Model(config::Config, type::SedimentModel)
     routing = Routing(dataset, config, domain, soilloss)
     mass_balance = NoMassBalance()
 
-    modelmap = (land=soilloss, routing, mass_balance)
+    modelmap = (land = soilloss, routing, mass_balance)
     writer = Writer(config, modelmap, domain, dataset)
     close(dataset)
 

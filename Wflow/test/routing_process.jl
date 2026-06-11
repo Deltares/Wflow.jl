@@ -74,7 +74,7 @@ end
     close(nc)
 
     # create the directed acyclic graph from the drainage direction array
-    graph = Wflow.flowgraph(ldd, inds, Wflow.PCR_DIR)
+    graph, ldd = Wflow.flowgraph(ldd, inds, Wflow.PCR_DIR)
     # a topological sort is used for visiting nodes in order from upstream to downstream
     toposort = topological_sort_by_dfs(graph)
     sink = toposort[end]

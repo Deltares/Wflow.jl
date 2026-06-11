@@ -169,12 +169,11 @@ function SbmSoilVariables(n::Int, parameters::SbmSoilParameters)
         @. max(0.0, soil_thickness - saturated_water_depth / (theta_s - theta_r))
     drainable_water_depth = @. (soil_thickness - water_table_depth) *
        lower_bound_drainable_porosity(theta_s, theta_fc)
-    unsaturated_layer_thickness =
-        set_layerthickness.(
-            water_table_depth,
-            cumulative_layer_depth,
-            actual_layer_thickness,
-        )
+    unsaturated_layer_thickness = set_layerthickness.(
+        water_table_depth,
+        cumulative_layer_depth,
+        actual_layer_thickness,
+    )
     n_unsatlayers = number_of_active_layers.(unsaturated_layer_thickness)
     volumetric_water_content = fill(MISSING_VALUE, maximum_number_of_layers, n)
     relative_volumetric_water_content = fill(MISSING_VALUE, maximum_number_of_layers, n)
@@ -528,15 +527,14 @@ function SbmSoilParameters(
             sel = indices,
         )
     else
-        theta_fc =
-            field_capacity.(
-                actual_layer_thickness,
-                number_of_layers,
-                theta_s,
-                theta_r,
-                brooks_corey_exponent,
-                air_entry_pressure,
-            )
+        theta_fc = field_capacity.(
+            actual_layer_thickness,
+            number_of_layers,
+            theta_s,
+            theta_r,
+            brooks_corey_exponent,
+            air_entry_pressure,
+        )
     end
 
     # optional root fraction
@@ -683,13 +681,12 @@ function update_bc_soil_model!(
 
     evaporation!(demand.paddy, potential_soilevaporation, dt)
     potential_soilevaporation .-= get_evaporation(demand.paddy)
-    water_flux_surface .=
-        max.(
-            runoff.boundary_conditions.water_flux_surface .+
-            get_irrigation_allocated(allocation) .- runoff.variables.runoff_river .-
-            runoff.variables.runoff_land .+ get_water_depth(demand.paddy) / dt,
-            0.0,
-        )
+    water_flux_surface .= max.(
+        runoff.boundary_conditions.water_flux_surface .+
+        get_irrigation_allocated(allocation) .- runoff.variables.runoff_river .-
+        runoff.variables.runoff_land .+ get_water_depth(demand.paddy) / dt,
+        0.0,
+    )
     return nothing
 end
 

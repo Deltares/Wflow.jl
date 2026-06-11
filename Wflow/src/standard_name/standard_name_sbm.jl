@@ -1,4 +1,4 @@
-﻿# NOTE: The order of the entries determines the order in the docs tables
+# NOTE: The order of the entries determines the order in the docs tables
 """
 Mapping of (CSDMS) standard names to the metadata associated with the corresponding
 variable or parameter, for models of type `LandHydrologySBM`. For more details and
@@ -268,7 +268,9 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
         tags = [:soil_output],
     ),
     "land_surface_water__abstraction_volume_flux" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.allocation.variables.actual_surfacewater_abstraction),
+        lens = @optic(
+            _.routing.river_flow.allocation.variables.actual_surfacewater_abstraction
+        ),
         unit = Unit(; mm = 1, dt = -1),
         description = "Actual surface water abstraction",
         tags = [:demand_allocation_output],
@@ -438,7 +440,9 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
         ),
     "soil_water__vertical_saturated_hydraulic_conductivity_scale_parameter" =>
         ParameterMetadata(;
-            lens = @optic(_.land.soil.parameters.kv_profile.hydraulic_conductivity_scale_parameter),
+            lens = @optic(
+                _.land.soil.parameters.kv_profile.hydraulic_conductivity_scale_parameter
+            ),
             unit = Unit(; mm = -1),
             description = "Scaling parameter controlling decline of vertical saturated hydraulic conductivity with depth",
             tags = [:soil_input],
@@ -458,6 +462,11 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
     "soil_water__saturated_volume_fraction" => ParameterMetadata(;
         lens = @optic(_.land.soil.parameters.theta_s),
         description = "Saturated water content",
+        tags = [:soil_input],
+    ),
+    "soil_water__field_capacity_volume_fraction" => ParameterMetadata(;
+        lens = @optic(_.land.soil.parameters.theta_fc),
+        description = "Field capacity",
         tags = [:soil_input],
     ),
     "soil_water_saturated_zone_bottom__max_leakage_volume_flux" => ParameterMetadata(;
@@ -636,7 +645,9 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
     ),
     "vegetation_canopy_water__mean_evaporation_to_mean_precipitation_ratio" =>
         ParameterMetadata(;
-            lens = @optic(_.land.interception.parameters.evaporation_to_precipitation_ratio),
+            lens = @optic(
+                _.land.interception.parameters.evaporation_to_precipitation_ratio
+            ),
             default = 0.1,
             description = "Gash interception model parameter",
             tags = [:vegetation_input],

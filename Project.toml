@@ -1,5 +1,5 @@
 [workspace]
-projects = ["Wflow", "docs", "server", "build/create_binaries", "build/wflow_cli", "utils/export_parameter_data"]
+projects = ["Wflow", "docs", "server", "build/create_binaries", "build/wflow_cli", "utils/export_parameter_data", "utils/formatting"]
 
 [deps]
 PkgToSoftwareBOM = "6254a0f9-6143-4104-aa2e-fd339a2830a6"

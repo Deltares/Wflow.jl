@@ -55,10 +55,11 @@ function LocalInertialRiverFlowParameters(
         Routing;
         sel = pit_indices,
     )
-    bankfull_elevation_2d = ncread(dataset, config, "river_bank_water__elevation", Routing)
-    bankfull_depth_2d = ncread(dataset, config, "river_bank_water__depth", Routing)
-    bankfull_depth = bankfull_depth_2d[indices]
-    zb = bankfull_elevation_2d[indices] - bankfull_depth # river bed elevation
+    bankfull_elevation =
+        ncread(dataset, config, "river_bank_water__elevation", Routing; sel = indices)
+    bankfull_depth =
+        ncread(dataset, config, "river_bank_water__depth", Routing; sel = indices)
+    zb = bankfull_elevation - bankfull_depth # river bed elevation
 
     bankfull_storage = bankfull_depth .* flow_width .* flow_length
     mannings_n = ncread(
@@ -407,6 +408,7 @@ function update_floodplain_flow!(
 
     @batch per = thread minbatch = 1000 for river_edge_idx in
                                             1:length(floodplain_v.water_depth_at_edge)
+
         floodplain_v.water_depth_at_edge[river_edge_idx] =
             max(river_v.zs_max[river_edge_idx] - floodplain_p.zb_max[river_edge_idx], 0.0)
     end
@@ -872,9 +874,13 @@ function LocalInertialOverlandFlowParameters(
         Routing;
         sel = indices,
     )
-    elevation_2d =
-        ncread(dataset, config, "land_surface_water_flow__ground_elevation", Routing)
-    elevation = elevation_2d[indices]
+    elevation = ncread(
+        dataset,
+        config,
+        "land_surface_water_flow__ground_elevation",
+        Routing;
+        sel = indices,
+    )
     n_cells = length(domain.land.network.indices)
 
     zx_max = zeros(n_cells)
@@ -1447,6 +1453,7 @@ function local_inertial_update_water_depth!(
 
     @batch per = thread minbatch = 6000 for cell_idx in
                                             1:(overland_flow_model.parameters.n_cells)
+
         if river_location[cell_idx]
             # Process river cells (excluding reservoir outlets)
             if !reservoir_outlet[cell_idx]

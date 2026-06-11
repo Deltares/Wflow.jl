@@ -327,10 +327,9 @@ function waterlevel(
 end
 
 "Determine the maximum storage for reservoirs with a rating curve of type 1"
-function maximum_storage(parameters::ReservoirParameters, i::Int)
+function get_maximum_storage(parameters::ReservoirParameters, i::Int)
     (; storage_curve_type, waterlevel_discharge_curve, storage_waterlevel_curve, area) =
         parameters
-
     # maximum storage is based on the maximum water level (H) value in the H-Q table
     if storage_curve_type[i] == ReservoirProfileType.interpolation
         maximum_storage = interpolate_linear(
@@ -539,7 +538,7 @@ function update_reservoir_free_weir(
     if diff_wl < 0.0
         lower_res_storage = res_v.storage[lo] + outflow * dt
         lower_res_waterlevel = if storage_curve_type[lo] == ReservoirProfileType.linear
-            waterlevel[lo] + (lower_res_storage - storage[lo]) / area[lo]
+            waterlevel[lo] + (lower_res_storage - res_v.storage[lo]) / area[lo]
         else # ReservoirProfileType.interpolation
             interpolate_linear(
                 lower_res_storage,
