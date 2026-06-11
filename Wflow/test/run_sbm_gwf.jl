@@ -14,7 +14,8 @@
         # test if states and depending variables are consistent between soil and groundwater
         # flow models
         (; subsurface_flow) = model.routing
-        (; water_table_depth, unsaturated_store_capacity) = model.land.soil.variables
+        (; water_table_depth, unsaturated_store_capacity) =
+            model.land.soil.variables.diagnostic
         (; land_indices) = model.domain.river.network
         @test all(
             water_table_depth .==

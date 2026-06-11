@@ -99,7 +99,7 @@ end
         infiltration = [2.635886044866978e-10],
     )
 
-    Wflow.unsaturated_zone_flow!(soil_model, dt)
+    Wflow.WflowSoil.unsaturated_zone_flow!(soil_model, dt)
 
     @test soil_model.variables.states.unsaturated_layer_depth[1] ≈
           SVector(0.0013083267609636298, 0.00020814799974448514, 0.0, 0.0, 0.0, 0.0)
@@ -130,7 +130,7 @@ end
         drainable_water_depth = [0.32113323174500624],
     )
 
-    Wflow.soil_evaporation!(soil_model, dt)
+    Wflow.WflowSoil.soil_evaporation!(soil_model, dt)
 
     @test soil_model.variables.fluxes.soil_evaporation_saturated_zone[1] == 0
     @test soil_model.variables.fluxes.soil_evaporation[1] ≈ 2.846757959937507e-9
@@ -181,7 +181,7 @@ end
         drainable_water_depth = [0.07240310797113221],
     )
 
-    Wflow.transpiration!(soil_model, dt)
+    Wflow.WflowSoil.transpiration!(soil_model, dt)
 
     @test soil_model.variables.fluxes.actual_evaporation_unsaturated_store[1] ≈
           5.965093586654767e-10
@@ -223,7 +223,7 @@ end
         theta_r = [0.0711537748575],
     )
 
-    Wflow.capillary_flux!(soil_model, dt)
+    Wflow.WflowSoil.capillary_flux!(soil_model, dt)
 
     @test soil_model.variables.fluxes.actual_capillary_flux[1] ≈ 8.235506588899334e-10
 end

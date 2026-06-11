@@ -1,5 +1,5 @@
 "Initialize (shared) vegetation parameters"
-function SharedHydrology.VegetationParameters(
+function WflowSoil.VegetationParameters(
     dataset::NCDataset,
     config::Config,
     indices::Vector{CartesianIndex{2}},

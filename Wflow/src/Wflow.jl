@@ -68,23 +68,34 @@ using Statistics: mean, median, quantile!, quantile
 using TerminalLoggers
 using TOML: TOML
 
-import SharedHydrology:
+import WflowSoil:
     AbstractSoilModel,
-    SharedHydrology,
-    MISSING_VALUE,
-    VegetationParameters,
-    SbmSoilParameters,
-    SbmSoilVariables,
-    SbmSoilStates,
-    SbmSoilDiagnosticVariables,
-    SbmSoilIntermediates,
-    SbmSoilFluxes,
-    SbmSoilBC,
+    bounded_power,
+    get_rootingdepth,
+    hydraulic_conductivity_at_depth,
     KvExponential,
     KvExponentialConstant,
     KvLayered,
     KvLayeredExponential,
-    SbmSoilModel
+    lower_bound_drainable_porosity,
+    MISSING_VALUE,
+    number_of_active_layers,
+    pow,
+    SbmSoilBC,
+    SbmSoilDiagnosticVariables,
+    SbmSoilFluxes,
+    SbmSoilIntermediates,
+    SbmSoilModel,
+    SbmSoilParameters,
+    SbmSoilStates,
+    SbmSoilVariables,
+    scurve,
+    set_layerthickness,
+    threaded_foreach,
+    update_diagnostic_vars!,
+    update_soil_water_flow!,
+    VegetationParameters,
+    WflowSoil
 
 const CFDataset = Union{NCDataset, NCDatasets.MFDataset}
 const CFVariable_MF = Union{NCDatasets.CFVariable, NCDatasets.MFCFVariable}

@@ -266,7 +266,6 @@
                 :infiltration => 1.9033304037551905e-8,
                 :water_table_depth => 0.27873782910028516,
                 :relative_volumetric_water_content_root_zone => 54.55735722947444,
-                :total_storage => 0.43155732894128607,
                 :actual_leakage => 0.0,
                 :actual_evapotranspiration => 3.8825953512676096e-9,
                 :saturated_water_depth => 0.42879132006206927,
@@ -488,8 +487,6 @@
                 :infiltration => 1.0256861822245556e-9,
                 :water_table_depth => 0.2831713993535127,
                 :relative_volumetric_water_content_root_zone => 54.646709985548235,
-                # Total storage is affected by all modules, not just soil
-                :total_storage => 0.43144808509560123,
                 :actual_leakage => 0.0,
                 :actual_evapotranspiration => 3.1762875630098438e-9,
                 :saturated_water_depth => 0.42734077095115,
