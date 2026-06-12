@@ -5,7 +5,7 @@ abstract type AbstractSubsurfaceFlowModel end
 abstract type AbstractRoutingMethod end
 abstract type AbstractStaggeredRoutingMethod <: AbstractRoutingMethod end
 
-struct AccucapacityFlux <: AbstractRoutingMethod end
+struct Manning <: AbstractRoutingMethod end
 struct KinematicWave <: AbstractRoutingMethod end
 struct ManningStaggered <: AbstractStaggeredRoutingMethod end
 struct LocalInertial <: AbstractStaggeredRoutingMethod end

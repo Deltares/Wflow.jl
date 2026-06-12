@@ -419,7 +419,6 @@ function FloodPlainModel(dataset::NCDataset, config::Config, domain::DomainRiver
     clamp!(slope, 0.00001, Inf)
     parameters = FloodPlainParameters(; profile, mannings_n, slope)
     variables = FloodPlainVariables(; n)
-    floodplain_model =
-        FloodPlainModel(; routing_method = KinematicWave(), parameters, variables)
+    floodplain_model = FloodPlainModel(; routing_method = Manning(), parameters, variables)
     return floodplain_model
 end

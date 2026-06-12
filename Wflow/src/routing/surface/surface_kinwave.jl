@@ -388,7 +388,7 @@ function update_floodplain_model!(
     river_flow_model::RiverFlowModel{T, F},
     domain::DomainRiver,
     dt::Float64,
-) where {T <: KinematicWave, F <: FloodPlainModel{<:KinematicWave}}
+) where {T <: KinematicWave, F <: FloodPlainModel{<:Manning}}
     (; floodplain) = river_flow_model
     (; flow_length) = domain.parameters
     (; profile, mannings_n, slope) = floodplain.parameters
@@ -560,7 +560,7 @@ function river_channel_floodplain_exchange!(
     river_flow_model::RiverFlowModel{T, F},
     parameters::RiverParameters,
     dt::Float64,
-) where {T <: KinematicWave, F <: FloodPlainModel{<:KinematicWave}}
+) where {T <: KinematicWave, F <: FloodPlainModel{<:Manning}}
     river_v = river_flow_model.variables
     river_p = river_flow_model.parameters
     floodplain_v = river_flow_model.floodplain.variables
