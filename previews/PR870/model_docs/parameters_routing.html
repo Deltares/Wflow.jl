@@ -556,11 +556,10 @@ window.Quarto = {
   <li><a href="#overland-flow" id="toc-overland-flow" class="nav-link" data-scroll-target="#overland-flow">Overland flow</a></li>
   <li><a href="#lateral-subsurface-flow" id="toc-lateral-subsurface-flow" class="nav-link" data-scroll-target="#lateral-subsurface-flow">Lateral subsurface flow</a></li>
   </ul></li>
-  <li><a href="#local-inertial" id="toc-local-inertial" class="nav-link" data-scroll-target="#local-inertial">Local inertial</a>
+  <li><a href="#staggered-grid" id="toc-staggered-grid" class="nav-link" data-scroll-target="#staggered-grid">Staggered grid</a>
   <ul class="collapse">
-  <li><a href="#river-flow-1" id="toc-river-flow-1" class="nav-link" data-scroll-target="#river-flow-1">River flow</a></li>
   <li><a href="#d-floodplain-flow-1" id="toc-d-floodplain-flow-1" class="nav-link" data-scroll-target="#d-floodplain-flow-1">1D floodplain flow</a></li>
-  <li><a href="#overland-flow-1" id="toc-overland-flow-1" class="nav-link" data-scroll-target="#overland-flow-1">Overland flow</a></li>
+  <li><a href="#local-inertial-overland-flow-2d" id="toc-local-inertial-overland-flow-2d" class="nav-link" data-scroll-target="#local-inertial-overland-flow-2d">Local inertial overland flow (2D)</a></li>
   </ul></li>
   <li><a href="#groundwater-flow" id="toc-groundwater-flow" class="nav-link" data-scroll-target="#groundwater-flow">Groundwater flow</a>
   <ul class="collapse">
@@ -1617,16 +1616,13 @@ window.Quarto = {
 </section>
 </section>
 </section>
-<section id="local-inertial" class="level2">
-<h2 class="anchored" data-anchor-id="local-inertial">Local inertial</h2>
-<section id="river-flow-1" class="level3">
-<h3 class="anchored" data-anchor-id="river-flow-1">River flow</h3>
-<section id="input-5" class="level4">
-<h4 class="anchored" data-anchor-id="input-5">Input</h4>
+<section id="staggered-grid" class="level2">
+<h2 class="anchored" data-anchor-id="staggered-grid">Staggered grid</h2>
+<p>River and floodplain flow routing on a staggered grid makes use of the local inertial or Manning’s equation. ### River flow #### Input</p>
 <div id="38" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>local_inertial_river_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>staggered_grid_river_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
@@ -1649,38 +1645,6 @@ window.Quarto = {
 </tr>
 </thead>
 <tbody>
-<tr class="dataRow odd">
-<td style="text-align: left;"><code>river__length</code></td>
-<td style="text-align: left;">River length</td>
-<td style="text-align: left;">m</td>
-<td style="text-align: left;">m</td>
-<td style="text-align: left;">✓</td>
-<td style="text-align: left;">-</td>
-</tr>
-<tr class="dataRow even">
-<td style="text-align: left;"><code>river__width</code></td>
-<td style="text-align: left;">River width</td>
-<td style="text-align: left;">m</td>
-<td style="text-align: left;">m</td>
-<td style="text-align: left;">✓</td>
-<td style="text-align: left;">-</td>
-</tr>
-<tr class="dataRow odd">
-<td style="text-align: left;"><code>river_water_flow__manning_n_parameter</code></td>
-<td style="text-align: left;">Manning's roughness</td>
-<td style="text-align: left;">s m⁻¹ᐟ³</td>
-<td style="text-align: left;">s m⁻¹ᐟ³</td>
-<td style="text-align: left;">✓</td>
-<td style="text-align: left;">0.036</td>
-</tr>
-<tr class="dataRow even">
-<td style="text-align: left;"><code>river_bank_water__depth</code></td>
-<td style="text-align: left;">Bankfull river depth</td>
-<td style="text-align: left;">m</td>
-<td style="text-align: left;">m</td>
-<td style="text-align: left;">✓</td>
-<td style="text-align: left;">1.0</td>
-</tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>river_water__external_inflow_volume_flow_rate</code></td>
 <td style="text-align: left;">External inflow into the river (negative for abstractions)</td>
@@ -1717,13 +1681,12 @@ window.Quarto = {
 </table>
 </div>
 </div>
-</section>
 <section id="static-or-cyclicforcing-input-2" class="level4">
 <h4 class="anchored" data-anchor-id="static-or-cyclicforcing-input-2">Static or cyclic/forcing input</h4>
 <div id="40" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>local_inertial_river_static_cyclic_forcing_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>staggered_grid_river_static_cyclic_forcing_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
@@ -1764,7 +1727,7 @@ window.Quarto = {
 <div id="42" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>local_inertial_river_state; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>staggered_grid_river_state; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
@@ -1788,12 +1751,6 @@ window.Quarto = {
 <td style="text-align: left;">River discharge</td>
 <td style="text-align: left;">m³ s⁻¹</td>
 <td style="text-align: left;">m³ s⁻¹</td>
-</tr>
-<tr class="dataRow even">
-<td style="text-align: left;"><code>river_water__depth</code></td>
-<td style="text-align: left;">River water depth</td>
-<td style="text-align: left;">m</td>
-<td style="text-align: left;">m</td>
 </tr>
 </tbody>
 </table>
@@ -1805,7 +1762,7 @@ window.Quarto = {
 <div id="44" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>local_inertial_river_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>staggered_grid_river_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
@@ -1830,44 +1787,19 @@ window.Quarto = {
 <td style="text-align: left;">m³ s⁻¹</td>
 <td style="text-align: left;">m³ s⁻¹</td>
 </tr>
-<tr class="dataRow even">
-<td style="text-align: left;"><code>river_water__depth</code></td>
-<td style="text-align: left;">River water depth</td>
-<td style="text-align: left;">m</td>
-<td style="text-align: left;">m</td>
-</tr>
-<tr class="dataRow odd">
-<td style="text-align: left;"><code>river_water__volume_flow_rate</code></td>
-<td style="text-align: left;">River (+ floodplain for local inertial routing) discharge</td>
-<td style="text-align: left;">m³ s⁻¹</td>
-<td style="text-align: left;">m³ s⁻¹</td>
-</tr>
-<tr class="dataRow even">
-<td style="text-align: left;"><code>river_water__volume</code></td>
-<td style="text-align: left;">River water volume</td>
-<td style="text-align: left;">m³</td>
-<td style="text-align: left;">m³</td>
-</tr>
-<tr class="dataRow odd">
-<td style="text-align: left;"><code>river_water__external_abstraction_volume_flow_rate</code></td>
-<td style="text-align: left;">Actual abstraction based on external negative inflow</td>
-<td style="text-align: left;">m³ s⁻¹</td>
-<td style="text-align: left;">m³ s⁻¹</td>
-</tr>
 </tbody>
 </table>
 </div>
 </div>
 </section>
-</section>
 <section id="d-floodplain-flow-1" class="level3">
 <h3 class="anchored" data-anchor-id="d-floodplain-flow-1">1D floodplain flow</h3>
-<section id="input-6" class="level4">
-<h4 class="anchored" data-anchor-id="input-6">Input</h4>
+<section id="input-5" class="level4">
+<h4 class="anchored" data-anchor-id="input-5">Input</h4>
 <div id="46" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>local_inertial_floodplain_1D_flow_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>staggered_grid_floodplain_1D_flow_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
@@ -1916,7 +1848,7 @@ window.Quarto = {
 <div id="48" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>local_inertial_floodplain_1D_flow_state; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>staggered_grid_floodplain_1D_flow_state; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
@@ -1957,7 +1889,7 @@ window.Quarto = {
 <div id="50" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>local_inertial_floodplain_1D_flow_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>staggered_grid_floodplain_1D_flow_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
@@ -2006,10 +1938,10 @@ window.Quarto = {
 </div>
 </section>
 </section>
-<section id="overland-flow-1" class="level3">
-<h3 class="anchored" data-anchor-id="overland-flow-1">Overland flow</h3>
-<section id="input-7" class="level4">
-<h4 class="anchored" data-anchor-id="input-7">Input</h4>
+<section id="local-inertial-overland-flow-2d" class="level3">
+<h3 class="anchored" data-anchor-id="local-inertial-overland-flow-2d">Local inertial overland flow (2D)</h3>
+<section id="input-6" class="level4">
+<h4 class="anchored" data-anchor-id="input-6">Input</h4>
 <div id="52" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
@@ -2517,8 +2449,8 @@ window.Quarto = {
 </section>
 <section id="constant-head-boundary" class="level3">
 <h3 class="anchored" data-anchor-id="constant-head-boundary">Constant head boundary</h3>
-<section id="input-8" class="level4">
-<h4 class="anchored" data-anchor-id="input-8">Input</h4>
+<section id="input-7" class="level4">
+<h4 class="anchored" data-anchor-id="input-7">Input</h4>
 <div id="74" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
@@ -2561,8 +2493,8 @@ window.Quarto = {
 <h2 class="anchored" data-anchor-id="sediment">Sediment</h2>
 <section id="transport-capacity-overland-flow" class="level3">
 <h3 class="anchored" data-anchor-id="transport-capacity-overland-flow">Transport capacity overland flow</h3>
-<section id="input-9" class="level4">
-<h4 class="anchored" data-anchor-id="input-9">Input</h4>
+<section id="input-8" class="level4">
+<h4 class="anchored" data-anchor-id="input-8">Input</h4>
 <div id="76" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
@@ -2669,8 +2601,8 @@ window.Quarto = {
 </section>
 <section id="transport-capacity-river" class="level3">
 <h3 class="anchored" data-anchor-id="transport-capacity-river">Transport capacity river</h3>
-<section id="input-10" class="level4">
-<h4 class="anchored" data-anchor-id="input-10">Input</h4>
+<section id="input-9" class="level4">
+<h4 class="anchored" data-anchor-id="input-9">Input</h4>
 <div id="78" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
@@ -2841,8 +2773,8 @@ window.Quarto = {
 </section>
 <section id="river-erosion" class="level3">
 <h3 class="anchored" data-anchor-id="river-erosion">River erosion</h3>
-<section id="input-11" class="level4">
-<h4 class="anchored" data-anchor-id="input-11">Input</h4>
+<section id="input-10" class="level4">
+<h4 class="anchored" data-anchor-id="input-10">Input</h4>
 <div id="82" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
@@ -2885,8 +2817,8 @@ window.Quarto = {
 </section>
 <section id="river-transport" class="level3">
 <h3 class="anchored" data-anchor-id="river-transport">River transport</h3>
-<section id="input-12" class="level4">
-<h4 class="anchored" data-anchor-id="input-12">Input</h4>
+<section id="input-11" class="level4">
+<h4 class="anchored" data-anchor-id="input-11">Input</h4>
 <div id="84" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
