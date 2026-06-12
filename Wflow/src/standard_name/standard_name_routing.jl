@@ -233,8 +233,8 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
         allow_dynamic_input = true,
         tags = [
             :kinematic_wave_river_static_cyclic_forcing_input,
-            :local_inertial_river_static_cyclic_forcing_input,
-            :local_inertial_river_input,
+            :staggered_grid_river_static_cyclic_forcing_input,
+            :staggered_grid_river_input,
         ],
     ),
     "river__slope" => ParameterMetadata(;
@@ -251,8 +251,8 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
         tags = [
             :kinematic_wave_river_state,
             :kinematic_wave_river_output,
-            :local_inertial_river_state,
-            :local_inertial_river_output,
+            :staggered_grid_river_state,
+            :staggered_grid_river_output,
         ],
     ),
     "river_water__depth" => ParameterMetadata(;
