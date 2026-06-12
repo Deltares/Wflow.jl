@@ -381,26 +381,26 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
         description = "Part of subsurface flow that flows to the river",
         tags = [:kinematic_lateral_subsurface_output],
     ),
-    ## Local inertial
+    ## Staggered grid (local inertial and Manning's equation)
     ### River flow
     #### Input
     "model_boundary_condition_river__length" => ParameterMetadata(;
         unit = Unit(; m = 1),
         default = 1.0e4,
         description = "Boundary condition river length downstream river outlets",
-        tags = [:local_inertial_river_input],
+        tags = [:staggered_grid_river_input],
     ),
     "model_boundary_condition_river_bank_water__depth" => ParameterMetadata(;
         default = 0,
         unit = Unit(; m = 1),
         description = "Boundary condition bankfull depth downstream river outlets",
-        tags = [:local_inertial_river_input],
+        tags = [:staggered_grid_river_input],
     ),
     "river_bank_water__elevation" => ParameterMetadata(;
         unit = Unit(; m = 1),
         fill = 0.0,
         description = "Bankfull elevation of the river",
-        tags = [:local_inertial_river_input],
+        tags = [:staggered_grid_river_input],
     ),
     ### 1D floodplain flow
     #### Input
@@ -409,7 +409,7 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
         dimname = :flood_depth,
         description = "Floodplain profile (cumulative volume per flood depth)",
         tags = [
-            :local_inertial_floodplain_1D_flow_input,
+            :staggered_grid_floodplain_1D_flow_input,
             :kinematic_wave_floodplain_1D_flow_input,
         ],
     ),
@@ -419,7 +419,7 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
         default = 0.072,
         description = "Manning's roughness",
         tags = [
-            :local_inertial_floodplain_1D_flow_input,
+            :staggered_grid_floodplain_1D_flow_input,
             :kinematic_wave_floodplain_1D_flow_input,
         ],
     ),
@@ -435,8 +435,8 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
         unit = Unit(; m = 3, s = -1),
         description = "Floodplain discharge",
         tags = [
-            :local_inertial_floodplain_1D_flow_state,
-            :local_inertial_floodplain_1D_flow_output,
+            :staggered_grid_floodplain_1D_flow_state,
+            :staggered_grid_floodplain_1D_flow_output,
             :kinematic_wave_floodplain_1D_flow_output,
         ],
     ),
@@ -445,8 +445,8 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
         unit = Unit(; m = 1),
         description = "Floodplain water depth",
         tags = [
-            :local_inertial_floodplain_1D_flow_state,
-            :local_inertial_floodplain_1D_flow_output,
+            :staggered_grid_floodplain_1D_flow_state,
+            :staggered_grid_floodplain_1D_flow_output,
             :kinematic_wave_floodplain_1D_flow_state,
             :kinematic_wave_floodplain_1D_flow_output,
         ],
@@ -457,7 +457,7 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
         unit = Unit(; m = 3),
         description = "Floodplain water volume",
         tags = [
-            :local_inertial_floodplain_1D_flow_output,
+            :staggered_grid_floodplain_1D_flow_output,
             :kinematic_wave_floodplain_1D_flow_output,
         ],
     ),
@@ -466,7 +466,7 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
         unit = Unit(; m = 3, s = -1),
         description = "Floodplain discharge",
         tags = [
-            :local_inertial_floodplain_1D_flow_output,
+            :staggered_grid_floodplain_1D_flow_output,
             :kinematic_wave_floodplain_1D_flow_output,
         ],
     ),
