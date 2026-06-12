@@ -128,8 +128,9 @@ generate_table(Wflow.Routing, :kinematic_lateral_subsurface_output; relative_wid
 ```
 
 ## Staggered grid
-River and floodplain flow routing on a staggered grid makes use of the local inertial or
+River and floodplain flow routing on a staggered grid make use of the local inertial or
 Manning's equation.
+
 ### River flow
 #### Input
 ```{julia}
