@@ -539,6 +539,8 @@ window.Quarto = {
 <li>Support internal timestepping for kinematic wave lateral subsurface flow concept <code>LateralSSF</code>.</li>
 <li>Support including river and drainage head-dependent flux boundary conditions for kinematic wave lateral subsurface flow concept <code>LateralSSF</code>.</li>
 <li>Support for running only a subsection of the model, either by using a smaller active domain via <code>input.subbasin_location__count</code>, or specify specific subcatchments by linking <code>input.subbasin_location__count</code> to a subcatchment map, and indicate which subbasins should be active by providing their IDs in <code>input.subbasin_active_location__count</code>.</li>
+<li>An optional 1D floodplain schematization to kinematic wave routing of river flow. This is the same 1D floodplain schematization used by the local inertial river flow model. River channel-floodplain water exchange is assumed to be instantaneous. Routing is done separately for the river channel and floodplain.Floodplain water is routed down slope using the <code>accucapacityflux</code> function with a transport capacity based on Manning’s equation.</li>
+<li>Support the use of Manning’s equation (assuming that the topography controls water flow mostly) for river and floodplain routing on a staggered grid. This is an additional routing scheme to the local inertial river routing scheme, both make us of the staggered grid method.</li>
 </ul>
 </section>
 </section>
