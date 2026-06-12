@@ -75,7 +75,7 @@ subsurface_water__instantaneous_volume_flow_rate = "ssf"
 - An optional 1D floodplain schematization to kinematic wave routing of river flow. This is
   the same 1D floodplain schematization used by the local inertial river flow model. River
   channel-floodplain water exchange is assumed to be instantaneous. Routing is done
-  separately for the river channel and floodplain.Floodplain water is routed down slope
+  separately for the river channel and floodplain. Floodplain water is routed down slope
   using the `accucapacityflux` function with a transport capacity based on Manning's
   equation.
 - Support the use of Manning's equation (assuming that the topography controls water flow
