@@ -33,7 +33,7 @@ td, th {
 | Standard Name | Description | Unit | Default |
 | ------ | ---- | -- | -- |
 | `soil_erosion__rainfall_soil_detachability_factor` |  Soil detachability factor | g J⁻¹ | 0.6 |
-| `soil_erosion__eurosem_exponent` | Exponent EUROSEM | - | 2.0 |
+| `soil_erosion__eurosem_exponent` | Exponent EUROSEM | mm⁻¹ | 2.0 |
 | `vegetation_canopy__height` | Canopy height | m | 0.5 |
 | `vegetation_canopy__gap_fraction` | Canopy gap fraction | - | 0.1 |
 | `compacted_soil__area_fraction` | Fraction of the soil that is covered (eg paved, snow, etc) | - | 0.01 |

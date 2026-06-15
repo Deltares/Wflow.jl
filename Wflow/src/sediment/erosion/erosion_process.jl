@@ -17,9 +17,9 @@ Rainfall erosion model based on EUROSEM.
 # Arguments
 - `precip` (precipitation [mm Δt⁻¹])
 - `interception` (interception [mm Δt⁻¹])
-- `waterlevel` (water level [m])
+- `waterlevel` (water level [mm])
 - `soil_detachability` (soil detachability [-])
-- `eurosem_exponent` (EUROSEM exponent [-])
+- `eurosem_exponent` (EUROSEM exponent [mm-1])
 - `canopyheight` (canopy height [m])
 - `canopygapfraction` (canopy gap fraction [-])
 - `soilcover_fraction` (soil cover fraction [-])
@@ -56,7 +56,7 @@ function rainfall_erosion_eurosem(
     rddir = max(rdtot - rdleaf - interception, 0.0) #throughfall
 
     #Total kinetic energy by rainfall [J/m2]
-    ketot = (rddir * kedir + rdleaf * keleaf) * 0.001
+    ketot = (rddir * kedir + rdleaf * keleaf)
     # Rainfall / splash erosion [g/m2]
     rainfall_erosion = soil_detachability * ketot * exp(-eurosem_exponent * waterlevel)
     rainfall_erosion *= area * 1e-6 # ton/cell
