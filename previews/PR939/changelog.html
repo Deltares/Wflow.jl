@@ -477,6 +477,8 @@ window.Quarto = {
 <li>Fix unit external inflow for local inertial river (1D) and land (2D) routing. For the computation of available river volume (to limit negative external inflow) the <code>bankfull_depth</code> was assigned to this volume, this should be <code>bankfull_storage</code>.</li>
 <li>Maximum subsurface flow was not adjusted for sub-daily timestep for <code>layered</code> and <code>layered_exponential</code> profiles.</li>
 <li>Fix deriving active indices for output variable <code>to_river</code>. Also, the mapping of standard name (or model path) to active indices is now more strict (comparing prefix of these strings instead of substring matching).</li>
+<li>Fix <code>waterlevel</code> unit (from [m] to [mm]) in rainfall erosion computation of rainfall erosion model <code>EUROSEM</code>. With the wrong unit ([m]) the rainfall impact reduction when the soil is covered by water was underestimated.</li>
+<li>Removed a conversion factor of 0.001 used for the computation of total kinetic energy as part of rainfall erosion model <code>EUROSEM</code>, as it is not required based on the units.</li>
 </ul>
 </section>
 <section id="v1.0.2---2026-03-05" class="level2">
