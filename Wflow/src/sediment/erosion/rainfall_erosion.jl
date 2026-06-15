@@ -151,10 +151,11 @@ function update!(
 
     n = length(precipitation)
     threaded_foreach(1:n; basesize = 1000) do i
+        waterlevel_mm = waterlevel[i] * 1000.0 # convert from [m] to [mm]
         amount[i] = rainfall_erosion_eurosem(
             precipitation[i],
             interception[i],
-            waterlevel[i],
+            waterlevel_mm,
             soil_detachability[i],
             eurosem_exponent[i],
             canopyheight[i],

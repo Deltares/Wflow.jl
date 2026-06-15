@@ -17,9 +17,9 @@ Rainfall erosion model based on EUROSEM.
 # Arguments
 - `precip` (precipitation [mm Δt⁻¹])
 - `interception` (interception [mm Δt⁻¹])
-- `waterlevel` (water level [m])
+- `waterlevel` (water level [mm])
 - `soil_detachability` (soil detachability [-])
-- `eurosem_exponent` (EUROSEM exponent [-])
+- `eurosem_exponent` (EUROSEM exponent [mm-1])
 - `canopyheight` (canopy height [m])
 - `canopygapfraction` (canopy gap fraction [-])
 - `soilcover_fraction` (soil cover fraction [-])
