@@ -56,7 +56,7 @@ function rainfall_erosion_eurosem(
     rddir = max(rdtot - rdleaf - interception, 0.0) #throughfall
 
     #Total kinetic energy by rainfall [J/m2]
-    ketot = (rddir * kedir + rdleaf * keleaf) * 0.001
+    ketot = (rddir * kedir + rdleaf * keleaf)
     # Rainfall / splash erosion [g/m2]
     rainfall_erosion = soil_detachability * ketot * exp(-eurosem_exponent * waterlevel)
     rainfall_erosion *= area * 1e-6 # ton/cell
