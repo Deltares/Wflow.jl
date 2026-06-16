@@ -179,10 +179,6 @@ end
     zs_dst::Vector{Float64} = zeros(n_edges)
     # water depth at edge [m]
     water_depth_at_edge::Vector{Float64} = zeros(n_edges)
-    # flow area at edge [m²]
-    flow_area_at_edge::Vector{Float64} = zeros(n_edges)
-    # wetted perimeter at edge [m]
-    hydraulic_radius_at_edge::Vector{Float64} = zeros(n_edges)
     # river storage [m³]
     storage::Vector{Float64} = zeros(n_cells)
     # error storage [m³]
@@ -345,13 +341,13 @@ function update_river_channel_flow!(
         river_v.water_depth_at_edge[i] =
             (river_v.zs_max_at_edge[i] - river_p.zb_max_at_edge[i])
 
-        river_v.flow_area_at_edge[i] =
-            river_p.flow_width_at_edge[i] * river_v.water_depth_at_edge[i] # flow area (rectangular channel)
-        river_v.hydraulic_radius_at_edge[i] =
-            river_v.flow_area_at_edge[i] / wetted_perimeter_channel(
+        # rectangular channel
+        flow_area_at_edge = river_p.flow_width_at_edge[i] * river_v.water_depth_at_edge[i]
+        hydraulic_radius_at_edge =
+            flow_area_at_edge / wetted_perimeter_channel(
                 river_v.water_depth_at_edge[i],
                 river_p.flow_width_at_edge[i],
-            ) # hydraulic radius (rectangular channel)
+            )
 
         river_v.q[i] = ifelse(
             river_v.water_depth_at_edge[i] > river_p.h_thresh,
@@ -360,8 +356,8 @@ function update_river_channel_flow!(
                 river_v.zs_src[i],
                 river_v.zs_dst[i],
                 river_v.water_depth_at_edge[i],
-                river_v.flow_area_at_edge[i],
-                river_v.hydraulic_radius_at_edge[i],
+                flow_area_at_edge,
+                hydraulic_radius_at_edge,
                 river_p.flow_length_at_edge[i],
                 river_p.mannings_n_sq_at_edge[i],
                 river_p.froude_limit,
@@ -403,21 +399,21 @@ function update_river_channel_flow!(
         river_v.water_depth_at_edge[i] =
             (river_v.zs_max_at_edge[i] - river_p.zb_max_at_edge[i])
 
-        river_v.flow_area_at_edge[i] =
-            river_p.flow_width_at_edge[i] * river_v.water_depth_at_edge[i] # flow area (rectangular channel)
-        river_v.hydraulic_radius_at_edge[i] =
-            river_v.flow_area_at_edge[i] / wetted_perimeter_channel(
+        # rectangular channel
+        flow_area_at_edge = river_p.flow_width_at_edge[i] * river_v.water_depth_at_edge[i] # flow area (rectangular channel)
+        hydraulic_radius_at_edge =
+            flow_area_at_edge / wetted_perimeter_channel(
                 river_v.water_depth_at_edge[i],
                 river_p.flow_width_at_edge[i],
-            ) # hydraulic radius (rectangular channel)
+            )
 
         river_v.q[i] = ifelse(
             river_v.water_depth_at_edge[i] > river_p.h_thresh,
             manning_flow(
                 river_p.mannings_n_at_edge[i],
-                river_v.hydraulic_radius_at_edge[i],
+                hydraulic_radius_at_edge,
                 river_p.slope_at_edge[i],
-                river_v.flow_area_at_edge[i],
+                flow_area_at_edge,
             ),
             0.0,
         )
@@ -477,40 +473,45 @@ function update_floodplain_flow!(
             i1,
             i2,
         )
-        floodplain_v.flow_area_at_edge[i] = min(a_src, a_dst)
+        flow_area_at_edge = min(a_src, a_dst)
 
-        floodplain_v.hydraulic_radius_at_edge[i] = if a_src < a_dst
+        hydraulic_radius_at_edge = ifelse(
+            a_src < a_dst,
             a_src / compute_wetted_perimeter(
                 profile,
                 floodplain_v.water_depth_at_edge[i],
                 i_src,
                 i1,
-            )
-        else
+            ),
             a_dst / compute_wetted_perimeter(
                 profile,
                 floodplain_v.water_depth_at_edge[i],
                 i_dst,
                 i1,
-            )
-        end
+            ),
+        )
+        hydraulic_radius_at_edge = ifelse(
+            floodplain_v.water_depth_at_edge[i] > profile.depth[i1],
+            hydraulic_radius_at_edge,
+            0.0,
+        )
 
-        floodplain_v.q[i] = if floodplain_v.flow_area_at_edge[i] > 1.0e-05
+        floodplain_v.q[i] = ifelse(
+            flow_area_at_edge > 1.0e-05,
             local_inertial_flow(
                 floodplain_v.q_previous[i],
                 river_v.zs_src[i],
                 river_v.zs_dst[i],
                 floodplain_v.water_depth_at_edge[i],
-                floodplain_v.flow_area_at_edge[i],
-                floodplain_v.hydraulic_radius_at_edge[i],
+                flow_area_at_edge,
+                hydraulic_radius_at_edge,
                 river_p.flow_length_at_edge[i],
                 floodplain_p.mannings_n_sq_at_edge[i],
                 river_p.froude_limit,
                 dt,
-            )
-        else
-            0.0
-        end
+            ),
+            0.0,
+        )
 
         # limit floodplain q in case water is not available
         if floodplain_v.h[i_src] <= 0.0
@@ -579,34 +580,39 @@ function update_floodplain_flow!(
             i1,
             i2,
         )
-        floodplain_v.flow_area_at_edge[i] = min(a_src, a_dst)
+        flow_area_at_edge = min(a_src, a_dst)
 
-        floodplain_v.hydraulic_radius_at_edge[i] = if a_src < a_dst
+        hydraulic_radius_at_edge = ifelse(
+            a_src < a_dst,
             a_src / compute_wetted_perimeter(
                 profile,
                 floodplain_v.water_depth_at_edge[i],
                 i_src,
                 i1,
-            )
-        else
+            ),
             a_dst / compute_wetted_perimeter(
                 profile,
                 floodplain_v.water_depth_at_edge[i],
                 i_dst,
                 i1,
-            )
-        end
+            ),
+        )
+        hydraulic_radius_at_edge = ifelse(
+            floodplain_v.water_depth_at_edge[i] > profile.depth[i1],
+            hydraulic_radius_at_edge,
+            0.0,
+        )
 
-        floodplain_v.q[i] = if floodplain_v.flow_area_at_edge[i] > 1.0e-05
+        floodplain_v.q[i] = ifelse(
+            flow_area_at_edge > 1.0e-05,
             manning_flow(
                 floodplain_p.mannings_n_at_edge[i],
-                floodplain_v.hydraulic_radius_at_edge[i],
+                hydraulic_radius_at_edge,
                 floodplain_p.slope_at_edge[i],
-                floodplain_v.flow_area_at_edge[i],
-            )
-        else
-            0.0
-        end
+                flow_area_at_edge,
+            ),
+            0.0,
+        )
 
         # limit floodplain q in case water is not available
         floodplain_v.q[i] = min(floodplain_v.q[i], floodplain_v.storage[i_src]/dt)

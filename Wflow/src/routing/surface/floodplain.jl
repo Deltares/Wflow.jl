@@ -218,10 +218,6 @@ end
 @with_kw struct FloodPlainStaggeredVariables <: AbstractFloodPlainVariables
     n::Int
     n_edges::Int
-    # flow area at edge [m²]
-    flow_area_at_edge::Vector{Float64} = zeros(n_edges)
-    # hydraulic radius at edge [m]
-    hydraulic_radius_at_edge::Vector{Float64} = zeros(n_edges)
     # water depth at edge [m]
     water_depth_at_edge::Vector{Float64} = zeros(n_edges)
     # discharge at edge at previous time step

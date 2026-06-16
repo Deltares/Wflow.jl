@@ -506,8 +506,6 @@ end
     @test river_flow_model.variables.zs_dst ≈ [314.3999938964844, 0.0]
     @test river_flow_model.variables.zs_max_at_edge ≈ [315.14484852086804, 0.0]
     @test river_flow_model.variables.water_depth_at_edge ≈ [0.04484241735241312, 0.0]
-    @test river_flow_model.variables.flow_area_at_edge ≈ [4.247964427147839, 0.0]
-    @test river_flow_model.variables.hydraulic_radius_at_edge ≈ [0.04480000374545946, 0.0]
     @test river_flow_model.variables.q ≈ [0.534558444239785, 0.0]
     @test river_flow_model.variables.q_cumulative ≈ [486.35699517356477, 0.0]
 
@@ -673,10 +671,6 @@ end
           [166.98963199894177, 166.92754760786679]
     @test river_flow_model.variables.water_depth_at_edge ≈
           [1.8817912224982933, 1.8197068314233036]
-    @test river_flow_model.variables.flow_area_at_edge ≈
-          [280.7225571209805, 271.4609085323917]
-    @test river_flow_model.variables.hydraulic_radius_at_edge ≈
-          [1.8354842671202385, 1.7763698223484754]
     @test river_flow_model.variables.q ≈ [137.1827776559179, 133.7538757670657]
     @test river_flow_model.variables.q_cumulative ≈ [6778.106459961183, 6608.686781773178]
 
@@ -685,10 +679,6 @@ end
     @test river_flow_model.floodplain.variables.water_depth_at_edge ≈
           [0.2896350506995873, 0.22755065962459753]
     @test river_flow_model.floodplain.variables.hf_index == [1, 2]
-    @test river_flow_model.floodplain.variables.flow_area_at_edge ≈
-          [55.72535396228429, 117.78030190165774]
-    @test river_flow_model.floodplain.variables.hydraulic_radius_at_edge ≈
-          [0.28876564013944644, 0.22735076093732]
     @test river_flow_model.floodplain.variables.q ≈ [3.3074672215578524, 6.1421232455587536]
 
     @test river_flow_model.floodplain.variables.q_cumulative ≈
@@ -847,10 +837,6 @@ end
     @test river_flow_model.variables.zs_max_at_edge ≈ [418.0325994578516, 418.0325994578516]
     @test river_flow_model.variables.water_depth_at_edge ≈
           [2.4325933543360065, 2.4325933543360065]
-    @test river_flow_model.variables.flow_area_at_edge ≈
-          [72.9778006300802, 72.9778006300802]
-    @test river_flow_model.variables.hydraulic_radius_at_edge ≈
-          [2.093142401326319, 2.093142401326319]
     @test river_flow_model.variables.q ≈ [12.587380945649473, 12.587380945649473]
     @test river_flow_model.variables.q_cumulative ≈ [28607.999128032203, 28607.999128032203]
 
@@ -859,10 +845,6 @@ end
     @test river_flow_model.floodplain.variables.water_depth_at_edge ≈
           [1.4325933543360065, 1.4325933543360065]
     @test river_flow_model.floodplain.variables.hf_index == [1, 2]
-    @test river_flow_model.floodplain.variables.flow_area_at_edge ≈
-          [62.01908306413688, 62.01908306413688]
-    @test river_flow_model.floodplain.variables.hydraulic_radius_at_edge ≈
-          [1.3209041787011515, 1.3209041787011515]
     @test river_flow_model.floodplain.variables.q ≈
           [0.050043034537710154, 3.279243909752683]
 
