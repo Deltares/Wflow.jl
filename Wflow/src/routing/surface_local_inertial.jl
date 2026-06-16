@@ -281,8 +281,9 @@ function local_inertial_river_update!(
         river_v.zs_max[i] = max(river_v.zs_src[i], river_v.zs_dst[i])
         river_v.hf[i] = (river_v.zs_max[i] - river_p.zb_max[i])
 
-        flow_area = river_p.flow_width_at_edge[i] * river_v.hf[i] # (rectangular channel)
-        hydraulic_radius = flow_area / (river_p.flow_width_at_edge[i] + 2.0 * river_v.hf[i]) # (rectangular channel)
+        # rectangular channel
+        flow_area = river_p.flow_width_at_edge[i] * river_v.hf[i]
+        hydraulic_radius = flow_area / (river_p.flow_width_at_edge[i] + 2.0 * river_v.hf[i])
 
         river_v.q[i] = ifelse(
             river_v.hf[i] > river_p.h_thresh,
@@ -356,6 +357,11 @@ function local_inertial_river_update!(
                     floodplain_p.profile.depth[i1],
                     floodplain_v.hf[i],
                 ),
+            )
+            hydraulic_radius = ifelse(
+                floodplain_v.hf[i] > floodplain_p.profile.depth[i1],
+                hydraulic_radius,
+                0.0,
             )
 
             floodplain_v.q[i] = ifelse(
