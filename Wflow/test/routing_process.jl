@@ -678,7 +678,6 @@ end
 
     @test river_flow_model.floodplain.variables.water_depth_at_edge ≈
           [0.2896350506995873, 0.22755065962459753]
-    @test river_flow_model.floodplain.variables.hf_index == [1, 2]
     @test river_flow_model.floodplain.variables.q ≈ [3.3074672215578524, 6.1421232455587536]
 
     @test river_flow_model.floodplain.variables.q_cumulative ≈
@@ -844,7 +843,6 @@ end
 
     @test river_flow_model.floodplain.variables.water_depth_at_edge ≈
           [1.4325933543360065, 1.4325933543360065]
-    @test river_flow_model.floodplain.variables.hf_index == [1, 2]
     @test river_flow_model.floodplain.variables.q ≈
           [0.050043034537710154, 3.279243909752683]
 

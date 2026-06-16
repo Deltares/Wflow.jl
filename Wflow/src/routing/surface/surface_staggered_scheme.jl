@@ -443,17 +443,13 @@ function update_floodplain_flow!(
     (; profile) = floodplain_p
     floodplain_v = river_flow_model.floodplain.variables
 
-    @batch per = thread minbatch = 1000 for i in 1:length(floodplain_v.water_depth_at_edge)
-        floodplain_v.water_depth_at_edge[i] =
-            max(river_v.zs_max_at_edge[i] - floodplain_p.zb_max_at_edge[i], 0.0)
-    end
-
-    n = active_floodplain_cells(river_flow_model)
-
-    @batch per = thread minbatch = 1000 for j in 1:n
-        i = floodplain_v.hf_index[j]
+    @batch per = thread minbatch = 1000 for j in eachindex(river_p.active_e)
+        i = river_p.active_e[j]
         i_src = nodes_at_edge.src[i]
         i_dst = nodes_at_edge.dst[i]
+
+        floodplain_v.water_depth_at_edge[i] =
+            max(river_v.zs_max_at_edge[i] - floodplain_p.zb_max_at_edge[i], 0.0)
 
         i1, i2 = interpolation_indices(
             floodplain_v.water_depth_at_edge[i],
@@ -550,17 +546,13 @@ function update_floodplain_flow!(
     (; profile) = floodplain_p
     floodplain_v = river_flow_model.floodplain.variables
 
-    @batch per = thread minbatch = 1000 for i in 1:length(floodplain_v.water_depth_at_edge)
-        floodplain_v.water_depth_at_edge[i] =
-            max(river_v.zs_max_at_edge[i] - floodplain_p.zb_max_at_edge[i], 0.0)
-    end
-
-    n = active_floodplain_cells(river_flow_model)
-
-    @batch per = thread minbatch = 1000 for j in 1:n
-        i = floodplain_v.hf_index[j]
+    @batch per = thread minbatch = 1000 for j in eachindex(river_p.active_e)
+        i = river_p.active_e[j]
         i_src = nodes_at_edge.src[i]
         i_dst = nodes_at_edge.dst[i]
+
+        floodplain_v.water_depth_at_edge[i] =
+            max(river_v.zs_max_at_edge[i] - floodplain_p.zb_max_at_edge[i], 0.0)
 
         i1, i2 = interpolation_indices(
             floodplain_v.water_depth_at_edge[i],

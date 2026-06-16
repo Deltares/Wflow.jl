@@ -228,8 +228,6 @@ end
     q_cumulative::Vector{Float64} = zeros(n_edges)
     # average discharge at edge [m³ s⁻¹] for model timestep dt
     q_average::Vector{Float64} = zeros(n_edges)
-    # edge index with `water_depth_at_edge` [-] above depth threshold
-    hf_index::Vector{Int} = zeros(Int, n_edges)
     # storage [m³]
     storage::Vector{Float64} = zeros(n)
     # water depth [m]
@@ -352,23 +350,6 @@ function compute_floodplain_flow_area(
     floodplain_flow_area = compute_flood_flow_area(profile, h, idx, i1, i2)
     floodplain_flow_area = max(floodplain_flow_area - channel_area, 0.0)
     return floodplain_flow_area
-end
-
-function active_floodplain_cells(river_flow_model)
-    (; floodplain) = river_flow_model
-    (; water_depth_at_edge) = river_flow_model.variables
-    (; active_e, h_thresh) = river_flow_model.parameters
-
-    n = 0
-    @inbounds for i in active_e
-        @inbounds if water_depth_at_edge[i] > h_thresh
-            n += 1
-            floodplain.variables.hf_index[n] = i
-        else
-            floodplain.variables.q[i] = 0.0
-        end
-    end
-    return n
 end
 
 "Initialize floodplain geometry, model variables and parameters on staggered grid"
