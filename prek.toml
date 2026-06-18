@@ -15,10 +15,10 @@ hooks = [
     { id = "trailing-whitespace" },
 ]
 
-#[[repos]]
-#repo = "https://github.com/crate-ci/typos"
-#rev = "v1.43.5"
-#hooks = [{ id = "typos" }]
+[[repos]]
+repo = "https://github.com/crate-ci/typos"
+rev = "v1.43.5"
+hooks = [{ id = "typos" }]
 
 [[repos]]
 repo = "local"
