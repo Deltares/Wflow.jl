@@ -87,6 +87,9 @@ end
     kinematic_wave__adaptive_time_step_flag::Bool = false
     river_kinematic_wave__time_step::Float64 = 900.0
     land_kinematic_wave__time_step::Float64 = 3600.0
+    subsurface_kinematic_wave__time_step::Float64 = 86400.0
+    subsurface_kinematic_wave__alpha_coefficient::Float64 = 1.0
+    river_subsurface_exchange_head_based__flag::Bool = false
     # Local inertial routing
     river_local_inertial_flow__alpha_coefficient::Float64 = 0.7
     land_local_inertial_flow__alpha_coefficient::Float64 = 0.7
@@ -131,7 +134,11 @@ end
     # Option 1
     netcdf_variable_name::Union{Nothing, String} = nothing
     scale::Vector{Float64} = [1.0]
+    _do_scaling::Bool = !all(isone, scale)
+    _scale_scalar = isone(length(scale))
     offset::Vector{Float64} = [0.0]
+    _do_offsetting::Bool = !all(iszero, offset)
+    _offset_scalar = isone(length(offset))
     layer::Union{Nothing, Vector{Int}} = nothing
     # Option 2
     value::Any = nothing
@@ -149,6 +156,8 @@ end
 Base.haskey(input_entries::InputEntries, key) = haskey(input_entries.dict, key)
 Base.getindex(input_entries::InputEntries, key) = input_entries.dict[key]
 Base.setindex!(input_entries::InputEntries, value, key) = (input_entries.dict[key] = value)
+Base.setindex!(input_entries::InputEntries, value::AbstractDict, key) =
+    (input_entries.dict[key] = init_config_section(InputEntry, value))
 Base.keys(input_entries::InputEntries) = keys(input_entries.dict)
 Base.iterate(input_entries::InputEntries) = iterate(input_entries.dict)
 Base.iterate(input_entries::InputEntries, state) = iterate(input_entries.dict, state)
@@ -164,11 +173,12 @@ Base.iterate(input_entries::InputEntries, state) = iterate(input_entries.dict, s
     reservoir_area__count::Union{Nothing, String} = nothing
     reservoir_location__count::Union{Nothing, String} = nothing
     subbasin_location__count::String
+    subbasin_active_location__count::Union{Nothing, Vector{Int}} = nothing
     # Variable name mappings
     forcing::InputEntries
     static::InputEntries
     cyclic::InputEntries = InputEntries()
-    location_maps::PropertyDictType
+    _location_maps::PropertyDictType
 end
 
 const input_field_names = String.(fieldnames(Wflow.InputSection))

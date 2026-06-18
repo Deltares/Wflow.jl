@@ -13,8 +13,8 @@ platforms = ["win-64", "linux-64"]
 # Installation
 # Julia
 install-julia = "juliaup add 1.12.5 && juliaup override set 1.12.5"
-# Pre-commit
-install-pre-commit = "pre-commit install"
+# Prek
+install-prek = "prek install"
 update-registry-julia = "julia --eval='using Pkg; Registry.update()'"
 update-manifest-julia = "julia --project utils/update-manifest.jl"
 initialize-julia = { depends-on = [
@@ -23,7 +23,7 @@ initialize-julia = { depends-on = [
 		"Wflow",
 	] },
 ] }
-install = { depends-on = ["install-julia", "install-pre-commit"] }
+install = { depends-on = ["install-julia", "install-prek"] }
 # Test data
 download-test-data = { cmd = "julia --project ../utils/download_test_data.jl", cwd = "Wflow" }
 # Build
@@ -51,11 +51,19 @@ test-wflow-server = { cmd = "julia --project=server --eval 'using Pkg; Pkg.test(
 	] },
 	"download-test-data",
 ] }
+# Formatting
+# `instantiate-formatting` resolves and precompiles the formatting environment once.
+# `format-code` only runs JuliaFormatter, so it can safely be invoked in parallel
+# (e.g. by prek) without racing on instantiation/precompilation.
+instantiate-formatting = { cmd = "julia --project=utils/formatting --eval 'using Pkg; Pkg.instantiate(); using JuliaFormatter'" }
+format-code = { cmd = "julia --project=utils/formatting --eval 'using JuliaFormatter; format(isempty(ARGS) ? \".\" : ARGS) || exit(1)'" }
 # Docs
 install-ci = { depends-on = ["install-julia", "update-registry-julia"] }
 quarto-check = { cmd = "quarto check all" }
 quarto-render = { cmd = "julia --project=docs --eval 'using Pkg; Pkg.build(\"IJulia\")' && quarto render docs --to html --execute" }
 quarto-preview = { cmd = "quarto preview docs" }
+# Parameter metadata JSON generation
+parameter_metadata_json_gen = { cmd = "julia --project=utils/export_parameter_data utils/export_parameter_data/export_parameter_data.jl" }
 
 [tasks.instantiate-julia]
 args = [{ "arg" = "cwd", "default" = "." }]
@@ -71,8 +79,8 @@ outputs = ["Wflow.spdx.json"]
 juliaup = "*"
 python = ">=3.10"
 jupyter = ">=1.1.1,<2"
-pre-commit = "*"
 quarto = ">=1.8.26,<2"
+prek = "*"
 
 [system-requirements]
 linux = "3.10.0"

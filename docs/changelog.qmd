@@ -14,9 +14,42 @@ changes (#730) instead of using the effective porosity (difference between satur
 residual water content) can have a relatively large impact on model results, generally
 resulting in higher peak flow, lower baseflow and higher actual evapotranspiration.
 
+By default hydraulic heads are computed for the kinematic wave lateral subsurface flow
+concept (#827). Land surface elevation data is required for this computation and can be set
+as follows in the TOML configuration file:
+
+```toml
+[input.static]
+land_surface__elevation = "wflow_dem"
+```
+
+Supporting internal timestepping for the kinematic wave lateral subsurface flow concept
+(#827) requires that the flow state variable contains `instantaneous` in the `quantity` part
+of the standard name:
+
+```toml
+[state.variables]
+subsurface_water__instantaneous_volume_flow_rate = "ssf"
+```
+
 ### Fixed
+- Fixed a bug where the maximum subsurface flow was not adjusted for subdaily timesteps
+  (only when using `layered` or `layered_exponential` profiles)
 
 ### Changed
+- All internal computations now use standardized SI units (m, s, kg, J, K) consistently
+  throughout the codebase. Units are converted to/from the old units at I/O
+  boundaries. This generally does not change model results (units are converted back before
+  writing outputs), though small numerical differences may occur in some cases.
+- The configuration TOML file written to `dir_output` at the end of a simulation now
+  reflects the (potentially modified) in-memory configuration instead of being a copy of the
+  original input TOML file.
+- Improved kinematic wave solver performance by replacing Newton-Raphson with
+  Halley's method, substituting `pow` calls with direct arithmetic on the 5th
+  root of discharge, and computing cross-sectional area as a byproduct of the
+  solve instead of a separate `pow` call. The `beta` parameter has been removed
+  from `ManningFlowParameters` and is now a module-level constant
+  `BETA_KINWAVE` (#898).
 - Drainable porosity or specific yield, defined as the difference between `theta_s`
   (saturated water content) and `theta_fc` (water content at field capacity) is now used to
   compute the change of a falling water table for subsurface flow concepts `LateralSSF` and
@@ -31,6 +64,30 @@ resulting in higher peak flow, lower baseflow and higher actual evapotranspirati
   the Brooks and Corey water retention model.
 
 ### Added
+- Support internal timestepping for kinematic wave lateral subsurface flow concept
+  `LateralSSF`.
+- Support including river and drainage head-dependent flux boundary conditions for kinematic
+  wave lateral subsurface flow concept `LateralSSF`.
+- Support for running only a subsection of the model, either by using a smaller active
+  domain via `input.subbasin_location__count`, or specify specific subcatchments by linking
+  `input.subbasin_location__count` to a subcatchment map, and indicate which subbasins
+  should be active by providing their IDs in `input.subbasin_active_location__count`.
+
+## v1.0.2 - 2026-03-05
+
+### Fixed
+- Water mass balance computation for `LateralSSF` at a sub-daily model timestep. A unit
+  conversion (to sub-daily timestep) of the `recharge` variable was missing and has been
+  added.
+- Fixed issue with where the reservoir outflow could become negative for very low reservoir
+  storage values, due to floating point precision errors. The `storage_input` variable is
+  now limited to a minimum of zero.
+- Limiting kinematic wave subsurface flow that flows partly below the soil bottom while
+  solving the kinematic wave has been fixed. The computation to limit subsurface flow was
+  not correct resulting in an subsurface flow overestimation.
+- A bug was fixed that caused Wflow to error when parameters in the TOML didn't have a
+  specified `scale` and/or `offset` value.
+- Add missing update of `total_storage` of `SbmSoilModel` for model type `sbm_gwf`.
 
 ## v1.0.1 - 2026-01-07
 
@@ -222,7 +279,7 @@ resulting in higher peak flow, lower baseflow and higher actual evapotranspirati
  - Fixed internal and external broken links in docs.
  - The internal time step of the local inertial model (`stable_timestep` function) can get
   zero when `LoopVectorization` is applied (`@tturbo`) to the for loop of these functions.
-  This issue occured on a virtual machine, Windows 10 Enterprise, with Intel(R) Xeon(R) Gold
+  This issue occurred on a virtual machine, Windows 10 Enterprise, with Intel(R) Xeon(R) Gold
   6144 CPU (2 processors). This has been fixed by replacing `@tturbo` with `reduction` of
   `Polyester.jl`.
 - Fixed required states of the model type `sbm_gwf`: added `h_av` for the river and land

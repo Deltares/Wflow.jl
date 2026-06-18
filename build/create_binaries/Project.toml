@@ -6,5 +6,5 @@ TOML = "fa267f1f-6049-4f14-aa54-33bafae1ed76"
 Wflow = "d48b7d99-76e7-47ae-b1d5-ff0c1cf9a818"
 
 [compat]
-PackageCompiler = "2"
+PackageCompiler = "2.3"
 julia = "1.10"

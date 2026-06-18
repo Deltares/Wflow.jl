@@ -142,6 +142,9 @@ function init_config_section(::Type{InputEntry}, dict::AbstractDict{String})
 
         # Invoke default method
         return init_config_section_default(InputEntry, dict)
+    elseif value isa String
+        # Option 3
+        return InputEntry(; external_name = value)
     elseif !isnothing(value)
         # Option 2
         return InputEntry(; value)
@@ -173,11 +176,11 @@ function init_config_section(::Type{InputSection}, dict::AbstractDict{String})
             location_maps[key] = pop!(dict, key)
         end
     end
-    dict["location_maps"] = location_maps
+    dict["_location_maps"] = location_maps
     # Invoke default method
     input = init_config_section_default(InputSection, dict)
 
-    # check if there is overlap in specified parameters
+    # Check whether there is overlap in specified parameters
     overlap = intersect(keys(input.static), keys(input.forcing), keys(input.cyclic))
     if !isempty(overlap)
         argument_error(
@@ -241,18 +244,17 @@ function to_dict(
 ) where {T <: AbstractConfigSection}
     for field_name in fieldnames(T)
         value = getfield(config_section, field_name)
-        if (field_name == :location_maps) || isnothing(value)
+        # Skip internals and unspecified fields
+        if startswith(string(field_name), "_") || isnothing(value)
             continue
         end
-        field_dict = to_dict(value)
-        add_entry = if (field_dict isa Dict) && haskey(field_dict, "_was_specified")
-            pop!(field_dict, "_was_specified")
-        else
-            true
+        # Skip subsections that were not specified in the original TOML
+        if value isa AbstractConfigSection &&
+           hasproperty(value, :_was_specified) &&
+           !getfield(value, :_was_specified)
+            continue
         end
-        if add_entry
-            dict[String(field_name)] = to_dict(value)
-        end
+        dict[String(field_name)] = to_dict(value)
     end
     return dict
 end
@@ -261,7 +263,7 @@ to_dict(input::InputSection) = invoke(
     to_dict,
     Tuple{AbstractConfigSection},
     input;
-    dict = deepcopy(input.location_maps),
+    dict = deepcopy(input._location_maps),
 )
 to_dict(input_entries::InputEntries) =
     Dict{String, Any}(name => to_dict(entry) for (name, entry) in input_entries.dict)
@@ -275,6 +277,14 @@ function to_dict(input_entry::InputEntry)
     return dict
 end
 
+function to_dict(index::IndexSection)
+    # Return compact integer form when only `i` is set
+    if !isnothing(index.i) && isnothing(index.x) && isnothing(index.y)
+        return index.i
+    end
+    return invoke(to_dict, Tuple{AbstractConfigSection}, index)
+end
+
 to_dict(data::Vector) = to_dict.(data)
 
 to_dict(x::Any) = x
@@ -285,8 +295,5 @@ Base.setproperty!(
     config_section::T,
     field::Symbol,
     value,
-) where {T <: AbstractConfigSection} = setfield!(
-    config_section,
-    field,
-    convert_value(fieldtype(T, field), value),
-)
+) where {T <: AbstractConfigSection} =
+    setfield!(config_section, field, convert_value(fieldtype(T, field), value))

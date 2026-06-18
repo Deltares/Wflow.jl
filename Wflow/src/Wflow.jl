@@ -58,7 +58,8 @@ using LoggingExtras:
     TeeLogger,
     Warn,
     with_logger
-using NCDatasets: NCDatasets, NCDataset, dimnames, dimsize, nomissing, defDim, defVar
+using NCDatasets: NCDatasets, NCDataset, dimnames, dimsize, nomissing, defDim, defVar, path
+using OrderedCollections: OrderedDict
 using Parameters: @with_kw
 using Polyester: @batch
 using ProgressLogging: @progress
@@ -130,6 +131,7 @@ struct SbmModel <: AbstractModelType end         # "sbm" type / sbm_model.jl
 struct SbmGwfModel <: AbstractModelType end      # "sbm_gwf" type / sbm_gwf_model.jl
 struct SedimentModel <: AbstractModelType end    # "sediment" type / sediment_model.jl
 
+include("units.jl")
 include("config_structure.jl")
 include("config_utils.jl")
 include("config_init.jl")
@@ -186,6 +188,8 @@ end
 # prevent a large printout of model components and arrays
 Base.show(io::IO, ::AbstractModel{T}) where {T} = print(io, "model of type ", T)
 
+const MISSING_VALUE = Float64(NaN)
+
 include("forcing.jl")
 include("vegetation/parameters.jl")
 include("vegetation/rainfall_interception.jl")
@@ -199,16 +203,18 @@ include("soil/soil.jl")
 include("soil/soil_process.jl")
 include("land_surface_temperature.jl")
 include("sbm.jl")
+include("routing/utils.jl")
 include("routing/timestepping.jl")
-include("groundwater/connectivity.jl")
-include("groundwater/aquifer.jl")
-include("groundwater/boundary_conditions.jl")
-include("routing/subsurface.jl")
-include("routing/reservoir.jl")
-include("routing/surface_kinwave.jl")
-include("routing/surface_local_inertial.jl")
-include("routing/surface_routing.jl")
-include("routing/routing_process.jl")
+include("routing/subsurface/connectivity.jl")
+include("routing/subsurface/groundwater.jl")
+include("routing/subsurface/lateral_subsurface_flow.jl")
+include("routing/subsurface/subsurface_process.jl")
+include("routing/subsurface/boundary_conditions.jl")
+include("routing/surface/reservoir.jl")
+include("routing/surface/surface_kinwave.jl")
+include("routing/surface/surface_local_inertial.jl")
+include("routing/surface/surface_routing.jl")
+include("routing/surface/surface_process.jl")
 include("demand/water_demand.jl")
 include("sbm_model.jl")
 include("sediment/erosion/erosion_process.jl")
@@ -227,7 +233,19 @@ include("sediment_flux.jl")
 include("sediment_model.jl")
 include("routing/initialize_routing.jl")
 include("sbm_gwf_model.jl")
-include("standard_name.jl")
+include("standard_name/standard_name_utils.jl")
+include("standard_name/standard_name_domain.jl")
+include("standard_name/standard_name_routing.jl")
+include("standard_name/standard_name_sbm.jl")
+include("standard_name/standard_name_sediment.jl")
+
+const STANDARD_NAME_MAPS = (
+    ("sbm", Wflow.sbm_standard_name_map, LandHydrologySBM),
+    ("sediment", Wflow.sediment_standard_name_map, SoilLossModel),
+    ("domain", Wflow.domain_standard_name_map, Domain),
+    ("routing", Wflow.routing_standard_name_map, Routing),
+)
+
 include("utils.jl")
 include("bmi.jl")
 include("subdomains.jl")
@@ -288,7 +306,7 @@ function run(config::Config)
     return model
 end
 
-function run_timestep!(model::Model; update_func = update!, write_model_output = true)
+function run_timestep!(model::Model; update_func = update_model!, write_model_output = true)
     (; mass_balance) = model
     advance!(model.clock)
     load_dynamic_input!(model)
@@ -321,10 +339,10 @@ function run!(model::Model; close_files = true)
     @info "Simulation duration: $(canonicalize(now() - runstart_time))"
 
     # write output state netCDF
-    if !isnothing(writer.state_nc_path)
-        @info "Write output states to netCDF file `$(writer.state_nc_path)`."
+    if !isnothing(writer.endstate_writer.output_path)
+        @info "Write output states to netCDF file `$(writer.endstate_writer.output_path)`."
     end
-    write_netcdf_timestep(model, writer.state_dataset, writer.state_parameters)
+    write_netcdf_timestep(model, writer.endstate_writer)
 
     reset_clock!(model.clock, config)
 
@@ -334,13 +352,18 @@ function run!(model::Model; close_files = true)
         Wflow.close_files(model; delete_output = false)
     end
 
-    # copy TOML to dir_output, to archive what settings were used
+    # Write config to dir_output, to archive what settings were used
     if !isnothing(config.dir_output)
         src = normpath(config.path)
         dst = output_path(config, basename(src))
-        if src != dst
-            @debug "Copying TOML file." src dst
-            cp(src, dst; force = true)
+
+        if src == dst
+            @debug "Not writing config as the input path is equal to the output path."
+        else
+            @debug "Writing configuration." dst
+            open(dst, "w") do io
+                TOML.print(io, to_dict(config); sorted = true)
+            end
         end
     end
     return nothing

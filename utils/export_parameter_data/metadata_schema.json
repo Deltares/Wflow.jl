@@ -1,0 +1,76 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Wflow parameter and variable metadata",
+    "description": "Schema for Wflow parameter/variable metadata JSON files exported from STANDARD_NAME_MAPS.",
+    "type": "object",
+    "minProperties": 1,
+    "additionalProperties": {
+        "type": "object",
+        "required": [
+            "unit",
+            "default",
+            "fill",
+            "type",
+            "description",
+            "allow_missing",
+            "allow_dynamic_input"
+        ],
+        "additionalProperties": false,
+        "properties": {
+            "unit": {
+                "type": "string",
+                "description": "Physical unit in BMI-standard format. \"-\" for dimensionless."
+            },
+            "default": {
+                "description": "Default value; null means the parameter must be provided.",
+                "oneOf": [
+                    {
+                        "type": "number"
+                    },
+                    {
+                        "type": "boolean"
+                    },
+                    {
+                        "type": "null"
+                    }
+                ]
+            },
+            "fill": {
+                "description": "Fill value for missing input data; null means no fill.",
+                "oneOf": [
+                    {
+                        "type": "number"
+                    },
+                    {
+                        "type": "boolean"
+                    },
+                    {
+                        "type": "null"
+                    }
+                ]
+            },
+            "type": {
+                "type": "string",
+                "enum": [
+                    "Float64",
+                    "Int64",
+                    "Bool"
+                ],
+                "description": "Julia type of the parameter/variable."
+            },
+            "description": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Human-readable description."
+            },
+            "allow_missing": {
+                "type": "boolean",
+                "description": "Whether missing entries are permitted in input data."
+            },
+            "allow_dynamic_input": {
+                "type": "boolean",
+                "description": "Whether the parameter can be updated from forcing/cyclic input each timestep."
+            }
+        }
+    }
+}

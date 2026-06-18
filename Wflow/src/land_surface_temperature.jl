@@ -92,7 +92,8 @@ end
 
 """ 'latent heat of vaporization' :: λ=2501 - 2.375 Ta (A1) """
 function compute_latent_heat_of_vaporization(air_temperature::Float64)
-    return (2501.0 - 2.375 * air_temperature) * 1000.0 # J/kg converted fro kj.kg
+    air_temperature_degc = from_SI(air_temperature, ABSOLUTE_DEGREES)
+    return (2501.0 - 2.375 * air_temperature_degc) * 1000.0 # J/kg converted fro kj.kg
 end
 
 """ 'latent heat flux' :: LE=λ x ρwater x ET (3)"""
@@ -102,10 +103,8 @@ function compute_latent_heat_flux(
     dt::Float64,
 )
     latent_heat_of_vaporization = compute_latent_heat_of_vaporization(air_temperature)
-    # Convert actual_evapotranspiration from mm/Δt to m/s
-    actual_evapotranspiration_ms = (actual_evapotranspiration / 1000.0) / dt
     latent_heat_flux =
-        latent_heat_of_vaporization * WATER_DENSITY * actual_evapotranspiration_ms
+        latent_heat_of_vaporization * WATER_DENSITY * actual_evapotranspiration
     return latent_heat_flux
 end
 

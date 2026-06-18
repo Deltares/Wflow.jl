@@ -15,12 +15,12 @@ function surface_routing!(model)
     update_lateral_inflow!(
         overland_flow,
         (; soil, allocation, subsurface_flow),
-        domain.land.parameters.area,
+        domain,
         config,
         dt,
     )
     # run kinematic wave overland flow
-    update!(overland_flow, domain.land, dt)
+    update_overland_flow_model!(overland_flow, domain.land, dt)
 
     # update lateral inflow river flow
     update_lateral_inflow!(
@@ -41,28 +41,28 @@ function surface_routing!(model)
         @debug log_message_observed_outflow(reservoir)
     end
     # update river flow
-    update!(river_flow, domain, clock)
+    update_river_flow_model!(river_flow, domain, clock, dt)
     return nothing
 end
 
 """
     surface_routing!(
         model::Model{R}
-    ) where {R <: Routing{<:LocalInertialOverlandFlow, <:LocalInertialRiverFlow}}
+    ) where {R <: Routing{<:LocalInertialOverlandFlowModel, <:LocalInertialRiverFlowModel}}
 
 Run surface routing (land and river) for a model type that contains the routing components
-`LocalInertialOverlandFlow` and `LocalInertialRiverFlow` for a single timestep.
+`LocalInertialOverlandFlowModel` and `LocalInertialRiverFlowModel` for a single timestep.
 """
 function surface_routing!(
     model::Model{R},
-) where {R <: Routing{<:LocalInertialOverlandFlow, <:LocalInertialRiverFlow}}
+) where {R <: Routing{<:LocalInertialOverlandFlowModel, <:LocalInertialRiverFlowModel}}
     (; routing, land, domain, clock, config) = model
     (; soil, runoff) = land
     (; overland_flow, river_flow, subsurface_flow) = routing
     (; reservoir) = river_flow.boundary_conditions
 
     dt = tosecond(clock.dt)
-    update_boundary_conditions!(
+    update_bc_overland_flow_model!(
         overland_flow,
         (; soil, runoff, subsurface_flow),
         domain,
@@ -75,7 +75,7 @@ function surface_routing!(
         @debug log_message_observed_outflow(reservoir)
     end
     # update overland and river flow
-    update!(overland_flow, river_flow, domain, clock)
+    update_overland_flow_model!(overland_flow, river_flow, domain, clock, dt)
 
     return nothing
 end

@@ -3,9 +3,9 @@ abstract type AbstractRiverErosionModel end
 "Struct for storing river bed and bank erosion model variables"
 @with_kw struct RiverErosionModelVariables
     n::Int
-    # Potential river bed erosion rate [t dt-1]
+    # Potential river bed erosion rate [kg s⁻¹]
     bed::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Potential river bank erosion rate [t dt-1]
+    # Potential river bank erosion rate [kg s⁻¹]
     bank::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
@@ -18,7 +18,7 @@ end
 
 "Struct for storing river erosion model parameters"
 @with_kw struct RiverErosionParameters
-    # Mean diameter [mm] in the river bed/bank
+    # Mean diameter [m] in the river bed/bank
     d50::Vector{Float64}
 end
 
@@ -39,10 +39,9 @@ function RiverErosionParameters(
     d50 = ncread(
         dataset,
         config,
-        "river_bottom_and_bank_sediment__median_diameter";
+        "river_bottom_and_bank_sediment__median_diameter",
+        SoilLossModel;
         sel = indices,
-        defaults = 0.1,
-        type = Float64,
     )
     river_parameters = RiverErosionParameters(; d50)
 
@@ -57,38 +56,38 @@ function RiverErosionJulianTorresModel(
 )
     n = length(indices)
     parameters = RiverErosionParameters(dataset, config, indices)
-    model = RiverErosionJulianTorresModel(; n, parameters)
-    return model
+    river_erosion_model = RiverErosionJulianTorresModel(; n, parameters)
+    return river_erosion_model
 end
 
 "Update river erosion model boundary conditions"
-function update_boundary_conditions!(
-    model::RiverErosionJulianTorresModel,
+function update_bc_river_erosion_model!(
+    river_erosion_model::RiverErosionJulianTorresModel,
     hydrological_forcing::HydrologicalForcing,
 )
-    (; waterlevel) = model.boundary_conditions
+    (; waterlevel) = river_erosion_model.boundary_conditions
     (; waterlevel_river) = hydrological_forcing
     @. waterlevel = waterlevel_river
 end
 
 "Update Julian and Torres river erosion model for a single timestep"
-function update!(
-    model::RiverErosionJulianTorresModel,
-    parameters::RiverParameters,
+function update_river_erosion_model!(
+    river_erosion_model::RiverErosionJulianTorresModel,
+    parameters_river::RiverParameters,
     dt::Float64,
 )
-    (; waterlevel) = model.boundary_conditions
-    (; d50) = model.parameters
-    (; bed, bank) = model.variables
+    (; boundary_conditions, parameters, variables) = river_erosion_model
+    (; waterlevel) = boundary_conditions
+    (; d50) = parameters
+    (; bed, bank) = variables
 
-    n = length(waterlevel)
-    threaded_foreach(1:n; basesize = 1000) do i
+    threaded_foreach(eachindex(waterlevel); basesize = 1000) do i
         bed[i], bank[i] = river_erosion_julian_torres(
             waterlevel[i],
             d50[i],
-            parameters.flow_width[i],
-            parameters.flow_length[i],
-            parameters.slope[i],
+            parameters_river.flow_width[i],
+            parameters_river.flow_length[i],
+            parameters_river.slope[i],
             dt,
         )
     end

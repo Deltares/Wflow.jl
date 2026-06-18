@@ -1,6 +1,6 @@
 # maps the fields of struct `EdgeConnectivity` to the defined Wflow cartesian indices of
-# const `neigbors`.
-const DIRS = (:yd, :xd, :xu, :yu)
+# const `neighbors`.
+const DIRS = (:idx_down, :idx_left, :idx_right, :idx_up)
 
 """
 Struct for storing 2D staggered grid edge connectivity in `x` and `y` directions. For
@@ -11,22 +11,23 @@ See also: de Almeida, G. A. M., P. D.Bates, J. Freer, and M. Souvignet (2012), I
 stability of a simple formulation of the shallow water equations for 2D flood modelling,
 Water Resour. Res., 48, doi:10.1029/2011WR011570.
 
-Edges without neigbors are handled by an extra index (at `n + 1`, with `n` edges). The
+Edges without neighbors are handled by an extra index (at `n + 1`, with `n` edges). The
 linear index `i` of the `EdgeConnectivity` fields represents the edge between node index `i`
 and the neighboring nodes in the CartesianIndex(-1,0) and CartesianIndex(0,-1) directions.
 The edges are defined as follows:
-- `xu` is the edge between node `i` and node `xu` in the `CartesianIndex(1,0)` direction.
-- `xd` is the edge between node `xd` in the `CartesianIndex(-1,0)` direction and the
+- `idx_right` is the edge between node `i` and node `idx_right` in the `CartesianIndex(1,0)` direction.
+- `idx_left` is the edge between node `idx_left` in the `CartesianIndex(-1,0)` direction and the
   neighboring node (CartesianIndex(-2,0) direction).
-- `yu` is the edge between node `i` and node `yu` in the `CartesianIndex(0,1)` direction.
-- `yd` is the edge between node `yd` in the `CartesianIndex(0,-1)` direction and the
+- `idx_up` is the edge between node `i` and node `idx_up` in the `CartesianIndex(0,1)` direction.
+- `idx_down` is the edge between node `idx_down` in the `CartesianIndex(0,-1)` direction and the
   neighboring node (`CartesianIndex(0,-2)` direction).
 """
 @with_kw struct EdgeConnectivity
-    xu::Vector{Int} = Int[]
-    xd::Vector{Int} = Int[]
-    yu::Vector{Int} = Int[]
-    yd::Vector{Int} = Int[]
+    n::Int
+    idx_right::Vector{Int} = zeros(Int, n)
+    idx_left::Vector{Int} = zeros(Int, n)
+    idx_up::Vector{Int} = zeros(Int, n)
+    idx_down::Vector{Int} = zeros(Int, n)
 end
 
 "Struct for storing source `src` node and destination `dst` node of an edge."
@@ -55,6 +56,8 @@ end
     streamorder::Vector{Int} = Int[]
     # maps from the 1D internal land domain to the 2D model (external) domain
     indices::Vector{CartesianIndex{2}} = CartesianIndex{2}[]
+    # land indices
+    land_indices::Vector{Int} = 1:length(indices)
     # traversion order of land domain
     order::Vector{Int} = Int[]
     # execution order of sub-domains for kinematic wave routing (land domain)
@@ -68,7 +71,7 @@ end
     # maps from the land domain to the river domain excluding reservoir locations
     river_inds_excl_reservoir::Vector{Int} = Int[]
     # 2D staggered grid edge indices
-    edge_indices::EdgeConnectivity = EdgeConnectivity()
+    edge_indices::EdgeConnectivity = EdgeConnectivity(; n = 1)
     # maps `order_subdomain` to traversion order of the complete domain
     subdomain_indices::Vector{Vector{Int}} = Vector{Int}[]
     # upstream nodes (directed graph)
@@ -80,13 +83,13 @@ Initialize `NetworkLand` fields related to catchment (active indices model domai
 drainage network.
 """
 function NetworkLand(dataset::NCDataset, config::Config)
-    subcatch_2d = ncread(
-        dataset,
-        config,
-        "subbasin_location__count";
-        optional = false,
-        allow_missing = true,
-    )
+    subcatch_2d = ncread(dataset, config, "subbasin_location__count", Domain)
+    # check if specific IDs are requested, and only keep those if this is the case
+    if !isnothing(config.input.subbasin_active_location__count)
+        active_ids = Set(config.input.subbasin_active_location__count)
+        @info "Only subcatchments with IDs `$(sort!(collect(active_ids)))` are active."
+        subcatch_2d = map(v -> v in active_ids ? v : missing, subcatch_2d)
+    end
     indices, reverse_indices = active_indices(subcatch_2d, missing)
     modelsize = size(subcatch_2d)
     graph, local_drain_direction =
@@ -131,8 +134,7 @@ end
 function EdgeConnectivity(network::NetworkLand)
     (; modelsize, indices, reverse_indices) = network
     n = length(indices)
-    edge_indices =
-        EdgeConnectivity(; xu = zeros(n), xd = zeros(n), yu = zeros(n), yd = zeros(n))
+    edge_indices = EdgeConnectivity(; n)
 
     nrow, ncol = modelsize
     for (v, i) in enumerate(indices)
@@ -157,27 +159,13 @@ function get_drainage_network(
     do_pits::Bool = false,
     logging::Bool = true,
 )
-    ldd_2d = ncread(
-        dataset,
-        config,
-        "basin__local_drain_direction";
-        optional = false,
-        allow_missing = true,
-        logging,
-    )
+    ldd_2d = ncread(dataset, config, "basin__local_drain_direction", Domain; logging)
     ldd = convert(Array{UInt8}, ldd_2d[indices])
     if do_pits
-        pits_2d = ncread(
-            dataset,
-            config,
-            "basin_pit_location__mask";
-            optional = false,
-            type = Bool,
-            fill = false,
-        )
+        pits_2d = ncread(dataset, config, "basin_pit_location__mask", Domain)
         ldd = set_pit_ldd(pits_2d, ldd, indices)
     end
-    graph = flowgraph(ldd, indices, PCR_DIR)
+    graph, ldd = flowgraph(ldd, indices, PCR_DIR)
     return graph, ldd
 end
 
@@ -227,21 +215,31 @@ function NetworkRiver(
     network::NetworkLand;
     do_pits = false,
 )
-    river_location_2d = ncread(
+    # read river mask only at land-domain cells; same order as network.indices
+    river_location = ncread(
         dataset,
         config,
-        "river_location__mask";
-        optional = false,
-        type = Bool,
-        fill = false,
+        "river_location__mask",
+        Domain;
+        sel = network.indices,
         logging = false,
     )
-    indices, reverse_indices = active_indices(river_location_2d, 0)
+
+    # find the land cells that are river cells
+    land_indices = findall(!isequal(0), river_location)
+
+    # 2D CartesianIndex of river cells (a subset of network.indices)
+    indices = network.indices[land_indices]
+
+    # rebuild the 2D reverse-index map
+    reverse_indices = zeros(Int, network.modelsize)
+    for (i, ind) in enumerate(indices)
+        reverse_indices[ind] = i
+    end
+
     graph, local_drain_direction =
         get_drainage_network(dataset, config, indices; do_pits, logging = false)
     order = topological_sort_by_dfs(graph)
-    river_location = river_location_2d[network.indices]
-    land_indices = filter(i -> !isequal(river_location[i], 0), 1:length(network.indices))
     streamorder = network.streamorder[land_indices]
 
     network = NetworkRiver(;
@@ -292,7 +290,7 @@ function EdgesAtNode(network::NetworkRiver)
     return edges_at_node
 end
 
-"Struct for storing network information reservoir."
+"Struct for storing network information for the reservoirs."
 @kwdef struct NetworkReservoir
     # list of 2D indices representing reservoir area (coverage)
     indices_coverage::Vector{Vector{CartesianIndex{2}}} = Vector{CartesianIndex{2}}[]
@@ -315,23 +313,14 @@ function NetworkReservoir(dataset::NCDataset, config::Config, network::NetworkRi
     locs = ncread(
         dataset,
         config,
-        "reservoir_location__count";
-        optional = false,
+        "reservoir_location__count",
+        Routing;
         sel = indices,
-        type = Int,
-        fill = 0,
         logging,
     )
 
     # this holds the same ids as locs, but covers the entire reservoir
-    coverage_2d = ncread(
-        dataset,
-        config,
-        "reservoir_area__count";
-        optional = false,
-        allow_missing = true,
-        logging,
-    )
+    coverage_2d = ncread(dataset, config, "reservoir_area__count", Routing; logging)
     # for each reservoir, a list of 2D indices, needed for getting the mean precipitation
     inds_coverage = Vector{CartesianIndex{2}}[]
     rev_inds = zeros(Int, size(coverage_2d))
@@ -370,7 +359,7 @@ end
 
 """
 Struct for storing forward `indices` and reverse indices `reverse_indices` in the 2D
-external model domain, and 1D land domain indices `land_indices` of `Drainage` cells
+external model domain, and 1D land domain indices `land_indices` of `DrainageModel` cells
 (boundary condition groundwater flow).
 """
 @kwdef struct NetworkDrain
@@ -385,31 +374,33 @@ function NetworkDrain(
     config::Config,
     indices::Vector{CartesianIndex{2}},
     surface_flow_width::Vector{Float64},
+    modelsize::Tuple{Int, Int},
 )
     n_cells = length(indices)
-    drain_2d = ncread(
-        dataset,
-        config,
-        "land_drain_location__mask";
-        optional = false,
-        type = Bool,
-        fill = false,
-    )
-    drain = drain_2d[indices]
+    # read drain mask only at land-domain cells; same order as `indices`
+    drain = ncread(dataset, config, "land_drain_location__mask", Routing; sel = indices)
 
-    # check if drain occurs where overland flow is not possible (surface_flow_width = 0.0)
-    # and correct if this is the case
+    # remove drains where overland flow is not possible (surface_flow_width = 0.0)
     false_drain =
         filter(i -> !isequal(drain[i], 0) && surface_flow_width[i] == 0.0, 1:n_cells)
     n_false_drain = length(false_drain)
     if n_false_drain > 0
-        drain_2d[indices[false_drain]] .= 0
         drain[false_drain] .= 0
         @info "$n_false_drain drain locations are removed that occur where overland flow
          is not possible (overland flow width is zero)"
     end
+
+    # land-domain positions that are drain cells
     land_indices = filter(i -> !isequal(drain[i], 0), 1:n_cells)
-    indices, reverse_indices = active_indices(drain_2d, 0)
-    network = NetworkDrain(; indices, reverse_indices, land_indices)
-    return network
+
+    # 2D CartesianIndex of drain cells
+    drain_indices = indices[land_indices]
+
+    # rebuild the 2D reverse-index map (model coords -> 1D drain index)
+    reverse_indices = zeros(Int, modelsize)
+    for (i, ind) in enumerate(drain_indices)
+        reverse_indices[ind] = i
+    end
+
+    return NetworkDrain(; indices = drain_indices, reverse_indices, land_indices)
 end

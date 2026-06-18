@@ -42,7 +42,7 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
     do_snow = config.model.snow__flag
     do_glacier = config.model.glacier__flag
     if do_snow
-        snow = SnowHbvModel(dataset, config, indices, dt)
+        snow = SnowHbvModel(dataset, config, indices)
     else
         snow = NoSnowModel(n)
     end
@@ -61,15 +61,15 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
     runoff = OpenWaterRunoff(; n)
 
     soil = SbmSoilModel(dataset, config, vegetation_parameters, indices, dt)
-    @. vegetation_parameters.rootingdepth =
-        min(soil.parameters.soilthickness * 0.99, vegetation_parameters.rootingdepth)
+    @. vegetation_parameters.rooting_depth =
+        min(soil.parameters.soil_thickness * 0.99, vegetation_parameters.rooting_depth)
 
     if do_water_demand(config)
-        allocation = AllocationLand(dataset, config, indices)
-        demand = Demand(dataset, config, indices, dt)
+        allocation = AllocationLandModel(dataset, config, indices)
+        demand = DemandModel(dataset, config, indices)
     else
-        allocation = NoAllocationLand(n)
-        demand = NoDemand(; n)
+        allocation = NoAllocationLandModel(n)
+        demand = NoDemandModel(; n)
     end
     if do_land_surface_temperature
         land_surface_temperature = LandSurfaceTemperatureModel(n)
@@ -77,7 +77,7 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
         land_surface_temperature = NoLandSurfaceTemperatureModel()
     end
 
-    land_hydrology_model = LandHydrologySBM(;
+    return LandHydrologySBM(;
         atmospheric_forcing,
         vegetation_parameters,
         interception,
@@ -89,12 +89,11 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
         demand,
         allocation,
     )
-    return land_hydrology_model
 end
 
 "Update land hydrology model with SBM soil model for a single timestep"
-function update!(
-    model::LandHydrologySBM,
+function update_land_hydrology_model!(
+    land_hydrology_model::LandHydrologySBM,
     routing::Routing,
     domain::Domain,
     config::Config,
@@ -111,43 +110,45 @@ function update!(
         demand,
         allocation,
         atmospheric_forcing,
-    ) = model
+    ) = land_hydrology_model
 
-    update!(interception, atmospheric_forcing)
+    update_interception_model!(interception, atmospheric_forcing, dt)
 
-    update_boundary_conditions!(snow, (; interception))
-    update!(snow, atmospheric_forcing)
+    update_bc_snow_model!(snow, (; interception))
+    update_snow_model!(snow, atmospheric_forcing, dt)
+
     if config.model.snow_gravitational_transport__flag
-        lateral_snow_transport!(snow, domain.land)
+        lateral_snow_transport!(snow, domain.land, dt)
     end
 
-    update!(glacier, atmospheric_forcing)
+    update_glacier_model!(glacier, atmospheric_forcing, dt)
 
-    update_boundary_conditions!(
+    update_bc_open_water_runoff_model!(
         runoff,
         (; glacier, snow, interception),
         routing,
         domain.river.network,
     )
-    update!(runoff, atmospheric_forcing, parameters)
+    update_open_water_runoff_model!(runoff, atmospheric_forcing, parameters, dt)
 
     if do_water_demand(config)
         (; potential_transpiration) = soil.boundary_conditions
         (; h3_high, h3_low) = soil.parameters
         potential_transpiration .= get_potential_transpiration(interception)
-        @. soil.variables.h3 = feddes_h3(h3_high, h3_low, potential_transpiration, dt)
+        @. soil.variables.h3 = feddes_h3(h3_high, h3_low, potential_transpiration)
     end
-    update_water_demand!(demand, soil)
-    update_water_allocation!(allocation, demand, routing, domain, dt)
+    update_water_demand_model!(demand, soil, dt)
+    update_water_allocation_model!(allocation, demand, routing, domain, dt)
 
     soil_fraction!(soil, glacier, parameters)
-    update_boundary_conditions!(
+    update_bc_soil_model!(
         soil,
         atmospheric_forcing,
         (; interception, runoff, demand, allocation),
+        dt,
     )
 
-    update!(soil, atmospheric_forcing, (; snow, runoff, demand), config, dt)
+    update_soil_water_flow!(soil, atmospheric_forcing, (; snow, runoff, demand), config, dt)
 
     # Update land surface temperature if enabled
     if config.model.land_surface_temperature__flag
@@ -162,7 +163,7 @@ function update!(
         )
     end
 
-    @. soil.variables.actevap += interception.variables.interception_rate
+    @. soil.variables.actual_evapotranspiration += interception.variables.interception_rate
     return nothing
 end
 
@@ -176,13 +177,13 @@ Update the total water storage per cell at the end of a timestep.
 - `routing`: Containing routing models.
 """
 function update_total_water_storage!(
-    model::LandHydrologySBM,
+    land_hydrology_model::LandHydrologySBM,
     domain::Domain,
     routing::Routing,
 )
     (; overland_flow, river_flow) = routing
-    (; interception, snow, glacier, soil, demand) = model
-    (; total_storage, ustoredepth, satwaterdepth) = soil.variables
+    (; interception, snow, glacier, soil, demand) = land_hydrology_model
+    (; total_storage, unsaturated_store_depth, saturated_water_depth) = soil.variables
 
     (; river_fraction, area) = domain.land.parameters
     (; flow_width, flow_length) = domain.river.parameters
@@ -194,7 +195,7 @@ function update_total_water_storage!(
     for (i, index_river) in enumerate(domain.river.network.land_indices)
         total_storage[index_river] = (
             (river_flow.variables.h[i] * flow_width[i] * flow_length[i]) /
-            (area[index_river]) * 1000 # Convert to mm
+            (area[index_river])
         )
     end
 
@@ -205,15 +206,13 @@ function update_total_water_storage!(
         interception.variables.canopy_storage .+ get_water_depth(demand.paddy)
 
     # Chunk the data for parallel computing
-    n = length(ustoredepth)
+    n = length(unsaturated_store_depth)
     threaded_foreach(1:n; basesize = 1000) do i
-        sub_surface = ustoredepth[i] + satwaterdepth[i]
-        lateral = (
-            overland_flow.variables.h[i] * (1 - river_fraction[i]) * 1000 # convert to mm
-        )
+        sub_surface = unsaturated_store_depth[i] + saturated_water_depth[i]
+        lateral = overland_flow.variables.h[i] * (1 - river_fraction[i])
 
         # Add everything to the total water storage
-        total_storage[i] += (sub_surface + lateral)
+        total_storage[i] += sub_surface + lateral
     end
     return nothing
 end

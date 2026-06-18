@@ -70,9 +70,10 @@ end
 "Write state output to netCDF and close files."
 function BMI.finalize(model::Model)
     (; config, writer) = model
+    (; endstate_writer) = writer
     # it is possible that the state dataset has been closed by `save_state`
-    if !isnothing(writer.state_dataset) && isopen(writer.state_dataset)
-        write_netcdf_timestep(model, writer.state_dataset, writer.state_parameters)
+    if !isnothing(endstate_writer.output_dataset) && isopen(endstate_writer.output_dataset)
+        write_netcdf_timestep(model, writer.endstate_writer)
     end
     reset_clock!(model.clock, config)
     close_files(model; delete_output = false)
@@ -108,7 +109,7 @@ function BMI.get_input_var_names(model::Model)
                 # map to standard name for layered soil model variable (not available per layer)
                 var, _ = soil_layer_standard_name(var)
             end
-            if !haskey(standard_name_map(land), var)
+            if isnothing(get_metadata(var, land; model))
                 push!(idx, i)
                 @warn(
                     "$var is not listed as variable for BMI exchange and removed from list"
@@ -136,9 +137,9 @@ function BMI.get_var_grid(::Model, name::String)
         1
     elseif occursin("river", name) || occursin("floodplain", name)
         2
-    elseif occursin("land_surface_water__x_component", name) # LocalInertialOverlandFlow
+    elseif occursin("land_surface_water__x_component", name) # LocalInertialOverlandFlowModel
         3
-    elseif occursin("land_surface_water__y_component", name) # LocalInertialOverlandFlow
+    elseif occursin("land_surface_water__y_component", name) # LocalInertialOverlandFlowModel
         4
     else
         5
@@ -152,8 +153,8 @@ end
 
 function BMI.get_var_units(model::Model, name::String)
     (; land) = model
-    nt = standard_name_map(land)[name]
-    return nt.unit
+    metadata = get_metadata(name, land; model)
+    return to_string(to_SI(metadata.unit); BMI_standard = true)
 end
 
 function BMI.get_var_itemsize(model::Model, name::String)
@@ -166,8 +167,7 @@ function BMI.get_var_nbytes(model::Model, name::String)
 end
 
 function BMI.get_var_location(model::Model, name::String)
-    (; land) = model
-    lens = standard_name_map(land)[name].lens
+    (; lens) = get_metadata(name; model)
     element_type = grid_element_type(model, lens)
     return element_type
 end
@@ -176,7 +176,8 @@ function BMI.get_current_time(model::Model)
     (; config, clock) = model
     (; starttime, calendar) = config.time
     starttime = cftime(starttime, calendar)
-    return 0.001 * Dates.value(clock.time - starttime)
+    # ms => s
+    return to_SI(Float64(Dates.value(clock.time - starttime)), MS)
 end
 
 function BMI.get_start_time(::Model)
@@ -187,7 +188,8 @@ function BMI.get_end_time(model::Model)
     (; starttime, endtime, calendar) = model.config.time
     starttime_ = cftime(starttime, calendar)
     endtime_ = cftime(endtime, calendar)
-    return 0.001 * Dates.value(endtime_ - starttime_)
+    # ms => s
+    return to_SI(Float64(Dates.value(endtime_ - starttime_)), MS)
 end
 
 function BMI.get_time_units(model::Model)
@@ -204,20 +206,24 @@ function BMI.get_value(model::Model, name::String, dest::Vector{Float64})
 end
 
 function BMI.get_value_ptr(model::Model, name::String)
-    (; land, domain) = model
+    (; domain) = model
     n = length(active_indices(domain, name))
 
     if startswith(name, "soil_layer_") && occursin(r"soil_layer_\d+_", name)
         name_2d, ind = soil_layer_standard_name(name)
-        lens = standard_name_map(land)[name_2d].lens
-        model_vals = lens(model)
+        model_vals, _ = get_field_in_model(model, name_2d)
         el_type = eltype(first(model_vals))
         dim = length(first(model_vals))
         value = reshape(reinterpret(el_type, model_vals), dim, :)
         return @view value[ind, 1:n]
     else
-        lens = standard_name_map(land)[name].lens
-        return @view(lens(model)[1:n])
+        (; lens) = get_metadata(name; model)
+        if isnothing(lens)
+            error("Accessing '$name' is not supported.")
+        else
+            vec = lens(model)
+            return @view(vec[1:n])
+        end
     end
 end
 
@@ -306,9 +312,9 @@ function BMI.get_grid_edge_count(model::Model, grid::Int)
     if grid == 3
         return ne(domain.river.network.graph)
     elseif grid == 4
-        return length(domain.land.network.edge_indices.xu)
+        return length(domain.land.network.edge_indices.idx_right)
     elseif grid == 5
-        return length(domain.land.network.edge_indices.yu)
+        return length(domain.land.network.edge_indices.idx_up)
     elseif grid in 0:2 || grid == 6
         @warn("edges are not provided for grid type $grid (variables are located at nodes)")
     else
@@ -328,16 +334,16 @@ function BMI.get_grid_edge_nodes(model::Model, grid::Int, edge_nodes::Vector{Int
         edge_nodes[range(2, n; step = 2)] = nodes_at_edge.dst
         return edge_nodes
     elseif grid == 4
-        xu = domain.land.network.edge_indices.xu
+        idx_right = domain.land.network.edge_indices.idx_right
         edge_nodes[range(1, n; step = 2)] = 1:m
-        xu[xu .== m + 1] .= -999
-        edge_nodes[range(2, n; step = 2)] = xu
+        idx_right[idx_right .== m + 1] .= -999
+        edge_nodes[range(2, n; step = 2)] = idx_right
         return edge_nodes
     elseif grid == 5
-        yu = domain.land.network.edge_indices.yu
+        idx_up = domain.land.network.edge_indices.idx_up
         edge_nodes[range(1, n; step = 2)] = 1:m
-        yu[yu .== m + 1] .= -999
-        edge_nodes[range(2, n; step = 2)] = yu
+        idx_up[idx_up .== m + 1] .= -999
+        edge_nodes[range(2, n; step = 2)] = idx_up
         return edge_nodes
     elseif grid in 0:2 || grid == 6
         @warn("edges are not provided for grid type $grid (variables are located at nodes)")
@@ -354,12 +360,13 @@ function load_state(model::Model)
 end
 
 function save_state(model::Model)
-    (; writer) = model
-    if !isnothing(writer.state_nc_path)
-        @info "Write output states to netCDF file `$(writer.state_nc_path)`."
+    (; endstate_writer) = model.writer
+    (; output_path, output_dataset) = endstate_writer
+    if !isnothing(output_path)
+        @info "Write output states to netCDF file `$output_path`."
     end
-    write_netcdf_timestep(model, writer.state_dataset, writer.state_parameters)
-    close(writer.state_dataset)
+    write_netcdf_timestep(model, endstate_writer)
+    close(output_dataset)
     return nothing
 end
 
@@ -401,8 +408,8 @@ Return the grid element type of a model variable (PropertyLens `var`) based on a
 function grid_element_type(
     ::T,
     var::PropertyLens,
-) where {T <: Union{LocalInertialRiverFlow, LocalInertialOverlandFlow}}
-    vars = (PropertyLens(x) for x in (:q, :q_av, :qx, :qy))
+) where {T <: Union{LocalInertialRiverFlowModel, LocalInertialOverlandFlowModel}}
+    vars = (PropertyLens(x) for x in (:q, :q_average, :qx, :qy))
     element_type = if var in vars
         "edge"
     else

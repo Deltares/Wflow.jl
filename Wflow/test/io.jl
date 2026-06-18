@@ -39,7 +39,7 @@
     @test_throws ErrorException Wflow.get_var(config, "not_set_in_TOML"; optional = false)
 end
 
-@testitem "Clock constructor" begin
+@testitem "unit: Clock constructor" begin
     using NCDatasets: NCDataset
     using CFTime: DateTimeProlepticGregorian, DateTimeStandard
     using Dates: Second, Hour, Day, DateTime
@@ -78,7 +78,7 @@ end
     @test clock.dt == Second(Hour(1))
 end
 
-@testitem "Clock{DateTimeStandard}" begin
+@testitem "unit: Clock{DateTimeStandard}" begin
     using CFTime: DateTimeStandard
     using Dates: Dates, Second, Day
 
@@ -110,7 +110,7 @@ end
     @test clock.dt == dt
 end
 
-@testitem "Clock{DateTime360Day}" begin
+@testitem "unit: Clock{DateTime360Day}" begin
     using CFTime: DateTime360Day
     using Dates: Dates, Second, Day
 
@@ -177,7 +177,7 @@ end
     @test clock.time == DateTimeNoLeap(2000, 3, 1)
 end
 
-@testitem "CFTime" begin
+@testitem "unit: CFTime" begin
     using CFTime: DateTimeStandard, DateTimeProlepticGregorian, DateTime360Day
     using Dates: DateTime, Date
     @test Wflow.cftime("2006-01-02T15:04:05", "standard") ==
@@ -191,7 +191,7 @@ end
     @test Wflow.cftime(Date("2006-01-02"), "360_day") == DateTime360Day(2006, 1, 2)
 end
 
-@testitem "timecycles" begin
+@testitem "unit: timecycles" begin
     using Dates: Date, Day, monthday
     @test Wflow.timecycles([Date(2020, 4, 21), Date(2020, 10, 21)]) == [(4, 21), (10, 21)]
     @test_throws ErrorException Wflow.timecycles([Date(2020, 4, 21), Date(2021, 10, 21)])
@@ -209,7 +209,7 @@ end
     @test !Wflow.monthday_passed((1, 1), (2, 2))  # day and month before
 end
 
-@testitem "reducer" begin
+@testitem "unit: reducer" begin
     V = [6, 5, 4, 1]
     @test Wflow.function_map[Wflow.ReducerType.maximum](V) == 6
     @test Wflow.function_map[Wflow.ReducerType.minimum](V) == 1
@@ -229,7 +229,7 @@ end
     @test "soil_water_saturated_zone__depth" in required_states
     @test "soil_layer_water_unsaturated_zone__depth" in required_states
     @test "vegetation_canopy_water__depth" in required_states
-    @test "subsurface_water__volume_flow_rate" in required_states
+    @test "subsurface_water__instantaneous_volume_flow_rate" in required_states
     @test "river_water__instantaneous_volume_flow_rate" in required_states
     @test "reservoir_water_surface__elevation" in required_states
     @test "snowpack_liquid_water__depth" in required_states
@@ -265,6 +265,7 @@ end
 
 @testitem "Model initialization" begin
     using NCDatasets: dimnames
+    using Wflow: get_field_in_model, get_metadata
 
     tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     config = Wflow.Config(tomlpath)
@@ -287,45 +288,49 @@ end
     (; clock, reader, writer) = model
 
     @testset "output and state names" begin
+        (; output_dataset) = writer.grid_writer
+        (; output_map) = writer.endstate_writer
         ncdims = ("lon", "lat", "layer", "time")
-        @test dimnames(writer.dataset["ustorelayerdepth"]) == ncdims
-        ncvars = [k for k in keys(writer.dataset) if !in(k, ncdims)]
+        @test dimnames(output_dataset["ustorelayerdepth"]) == ncdims
+        ncvars = [k for k in keys(output_dataset) if !in(k, ncdims)]
         @test "snow" in ncvars
         @test "q_av_river" in ncvars
         @test "q_av_land" in ncvars
-        @test length(writer.state_parameters) == 12
+        @test length(output_map) == 12
     end
 
     @testset "warm states" begin
         (; land) = model
-        nt = Wflow.standard_name_map(model.land)
-        lens = Wflow.get_lens("reservoir_water_surface__elevation", land)
-        @test lens(model)[1] ≈ 3.6172022486284856
-        lens = Wflow.get_lens("soil_water_saturated_zone__depth", land)
-        @test lens(model)[9115] ≈ 477.13548089422125
-        lens = Wflow.get_lens("snowpack_dry_snow__leq_depth", land)
-        @test lens(model)[5] ≈ 11.019233179897599
-        lens = Wflow.get_lens("soil_surface__temperature", land)
-        @test lens(model)[5] ≈ 0.21814478119608938
-        lens = Wflow.get_lens("soil_layer_water_unsaturated_zone__depth", land)
-        @test lens(model)[50063][1] ≈ 9.969116007201725
-        lens = Wflow.get_lens("snowpack_liquid_water__depth", land)
-        @test lens(model)[5] ≈ 0.0
-        lens = Wflow.get_lens("vegetation_canopy_water__depth", land)
-        @test lens(model)[50063] ≈ 0.0
-        lens = Wflow.get_lens("soil_water_saturated_zone__depth", land)
-        @test lens(model)[50063] ≈ 558.8578304603327
-        lens = Wflow.get_lens("subsurface_water__volume_flow_rate", land)
-        @test lens(model)[10606] ≈ 39.972334552895816
-        lens = Wflow.get_lens("river_water__instantaneous_volume_flow_rate", land)
-        @test lens(model)[149] ≈ 53.48673634956338
-        lens = Wflow.get_lens("river_water__depth", land)
-        @test lens(model)[149] ≈ 1.167635369628945
+        nt = Wflow.get_standard_name_map(model.land)
+
+        function test_warm_state(var_name, i, val)
+            A, metadata = get_field_in_model(model, var_name)
+            @test A[i] ≈ val
+        end
+
+        test_warm_state("reservoir_water_surface__elevation", 1, 3.6172022486284856)
+        test_warm_state("soil_water_saturated_zone__depth", 9115, 0.47713548089422125)
+        test_warm_state("snowpack_dry_snow__leq_depth", 5, 0.011019233179897598)
+        test_warm_state("soil_surface__temperature", 5, 273.36814478119607)
+        var_name = "soil_layer_water_unsaturated_zone__depth"
+        (; lens) = Wflow.get_metadata(var_name, land)
+        @test lens(model)[50063][1] ≈ 0.009969116007201725
+        test_warm_state("snowpack_liquid_water__depth", 5, 0.0)
+        test_warm_state("vegetation_canopy_water__depth", 50063, 0.0)
+        test_warm_state("soil_water_saturated_zone__depth", 50063, 0.5588578304603328)
+        test_warm_state(
+            "river_water__instantaneous_volume_flow_rate",
+            149,
+            53.48673634956338,
+        )
+        test_warm_state("river_water__depth", 149, 1.167635369628945)
         @test model.routing.river_flow.variables.storage[149] ≈ 63854.60119358985
-        lens = Wflow.get_lens("land_surface_water__instantaneous_volume_flow_rate", land)
-        @test lens(model)[2075] ≈ 3.285909284322251
-        lens = Wflow.get_lens("land_surface_water__depth", land)
-        @test lens(model)[2075] ≈ 0.052076262033771775
+        test_warm_state(
+            "land_surface_water__instantaneous_volume_flow_rate",
+            2075,
+            3.285909284322251,
+        )
+        test_warm_state("land_surface_water__depth", 2075, 0.052076262033771775)
         @test model.routing.overland_flow.variables.storage[2075] ≈ 29920.754983235012
     end
 
@@ -349,24 +354,49 @@ end
     end
 
     @testset "initial parameter values" begin
-        (; land) = model
-        @test land.snow.parameters.cfmax[1] ≈ 3.7565300464630127
-        @test land.soil.parameters.soilthickness[1] ≈ 2000.0
-        @test land.atmospheric_forcing.precipitation[49951] ≈ 2.2100000381469727
-        @test land.soil.parameters.c[1] ≈
-              [9.152995289601465, 8.919674421902961, 8.70537452585209, 8.690681062890977]
+        (; land, clock) = model
+
+        function test_initial_parameter_value(var_name, i, val; rtol = nothing)
+            A, metadata = Wflow.get_field_in_model(model, var_name)
+            if isnothing(rtol)
+                @test isapprox(A[i], val)
+            else
+                @test isapprox(A[i], val; rtol)
+            end
+        end
+
+        test_initial_parameter_value(
+            "snowpack__degree_day_coefficient",
+            1,
+            4.347835701924783e-8,
+        )
+        test_initial_parameter_value("soil__thickness", 1, 2.0)
+        test_initial_parameter_value(
+            "atmosphere_water__precipitation_volume_flux",
+            49951,
+            2.5578704145219592e-8;
+            rtol = 1e-7,
+        )
+        test_initial_parameter_value(
+            "soil_layer_water__brooks_corey_exponent",
+            1,
+            [9.152995289601465, 8.919674421902961, 8.70537452585209, 8.690681062890977],
+        )
     end
 
     @testset "changing parameter values" begin
         config.input.static["snowpack__degree_day_coefficient"] = 2.0
-        config.input.static["soil__thickness"] = Wflow.InputEntry(;
+        var_name = "soil__thickness"
+        config.input.static[var_name] = Wflow.InputEntry(;
             scale = [3.0],
             offset = [100.0],
             netcdf_variable_name = "SoilThickness",
         )
-        config.input.forcing["atmosphere_water__precipitation_volume_flux"] =
+        var_name = "atmosphere_water__precipitation_volume_flux"
+        config.input.forcing[var_name] =
             Wflow.InputEntry(; scale = [1.5], netcdf_variable_name = "precip")
-        config.input.static["soil_layer_water__brooks_corey_exponent"] = Wflow.InputEntry(;
+        var_name = "soil_layer_water__brooks_corey_exponent"
+        config.input.static[var_name] = Wflow.InputEntry(;
             scale = [2.0, 3.0],
             offset = [0.0, 0.0],
             layer = [1, 3],
@@ -378,10 +408,14 @@ end
         Wflow.load_dynamic_input!(model)
 
         (; land) = model
-        @test land.snow.parameters.cfmax[1] == 2.0
-        @test land.soil.parameters.soilthickness[1] ≈ 2000.0 * 3.0 + 100.0
-        @test land.atmospheric_forcing.precipitation[49951] ≈ 1.5 * 2.2100000381469727
-        @test land.soil.parameters.c[1] ≈ [
+        @test land.snow.parameters.degree_day_factor[1] == 2.3148148148148148e-8
+        @test land.soil.parameters.soil_thickness[1] ≈ 6.1000000000000005
+        @test isapprox(
+            land.atmospheric_forcing.precipitation[49951],
+            3.8368056217829386e-8,
+            rtol = 1e-7,
+        )
+        @test land.soil.parameters.brooks_corey_exponent[1] ≈ [
             2.0 * 9.152995289601465,
             8.919674421902961,
             3.0 * 8.70537452585209,
@@ -395,7 +429,6 @@ end
     using NCDatasets: NCDataset
     using LoggingExtras
     using TOML
-
     @testset "NetCDF creation" begin
         path = Base.Filesystem.tempname()
         _ = Wflow.create_tracked_netcdf(path)
@@ -465,16 +498,24 @@ end
         @test Wflow.convert_value(LogLevel, 0) == Logging.Info
 
         tomlpath = joinpath(@__DIR__, "sbm_simple.toml")
-        Wflow.run(tomlpath; silent = true)
+        config_dict = TOML.parsefile(tomlpath)
+        config_dict["dir_output"] = mktempdir()
 
+        tomlpath_temp = joinpath(@__DIR__, "sbm_simple_temp.toml")
+        open(tomlpath_temp, "w") do io
+            TOML.print(io, config_dict)
+        end
+
+        Wflow.run(tomlpath_temp)
         config = Wflow.Config(tomlpath)
-        output = normpath(abspath(abspath(config.dir_output)))
-        toml_archive = Wflow.output_path(config, "sbm_simple.toml")
+        config.dir_output = config_dict["dir_output"]
+        toml_archive = Wflow.output_path(config, "sbm_simple_temp.toml")
         path_log = Wflow.output_path(config, "log.txt")
         @test isfile(toml_archive)
         @test isfile(path_log)
+        rm(tomlpath_temp)
         lines = readlines(path_log)
-        @test count(startswith(line, "[ Info: ") for line in lines) > 50
+        @test count(startswith(line, "[ Info: ") for line in lines) == 65
         @test count(startswith(line, "┌ Debug: ") for line in lines) == 0
 
         # Another run with debug log level and a non-default path_log.
