@@ -28,7 +28,7 @@ function LandSurfaceTemperatureModel(n::Int)
     return lst_model
 end
 
-"Update land surface temperarure model for a single timestep."
+"Update land surface temperature model for a single timestep."
 function update_land_surface_temperature!(
     land_surface_temperature_model::LandSurfaceTemperatureModel,
     soil_model::SbmSoilModel,
