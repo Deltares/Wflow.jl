@@ -520,30 +520,30 @@ end
         # flow area and wetted perimeter based on hf
         h = 0.5
         i1, i2 = Wflow.interpolation_indices(h, fp.depth)
-        @test Wflow.flow_area(fp.width[i2, 3], fp.a[i1, 3], fp.depth[i1], h) ≈
+        @test Wflow.compute_flow_area(fp.width[i2, 3], fp.a[i1, 3], fp.depth[i1], h) ≈
               49.64308797127469
         @test Wflow.wetted_perimeter(fp.p[i1, 3], fp.depth[i1], h) ≈ 70.28617594254938
         h = 1.5
         i1, i2 = Wflow.interpolation_indices(h, fp.depth)
-        @test Wflow.flow_area(fp.width[i2, 3], fp.a[i1, 3], fp.depth[i1], h) ≈
+        @test Wflow.compute_flow_area(fp.width[i2, 3], fp.a[i1, 3], fp.depth[i1], h) ≈
               182.032315978456
         @test Wflow.wetted_perimeter(fp.p[i1, 3], fp.depth[i1], h) ≈ 118.62585278276481
         h = 1.7
         i1, i2 = Wflow.interpolation_indices(h, fp.depth)
-        @test Wflow.flow_area(fp.width[i2, 3], fp.a[i1, 3], fp.depth[i1], h) ≈
+        @test Wflow.compute_flow_area(fp.width[i2, 3], fp.a[i1, 3], fp.depth[i1], h) ≈
               228.36739676840216
         @test Wflow.wetted_perimeter(fp.p[i1, 3], fp.depth[i1], h) ≈ 119.02585278276482
         h = 3.2
         i1, i2 = Wflow.interpolation_indices(h, fp.depth)
-        @test Wflow.flow_area(fp.width[i2, 3], fp.a[i1, 3], fp.depth[i1], h) ≈
+        @test Wflow.compute_flow_area(fp.width[i2, 3], fp.a[i1, 3], fp.depth[i1], h) ≈
               695.0377019748654
         @test Wflow.wetted_perimeter(fp.p[i1, 3], fp.depth[i1], h) ≈ 307.3730700179533
         h = 4.0
         i1, i2 = Wflow.interpolation_indices(h, fp.depth)
-        @test Wflow.flow_area(fp.width[i2, 3], fp.a[i1, 3], fp.depth[i1], h) ≈
+        @test Wflow.compute_flow_area(fp.width[i2, 3], fp.a[i1, 3], fp.depth[i1], h) ≈
               959.816157989228
         @test Wflow.wetted_perimeter(fp.p[i1, 3], fp.depth[i1], h) ≈ 308.9730700179533
-        @test Wflow.flow_area(fp.width[i2, 4], fp.a[i1, 4], fp.depth[i1], h) ≈
+        @test Wflow.compute_flow_area(fp.width[i2, 4], fp.a[i1, 4], fp.depth[i1], h) ≈
               407.6395313908081
         @test Wflow.wetted_perimeter(fp.p[i1, 4], fp.depth[i1], h) ≈ 90.11775307900271
     end

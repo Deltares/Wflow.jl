@@ -248,8 +248,6 @@ end
         zs_src = zeros(_ne),
         zs_dst = zeros(_ne),
         hf = zeros(_ne),
-        a = zeros(_ne),
-        r = zeros(_ne),
         storage = fill(0.0, n),
         error = zeros(n),
     )
