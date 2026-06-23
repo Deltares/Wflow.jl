@@ -1,7 +1,7 @@
 name = "wflow_cli"
 uuid = "a79039df-c2cc-429a-a63c-52bf37dce6b3"
-authors = ["Deltares"]
 version = "0.1.0"
+authors = ["Deltares"]
 
 [deps]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
@@ -13,4 +13,4 @@ Wflow = {path = "../../Wflow"}
 
 [compat]
 TestItemRunner = "1.1.0"
-julia = "1.10 - 1.11"
+julia = "1.10"
