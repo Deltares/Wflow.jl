@@ -946,11 +946,11 @@
     ]
   },
   {
-    "objectID": "changelog.html#v1.0.3---2026-06-22",
-    "href": "changelog.html#v1.0.3---2026-06-22",
+    "objectID": "changelog.html#v1.0.3---2026-06-23",
+    "href": "changelog.html#v1.0.3---2026-06-23",
     "title": "Changelog",
-    "section": "v1.0.3 - 2026-06-22",
-    "text": "v1.0.3 - 2026-06-22\n\nFixed\n\nFix unit external inflow for local inertial river (1D) and land (2D) routing. For the computation of available river volume (to limit negative external inflow) the bankfull_depth was assigned to this volume, this should be bankfull_storage.\nMaximum subsurface flow was not adjusted for sub-daily timestep for layered and layered_exponential profiles.\nFix deriving active indices for output variable to_river. Also, the mapping of standard name (or model path) to active indices is now more strict (comparing prefix of these strings instead of substring matching).\nFix waterlevel unit (from [m] to [mm]) in rainfall erosion computation of rainfall erosion model EUROSEM. With the wrong unit ([m]) the rainfall impact reduction when the soil is covered by water was underestimated.\nRemoved a conversion factor of 0.001 used for the computation of total kinetic energy as part of rainfall erosion model EUROSEM, as it is not required based on the units.",
+    "section": "v1.0.3 - 2026-06-23",
+    "text": "v1.0.3 - 2026-06-23\n\nFixed\n\nFix unit external inflow for local inertial river (1D) and land (2D) routing. For the computation of available river volume (to limit negative external inflow) the bankfull_depth was assigned to this volume, this should be bankfull_storage.\nMaximum subsurface flow was not adjusted for sub-daily timestep for layered and layered_exponential profiles.\nFix deriving active indices for output variable to_river. Also, the mapping of standard name (or model path) to active indices is now more strict (comparing prefix of these strings instead of substring matching).\nFix waterlevel unit (from [m] to [mm]) in rainfall erosion computation of rainfall erosion model EUROSEM. With the wrong unit ([m]) the rainfall impact reduction when the soil is covered by water was underestimated.\nRemoved a conversion factor of 0.001 used for the computation of total kinetic energy as part of rainfall erosion model EUROSEM, as it is not required based on the units.",
     "crumbs": [
       "Home",
       "Changelog"
