@@ -42,6 +42,13 @@ const mover_params = (
     "land_surface_water__potential_evaporation_volume_flux",
 )
 
+# Map domain name to regular expression for matching with standard name or model path
+const domain_parameter_map = Dict{String, Regex}(
+    "reservoir" => r"reservoir|routing.river_flow.boundary_conditions.reservoir",
+    "river" => r"river|floodplain|routing.river_flow",
+    "drain" => r"land_drain|routing.subsurface_flow.boundaries.drain",
+)
+
 function routing_with_reservoirs(model)
     (; config) = model
     return config.model.reservoir__flag
@@ -675,34 +682,16 @@ end
 
 function get_reducer_func(col, domain, args...)
     (; parameter) = col
-    if occursin("reservoir", parameter)
-        reducer_func = reducer(
-            col,
-            domain.reservoir.network.reverse_indices,
-            domain.land.network.indices,
-            args...,
-        )
-    elseif occursin("river", parameter)
-        reducer_func = reducer(
-            col,
-            domain.river.network.reverse_indices,
-            domain.land.network.indices,
-            args...,
-        )
-    elseif occursin("drain", parameter)
-        reducer_func = reducer(
-            col,
-            domain.drain.network.reverse_indices,
-            domain.land.network.indices,
-            args...,
-        )
+    (; indices) = domain.land.network
+    if startswith(parameter, domain_parameter_map["reservoir"])
+        reducer_func =
+            reducer(col, domain.reservoir.network.reverse_indices, indices, args...)
+    elseif startswith(parameter, domain_parameter_map["river"])
+        reducer_func = reducer(col, domain.river.network.reverse_indices, indices, args...)
+    elseif startswith(parameter, domain_parameter_map["drain"])
+        reducer_func = reducer(col, domain.drain.network.reverse_indices, indices, args...)
     else
-        reducer_func = reducer(
-            col,
-            domain.land.network.reverse_indices,
-            domain.land.network.indices,
-            args...,
-        )
+        reducer_func = reducer(col, domain.land.network.reverse_indices, indices, args...)
     end
 end
 

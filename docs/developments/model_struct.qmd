@@ -7,12 +7,23 @@ such as the domain and shared parameters, routing concepts, land model, clock, m
 configuration and input and output.
 
 ```julia
-struct Model{R <: Routing, L <: AbstractLandModel, T <: AbstractModelType} <:
-       AbstractModel{T}
+"""
+    Model{R <: Routing, L <: AbstractLandModel, M <: AbstractMassBalance, T <: AbstractModelType} <: AbstractModel{T}
+
+Composite type that represents all different aspects of a Wflow Model, such as the network,
+parameters, clock, configuration and input and output.
+"""
+struct Model{
+    R <: Routing,
+    L <: AbstractLandModel,
+    M <: AbstractMassBalance,
+    T <: AbstractModelType,
+} <: AbstractModel{T}
     config::Config                  # all configuration options
     domain::Domain                  # domain connectivity (network) and shared parameters
     routing::R                      # routing model (horizontal fluxes), moves along network
     land::L                         # land model simulating vertical fluxes, independent of each other
+    mass_balance::M                 # mass balance error
     clock::Clock                    # to keep track of simulation time
     reader::NCReader                # provides the model with dynamic input
     writer::Writer                  # writes model output
@@ -28,4 +39,5 @@ flow domains. For example, the wflow\_sbm model with default configuration conta
 kinematic wave routing concept for river, overland and lateral subsurface flow. The `land`
 field of the `struct Model` represents a land model, simulating vertical fluxes, for example
 soil erosion as part of the `sediment` model type and snow melt as part of the `sbm` model
-type.
+type. Finally, the `mass_balance` field contains water mass balance computations (error and
+relative error).
