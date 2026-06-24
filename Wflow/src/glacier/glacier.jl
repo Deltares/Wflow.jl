@@ -137,15 +137,15 @@ function update_glacier_model!(
 
     n = length(temperature)
 
-    threaded_foreach(1:n; basesize = 1000) do i
-        snow_storage[i], _, glacier_store[i], glacier_melt[i] = glacier_hbv(
-            glacier_fraction[i],
-            glacier_store[i],
-            snow_storage[i],
-            temperature[i],
-            temperature_threshold_melt[i],
-            degree_day_factor[i],
-            snow_to_ice_fraction[i],
+    threaded_foreach(1:n; basesize = 1000) do idx
+        snow_storage[idx], _, glacier_store[idx], glacier_melt[idx] = glacier_hbv(
+            glacier_fraction[idx],
+            glacier_store[idx],
+            snow_storage[idx],
+            temperature[idx],
+            temperature_threshold_melt[idx],
+            degree_day_factor[idx],
+            snow_to_ice_fraction[idx],
             maximum_snow_to_ice_rate,
             dt,
         )

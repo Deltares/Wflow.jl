@@ -106,17 +106,17 @@ function update_transport_capacity_model!(
     (; slope, flow_width, reservoir_coverage, river_location) = parameters
 
     n = length(q)
-    threaded_foreach(1:n; basesize = 1000) do i
-        sediment_transport_capacity[i] = transport_capacity_govers(
-            q[i],
-            waterlevel[i],
-            c_govers[i],
-            n_govers[i],
-            density[i],
-            slope[i],
-            flow_width[i],
-            reservoir_coverage[i],
-            river_location[i],
+    threaded_foreach(1:n; basesize = 1000) do idx
+        sediment_transport_capacity[idx] = transport_capacity_govers(
+            q[idx],
+            waterlevel[idx],
+            c_govers[idx],
+            n_govers[idx],
+            density[idx],
+            slope[idx],
+            flow_width[idx],
+            reservoir_coverage[idx],
+            river_location[idx],
             dt,
         )
     end
@@ -184,16 +184,16 @@ function update_transport_capacity_model!(
     (; slope, flow_width, reservoir_coverage, river_location) = parameters
 
     n = length(q)
-    threaded_foreach(1:n; basesize = 1000) do i
-        sediment_transport_capacity[i] = transport_capacity_yalin(
-            q[i],
-            waterlevel[i],
-            density[i],
-            d50[i],
-            slope[i],
-            flow_width[i],
-            reservoir_coverage[i],
-            river_location[i],
+    threaded_foreach(1:n; basesize = 1000) do idx
+        sediment_transport_capacity[idx] = transport_capacity_yalin(
+            q[idx],
+            waterlevel[idx],
+            density[idx],
+            d50[idx],
+            slope[idx],
+            flow_width[idx],
+            reservoir_coverage[idx],
+            river_location[idx],
             dt,
         )
     end
@@ -315,79 +315,83 @@ function update_transport_capacity_model!(
     (; slope, flow_width, river_location, reservoir_coverage) = parameters
 
     n = length(q)
-    threaded_foreach(1:n; basesize = 1000) do i
+    threaded_foreach(1:n; basesize = 1000) do idx
         dtot = transportability_yalin_differentiation(
-            waterlevel[i],
-            density[i],
-            median_diameter_clay[i],
-            median_diameter_silt[i],
-            median_diameter_sand[i],
-            median_diameter_small_aggregates[i],
-            median_diameter_large_aggregates[i],
-            slope[i],
+            waterlevel[idx],
+            density[idx],
+            median_diameter_clay[idx],
+            median_diameter_silt[idx],
+            median_diameter_sand[idx],
+            median_diameter_small_aggregates[idx],
+            median_diameter_large_aggregates[idx],
+            slope[idx],
         )
-        clay[i] = transport_capacity_yalin_differentiation(
-            q[i],
-            waterlevel[i],
-            density[i],
-            median_diameter_clay[i],
-            slope[i],
-            flow_width[i],
-            reservoir_coverage[i],
-            river_location[i],
+        clay[idx] = transport_capacity_yalin_differentiation(
+            q[idx],
+            waterlevel[idx],
+            density[idx],
+            median_diameter_clay[idx],
+            slope[idx],
+            flow_width[idx],
+            reservoir_coverage[idx],
+            river_location[idx],
             dtot,
             dt,
         )
-        silt[i] = transport_capacity_yalin_differentiation(
-            q[i],
-            waterlevel[i],
-            density[i],
-            median_diameter_silt[i],
-            slope[i],
-            flow_width[i],
-            reservoir_coverage[i],
-            river_location[i],
+        silt[idx] = transport_capacity_yalin_differentiation(
+            q[idx],
+            waterlevel[idx],
+            density[idx],
+            median_diameter_silt[idx],
+            slope[idx],
+            flow_width[idx],
+            reservoir_coverage[idx],
+            river_location[idx],
             dtot,
             dt,
         )
-        sand[i] = transport_capacity_yalin_differentiation(
-            q[i],
-            waterlevel[i],
-            density[i],
-            median_diameter_sand[i],
-            slope[i],
-            flow_width[i],
-            reservoir_coverage[i],
-            river_location[i],
+        sand[idx] = transport_capacity_yalin_differentiation(
+            q[idx],
+            waterlevel[idx],
+            density[idx],
+            median_diameter_sand[idx],
+            slope[idx],
+            flow_width[idx],
+            reservoir_coverage[idx],
+            river_location[idx],
             dtot,
             dt,
         )
-        small_aggregates[i] = transport_capacity_yalin_differentiation(
-            q[i],
-            waterlevel[i],
-            density[i],
-            median_diameter_small_aggregates[i],
-            slope[i],
-            flow_width[i],
-            reservoir_coverage[i],
-            river_location[i],
+        small_aggregates[idx] = transport_capacity_yalin_differentiation(
+            q[idx],
+            waterlevel[idx],
+            density[idx],
+            median_diameter_small_aggregates[idx],
+            slope[idx],
+            flow_width[idx],
+            reservoir_coverage[idx],
+            river_location[idx],
             dtot,
             dt,
         )
-        large_aggregates[i] = transport_capacity_yalin_differentiation(
-            q[i],
-            waterlevel[i],
-            density[i],
-            median_diameter_large_aggregates[i],
-            slope[i],
-            flow_width[i],
-            reservoir_coverage[i],
-            river_location[i],
+        large_aggregates[idx] = transport_capacity_yalin_differentiation(
+            q[idx],
+            waterlevel[idx],
+            density[idx],
+            median_diameter_large_aggregates[idx],
+            slope[idx],
+            flow_width[idx],
+            reservoir_coverage[idx],
+            river_location[idx],
             dtot,
             dt,
         )
-        sediment_transport_capacity[i] =
-            clay[i] + silt[i] + sand[i] + small_aggregates[i] + large_aggregates[i]
+        sediment_transport_capacity[idx] =
+            clay[idx] +
+            silt[idx] +
+            sand[idx] +
+            small_aggregates[idx] +
+            large_aggregates[idx]
     end
 end
 
@@ -484,17 +488,17 @@ function update_transport_capacity_model!(
     (; c_bagnold, e_bagnold) = transport_capacity_model.parameters
     (; sediment_transport_capacity) = transport_capacity_model.variables
 
-    n = length(q)
+    n_river = length(q)
     # Note: slope is not used here but this allows for a consistent interface of update! functions
     # Only Bagnold does not use it
-    threaded_foreach(1:n; basesize = 1000) do i
-        sediment_transport_capacity[i] = transport_capacity_bagnold(
-            q[i],
-            waterlevel[i],
-            c_bagnold[i],
-            e_bagnold[i],
-            parameters.flow_width[i],
-            parameters.flow_length[i],
+    threaded_foreach(1:n_river; basesize = 1000) do river_idx
+        sediment_transport_capacity[river_idx] = transport_capacity_bagnold(
+            q[river_idx],
+            waterlevel[river_idx],
+            c_bagnold[river_idx],
+            e_bagnold[river_idx],
+            parameters.flow_width[river_idx],
+            parameters.flow_length[river_idx],
             dt,
         )
     end
@@ -530,16 +534,16 @@ function update_transport_capacity_model!(
     (; density, d50) = transport_capacity_model.parameters
     (; sediment_transport_capacity) = transport_capacity_model.variables
 
-    n = length(q)
-    threaded_foreach(1:n; basesize = 1000) do i
-        sediment_transport_capacity[i] = transport_capacity_engelund(
-            q[i],
-            waterlevel[i],
-            density[i],
-            d50[i],
-            parameters.flow_width[i],
-            parameters.flow_length[i],
-            parameters.slope[i],
+    n_river = length(q)
+    threaded_foreach(1:n_river; basesize = 1000) do river_idx
+        sediment_transport_capacity[river_idx] = transport_capacity_engelund(
+            q[river_idx],
+            waterlevel[river_idx],
+            density[river_idx],
+            d50[river_idx],
+            parameters.flow_width[river_idx],
+            parameters.flow_length[river_idx],
+            parameters.slope[river_idx],
             dt,
         )
     end
@@ -628,18 +632,18 @@ function update_transport_capacity_model!(
     (; a_kodatie, b_kodatie, c_kodatie, d_kodatie) = transport_capacity_model.parameters
     (; sediment_transport_capacity) = transport_capacity_model.variables
 
-    n = length(q)
-    threaded_foreach(1:n; basesize = 1000) do i
-        sediment_transport_capacity[i] = transport_capacity_kodatie(
-            q[i],
-            waterlevel[i],
-            a_kodatie[i],
-            b_kodatie[i],
-            c_kodatie[i],
-            d_kodatie[i],
-            parameters.flow_width[i],
-            parameters.flow_length[i],
-            parameters.slope[i],
+    n_river = length(q)
+    threaded_foreach(1:n_river; basesize = 1000) do river_idx
+        sediment_transport_capacity[river_idx] = transport_capacity_kodatie(
+            q[river_idx],
+            waterlevel[river_idx],
+            a_kodatie[river_idx],
+            b_kodatie[river_idx],
+            c_kodatie[river_idx],
+            d_kodatie[river_idx],
+            parameters.flow_width[river_idx],
+            parameters.flow_length[river_idx],
+            parameters.slope[river_idx],
             dt,
         )
     end
@@ -675,16 +679,16 @@ function update_transport_capacity_model!(
     (; density, d50) = transport_capacity_model.parameters
     (; sediment_transport_capacity) = transport_capacity_model.variables
 
-    n = length(q)
-    threaded_foreach(1:n; basesize = 1000) do i
-        sediment_transport_capacity[i] = transport_capacity_yang(
-            q[i],
-            waterlevel[i],
-            density[i],
-            d50[i],
-            parameters.flow_width[i],
-            parameters.flow_length[i],
-            parameters.slope[i],
+    n_river = length(q)
+    threaded_foreach(1:n_river; basesize = 1000) do river_idx
+        sediment_transport_capacity[river_idx] = transport_capacity_yang(
+            q[river_idx],
+            waterlevel[river_idx],
+            density[river_idx],
+            d50[river_idx],
+            parameters.flow_width[river_idx],
+            parameters.flow_length[river_idx],
+            parameters.slope[river_idx],
             dt,
         )
     end
@@ -720,16 +724,16 @@ function update_transport_capacity_model!(
     (; density, d50) = transport_capacity_model.parameters
     (; sediment_transport_capacity) = transport_capacity_model.variables
 
-    n = length(q)
-    threaded_foreach(1:n; basesize = 1000) do i
-        sediment_transport_capacity[i] = transport_capacity_molinas(
-            q[i],
-            waterlevel[i],
-            density[i],
-            d50[i],
-            parameters.flow_width[i],
-            parameters.flow_length[i],
-            parameters.slope[i],
+    n_river = length(q)
+    threaded_foreach(1:n_river; basesize = 1000) do river_idx
+        sediment_transport_capacity[river_idx] = transport_capacity_molinas(
+            q[river_idx],
+            waterlevel[river_idx],
+            density[river_idx],
+            d50[river_idx],
+            parameters.flow_width[river_idx],
+            parameters.flow_length[river_idx],
+            parameters.slope[river_idx],
             dt,
         )
     end

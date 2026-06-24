@@ -128,17 +128,17 @@ function update_rainfall_erosion_model!(
     (; soil_erosion_rate) = rainfall_erosion_model.variables
 
     n = length(precipitation)
-    threaded_foreach(1:n; basesize = 1000) do i
-        soil_erosion_rate[i] = rainfall_erosion_eurosem(
-            precipitation[i],
-            interception[i],
-            waterlevel[i],
-            soil_detachability[i],
-            eurosem_exponent[i],
-            canopy_height[i],
-            canopy_gap_fraction[i],
-            soilcover_fraction[i],
-            parameters.area[i],
+    threaded_foreach(1:n; basesize = 1000) do idx
+        soil_erosion_rate[idx] = rainfall_erosion_eurosem(
+            precipitation[idx],
+            interception[idx],
+            waterlevel[idx],
+            soil_detachability[idx],
+            eurosem_exponent[idx],
+            canopy_height[idx],
+            canopy_gap_fraction[idx],
+            soilcover_fraction[idx],
+            parameters.area[idx],
             dt,
         )
     end
@@ -225,13 +225,13 @@ function update_rainfall_erosion_model!(
     (; soil_erosion_rate) = rainfall_erosion_model.variables
 
     n = length(precipitation)
-    threaded_foreach(1:n; basesize = 1000) do i
-        soil_erosion_rate[i] = rainfall_erosion_answers(
-            precipitation[i],
-            usle_k[i],
-            usle_c[i],
-            answers_rainfall_factor[i],
-            parameters.area[i],
+    threaded_foreach(1:n; basesize = 1000) do idx
+        soil_erosion_rate[idx] = rainfall_erosion_answers(
+            precipitation[idx],
+            usle_k[idx],
+            usle_c[idx],
+            answers_rainfall_factor[idx],
+            parameters.area[idx],
         )
     end
 end

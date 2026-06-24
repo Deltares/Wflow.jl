@@ -73,7 +73,6 @@ end
     soil_model = init_sbm_soil_model(
         n,
         N;
-        n,
         unsaturated_layer_thickness = [
             SVector((0.05, 0.005081648613929929, NaN, NaN, NaN, NaN)),
         ],

@@ -844,9 +844,9 @@ function write_netcdf_timestep(model::AbstractModel, writer::NCWriter{<:NCDatase
                 output_dataset[name][:, time_index] .= v
             else
                 nlayer = length(first(A))
-                for i in 1:nlayer
+                for layer_idx in 1:nlayer
                     v = from_SI(reducer_(getindex.(A, layer)), unit; dt_val)
-                    output_dataset[name][:, i, time_index] .= v
+                    output_dataset[name][:, layer_idx, time_index] .= v
                 end
             end
         else
@@ -879,12 +879,12 @@ function write_netcdf_timestep(model::AbstractModel, writer::NCWriter{<:NCDatase
             output_dataset[key][:, :, time_index] = buffer
         elseif elemtype <: SVector
             nlayer = length(first(vector))
-            for i in 1:nlayer
+            for layer_idx in 1:nlayer
                 # ensure no other information is written
                 fill!(buffer, missing)
-                buffer[sel] .= getindex.(vector, i)
+                buffer[sel] .= getindex.(vector, layer_idx)
                 from_SI!(buffer, unit)
-                output_dataset[key][:, :, i, time_index] = buffer
+                output_dataset[key][:, :, layer_idx, time_index] = buffer
             end
         else
             error("Unsupported output type: ", elemtype)
@@ -1016,12 +1016,12 @@ function reducer(col, rev_inds, indices, x_nc, y_nc, config, dataset)
         ids = unique(skipmissing(map_1d))
         inds = Dict{Int, Vector{Int}}(id => Vector{Int}() for id in ids)
 
-        for i in eachindex(map_1d)
-            v = map_1d[i]
+        for idx in eachindex(map_1d)
+            v = map_1d[idx]
             ismissing(v) && continue
             v::Int
             # translate from land-domain position -> target-domain position
-            ind = rev_inds[indices[i]]
+            ind = rev_inds[indices[idx]]
             if iszero(ind)
                 error("""inactive cell found in requested scalar output
                     map `$map` value $v for parameter $param""")

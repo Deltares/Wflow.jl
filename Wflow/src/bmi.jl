@@ -283,7 +283,7 @@ function BMI.get_grid_x(model::Model, grid::Int, x::Vector{Float64})
     (; reader, domain) = model
     (; dataset) = reader
     sel = active_indices(domain, GRIDS[grid])
-    inds = [sel[i][1] for i in eachindex(sel)]
+    inds = [sel[idx][1] for idx in eachindex(sel)]
     x_nc = read_x_axis(dataset)
     x .= x_nc[inds]
     return x
@@ -293,7 +293,7 @@ function BMI.get_grid_y(model::Model, grid::Int, y::Vector{Float64})
     (; reader, domain) = model
     (; dataset) = reader
     sel = active_indices(domain, GRIDS[grid])
-    inds = [sel[i][2] for i in eachindex(sel)]
+    inds = [sel[idx][2] for idx in eachindex(sel)]
     y_nc = read_y_axis(dataset)
     y .= y_nc[inds]
     return y

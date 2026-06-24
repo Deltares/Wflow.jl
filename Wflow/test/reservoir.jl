@@ -3,9 +3,9 @@
     include("testing_utils.jl")
     dt = 86400.0
     # Simple reservoir (outflow_curve_type = 4)
-    n = 1
+    n_reservoirs = 1
     res_bc = Wflow.ReservoirBC(;
-        n,
+        n_reservoirs,
         precipitation = [4.861111111111111e-8],
         evaporation = [1.736111111111111e-8],
     )
@@ -61,10 +61,10 @@ end
     using Wflow: ReservoirProfileType, ReservoirOutflowType
     include("testing_utils.jl")
     # ReservoirModel Modified Puls approach (outflow_curve_type = 3)
-    n = 1
+    n_reservoirs = 1
     dt = 86400.0
     res_bc = Wflow.ReservoirBC(;
-        n,
+        n_reservoirs,
         precipitation = [2.3148148148148148e-7],
         evaporation = [3.7037037037037036e-8],
     )
@@ -120,10 +120,10 @@ end
 
     dt = 86400.0
 
-    n = 1
+    n_reservoirs = 1
     reservoir = Wflow.ReservoirModel(;
         boundary_conditions = Wflow.ReservoirBC(;
-            n,
+            n_reservoirs,
             external_inflow = [-1.0],
             inflow_overland = [0.02],
             inflow_subsurface = [0.04],
@@ -171,10 +171,10 @@ end
 
     dt = 86400.0
 
-    n = 1
+    n_reservoirs = 1
     reservoir_model = Wflow.ReservoirModel(;
         boundary_conditions = Wflow.ReservoirBC(;
-            n,
+            n_reservoirs,
             external_inflow = [-1.0],
             inflow_overland = [0.0],
             inflow_subsurface = [0.00041241066945499203],
@@ -266,7 +266,7 @@ end
     )
     n = 2
     res_bc = Wflow.ReservoirBC(;
-        n = 2,
+        n_reservoirs = 2,
         precipitation = [1.1574074074074074e-7, 1.1574074074074074e-7],
         evaporation = [2.3148148148148148e-8, 2.3148148148148148e-8],
     )
@@ -301,10 +301,10 @@ end
     include("testing_utils.jl")
     using Wflow: ReservoirProfileType, ReservoirOutflowType
     datadir = joinpath(@__DIR__, "data")
-    n = 1
+    n_reservoirs = 1
     dt = 86400.0
     res_bc = Wflow.ReservoirBC(;
-        n,
+        n_reservoirs,
         precipitation = [1.1574074074074074e-7],
         evaporation = [2.3148148148148148e-8],
     )

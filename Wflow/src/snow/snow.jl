@@ -151,27 +151,30 @@ function update_snow_model!(
     ) = snow_model.parameters
 
     n = length(temperature)
-    threaded_foreach(1:n; basesize = 1000) do i
-        snow_precip[i], liquid_precip[i] = precipitation_hbv(
-            effective_precip[i],
-            temperature[i],
-            temperature_interval_snowfall[i],
-            temperature_threshold_snowfall[i],
+    threaded_foreach(1:n; basesize = 1000) do idx
+        snow_precip[idx], liquid_precip[idx] = precipitation_hbv(
+            effective_precip[idx],
+            temperature[idx],
+            temperature_interval_snowfall[idx],
+            temperature_threshold_snowfall[idx],
         )
     end
-    threaded_foreach(1:n; basesize = 1000) do i
-        snow_storage[i], snow_water[i], snow_water_equivalent[i], snow_melt[i], runoff[i] =
-            snowpack_hbv(
-                snow_storage[i],
-                snow_water[i],
-                snow_precip[i],
-                liquid_precip[i],
-                temperature[i],
-                temperature_threshold_melt[i],
-                degree_day_factor[i],
-                water_holding_capacity[i],
-                dt,
-            )
+    threaded_foreach(1:n; basesize = 1000) do idx
+        snow_storage[idx],
+        snow_water[idx],
+        snow_water_equivalent[idx],
+        snow_melt[idx],
+        runoff[idx] = snowpack_hbv(
+            snow_storage[idx],
+            snow_water[idx],
+            snow_precip[idx],
+            liquid_precip[idx],
+            temperature[idx],
+            temperature_threshold_melt[idx],
+            degree_day_factor[idx],
+            water_holding_capacity[idx],
+            dt,
+        )
     end
     return nothing
 end

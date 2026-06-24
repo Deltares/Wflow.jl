@@ -180,7 +180,7 @@ function ConstantHead(
         sel = indices,
     )
     n = length(indices)
-    index_constanthead = filter(i -> !isequal(constanthead[i], MISSING_VALUE), 1:n)
+    index_constanthead = filter(idx -> !isequal(constanthead[idx], MISSING_VALUE), 1:n)
     head = constanthead[index_constanthead]
     variables = ConstantHeadVariables(head)
     constant_head = ConstantHead(; variables, index = index_constanthead)
@@ -247,7 +247,7 @@ function GroundwaterFlowModel(
     (; indices, reverse_indices) = land.network
     (; x_length, y_length, area) = land.parameters
 
-    n_cells = length(indices)
+    n = length(indices)
 
     elevation = ncread(dataset, config, "land_surface__elevation", Routing; sel = indices)
 
@@ -320,7 +320,7 @@ function GroundwaterFlowModel(
     gwf_river_model = GwfRiverModel(dataset, config, river.network.indices)
 
     # recharge boundary of unconfined aquifer
-    recharge_model = RechargeModel(; n = n_cells)
+    recharge_model = RechargeModel(; n)
 
     # drain boundary of unconfined aquifer (optional)
     if config.model.drain__flag
@@ -417,12 +417,12 @@ function initialize_conductance!(
     variables::GroundwaterFlowVariables,
     connectivity::Connectivity,
 )
-    for i in 1:(connectivity.ncell)
+    for idx in 1:(connectivity.ncell)
         # Loop over connections for cell j
-        for nzi in connections(connectivity, i)
+        for nzi in connections(connectivity, idx)
             j = connectivity.rowval[nzi]
             variables.conductance[nzi] =
-                horizontal_conductance(i, j, nzi, parameters, connectivity)
+                horizontal_conductance(idx, j, nzi, parameters, connectivity)
         end
     end
 end
@@ -511,19 +511,19 @@ function flux!(
     conductivity_profile::GwfConductivityProfileType.T,
     dt::Float64,
 )
-    for i in 1:(gwf.connectivity.ncell)
+    for idx in 1:(gwf.connectivity.ncell)
         # Loop over connections for cell j
-        for nzi in connections(gwf.connectivity, i)
-            # connection from i -> j
+        for nzi in connections(gwf.connectivity, idx)
+            # connection from idx -> j
             j = gwf.connectivity.rowval[nzi]
-            delta_head = gwf.variables.head[i] - gwf.variables.head[j]
-            cond = conductance(gwf, i, j, nzi, conductivity_profile)
+            delta_head = gwf.variables.head[idx] - gwf.variables.head[j]
+            cond = conductance(gwf, idx, j, nzi, conductivity_profile)
             flow = cond * delta_head
-            gwf.variables.q_net[i] -= flow
+            gwf.variables.q_net[idx] -= flow
             if flow > 0.0
-                gwf.variables.q_cumulative[i] += flow * dt
+                gwf.variables.q_cumulative[idx] += flow * dt
             else
-                gwf.variables.q_in_cumulative[i] -= flow * dt
+                gwf.variables.q_in_cumulative[idx] -= flow * dt
             end
         end
     end
@@ -544,27 +544,28 @@ function stable_timestep(
     alpha_coefficient::Float64,
 )
     dt_min = Inf
-    for i in eachindex(gwf.variables.head)
+    for idx in eachindex(gwf.variables.head)
         if conductivity_profile == GwfConductivityProfileType.exponential
-            water_table_depth = gwf.parameters.top[i] - gwf.variables.head[i]
-            thickness = gwf.parameters.top[i] - gwf.parameters.bottom[i]
+            water_table_depth = gwf.parameters.top[idx] - gwf.variables.head[idx]
+            thickness = gwf.parameters.top[idx] - gwf.parameters.bottom[idx]
             value =
                 (
-                    gwf.parameters.hydraulic_conductivity[i] /
-                    gwf.parameters.hydraulic_conductivity_scale_parameter[i]
+                    gwf.parameters.hydraulic_conductivity[idx] /
+                    gwf.parameters.hydraulic_conductivity_scale_parameter[idx]
                 ) * (
                     exp(
-                        -gwf.parameters.hydraulic_conductivity_scale_parameter[i] *
+                        -gwf.parameters.hydraulic_conductivity_scale_parameter[idx] *
                         water_table_depth,
                     ) - exp(
-                        -gwf.parameters.hydraulic_conductivity_scale_parameter[i] *
+                        -gwf.parameters.hydraulic_conductivity_scale_parameter[idx] *
                         thickness,
                     )
                 )
         elseif conductivity_profile == GwfConductivityProfileType.uniform
-            value = gwf.parameters.hydraulic_conductivity[i] * saturated_thickness(gwf, i)
+            value =
+                gwf.parameters.hydraulic_conductivity[idx] * saturated_thickness(gwf, idx)
         end
-        dt = gwf.parameters.area[i] * storativity(gwf)[i] / value
+        dt = gwf.parameters.area[idx] * storativity(gwf)[idx] / value
         dt_min = dt < dt_min ? dt : dt_min
     end
     return dt_min * alpha_coefficient
@@ -593,11 +594,11 @@ function update_head!(gwf::GroundwaterFlowModel, soil::SbmSoilModel, dt::Float64
     (; head, exfiltwater_cumulative, q_net) = gwf.variables
     (; area, specific_yield) = gwf.parameters
 
-    for i in eachindex(head)
-        net_flux = q_net[i] / area[i]
-        dh, exfilt = water_table_change(soil, net_flux, specific_yield[i], i, dt)
-        head[i] += dh
-        exfiltwater_cumulative[i] += exfilt * dt
+    for idx in eachindex(head)
+        net_flux = q_net[idx] / area[idx]
+        dh, exfilt = water_table_change(soil, net_flux, specific_yield[idx], idx, dt)
+        head[idx] += dh
+        exfiltwater_cumulative[idx] += exfilt * dt
     end
     # Set constant head (dirichlet) boundaries
     gwf.variables.head[gwf.constanthead.index] .= gwf.constanthead.variables.head
@@ -689,8 +690,8 @@ function sum_boundary_fluxes(
         typeof(bc) == exclude && continue
         flux_av_average = bc.variables.flux_average
         indices = get_boundary_index(bc, domain)
-        for (i, index) in enumerate(indices)
-            flux = flux_av_average[i]
+        for (bc_idx, index) in enumerate(indices)
+            flux = flux_av_average[bc_idx]
             if flux > 0.0
                 flux_in[index] += flux
             else

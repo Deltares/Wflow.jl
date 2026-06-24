@@ -144,16 +144,16 @@ function field_capacity(
 )
     theta_fc = 0.0
     total_depth = 0.0
-    for i in 1:n_layers
+    for soil_layer_idx in 1:n_layers
         theta_fc +=
             vwc_brooks_corey(
                 -1.0,
                 air_entry_pressure,
                 theta_s,
                 theta_r,
-                brooks_corey_exponent[i],
-            ) * layer_thickness[i]
-        total_depth += layer_thickness[i]
+                brooks_corey_exponent[soil_layer_idx],
+            ) * layer_thickness[soil_layer_idx]
+        total_depth += layer_thickness[soil_layer_idx]
     end
     return theta_fc / total_depth
 end

@@ -66,31 +66,33 @@ function update_interception_model!(
     n = length(precipitation)
     if !isnothing(leaf_area_index)
         update_canopy_parameters!(interception_model.parameters.vegetation_parameter_set)
-        threaded_foreach(1:n; basesize = 1000) do i
-            canopyfraction = 1.0 - canopy_gap_fraction[i]
-            ewet = canopyfraction * potential_evaporation[i] * crop_coefficient[i]
-            evaporation_to_precipitation_ratio[i] =
-                precipitation[i] > 0.0 ?
+        threaded_foreach(1:n; basesize = 1000) do idx
+            canopyfraction = 1.0 - canopy_gap_fraction[idx]
+            ewet = canopyfraction * potential_evaporation[idx] * crop_coefficient[idx]
+            evaporation_to_precipitation_ratio[idx] =
+                precipitation[idx] > 0.0 ?
                 min(
                     0.25,
                     ewet / max(
                         to_SI(1e-4, MM_PER_DT; dt_val = dt),
-                        canopyfraction * precipitation[i],
+                        canopyfraction * precipitation[idx],
                     ),
                 ) : 0.0
         end
     end
-    threaded_foreach(1:n; basesize = 1000) do i
-        canopy_potevap[i] =
-            crop_coefficient[i] * potential_evaporation[i] * (1.0 - canopy_gap_fraction[i])
-        throughfall[i], interception_rate[i], stemflow[i], canopy_storage[i] =
+    threaded_foreach(1:n; basesize = 1000) do idx
+        canopy_potevap[idx] =
+            crop_coefficient[idx] *
+            potential_evaporation[idx] *
+            (1.0 - canopy_gap_fraction[idx])
+        throughfall[idx], interception_rate[idx], stemflow[idx], canopy_storage[idx] =
             rainfall_interception_gash(
-                maximum_canopy_storage[i],
-                evaporation_to_precipitation_ratio[i],
-                canopy_gap_fraction[i],
-                precipitation[i],
-                canopy_storage[i],
-                canopy_potevap[i],
+                maximum_canopy_storage[idx],
+                evaporation_to_precipitation_ratio[idx],
+                canopy_gap_fraction[idx],
+                precipitation[idx],
+                canopy_storage[idx],
+                canopy_potevap[idx],
                 dt,
             )
     end
@@ -126,17 +128,18 @@ function update_interception_model!(
         update_canopy_parameters!(interception_model.parameters)
     end
     n = length(precipitation)
-    threaded_foreach(1:n; basesize = 1000) do i
-        canopy_potevap[i] =
-            crop_coefficient[i] * potential_evaporation[i] * (1.0 - canopy_gap_fraction[i])
-        throughfall[i], interception_rate[i], stemflow[i], canopy_storage[i] =
+    threaded_foreach(1:n; basesize = 1000) do idx
+        canopy_potevap[idx] =
+            crop_coefficient[idx] *
+            potential_evaporation[idx] *
+            (1.0 - canopy_gap_fraction[idx])
+        throughfall[idx], interception_rate[idx], stemflow[idx], canopy_storage[idx] =
             rainfall_interception_modrut(
-                precipitation[i],
-                canopy_potevap[i],
-                canopy_storage[i],
-                canopy_gap_fraction[i],
-                maximum_canopy_storage[i],
-                dt,
+                precipitation[idx],
+                canopy_potevap[idx],
+                canopy_storage[idx],
+                canopy_gap_fraction[idx],
+                maximum_canopy_storage[idx],
             )
     end
     return nothing
@@ -154,10 +157,11 @@ function update_canopy_parameters!(parameters::VegetationParameters)
     ) = parameters
 
     n = length(leaf_area_index)
-    threaded_foreach(1:n; basesize = 1000) do i
-        maximum_canopy_storage[i] =
-            storage_specific_leaf[i] * leaf_area_index[i] + storage_wood[i]
-        canopy_gap_fraction[i] = exp(-light_extinction_coefficient[i] * leaf_area_index[i])
+    threaded_foreach(1:n; basesize = 1000) do idx
+        maximum_canopy_storage[idx] =
+            storage_specific_leaf[idx] * leaf_area_index[idx] + storage_wood[idx]
+        canopy_gap_fraction[idx] =
+            exp(-light_extinction_coefficient[idx] * leaf_area_index[idx])
     end
     return nothing
 end

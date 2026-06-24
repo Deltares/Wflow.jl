@@ -73,17 +73,17 @@ end
 
 "Struct for storing river flow model boundary conditions"
 @with_kw struct RiverFlowBC{R <: Union{ReservoirModel, Nothing}}
-    n::Int
+    n_river::Int
     # External inflow (abstraction/supply/demand) [m³ s⁻¹]
     external_inflow::Vector{Float64}
     # Lateral inflow [m³ s⁻¹]
-    inwater::Vector{Float64} = zeros(n)
+    inwater::Vector{Float64} = zeros(n_river)
     # Actual cumulative abstraction from external negative inflow [m³]
-    actual_external_abstraction_cumulative::Vector{Float64} = zeros(n)
+    actual_external_abstraction_cumulative::Vector{Float64} = zeros(n_river)
     # Actual average abstraction from external negative inflow [m³ s⁻¹]
-    actual_external_abstraction_average::Vector{Float64} = zeros(n)
+    actual_external_abstraction_average::Vector{Float64} = zeros(n_river)
     # Abstraction (computed as part of water demand and allocation) [m³ s⁻¹]
-    abstraction::Vector{Float64} = zeros(n)
+    abstraction::Vector{Float64} = zeros(n_river)
     # Reservoir model struct of arrays
     reservoir::R
 end
@@ -103,8 +103,8 @@ function RiverFlowBC(
         Routing;
         sel = indices,
     )
-    n = length(indices)
-    bc = RiverFlowBC(; n, external_inflow, reservoir)
+    n_river = length(indices)
+    bc = RiverFlowBC(; n_river, external_inflow, reservoir)
     return bc
 end
 
@@ -127,14 +127,15 @@ function KinWaveRiverFlowModel(
     reservoir::Union{ReservoirModel, Nothing},
 )
     (; indices) = domain.network
-    n = length(indices)
+    n_river = length(indices)
 
-    timestepping = init_kinematic_wave_timestepping(config, n; domain = "river")
+    timestepping = init_kinematic_wave_timestepping(config, n_river; domain = "river")
 
     allocation =
-        do_water_demand(config) ? AllocationRiverModel(; n) : NoAllocationRiverModel(n)
+        do_water_demand(config) ? AllocationRiverModel(; n_river) :
+        NoAllocationRiverModel(n_river)
 
-    variables = FlowVariables(; n)
+    variables = FlowVariables(; n = n_river)
     parameters = RiverFlowParameters(dataset, config, domain)
     boundary_conditions = RiverFlowBC(dataset, config, domain.network, reservoir)
 
@@ -288,22 +289,30 @@ function kinwave_land_update!(
         overland_flow_model.variables
     (; surface_flow_width, flow_length, flow_fraction_to_river) = domain.parameters
 
-    ns = length(order_of_subdomains)
+    n_subdomain_levels = length(order_of_subdomains)
     qin .= 0.0
-    for k in 1:ns
-        threaded_foreach(eachindex(order_of_subdomains[k]); basesize = 1) do i
-            m = order_of_subdomains[k][i]
+    for level_idx in 1:n_subdomain_levels
+        threaded_foreach(
+            eachindex(order_of_subdomains[level_idx]);
+            basesize = 1,
+        ) do subdomain_idx
+            m = order_of_subdomains[level_idx][subdomain_idx]
             for (n, v) in zip(subdomain_indices[m], order_subdomain[m])
                 # for a river cell without a reservoir part of the upstream surface flow
                 # goes to the river (flow_fraction_to_river) and part goes to the surface
                 # flow reservoir (1.0 - flow_fraction_to_river), upstream nodes with a
                 # reservoir are excluded
                 to_river_cumulative[v] +=
-                    sum_at(i -> q[i] * flow_fraction_to_river[i], upstream_nodes[n]) * dt
+                    sum_at(
+                        upstream_idx ->
+                            q[upstream_idx] * flow_fraction_to_river[upstream_idx],
+                        upstream_nodes[n],
+                    ) * dt
 
                 if surface_flow_width[v] > 0.0
                     qin[v] = sum_at(
-                        i -> q[i] * (1.0 - flow_fraction_to_river[i]),
+                        upstream_idx ->
+                            q[upstream_idx] * (1.0 - flow_fraction_to_river[upstream_idx]),
                         upstream_nodes[n],
                     )
                 end
@@ -443,11 +452,14 @@ function kinwave_river_update!(
     (; flow_width, flow_length) = domain.parameters
     (; h, q, q_cumulative, storage, qin, qin_cumulative, qlat) = river_flow_model.variables
 
-    ns = length(order_of_subdomains)
+    n_subdomain_levels = length(order_of_subdomains)
     qin .= 0.0
-    for k in 1:ns
-        threaded_foreach(eachindex(order_of_subdomains[k]); basesize = 1) do i
-            m = order_of_subdomains[k][i]
+    for level_idx in 1:n_subdomain_levels
+        threaded_foreach(
+            eachindex(order_of_subdomains[level_idx]);
+            basesize = 1,
+        ) do subdomain_idx
+            m = order_of_subdomains[level_idx][subdomain_idx]
             for (n, v) in zip(subdomain_indices[m], order_subdomain[m])
                 # qin by outflow from upstream reservoir location is added
                 qin[v] += sum_at(q, upstream_nodes[n])
@@ -563,11 +575,11 @@ function stable_timestep(
     n = length(q)
     stable_timesteps .= Inf
     k = 0
-    for i in 1:n
-        if q[i] > KIN_WAVE_MIN_FLOW
+    for idx in 1:n
+        if q[idx] > KIN_WAVE_MIN_FLOW
             k += 1
-            c = inv(alpha[i] * BETA_KINWAVE * pow(q[i], (BETA_KINWAVE - 1.0)))
-            stable_timesteps[k] = (flow_length[i] / c)
+            c = inv(alpha[idx] * BETA_KINWAVE * pow(q[idx], (BETA_KINWAVE - 1.0)))
+            stable_timesteps[k] = (flow_length[idx] / c)
         end
     end
 

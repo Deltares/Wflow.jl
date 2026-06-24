@@ -2,29 +2,29 @@ abstract type AbstractSedimentToRiverModel end
 
 "Struct to store total sediment reaching the river model variables"
 @with_kw struct SedimentToRiverVariables
-    n::Int
+    n_river::Int
     # Total sediment rate to the river [kg s⁻¹]
-    sediment_rate::Vector{Float64} = fill(MISSING_VALUE, n)
+    sediment_rate::Vector{Float64} = fill(MISSING_VALUE, n_river)
 end
 
 "Struct to store total sediment reaching the river model boundary conditions"
 @with_kw struct SedimentToRiverBC
-    n::Int
+    n_river::Int
     # Deposition material rate [kg s⁻¹]
-    deposition::Vector{Float64} = fill(MISSING_VALUE, n)
+    deposition::Vector{Float64} = fill(MISSING_VALUE, n_river)
 end
 
 "Struct to store total sediment reaching the river model"
 @with_kw struct SedimentToRiverModel <: AbstractSedimentToRiverModel
-    n::Int
-    boundary_conditions::SedimentToRiverBC = SedimentToRiverBC(; n)
-    variables::SedimentToRiverVariables = SedimentToRiverVariables(; n)
+    n_river::Int
+    boundary_conditions::SedimentToRiverBC = SedimentToRiverBC(; n_river)
+    variables::SedimentToRiverVariables = SedimentToRiverVariables(; n_river)
 end
 
 "Initialize total sediment reaching the river model"
 function SedimentToRiverModel(indices::Vector{CartesianIndex{2}})
-    n = length(indices)
-    sediment_to_river_model = SedimentToRiverModel(; n)
+    n_river = length(indices)
+    sediment_to_river_model = SedimentToRiverModel(; n_river)
     return sediment_to_river_model
 end
 
@@ -46,56 +46,56 @@ function update_sediment_to_river_model!(
     (; deposition) = sediment_to_river_model.boundary_conditions
     (; sediment_rate) = sediment_to_river_model.variables
 
-    for (i, river) in enumerate(rivers)
-        sediment_rate[i] = river ? deposition[i] : 0.0
+    for (idx, river) in enumerate(rivers)
+        sediment_rate[idx] = river ? deposition[idx] : 0.0
     end
 end
 
 "Struct to store differentiated sediment reaching the river model variables"
 @with_kw struct SedimentToRiverDifferentiationVariables
-    n::Int
+    n_river::Int
     # Total sediment rate [kg s⁻¹]
-    sediment_rate::Vector{Float64} = fill(MISSING_VALUE, n)
+    sediment_rate::Vector{Float64} = fill(MISSING_VALUE, n_river)
     # Clay rate [kg s⁻¹]
-    clay_rate::Vector{Float64} = fill(MISSING_VALUE, n)
+    clay_rate::Vector{Float64} = fill(MISSING_VALUE, n_river)
     # Silt rate [kg s⁻¹]
-    silt_rate::Vector{Float64} = fill(MISSING_VALUE, n)
+    silt_rate::Vector{Float64} = fill(MISSING_VALUE, n_river)
     # Sand rate [kg s⁻¹]
-    sand_rate::Vector{Float64} = fill(MISSING_VALUE, n)
+    sand_rate::Vector{Float64} = fill(MISSING_VALUE, n_river)
     # Small aggregates rate [kg s⁻¹]
-    small_aggregates_rate::Vector{Float64} = fill(MISSING_VALUE, n)
+    small_aggregates_rate::Vector{Float64} = fill(MISSING_VALUE, n_river)
     # Large aggregates rate [kg s⁻¹]
-    large_aggregates_rate::Vector{Float64} = fill(MISSING_VALUE, n)
+    large_aggregates_rate::Vector{Float64} = fill(MISSING_VALUE, n_river)
 end
 
 "Struct to store differentiated sediment reaching the river model boundary conditions"
 @with_kw struct SedimentToRiverDifferentiationBC
-    n::Int
+    n_river::Int
     # Clay deposition rate [kg s⁻¹]
-    deposition_clay::Vector{Float64} = fill(MISSING_VALUE, n)
+    deposition_clay::Vector{Float64} = fill(MISSING_VALUE, n_river)
     # Silt deposition rate [kg s⁻¹]
-    deposition_silt::Vector{Float64} = fill(MISSING_VALUE, n)
+    deposition_silt::Vector{Float64} = fill(MISSING_VALUE, n_river)
     # Sand deposition rate [kg s⁻¹]
-    deposition_sand::Vector{Float64} = fill(MISSING_VALUE, n)
+    deposition_sand::Vector{Float64} = fill(MISSING_VALUE, n_river)
     # Small aggregates deposition rate [kg s⁻¹]
-    deposition_small_aggregates::Vector{Float64} = fill(MISSING_VALUE, n)
+    deposition_small_aggregates::Vector{Float64} = fill(MISSING_VALUE, n_river)
     # Large aggregates deposition rate [kg s⁻¹]
-    deposition_large_aggregates::Vector{Float64} = fill(MISSING_VALUE, n)
+    deposition_large_aggregates::Vector{Float64} = fill(MISSING_VALUE, n_river)
 end
 
 "Struct to store differentiated sediment reaching the river model"
 @with_kw struct SedimentToRiverDifferentiationModel <: AbstractSedimentToRiverModel
-    n::Int
+    n_river::Int
     boundary_conditions::SedimentToRiverDifferentiationBC =
-        SedimentToRiverDifferentiationBC(; n)
+        SedimentToRiverDifferentiationBC(; n_river)
     variables::SedimentToRiverDifferentiationVariables =
-        SedimentToRiverDifferentiationVariables(; n)
+        SedimentToRiverDifferentiationVariables(; n_river)
 end
 
 "Initialize differentiated sediment reaching the river model"
 function SedimentToRiverDifferentiationModel(indices::Vector{CartesianIndex{2}})
-    n = length(indices)
-    sediment_to_river_model = SedimentToRiverDifferentiationModel(; n)
+    n_river = length(indices)
+    sediment_to_river_model = SedimentToRiverDifferentiationModel(; n_river)
     return sediment_to_river_model
 end
 
@@ -142,19 +142,19 @@ function update_sediment_to_river_model!(
         large_aggregates_rate,
     ) = sediment_to_river_model.variables
 
-    for (i, river) in enumerate(rivers)
+    for (idx, river) in enumerate(rivers)
         if river
-            clay_rate[i] = deposition_clay[i]
-            silt_rate[i] = deposition_silt[i]
-            sand_rate[i] = deposition_sand[i]
-            small_aggregates_rate[i] = deposition_small_aggregates[i]
-            large_aggregates_rate[i] = deposition_large_aggregates[i]
+            clay_rate[idx] = deposition_clay[idx]
+            silt_rate[idx] = deposition_silt[idx]
+            sand_rate[idx] = deposition_sand[idx]
+            small_aggregates_rate[idx] = deposition_small_aggregates[idx]
+            large_aggregates_rate[idx] = deposition_large_aggregates[idx]
         else
-            clay_rate[i] = 0.0
-            silt_rate[i] = 0.0
-            sand_rate[i] = 0.0
-            small_aggregates_rate[i] = 0.0
-            large_aggregates_rate[i] = 0.0
+            clay_rate[idx] = 0.0
+            silt_rate[idx] = 0.0
+            sand_rate[idx] = 0.0
+            small_aggregates_rate[idx] = 0.0
+            large_aggregates_rate[idx] = 0.0
         end
     end
     @. sediment_rate =

@@ -156,10 +156,13 @@ function update_total_water_storage!(
     fill!(total_storage, 0)
 
     # Burn the river routing values
-    for (i, index_river) in enumerate(domain.river.network.land_indices)
+    for (river_idx, index_river) in enumerate(domain.river.network.land_indices)
         total_storage[index_river] = (
-            (river_flow.variables.h[i] * flow_width[i] * flow_length[i]) /
-            (area[index_river])
+            (
+                river_flow.variables.h[river_idx] *
+                flow_width[river_idx] *
+                flow_length[river_idx]
+            ) / (area[index_river])
         )
     end
 
@@ -171,12 +174,12 @@ function update_total_water_storage!(
 
     # Chunk the data for parallel computing
     n = length(unsaturated_store_depth)
-    threaded_foreach(1:n; basesize = 1000) do i
-        sub_surface = unsaturated_store_depth[i] + saturated_water_depth[i]
-        lateral = overland_flow.variables.h[i] * (1 - river_fraction[i])
+    threaded_foreach(1:n; basesize = 1000) do idx
+        sub_surface = unsaturated_store_depth[idx] + saturated_water_depth[idx]
+        lateral = overland_flow.variables.h[idx] * (1 - river_fraction[idx])
 
         # Add everything to the total water storage
-        total_storage[i] += sub_surface + lateral
+        total_storage[idx] += sub_surface + lateral
     end
     return nothing
 end

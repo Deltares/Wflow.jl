@@ -335,9 +335,9 @@ function get_river_fraction(
 
     n = length(river_location)
     river_fraction = fill(MISSING_VALUE, n)
-    for i in 1:n
-        river_fraction[i] = if river_location[i]
-            min((river_length[i] * river_width[i]) / (area[i]), 1.0)
+    for idx in 1:n
+        river_fraction[idx] = if river_location[idx]
+            min((river_length[idx] * river_width[idx]) / (area[idx]), 1.0)
         else
             0.0
         end
@@ -350,10 +350,10 @@ function get_cell_lengths(dataset::NCDataset, config::Config, network::NetworkLa
     y_coords = read_y_axis(dataset)
     x_coords = read_x_axis(dataset)
     y = permutedims(repeat(y_coords; outer = (1, length(x_coords))))[network.indices]
-    celllength = abs(mean(diff(x_coords)))
+    cell_length = abs(mean(diff(x_coords)))
 
     x_length, y_length =
-        cell_lengths(y, celllength, config.model.cell_length_in_meter__flag)
+        cell_lengths(y, cell_length, config.model.cell_length_in_meter__flag)
     return x_length, y_length
 end
 

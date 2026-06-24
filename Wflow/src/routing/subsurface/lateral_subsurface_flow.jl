@@ -116,8 +116,8 @@ function LateralSsfParameters(
         kh_profile = KhExponentialConstant(exp_profile, z_exp)
     elseif kh_profile_type == VerticalConductivityProfile.layered ||
            kh_profile_type == VerticalConductivityProfile.layered_exponential
-        n_cells = length(horizontal_to_vertical_hydraulic_conductivity_ratio)
-        kh_profile = KhLayered(fill(MISSING_VALUE, n_cells))
+        n = length(horizontal_to_vertical_hydraulic_conductivity_ratio)
+        kh_profile = KhLayered(fill(MISSING_VALUE, n))
     end
     specific_yield = @. lower_bound_drainable_porosity(theta_s, theta_fc)
     ssf_parameters = LateralSsfParameters(;
@@ -228,8 +228,8 @@ function kinwave_subsurface_update!(
         threaded_foreach(
             eachindex(order_of_subdomains[hydraulic_conductivity]);
             basesize = 1,
-        ) do i
-            m = order_of_subdomains[hydraulic_conductivity][i]
+        ) do subdomain_idx
+            m = order_of_subdomains[hydraulic_conductivity][subdomain_idx]
             for (n, v) in zip(subdomain_indices[m], order_subdomain[m])
                 if isnothing(river)
                     # for a river cell without a reservoir part of the upstream subsurface flow
@@ -323,17 +323,17 @@ function stable_timestep(subsurface_flow_model::LateralSSFModel, domain::DomainL
     n = length(water_table_depth)
     stable_timesteps .= Inf
     hydraulic_conductivity = 0
-    for i in 1:n
-        if water_table_depth[i] > 0.0
+    for idx in 1:n
+        if water_table_depth[idx] > 0.0
             hydraulic_conductivity += 1
             c = ssf_celerity(
-                water_table_depth[i],
-                slope[i],
-                specific_yield[i],
+                water_table_depth[idx],
+                slope[idx],
+                specific_yield[idx],
                 kh_profile,
-                i,
+                idx,
             )
-            stable_timesteps[hydraulic_conductivity] = (flow_length[i] / c)
+            stable_timesteps[hydraulic_conductivity] = (flow_length[idx] / c)
         end
     end
 

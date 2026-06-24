@@ -151,43 +151,48 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
 
     # reservoir CSV parameter files are expected in the same directory as path_static
     path = dirname(input_path(config, config.input.path_static))
-    for i in 1:n_reservoirs
-        resloc = reslocs[i]
-        if linked_reslocs[i] > 0
-            parameters.lower_reservoir_ind[i] =
-                only(findall(x -> x == linked_reslocs[i], reslocs))
+    for reservoir_idx in 1:n_reservoirs
+        resloc = reslocs[reservoir_idx]
+        if linked_reslocs[reservoir_idx] > 0
+            parameters.lower_reservoir_ind[reservoir_idx] =
+                only(findall(x -> x == linked_reslocs[reservoir_idx], reslocs))
         end
 
-        if storage_curve_type[i] == ReservoirProfileType.interpolation
+        if storage_curve_type[reservoir_idx] == ReservoirProfileType.interpolation
             csv_path = joinpath(path, "reservoir_sh_$resloc.csv")
             @info(
                 "Read a storage curve from CSV file `$csv_path`, for reservoir location `$resloc`"
             )
-            parameters.storage_waterlevel_curve[i] = read_sh_csv(csv_path)
+            parameters.storage_waterlevel_curve[reservoir_idx] = read_sh_csv(csv_path)
         end
 
-        if outflow_curve_type[i] == ReservoirOutflowType.rating_curve
+        if outflow_curve_type[reservoir_idx] == ReservoirOutflowType.rating_curve
             csv_path = joinpath(path, "reservoir_hq_$resloc.csv")
             @info(
                 "Read a rating curve from CSV file `$csv_path`, for reservoir location `$resloc`"
             )
-            parameters.waterlevel_discharge_curve[i] = read_hq_csv(csv_path)
-            parameters.maximum_storage[i] = get_maximum_storage(parameters, i)
-        elseif outflow_curve_type[i] == ReservoirOutflowType.free_weir ||
-               outflow_curve_type[i] == ReservoirOutflowType.modified_puls
-            parameters.threshold[i] = threshold[i]
-            parameters.rating_curve_coefficient[i] = rating_curve_coefficient[i]
-            parameters.rating_curve_exponent[i] = rating_curve_exponent[i]
-        elseif outflow_curve_type[i] == ReservoirOutflowType.simple
-            parameters.demand[i] = demand[i]
-            parameters.maximum_release[i] = maximum_release[i]
-            parameters.maximum_storage[i] = maximum_storage[i]
-            parameters.target_full_fraction[i] = target_full_fraction[i]
-            parameters.target_minimum_fraction[i] = target_minimum_fraction[i]
+            parameters.waterlevel_discharge_curve[reservoir_idx] = read_hq_csv(csv_path)
+            parameters.maximum_storage[reservoir_idx] =
+                maximum_storage(parameters, reservoir_idx)
+        elseif outflow_curve_type[reservoir_idx] == ReservoirOutflowType.free_weir ||
+               outflow_curve_type[reservoir_idx] == ReservoirOutflowType.modified_puls
+            parameters.threshold[reservoir_idx] = threshold[reservoir_idx]
+            parameters.rating_curve_coefficient[reservoir_idx] =
+                rating_curve_coefficient[reservoir_idx]
+            parameters.rating_curve_exponent[reservoir_idx] =
+                rating_curve_exponent[reservoir_idx]
+        elseif outflow_curve_type[reservoir_idx] == ReservoirOutflowType.simple
+            parameters.demand[reservoir_idx] = demand[reservoir_idx]
+            parameters.maximum_release[reservoir_idx] = maximum_release[reservoir_idx]
+            parameters.maximum_storage[reservoir_idx] = maximum_storage[reservoir_idx]
+            parameters.target_full_fraction[reservoir_idx] =
+                target_full_fraction[reservoir_idx]
+            parameters.target_minimum_fraction[reservoir_idx] =
+                target_minimum_fraction[reservoir_idx]
         end
 
-        if outflow_curve_type[i] == ReservoirOutflowType.modified_puls &&
-           storage_curve_type[i] != ReservoirProfileType.linear
+        if outflow_curve_type[reservoir_idx] == ReservoirOutflowType.modified_puls &&
+           storage_curve_type[reservoir_idx] != ReservoirProfileType.linear
             @warn(
                 "For the modified puls approach (outflow_curve_type = 3) the storage_curve_type should be 1"
             )
@@ -249,25 +254,25 @@ end
 
 "Struct for storing reservoir model boundary conditions"
 @with_kw struct ReservoirBC
-    n::Int
+    n_reservoirs::Int
     # inflow from subsurface flow into reservoir [m³ s⁻¹]
-    inflow_subsurface::Vector{Float64} = fill(MISSING_VALUE, n)
+    inflow_subsurface::Vector{Float64} = fill(MISSING_VALUE, n_reservoirs)
     # inflow from overland flow into reservoir [m³ s⁻¹]
-    inflow_overland::Vector{Float64} = fill(MISSING_VALUE, n)
+    inflow_overland::Vector{Float64} = fill(MISSING_VALUE, n_reservoirs)
     # cumulative inflow reservoir [m³] for model timestep dt
-    inflow_cumulative::Vector{Float64} = zeros(n)
+    inflow_cumulative::Vector{Float64} = zeros(n_reservoirs)
     # average inflow into reservoir [m³ s⁻¹] for model timestep dt
-    inflow_average::Vector{Float64} = zeros(n)
+    inflow_average::Vector{Float64} = zeros(n_reservoirs)
     # external inflow (abstraction/supply/demand) [m³ s⁻¹]
-    external_inflow::Vector{Float64} = zeros(n)
+    external_inflow::Vector{Float64} = zeros(n_reservoirs)
     # cumulative actual abstractoin from external negative flow [m³]
-    actual_external_abstraction_cumulative::Vector{Float64} = zeros(n)
+    actual_external_abstraction_cumulative::Vector{Float64} = zeros(n_reservoirs)
     # average actual abstraction from external negative inflow [m³ s⁻¹]
-    actual_external_abstraction_average::Vector{Float64} = zeros(n)
+    actual_external_abstraction_average::Vector{Float64} = zeros(n_reservoirs)
     # average precipitation for reservoir area [m s⁻¹]
-    precipitation::Vector{Float64} = fill(MISSING_VALUE, n)
+    precipitation::Vector{Float64} = fill(MISSING_VALUE, n_reservoirs)
     # average potential evaporation for reservoir area [m s⁻¹]
-    evaporation::Vector{Float64} = fill(MISSING_VALUE, n)
+    evaporation::Vector{Float64} = fill(MISSING_VALUE, n_reservoirs)
 end
 
 "Initialize reservoir model boundary conditions"
@@ -280,8 +285,8 @@ function ReservoirBC(dataset::NCDataset, config::Config, network::NetworkReservo
         Routing;
         sel = indices_outlet,
     )
-    n = length(indices_outlet)
-    bc = ReservoirBC(; n, external_inflow)
+    n_reservoirs = length(indices_outlet)
+    bc = ReservoirBC(; n_reservoirs, external_inflow)
     return bc
 end
 
@@ -347,14 +352,14 @@ function initialize_storage(
     storage_waterlevel_curve::Vector{Union{SH, Missing}},
 )
     storage = similar(area)
-    for i in eachindex(storage)
-        if storage_curve_type[i] == ReservoirProfileType.linear
-            storage[i] = area[i] * waterlevel[i]
-        else # storage_curve_type[i] == ReservoirProfileType.interpolation
-            storage[i] = interpolate_linear(
-                waterlevel[i],
-                storage_waterlevel_curve[i].H,
-                storage_waterlevel_curve[i].S,
+    for reservoir_idx in eachindex(storage)
+        if storage_curve_type[reservoir_idx] == ReservoirProfileType.linear
+            storage[reservoir_idx] = area[reservoir_idx] * waterlevel[reservoir_idx]
+        else # storage_curve_type[reservoir_idx] == ReservoirProfileType.interpolation
+            storage[reservoir_idx] = interpolate_linear(
+                waterlevel[reservoir_idx],
+                storage_waterlevel_curve[reservoir_idx].H,
+                storage_waterlevel_curve[reservoir_idx].S,
             )
         end
     end

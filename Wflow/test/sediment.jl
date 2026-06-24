@@ -288,11 +288,11 @@ end
 @testitem "unit: update SedimentConcentrationsRiverModel" begin
     dt = 86400.0
 
-    n = 1
+    n_river = 1
     sediment_concentrations_model = Wflow.SedimentConcentrationsRiverModel(;
-        n,
+        n_river,
         boundary_conditions = Wflow.SedimentConcentrationsRiverBC(;
-            n,
+            n_river,
             q = [2.5],
             waterlevel = [0.2],
             clay = [0.0],
@@ -328,61 +328,61 @@ end
     dt = 86400.0
 
     function get_objects()
-        n = 4
+        n_river = 4
         sediment_flux = Wflow.SedimentRiverTransportModel(;
-            n,
+            n_river,
             boundary_conditions = Wflow.SedimentRiverTransportBC(;
-                n,
-                waterlevel = fill(0.0105, n),
-                q = fill(0.002, n),
+                n_river,
+                waterlevel = fill(0.0105, n_river),
+                q = fill(0.002, n_river),
                 transport_capacity = [
                     5.787037037037036e-9,
                     5.787037037037036e-9,
                     5.787037037037036e-9,
                     2.662037037037037e-10,
                 ],
-                erosion_land_clay = fill(6.655092592592592e-11, n),
-                erosion_land_silt = fill(6.655092592592592e-11, n),
-                erosion_land_sand = fill(6.655092592592592e-11, n),
-                erosion_land_small_aggregates = fill(6.655092592592592e-11, n),
-                erosion_land_large_aggregates = fill(6.655092592592592e-11, n),
-                potential_erosion_river_bed = fill(1.1574074074074074e-10, n),
-                potential_erosion_river_bank = fill(2.3148148148148147e-10, n),
+                erosion_land_clay = fill(6.655092592592592e-11, n_river),
+                erosion_land_silt = fill(6.655092592592592e-11, n_river),
+                erosion_land_sand = fill(6.655092592592592e-11, n_river),
+                erosion_land_small_aggregates = fill(6.655092592592592e-11, n_river),
+                erosion_land_large_aggregates = fill(6.655092592592592e-11, n_river),
+                potential_erosion_river_bed = fill(1.1574074074074074e-10, n_river),
+                potential_erosion_river_bank = fill(2.3148148148148147e-10, n_river),
             ),
             parameters = Wflow.SedimentRiverTransportParameters(;
-                clay_fraction = fill(0.15, n),
-                silt_fraction = fill(0.25, n),
-                sand_fraction = fill(0.35, n),
-                gravel_fraction = fill(0.45, n),
-                median_diameter_clay = fill(2.0e-6, n),
-                median_diameter_silt = fill(9.999999999999999e-6, n),
-                median_diameter_sand = fill(0.00019999999999999998, n),
-                median_diameter_small_aggregates = fill(2.9999999999999997e-5, n),
-                median_diameter_large_aggregates = fill(0.0005, n),
-                median_diameter_gravel = fill(0.002, n),
+                clay_fraction = fill(0.15, n_river),
+                silt_fraction = fill(0.25, n_river),
+                sand_fraction = fill(0.35, n_river),
+                gravel_fraction = fill(0.45, n_river),
+                median_diameter_clay = fill(2.0e-6, n_river),
+                median_diameter_silt = fill(9.999999999999999e-6, n_river),
+                median_diameter_sand = fill(0.00019999999999999998, n_river),
+                median_diameter_small_aggregates = fill(2.9999999999999997e-5, n_river),
+                median_diameter_large_aggregates = fill(0.0005, n_river),
+                median_diameter_gravel = fill(0.002, n_river),
                 reservoir_outlet = [true, false, false, false],
-                reservoir_area = fill(6e5, n),
-                reservoir_trapping_efficiency = fill(0.5, n),
+                reservoir_area = fill(6e5, n_river),
+                reservoir_trapping_efficiency = fill(0.5, n_river),
             ),
             variables = Wflow.SedimentRiverTransportVariables(;
-                n,
-                leftover_clay = fill(5.5e-6, n),
-                store_gravel = fill(5.3e-6, n),
+                n_river,
+                leftover_clay = fill(5.5e-6, n_river),
+                store_gravel = fill(5.3e-6, n_river),
             ),
         )
 
-        order = collect(1:n)
-        graph = DiGraph(n)
+        order = collect(1:n_river)
+        graph = DiGraph(n_river)
         domain = Wflow.DomainRiver(;
             network = Wflow.NetworkRiver(; order, graph),
             parameters = Wflow.RiverParameters(;
-                slope = fill(1e-3, n),
-                flow_width = fill(4.2, n),
+                slope = fill(1e-3, n_river),
+                flow_width = fill(4.2, n_river),
                 flow_length = [785.0, 785.0, 785.0, 7850.0],
                 reservoir_coverage = [false, true, false, false],
             ),
         )
-        return sediment_flux, domain, graph, order, n
+        return sediment_flux, domain, graph, order, n_river
     end
 
     function perform_tests(variables)
@@ -415,7 +415,7 @@ end
         @test variables.store_gravel ≈ [1.88e-5, 5.3e-6, 1.88e-5, 5.3e-6]
     end
 
-    sediment_flux, domain, graph, order, n = get_objects()
+    sediment_flux, domain, graph, order, n_river = get_objects()
 
     input_particles =
         Wflow.compute_sediment_input.(Ref(sediment_flux), Ref(graph), dt, order)
@@ -471,7 +471,7 @@ end
     @test collect.(store_erosion) ≈
           [store_erosion_expected, zeros(6), store_erosion_expected, zeros(6)]
 
-    erosion_particles = [erosion_particles[i] .+ store_erosion[i] for i in 1:n]
+    erosion_particles = [erosion_particles[i] .+ store_erosion[i] for i in 1:n_river]
     @. sediment_flux.variables.erosion = sum(erosion_particles)
     erosion_expected = 4.780092592592592e-10
     @test sediment_flux.variables.erosion ≈ [erosion_expected, 0.0, erosion_expected, 0.0]

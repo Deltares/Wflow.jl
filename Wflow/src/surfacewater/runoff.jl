@@ -74,8 +74,8 @@ function update_bc_open_water_runoff_model!(
     # extract water depth h from the land and river routing, used to limit open water
     # evaporation
     waterdepth_land .= routing.overland_flow.variables.h
-    for (i, land_index) in enumerate(land_indices)
-        waterdepth_river[land_index] = routing.river_flow.variables.h[i]
+    for (river_idx, land_index) in enumerate(land_indices)
+        waterdepth_river[land_index] = routing.river_flow.variables.h[river_idx]
     end
     return nothing
 end

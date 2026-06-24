@@ -144,20 +144,20 @@ function update_soil_erosion_model!(soil_erosion_model::SoilErosionModel)
     ) = soil_erosion_model.variables
 
     n = length(rainfall_erosion)
-    threaded_foreach(1:n; basesize = 1000) do i
-        soil_erosion_rate[i],
-        clay_erosion_rate[i],
-        silt_erosion_rate[i],
-        sand_erosion_rate[i],
-        small_aggregates_erosion_rate[i],
-        large_aggregates_erosion_rate[i] = total_soil_erosion(
-            rainfall_erosion[i],
-            overland_flow_erosion[i],
-            clay_fraction[i],
-            silt_fraction[i],
-            sand_fraction[i],
-            small_aggregates_fraction[i],
-            large_aggregates_fraction[i],
+    threaded_foreach(1:n; basesize = 1000) do idx
+        soil_erosion_rate[idx],
+        clay_erosion_rate[idx],
+        silt_erosion_rate[idx],
+        sand_erosion_rate[idx],
+        small_aggregates_erosion_rate[idx],
+        large_aggregates_erosion_rate[idx] = total_soil_erosion(
+            rainfall_erosion[idx],
+            overland_flow_erosion[idx],
+            clay_fraction[idx],
+            silt_fraction[idx],
+            sand_fraction[idx],
+            small_aggregates_fraction[idx],
+            large_aggregates_fraction[idx],
         )
     end
 end
