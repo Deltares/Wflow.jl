@@ -98,12 +98,13 @@ function active_indices(
     return indices, reverse_indices
 end
 
+"Get active indices of `key` (standard name or model path) by prefix string matching."
 function active_indices(domain::Domain, key::AbstractString)::Vector{CartesianIndex{2}}
-    if occursin("reservoir", key)
+    if startswith(key, domain_parameter_map["reservoir"])
         return domain.reservoir.network.indices_outlet
-    elseif occursin("river", key) || occursin("floodplain", key)
+    elseif startswith(key, domain_parameter_map["river"])
         return domain.river.network.indices
-    elseif occursin("drain", key)
+    elseif startswith(key, domain_parameter_map["drain"])
         return domain.drain.network.indices
     else
         return domain.land.network.indices
