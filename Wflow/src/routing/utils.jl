@@ -12,7 +12,7 @@ function flowgraph(ldd::AbstractVector, indices::AbstractVector, PCR_DIR::Abstra
     for (from_node, from_index) in enumerate(indices)
         ldd_val = ldd[from_node]
         # skip pits to prevent cycles
-        ldd_val == 5 && continue
+        ldd_val == LDD_PIT && continue
         to_index = from_index + PCR_DIR[ldd_val]
         # find the node id of the downstream cell
         to_node = searchsortedfirst(indices, to_index)
@@ -165,4 +165,38 @@ function flux_in!(flux_in, flux, network)
         flux_in[v] = sum_at(flux, upstream_nodes[i])
     end
     return nothing
+end
+
+function compute_value_at_edge(v, nodes_at_edge, n_edges, func::Function)
+    x = zeros(n_edges)
+    for i in 1:n_edges
+        src_node = nodes_at_edge.src[i]
+        dst_node = nodes_at_edge.dst[i]
+        x[i] = func((v[src_node], v[dst_node]))
+    end
+    return x
+end
+
+function compute_mannings_n_at_edge(mannings_n, flow_length, nodes_at_edge, n_edges)
+    mannings_n_at_edge = zeros(n_edges)
+    for i in 1:n_edges
+        src_node = nodes_at_edge.src[i]
+        dst_node = nodes_at_edge.dst[i]
+        mannings_n_at_edge[i] =
+            (
+                mannings_n[dst_node] * flow_length[dst_node] +
+                mannings_n[src_node] * flow_length[src_node]
+            ) / (flow_length[dst_node] + flow_length[src_node])
+    end
+    return mannings_n_at_edge
+end
+
+function compute_slope_at_edge(elev, length_at_edge, nodes_at_edge, n_edges)
+    slope = zeros(n_edges)
+    for i in 1:n_edges
+        src_node = nodes_at_edge.src[i]
+        dst_node = nodes_at_edge.dst[i]
+        slope[i] = max((elev[src_node] - elev[dst_node]) / length_at_edge[i], 0.00001)
+    end
+    return slope
 end

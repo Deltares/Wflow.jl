@@ -55,6 +55,7 @@ The Tables in this subsection show the available models settings for the model t
 | `subsurface_kinematic_wave__alpha_coefficient` | Stability coefficient for internal model time step subsurface flow routing (CFL condition) | - | 1.0 |
 | `drain__flag` | Include drainage boundary condition  | - | `false` |
 | `river_subsurface_exchange_head_based__flag` | Include head-dependent river flux boundary | - | `false` |
+| `floodplain_1d__flag` | Include 1D floodplain schematization for kinematic wave river routing | - | `false` |
 : {.striped .hover}
 
 ### Local inertial routing
@@ -63,11 +64,19 @@ The Tables in this subsection show the available models settings for the model t
 | `river_local_inertial_flow__alpha_coefficient` | Stability coefficient for internal model time step river flow routing (CFL condition) | - | 0.7 |
 | `land_local_inertial_flow__alpha_coefficient` | Stability coefficient for internal model time step overland flow routing (CFL condition) | - | 0.7 |
 | `land_local_inertial_flow__theta_coefficient` | Weighting factor that adjusts the amount of artificial numerical diffusion for local inertial overland flow | - | 1.0 |
-| `river_water_flow_threshold__depth` | Water depth threshold for calculating river flow between cells | m | 0.001 |
-| `land_surface_water_flow_threshold__depth` | Water depth threshold for calculating overland flow between cells | m | 0.001 |
+| `river_water_flow_threshold__depth` | Water depth threshold for calculating river flow between nodes | m | 0.001 |
+| `land_surface_water_flow_threshold__depth` | Water depth threshold for calculating overland flow between nodes | m | 0.001 |
 | `river_water_flow__froude_limit_flag` | Limit river flow to subcritical-critical according to Froude number | - | `true` |
 | `land_surface_water_flow__froude_limit_flag` | Limit overland flow to subcritical-critical according to Froude number | - | `true` |
 | `floodplain_1d__flag` | Include 1D floodplain schematization for local inertial river routing | - | `false` |
+: {.striped .hover}
+
+### River routing using Manning's equation on a staggered grid
+| Setting | Description | Unit | Default |
+| --- | ----- | - | - |
+| `river_staggered_manning_flow__alpha_coefficient` | Stability coefficient for internal model time step river flow routing (CFL condition) | - | 0.7 |
+| `river_water_flow_threshold__depth` | Water depth threshold for calculating river flow between nodes | m | 0.001 |
+| `floodplain_1d__flag` | Include 1D floodplain schematization | - | `false` |
 : {.striped .hover}
 
 ### Groundwater flow

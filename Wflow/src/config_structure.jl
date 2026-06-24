@@ -6,7 +6,7 @@ For configuration files we use TOML.
 =#
 
 # Option enumerators
-@enumx RoutingType kinematic_wave local_inertial
+@enumx RoutingType kinematic_wave manning_staggered local_inertial
 @enumx ModelType sbm sbm_gwf sediment
 @enumx CalendarType standard gregorian proleptic_gregorian julian noleap _365_day all_leap _366_day _360_day
 @enumx GwfConductivityProfileType uniform exponential
@@ -91,11 +91,14 @@ end
     river_local_inertial_flow__alpha_coefficient::Float64 = 0.7
     land_local_inertial_flow__alpha_coefficient::Float64 = 0.7
     land_local_inertial_flow__theta_coefficient::Float64 = 1.0
-    river_water_flow_threshold__depth = 1e-3
     land_surface_water_flow_threshold__depth = 1e-3
     river_water_flow__froude_limit_flag = true
     land_surface_water_flow__froude_limit_flag = true
+    # Local inertial and staggered manning river flow routing
+    river_water_flow_threshold__depth = 1e-3
     floodplain_1d__flag::Bool = false
+    # Staggered manning river flow routing
+    river_staggered_manning_flow__alpha_coefficient::Float64 = 0.7
     # Groundwater flow
     conductivity_profile::GwfConductivityProfileType.T = GwfConductivityProfileType.uniform
     drain__flag::Bool = false
