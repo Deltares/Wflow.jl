@@ -1,9 +1,16 @@
 abstract type AbstractDemandModel end
 abstract type AbstractAllocationModel end
 
+"Variables of the land hydrology model with SBM soil model"
+@kwdef struct LandHydrologySBMVariables
+    n::Int
+    # Total water storage (excluding floodplain volume and reservoirs) [m]
+    total_storage::Vector{Float64} = zeros(Float64, n)
+end
+
 "Land hydrology model with SBM soil model"
-@with_kw struct LandHydrologySBM{D <: AbstractDemandModel, A <: AbstractAllocationModel} <:
-                AbstractLandModel
+@kwdef struct LandHydrologySBM{D <: AbstractDemandModel, A <: AbstractAllocationModel} <:
+              AbstractLandModel
     atmospheric_forcing::AtmosphericForcing
     vegetation_parameters::VegetationParameters
     interception::AbstractInterceptionModel
@@ -13,6 +20,7 @@ abstract type AbstractAllocationModel end
     soil::SbmSoilModel
     demand::D
     allocation::A
+    variables::LandHydrologySBMVariables
 end
 
 "Initialize land hydrology model with SBM soil model"
@@ -75,6 +83,7 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
         soil,
         demand,
         allocation,
+        variables = LandHydrologySBMVariables(; n),
     )
 end
 
@@ -113,12 +122,13 @@ function update_land_hydrology_model!(
         (; potential_transpiration) = soil.boundary_conditions
         (; h3_high, h3_low) = soil.parameters
         potential_transpiration .= get_potential_transpiration(interception)
-        @. soil.variables.h3 = feddes_h3(h3_high, h3_low, potential_transpiration)
+        @. soil.variables.intermediates.h3 =
+            feddes_h3(h3_high, h3_low, potential_transpiration)
     end
     update_water_demand_model!(demand, soil, dt)
     update_water_allocation_model!(allocation, demand, routing, domain, dt)
 
-    soil_fraction!(soil, glacier, parameters)
+    update_bare_soil_fraction!(soil, glacier, parameters)
     update_bc_soil_model!(
         soil,
         atmospheric_forcing,
@@ -126,8 +136,16 @@ function update_land_hydrology_model!(
         dt,
     )
 
-    update_soil_water_flow!(soil, atmospheric_forcing, (; snow, runoff, demand), config, dt)
-    @. soil.variables.actual_evapotranspiration += interception.variables.interception_rate
+    soil_temperature!(soil, snow, atmospheric_forcing.temperature)
+    update_soil_water_flow!(
+        soil,
+        dt;
+        config.model.snow__flag,
+        config.model.soil_infiltration_reduction__flag,
+    )
+    accumulate_open_water_evapotranspiration!(soil, runoff, demand)
+    @. soil.variables.fluxes.actual_evapotranspiration +=
+        interception.variables.interception_rate
     return nothing
 end
 
@@ -147,7 +165,9 @@ function update_total_water_storage!(
 )
     (; overland_flow, river_flow) = routing
     (; interception, snow, glacier, soil, demand) = land_hydrology_model
-    (; total_storage, unsaturated_store_depth, saturated_water_depth) = soil.variables
+    (; total_storage) = land_hydrology_model.variables
+    (; unsaturated_store_depth) = soil.variables.diagnostic
+    (; saturated_water_depth) = soil.variables.states
 
     (; river_fraction, area) = domain.land.parameters
     (; flow_width, flow_length) = domain.river.parameters

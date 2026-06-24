@@ -1,14 +1,14 @@
 abstract type AbstractRainfallErosionModel end
 
 "Struct for storing rainfall erosion model variables"
-@with_kw struct RainfallErosionModelVariables
+@kwdef struct RainfallErosionModelVariables
     n::Int
     # Total soil erosion rate [kg s⁻¹] from rainfall (splash)
     soil_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct for storing EUROSEM rainfall erosion model boundary conditions"
-@with_kw struct RainfallErosionEurosemBC
+@kwdef struct RainfallErosionEurosemBC
     n::Int
     # precipitation [m s⁻¹]
     precipitation::Vector{Float64} = fill(MISSING_VALUE, n)
@@ -19,7 +19,7 @@ end
 end
 
 "Struct for storing EUROSEM rainfall erosion model parameters"
-@with_kw struct RainfallErosionEurosemParameters
+@kwdef struct RainfallErosionEurosemParameters
     # Soil detachability factor [kg (kg m² s⁻²)⁻¹]
     soil_detachability::Vector{Float64}
     # Exponent EUROSEM [m⁻¹]
@@ -80,7 +80,7 @@ function RainfallErosionEurosemParameters(
 end
 
 "EUROSEM rainfall erosion model"
-@with_kw struct RainfallErosionEurosemModel <: AbstractRainfallErosionModel
+@kwdef struct RainfallErosionEurosemModel <: AbstractRainfallErosionModel
     n::Int
     boundary_conditions::RainfallErosionEurosemBC = RainfallErosionEurosemBC(; n)
     parameters::RainfallErosionEurosemParameters
@@ -145,14 +145,14 @@ function update_rainfall_erosion_model!(
 end
 
 "Struct for storing ANSWERS rainfall erosion model boundary conditions"
-@with_kw struct RainfallErosionAnswersBC
+@kwdef struct RainfallErosionAnswersBC
     n::Int
     # precipitation [m s⁻¹]
     precipitation::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct for storing ANSWERS rainfall erosion model parameters"
-@with_kw struct RainfallErosionAnswersParameters
+@kwdef struct RainfallErosionAnswersParameters
     # Soil erodibility factor [-]
     usle_k::Vector{Float64}
     # Crop management factor [-]
@@ -185,7 +185,7 @@ function RainfallErosionAnswersParameters(
 end
 
 "ANSWERS rainfall erosion model"
-@with_kw struct RainfallErosionAnswersModel <: AbstractRainfallErosionModel
+@kwdef struct RainfallErosionAnswersModel <: AbstractRainfallErosionModel
     n::Int
     boundary_conditions::RainfallErosionAnswersBC = RainfallErosionAnswersBC(; n)
     parameters::RainfallErosionAnswersParameters

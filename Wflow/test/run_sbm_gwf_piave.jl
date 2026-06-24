@@ -51,19 +51,20 @@
         @test reservoir.variables.storage ≈ [1.5532942832524955e8, 4.28e7, 7.16e7]
         @test reservoir.variables.outflow_average ≈
               [3.2489121397532985, 8.556416216129914, 28.17032166161074]
-        @test soil.variables.exfiltration_saturated_water[27:31] ≈ [
+        @test soil.variables.fluxes.exfiltration_saturated_water[27:31] ≈ [
             2.915452802472663e-7,
             5.847113515629848e-9,
             1.1744022745366517e-7,
             8.048163630421586e-8,
             2.249792843617095e-7,
         ]
-        @test maximum(soil.variables.exfiltration_saturated_water) ≈ 2.5641140612390893e-6
-        @test soil.variables.exfiltration_saturated_water[17] == 0.0
+        @test maximum(soil.variables.fluxes.exfiltration_saturated_water) ≈
+              2.5641140612390893e-6
+        @test soil.variables.fluxes.exfiltration_saturated_water[17] == 0.0
         @test mean(river_flow.variables.q_average) ≈ 30.071991490895094
         @test maximum(river_flow.variables.q_average) ≈ 117.48258852034441
-        @test soil.variables.total_storage[7503] ≈ 0.4729217078886107
-        @test soil.variables.total_storage[17] ≈ 0.8174107029296707 # river cell
+        @test model.land.variables.total_storage[7503] ≈ 0.4729217078886107
+        @test model.land.variables.total_storage[17] ≈ 0.8174107029296707 # river cell
     end
 
     Wflow.run_timestep!(model)
@@ -85,7 +86,7 @@
         @test reservoir.variables.storage ≈ [1.5529127318256468e8, 4.28e7, 7.16e7]
         @test reservoir.variables.outflow_average ≈
               [3.2489840968665207, 9.467087432483991, 38.61905891069846]
-        @test soil.variables.exfiltration_saturated_water[27:33] ≈ [
+        @test soil.variables.fluxes.exfiltration_saturated_water[27:33] ≈ [
             4.450632579987645e-7,
             2.1330559140556994e-8,
             1.9144110026163764e-7,
@@ -94,12 +95,13 @@
             2.107184034329379e-7,
             2.2676935706227792e-7,
         ]
-        @test maximum(soil.variables.exfiltration_saturated_water) ≈ 3.877067765823678e-6
-        @test soil.variables.exfiltration_saturated_water[17] == 0.0
+        @test maximum(soil.variables.fluxes.exfiltration_saturated_water) ≈
+              3.877067765823678e-6
+        @test soil.variables.fluxes.exfiltration_saturated_water[17] == 0.0
         @test mean(river_flow.variables.q_average) ≈ 36.80765857144827
         @test maximum(river_flow.variables.q_average) ≈ 141.84332548772514
-        @test soil.variables.total_storage[7503] ≈ 0.4634074094243159
-        @test soil.variables.total_storage[17] ≈ 0.8395331546043192 # river cell
+        @test model.land.variables.total_storage[7503] ≈ 0.4634074094243159
+        @test model.land.variables.total_storage[17] ≈ 0.8395331546043192 # river cell
     end
 
     Wflow.close_files(model; delete_output = false)

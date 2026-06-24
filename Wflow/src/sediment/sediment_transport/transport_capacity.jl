@@ -1,14 +1,14 @@
 abstract type AbstractTransportCapacityModel end
 
 "Struct to store total transport capacity model variables"
-@with_kw struct TransportCapacityModelVariables
+@kwdef struct TransportCapacityModelVariables
     n::Int
     # Total sediment transport capacity [kg s⁻¹]
     sediment_transport_capacity::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct to store total transport capacity model boundary conditions"
-@with_kw struct TransportCapacityBC
+@kwdef struct TransportCapacityBC
     n::Int
     # Discharge [m³ s⁻¹]
     q::Vector{Float64} = fill(MISSING_VALUE, n)
@@ -37,7 +37,7 @@ end
 ##################### Overland Flow #####################
 
 "Struct to store Govers overland flow transport capacity model parameters"
-@with_kw struct TransportCapacityGoversParameters
+@kwdef struct TransportCapacityGoversParameters
     # Particle density [kg m⁻³]
     density::Vector{Float64}
     # Govers transport capacity coefficient [-]
@@ -74,7 +74,7 @@ function TransportCapacityGoversParameters(
 end
 
 "Govers overland flow transport capacity model"
-@with_kw struct TransportCapacityGoversModel <: AbstractTransportCapacityModel
+@kwdef struct TransportCapacityGoversModel <: AbstractTransportCapacityModel
     n::Int
     boundary_conditions::TransportCapacityBC = TransportCapacityBC(; n)
     parameters::TransportCapacityGoversParameters
@@ -123,7 +123,7 @@ function update_transport_capacity_model!(
 end
 
 "Struct to store Yalin overland flow transport capacity model parameters"
-@with_kw struct TransportCapacityYalinParameters
+@kwdef struct TransportCapacityYalinParameters
     # Particle density [kg m⁻³]
     density::Vector{Float64}
     # Particle mean diameter [m]
@@ -152,7 +152,7 @@ function TransportCapacityYalinParameters(
 end
 
 "Yalin overland flow transport capacity model"
-@with_kw struct TransportCapacityYalinModel <: AbstractTransportCapacityModel
+@kwdef struct TransportCapacityYalinModel <: AbstractTransportCapacityModel
     n::Int
     boundary_conditions::TransportCapacityBC = TransportCapacityBC(; n)
     parameters::TransportCapacityYalinParameters
@@ -200,7 +200,7 @@ function update_transport_capacity_model!(
 end
 
 "Struct to store Yalin differentiated overland flow transport capacity model variables"
-@with_kw struct TransportCapacityYalinDifferentiationModelVariables
+@kwdef struct TransportCapacityYalinDifferentiationModelVariables
     n::Int
     # Total sediment transport capacity [kg s⁻¹]
     sediment_transport_capacity::Vector{Float64} = fill(MISSING_VALUE, n)
@@ -217,7 +217,7 @@ end
 end
 
 "Struct to store Yalin differentiated overland flow transport capacity model parameters"
-@with_kw struct TransportCapacityYalinDifferentiationParameters
+@kwdef struct TransportCapacityYalinDifferentiationParameters
     # Particle density [kg m⁻³]
     density::Vector{Float64}
     # Clay mean diameter [m]
@@ -274,7 +274,7 @@ function TransportCapacityYalinDifferentiationParameters(
 end
 
 "Yalin differentiated overland flow transport capacity model"
-@with_kw struct TransportCapacityYalinDifferentiationModel <: AbstractTransportCapacityModel
+@kwdef struct TransportCapacityYalinDifferentiationModel <: AbstractTransportCapacityModel
     n::Int
     boundary_conditions::TransportCapacityBC = TransportCapacityBC(; n)
     parameters::TransportCapacityYalinDifferentiationParameters
@@ -392,7 +392,7 @@ function update_transport_capacity_model!(
 end
 
 "Struct to store common river transport capacity model parameters"
-@with_kw struct TransportCapacityRiverParameters
+@kwdef struct TransportCapacityRiverParameters
     # Particle density [kg m⁻³]
     density::Vector{Float64}
     # Particle mean diameter [m]
@@ -421,7 +421,7 @@ function TransportCapacityRiverParameters(
 end
 
 "Struct to store Bagnold transport capacity model parameters"
-@with_kw struct TransportCapacityBagnoldParameters
+@kwdef struct TransportCapacityBagnoldParameters
     # Bagnold transport capacity coefficient [-]
     c_bagnold::Vector{Float64}
     # Bagnold transport capacity exponent [-]
@@ -455,7 +455,7 @@ function TransportCapacityBagnoldParameters(
 end
 
 "Bagnold river transport capacity model"
-@with_kw struct TransportCapacityBagnoldModel <: AbstractTransportCapacityModel
+@kwdef struct TransportCapacityBagnoldModel <: AbstractTransportCapacityModel
     n::Int
     boundary_conditions::TransportCapacityBC = TransportCapacityBC(; n)
     parameters::TransportCapacityBagnoldParameters
@@ -501,7 +501,7 @@ function update_transport_capacity_model!(
 end
 
 "Engelund and Hansen river transport capacity model parameters"
-@with_kw struct TransportCapacityEngelundModel <: AbstractTransportCapacityModel
+@kwdef struct TransportCapacityEngelundModel <: AbstractTransportCapacityModel
     n::Int
     boundary_conditions::TransportCapacityBC = TransportCapacityBC(; n)
     parameters::TransportCapacityRiverParameters
@@ -546,7 +546,7 @@ function update_transport_capacity_model!(
 end
 
 "Struct to store Kodatie river transport capacity model parameters"
-@with_kw struct TransportCapacityKodatieParameters
+@kwdef struct TransportCapacityKodatieParameters
     # Kodatie transport capacity coefficient a [-]
     a_kodatie::Vector{Float64}
     # Kodatie transport capacity coefficient b [-]
@@ -599,7 +599,7 @@ function TransportCapacityKodatieParameters(
 end
 
 "Kodatie river transport capacity model"
-@with_kw struct TransportCapacityKodatieModel <: AbstractTransportCapacityModel
+@kwdef struct TransportCapacityKodatieModel <: AbstractTransportCapacityModel
     n::Int
     boundary_conditions::TransportCapacityBC = TransportCapacityBC(; n)
     variables::TransportCapacityModelVariables = TransportCapacityModelVariables(; n)
@@ -646,7 +646,7 @@ function update_transport_capacity_model!(
 end
 
 "Yang river transport capacity model"
-@with_kw struct TransportCapacityYangModel <: AbstractTransportCapacityModel
+@kwdef struct TransportCapacityYangModel <: AbstractTransportCapacityModel
     n::Int
     boundary_conditions::TransportCapacityBC = TransportCapacityBC(; n)
     parameters::TransportCapacityRiverParameters
@@ -691,7 +691,7 @@ function update_transport_capacity_model!(
 end
 
 "Molinas and Wu river transport capacity model"
-@with_kw struct TransportCapacityMolinasModel <: AbstractTransportCapacityModel
+@kwdef struct TransportCapacityMolinasModel <: AbstractTransportCapacityModel
     n::Int
     boundary_conditions::TransportCapacityBC = TransportCapacityBC(; n)
     parameters::TransportCapacityRiverParameters

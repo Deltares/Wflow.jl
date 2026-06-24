@@ -48,7 +48,7 @@
 
     @testset "update and get and set functions" begin
         @test BMI.get_current_time(model) == 86400.0
-        dest = zeros(Float64, size(model.land.soil.variables.water_table_depth))
+        dest = zeros(Float64, size(model.land.soil.variables.diagnostic.water_table_depth))
         var_name = "soil_water_saturated_zone_top__depth"
         BMI.get_value(model, var_name, dest)
         @test mean(dest) ≈ 0.278737829100285
@@ -57,32 +57,35 @@
             "soil_layer_1_water__volume_fraction",
             zeros(3),
             [1, 2, 3],
-        ) ≈ getindex.(model.land.soil.variables.volumetric_water_content, 1)[1:3]
+        ) ≈ getindex.(model.land.soil.variables.diagnostic.volumetric_water_content, 1)[1:3]
         BMI.set_value_at_indices(
             model,
             "soil_layer_2_water__volume_fraction",
             [1, 2, 3],
             [0.10, 0.15, 0.20],
-        ) ≈ getindex.(model.land.soil.variables.volumetric_water_content, 2)[1:3]
+        ) ≈ getindex.(model.land.soil.variables.diagnostic.volumetric_water_content, 2)[1:3]
         var_name = "river_water__instantaneous_volume_flow_rate"
         @test BMI.get_value_at_indices(model, var_name, zeros(3), [1, 100, 5617]) ≈
               [0.5295678995697858, 7.185077029190254, 0.023139147404872613]
         BMI.set_value(
             model,
             "soil_water_saturated_zone_top__depth",
-            fill(300.0, length(model.land.soil.variables.water_table_depth)),
+            fill(300.0, length(model.land.soil.variables.diagnostic.water_table_depth)),
         )
         var_name = "soil_water_saturated_zone_top__depth"
         BMI.set_value(
             model,
             var_name,
-            fill(300.0, length(model.land.soil.variables.water_table_depth)),
+            fill(300.0, length(model.land.soil.variables.diagnostic.water_table_depth)),
         )
         @test mean(
             BMI.get_value(
                 model,
                 var_name,
-                zeros(Float64, size(model.land.soil.variables.water_table_depth)),
+                zeros(
+                    Float64,
+                    size(model.land.soil.variables.diagnostic.water_table_depth),
+                ),
             ),
         ) == 300.0
         BMI.set_value_at_indices(model, var_name, [1], [250.0])
@@ -175,10 +178,11 @@ end
     tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     model = BMI.initialize(Wflow.Model, tomlpath)
     @test Wflow.get_start_unix_time(model) == 9.466848e8
-    saturated_water_depth = mean(model.land.soil.variables.saturated_water_depth)
+    saturated_water_depth = mean(model.land.soil.variables.states.saturated_water_depth)
     model.config.model.cold_start__flag = false
     Wflow.load_state(model)
-    @test saturated_water_depth ≠ mean(model.land.soil.variables.saturated_water_depth)
+    @test saturated_water_depth ≠
+          mean(model.land.soil.variables.states.saturated_water_depth)
     @test_logs (
         :info,
         "Write output states to netCDF file `$(model.writer.endstate_writer.output_path)`.",

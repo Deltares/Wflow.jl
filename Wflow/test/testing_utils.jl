@@ -103,6 +103,7 @@ function init_sbm_soil_model(n, N; kwargs...)
 
     if !haskey(kwargs, :vegetation_parameter_set)
         kwargs[:vegetation_parameter_set] = Wflow.VegetationParameters(;
+            n,
             rooting_depth = get(kwargs, :rooting_depth, []),
             leaf_area_index = nothing,
             storage_wood = nothing,
@@ -115,7 +116,7 @@ function init_sbm_soil_model(n, N; kwargs...)
     end
 
     if !haskey(kwargs, :maximum_number_of_layers)
-        kwargs[:maximum_number_of_layers] = 0
+        kwargs[:maximum_number_of_layers] = N
     end
 
     # Vectors of SVectors
@@ -135,48 +136,70 @@ function init_sbm_soil_model(n, N; kwargs...)
         end
     end
 
-    # Vectors of other types
-    for field_name in [
-        # Variables
-        :unsaturated_store_capacity,
-        :saturated_water_depth,
-        :drainable_water_depth,
-        :water_table_depth,
-        :n_unsatlayers,
-        :total_soil_water_storage,
-        # Parameters
-        :number_of_layers,
-        :theta_s,
-        :theta_r,
-        :theta_fc,
-        :soil_water_capacity,
-        :air_entry_pressure,
-        :soil_thickness,
-        :infiltration_capacity_compacted_soil,
-        :infiltration_capacity_soil,
-        :maximum_leakage,
-        :cap_hmax,
-        :cap_n,
-        :w_soil,
-        :cf_soil,
-        :compacted_soil_area_fraction,
-        :wet_root_distribution_parameter,
-        :h1,
-        :h2,
-        :h3_high,
-        :h3_low,
-        :h4,
-        :alpha_h1,
-        :soil_fraction,
-    ]
-        if !haskey(kwargs, field_name)
-            kwargs[field_name] = []
+    for T in
+        (Wflow.SbmSoilParameters, Wflow.SbmSoilStates, Wflow.SbmSoilDiagnosticVariables)
+        for (field_name, field_type) in zip(fieldnames(T), fieldtypes(T))
+            if !haskey(kwargs, field_name) &&
+               field_name ∈ (
+                # Variables
+                :unsaturated_store_capacity,
+                :saturated_water_depth,
+                :drainable_water_depth,
+                :water_table_depth,
+                :n_unsatlayers,
+                :total_soil_water_storage,
+                # Parameters
+                :number_of_layers,
+                :theta_s,
+                :theta_r,
+                :theta_fc,
+                :soil_water_capacity,
+                :air_entry_pressure,
+                :soil_thickness,
+                :infiltration_capacity_compacted_soil,
+                :infiltration_capacity_soil,
+                :maximum_leakage,
+                :cap_hmax,
+                :cap_n,
+                :w_soil,
+                :cf_soil,
+                :compacted_soil_area_fraction,
+                :wet_root_distribution_parameter,
+                :h1,
+                :h2,
+                :h3_high,
+                :h3_low,
+                :h4,
+                :alpha_h1,
+                :bare_soil_fraction,
+            )
+                kwargs[field_name] = field_type()
+            end
         end
     end
 
-    kwargs_variables =
-        filter(pair -> pair.first ∈ fieldnames(Wflow.SbmSoilVariables), kwargs)
-    variables = Wflow.SbmSoilVariables(; kwargs_variables...)
+    kwargs_states = filter(pair -> pair.first ∈ fieldnames(Wflow.SbmSoilStates), kwargs)
+    states = Wflow.SbmSoilStates(; kwargs_states...)
+
+    kwargs_diagnostic =
+        filter(pair -> pair.first ∈ fieldnames(Wflow.SbmSoilDiagnosticVariables), kwargs)
+    diagnostic = Wflow.SbmSoilDiagnosticVariables(; kwargs_diagnostic...)
+
+    kwargs_intermediates =
+        filter(pair -> pair.first ∈ fieldnames(Wflow.SbmSoilIntermediates), kwargs)
+    intermediates = Wflow.SbmSoilIntermediates(; kwargs_intermediates...)
+
+    kwargs_fluxes = filter(pair -> pair.first ∈ fieldnames(Wflow.SbmSoilFluxes), kwargs)
+    fluxes = Wflow.SbmSoilFluxes(; kwargs_fluxes...)
+
+    variables = Wflow.SbmSoilVariables(;
+        n,
+        maximum_number_of_layers = kwargs[:maximum_number_of_layers],
+        states,
+        diagnostic,
+        intermediates,
+        fluxes,
+    )
 
     kwargs_parameters =
         filter(pair -> pair.first ∈ fieldnames(Wflow.SbmSoilParameters), kwargs)
@@ -185,7 +208,13 @@ function init_sbm_soil_model(n, N; kwargs...)
     kwargs_bc = filter(pair -> pair.first ∈ fieldnames(Wflow.SbmSoilBC), kwargs)
     boundary_conditions = Wflow.SbmSoilBC(; kwargs_bc...)
 
-    return Wflow.SbmSoilModel(; n, variables, parameters, boundary_conditions)
+    return Wflow.SbmSoilModel(;
+        n,
+        maximum_number_of_layers = get(kwargs, :maximum_number_of_layers, 0),
+        variables,
+        parameters,
+        boundary_conditions,
+    )
 end
 
 """
@@ -215,10 +244,28 @@ function get_means(obj)
     return d
 end
 
+# Look up a field by name, searching `obj` itself and, for the SBM soil variables, its
+# substructs (states, diagnostic, intermediates, fluxes).
+function get_field_nested(obj, s::Symbol)
+    s in propertynames(obj) && return getfield(obj, s)
+    for name in propertynames(obj)
+        sub = getfield(obj, name)
+        if sub isa Union{
+            Wflow.SbmSoilStates,
+            Wflow.SbmSoilDiagnosticVariables,
+            Wflow.SbmSoilIntermediates,
+            Wflow.SbmSoilFluxes,
+        } && s in propertynames(sub)
+            return getfield(sub, s)
+        end
+    end
+    error("Field $s not found in $(typeof(obj))")
+end
+
 function test_means(obj::Any, means::Dict{Symbol})
     failed = Symbol[]
     for (s, v) in means
-        v_obj = get_mean(getfield(obj, s))
+        v_obj = get_mean(get_field_nested(obj, s))
         if !(v_obj ≈ v)
             push!(failed, s)
             err = v - v_obj

@@ -22,7 +22,7 @@ The edges are defined as follows:
 - `idx_down` is the edge between node `idx_down` in the `CartesianIndex(0,-1)` direction and the
   neighboring node (`CartesianIndex(0,-2)` direction).
 """
-@with_kw struct EdgeConnectivity
+@kwdef struct EdgeConnectivity
     n::Int
     idx_right::Vector{Int} = zeros(Int, n)
     idx_left::Vector{Int} = zeros(Int, n)

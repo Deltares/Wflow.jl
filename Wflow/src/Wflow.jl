@@ -60,7 +60,6 @@ using LoggingExtras:
     with_logger
 using NCDatasets: NCDatasets, NCDataset, dimnames, dimsize, nomissing, defDim, defVar, path
 using OrderedCollections: OrderedDict
-using Parameters: @with_kw
 using Polyester: @batch
 using ProgressLogging: @progress
 using PropertyDicts: PropertyDict
@@ -68,6 +67,35 @@ using StaticArrays: SVector, pushfirst, setindex
 using Statistics: mean, median, quantile!, quantile
 using TerminalLoggers
 using TOML: TOML
+
+import WflowSoil:
+    AbstractSoilModel,
+    bounded_power,
+    get_rootingdepth,
+    hydraulic_conductivity_at_depth,
+    KvExponential,
+    KvExponentialConstant,
+    KvLayered,
+    KvLayeredExponential,
+    lower_bound_drainable_porosity,
+    MISSING_VALUE,
+    number_of_active_layers,
+    pow,
+    SbmSoilBC,
+    SbmSoilDiagnosticVariables,
+    SbmSoilFluxes,
+    SbmSoilIntermediates,
+    SbmSoilModel,
+    SbmSoilParameters,
+    SbmSoilStates,
+    SbmSoilVariables,
+    scurve,
+    set_layerthickness,
+    threaded_foreach,
+    update_diagnostic_vars!,
+    update_soil_water_flow!,
+    VegetationParameters,
+    WflowSoil
 
 const CFDataset = Union{NCDataset, NCDatasets.MFDataset}
 const CFVariable_MF = Union{NCDatasets.CFVariable, NCDatasets.MFCFVariable}
@@ -185,8 +213,6 @@ end
 
 # prevent a large printout of model components and arrays
 Base.show(io::IO, ::AbstractModel{T}) where {T} = print(io, "model of type ", T)
-
-const MISSING_VALUE = Float64(NaN)
 
 include("forcing.jl")
 include("vegetation/parameters.jl")

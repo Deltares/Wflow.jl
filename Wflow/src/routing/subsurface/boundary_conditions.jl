@@ -20,7 +20,7 @@ function check_flux(flux::Float64, subsurface_flow_model::LateralSSFModel, index
     end
 end
 
-@with_kw struct GwfRiverParameters
+@kwdef struct GwfRiverParameters
     # [m² s⁻¹]
     infiltration_conductance::Vector{Float64}
     # [m² s⁻¹]
@@ -28,7 +28,7 @@ end
     bottom::Vector{Float64} # [m]
 end
 
-@with_kw struct GwfRiverVariables
+@kwdef struct GwfRiverVariables
     n::Int
     # [m]
     stage::Vector{Float64} = fill(MISSING_VALUE, n)
@@ -42,7 +42,7 @@ end
     flux_average::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
-@with_kw struct GwfRiverModel <: AbstractSubsurfaceFlowBC
+@kwdef struct GwfRiverModel <: AbstractSubsurfaceFlowBC
     parameters::GwfRiverParameters
     variables::GwfRiverVariables
 end
@@ -103,14 +103,14 @@ function flux!(
     return nothing
 end
 
-@with_kw struct DrainageParameters
+@kwdef struct DrainageParameters
     # [m]
     elevation::Vector{Float64}
     # [m² s⁻¹]
     conductance::Vector{Float64}
 end
 
-@with_kw struct DrainageVariables
+@kwdef struct DrainageVariables
     n::Int
     # [m³ s⁻¹]
     flux::Vector{Float64} = fill(MISSING_VALUE, n)
@@ -120,7 +120,7 @@ end
     flux_cumulative::Vector{Float64} = zeros(n)
 end
 
-@with_kw struct DrainageModel <: AbstractSubsurfaceFlowBC
+@kwdef struct DrainageModel <: AbstractSubsurfaceFlowBC
     parameters::DrainageParameters
     variables::DrainageVariables
 end
@@ -161,12 +161,12 @@ function flux!(
     return nothing
 end
 
-@with_kw struct HeadBoundaryParameters
+@kwdef struct HeadBoundaryParameters
     # [m² s⁻¹]
     conductance::Vector{Float64}
 end
 
-@with_kw struct HeadBoundaryVariables
+@kwdef struct HeadBoundaryVariables
     # [m]
     head::Vector{Float64}
     # [m³ s⁻¹]
@@ -177,7 +177,7 @@ end
     flux_average::Vector{Float64}
 end
 
-@with_kw struct HeadBoundary <: AbstractSubsurfaceFlowBC
+@kwdef struct HeadBoundary <: AbstractSubsurfaceFlowBC
     parameters::HeadBoundaryParameters
     variables::HeadBoundaryVariables
 end
@@ -200,7 +200,7 @@ function flux!(
     return nothing
 end
 
-@with_kw struct RechargeVariables
+@kwdef struct RechargeVariables
     n::Int
     # [m s⁻¹]
     rate::Vector{Float64} = fill(MISSING_VALUE, n)
@@ -211,7 +211,7 @@ end
     flux_average::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
-@with_kw struct RechargeModel <: AbstractSubsurfaceFlowBC
+@kwdef struct RechargeModel <: AbstractSubsurfaceFlowBC
     n::Int
     variables::RechargeVariables = RechargeVariables(; n)
 end
@@ -235,7 +235,7 @@ function flux!(
     return nothing
 end
 
-@with_kw struct WellVariables
+@kwdef struct WellVariables
     # [m³ s⁻¹]
     volumetric_rate::Vector{Float64}
     # [m³ s⁻¹]
@@ -246,7 +246,7 @@ end
     flux_average::Vector{Float64}
 end
 
-@with_kw struct WellModel <: AbstractSubsurfaceFlowBC
+@kwdef struct WellModel <: AbstractSubsurfaceFlowBC
     variables::WellVariables
 end
 

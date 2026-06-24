@@ -1,7 +1,7 @@
 abstract type AbstractInterceptionModel end
 
 "Struct for storing interception model variables"
-@with_kw struct InterceptionVariables
+@kwdef struct InterceptionVariables
     n::Int
     # Canopy potential evaporation [m s⁻¹]
     canopy_potevap::Vector{Float64} = fill(MISSING_VALUE, n)
@@ -16,14 +16,14 @@ abstract type AbstractInterceptionModel end
 end
 
 "Struct for storing Gash interception model parameters"
-@with_kw struct GashParameters
+@kwdef struct GashParameters
     # ratio [-] of wet canopy [m s⁻¹] and the average precipitation intensity [m s⁻¹] on a saturated canopy
     evaporation_to_precipitation_ratio::Vector{Float64}
     vegetation_parameter_set::VegetationParameters
 end
 
 "Gash interception model"
-@with_kw struct GashInterceptionModel <: AbstractInterceptionModel
+@kwdef struct GashInterceptionModel <: AbstractInterceptionModel
     n::Int
     parameters::GashParameters
     variables::InterceptionVariables = InterceptionVariables(; n)
@@ -98,7 +98,7 @@ function update_interception_model!(
 end
 
 "Rutter interception model"
-@with_kw struct RutterInterceptionModel <: AbstractInterceptionModel
+@kwdef struct RutterInterceptionModel <: AbstractInterceptionModel
     parameters::VegetationParameters
     variables::InterceptionVariables
 end

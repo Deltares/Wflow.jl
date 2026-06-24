@@ -40,6 +40,7 @@
         infiltration_capacity_soil = [3.87100996794524e-6],
         compacted_soil_area_fraction = [0.0],
         vegetation_parameter_set = Wflow.VegetationParameters(;
+            n,
             rooting_depth = [0.15],
             leaf_area_index = nothing,
             canopy_gap_fraction = [0.1],
