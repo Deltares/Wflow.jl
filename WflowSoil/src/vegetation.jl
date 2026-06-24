@@ -14,7 +14,7 @@
     # Maximum canopy storage [m]
     maximum_canopy_storage::Vector{Float64} = fill(MISSING_VALUE, n)
     # Rooting depth [m]
-    rooting_depth::Vector{Float64} = []
+    rooting_depth::Vector{Float64} = fill(MISSING_VALUE, n)
     # Crop coefficient Kc [-]
-    crop_coefficient::Vector{Float64} = []
+    crop_coefficient::Vector{Float64} = fill(MISSING_VALUE, n)
 end
