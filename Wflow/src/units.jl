@@ -41,6 +41,7 @@ struct Unit
     t::PowersType # tonne
     # Energy
     J::PowersType # joule
+    W::PowersType # watt
     # Fraction
     percentage::PowersType # percentage, converted to unitless fraction in the SI standard
     ppm::PowersType # parts per million, converted to unitless fraction in the SI standard
@@ -113,6 +114,7 @@ const to_SI_data = @NamedTuple{factor::Float64, unit_SI::Unit}[
     (factor = 1e-3, unit_SI = Unit(; kg = 1)), # g
     (factor = 1e3, unit_SI = Unit(; kg = 1)), # t
     (factor = 1.0, unit_SI = Unit(; kg = 1, m = 2, s = -2)), # J
+    (factor = 1.0, unit_SI = Unit(; kg = 1, m = 2, s = -3)), # W
     (factor = 1e-2, unit_SI = Unit()), # percentage
     (factor = 1e-6, unit_SI = Unit()), # ppm
 ]

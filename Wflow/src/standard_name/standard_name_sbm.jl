@@ -33,6 +33,64 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
         allow_dynamic_input = true,
         tags = [:atmospheric_forcing],
     ),
+    "land_surface_incoming_shortwave_radiation__energy_flux" => ParameterMetadata(;
+        lens = @optic(_.land.atmospheric_forcing.shortwave_radiation_in),
+        unit = Unit(; W = 1, m = -2),
+        description = "Downward shortwave radiation",
+        allow_dynamic_input = true,
+        tags = [:atmospheric_forcing],
+    ),
+    "land_surface_total_net_radiation__energy_flux" => ParameterMetadata(;
+        lens = @optic(_.land.atmospheric_forcing.net_radiation),
+        unit = Unit(; W = 1, m = -2),
+        description = "Net radiation",
+        allow_dynamic_input = true,
+        tags = [:atmospheric_forcing],
+    ),
+    "land_surface_air_flow__speed" => ParameterMetadata(;
+        lens = @optic(_.land.atmospheric_forcing.wind_speed),
+        unit = Unit(; m = 1, s = -1),
+        description = "Wind speed",
+        allow_dynamic_input = true,
+        tags = [:atmospheric_forcing],
+    ),
+    "land_surface__temperature" => ParameterMetadata(;
+        lens = @optic(_.land.land_surface_temperature.variables.land_surface_temperature),
+        unit = Unit(; degC = 1, absolute_temperature = true),
+        description = "Land surface temperature",
+        tags = [:soil_output],
+    ),
+    "land_surface_net_shortwave_radiation__energy_flux" => ParameterMetadata(;
+        lens = @optic(_.land.land_surface_temperature.variables.net_shortwave_radiation),
+        unit = Unit(; W = 1, m = -2),
+        description = "Net shortwave radiation",
+        tags = [:soil_output],
+    ),
+    "land_surface_net_longwave_radiation__energy_flux" => ParameterMetadata(;
+        lens = @optic(_.land.land_surface_temperature.variables.net_longwave_radiation),
+        unit = Unit(; W = 1, m = -2),
+        description = "Net longwave radiation",
+        tags = [:soil_output],
+    ),
+    "land_surface_air_latent_heat_of_evaporation__energy_flux" => ParameterMetadata(;
+        lens = @optic(_.land.land_surface_temperature.variables.latent_heat_flux),
+        unit = Unit(; W = 1, m = -2),
+        description = "Latent heat flux",
+        tags = [:soil_output],
+    ),
+    "land_surface_air_net_sensible_heat__energy_flux" => ParameterMetadata(;
+        lens = @optic(_.land.land_surface_temperature.variables.sensible_heat_flux),
+        unit = Unit(; W = 1, m = -2),
+        description = "Sensible heat flux",
+        tags = [:soil_output],
+    ),
+    "atmosphere_bottom_air__bulk_momentum_aerodynamic_resistance" =>
+        ParameterMetadata(;
+            lens = @optic(_.land.land_surface_temperature.variables.aerodynamic_resistance),
+            unit = Unit(; s = 1, m = -1),
+            description = "Aerodynamic resistance",
+            tags = [:soil_output],
+        ),
     "compacted_soil_surface_water__infiltration_capacity" => ParameterMetadata(;
         lens = @optic(_.land.soil.parameters.infiltration_capacity_compacted_soil),
         unit = Unit(; mm = 1, d = -1),
@@ -618,6 +676,12 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
         unit = Unit(; mm = 1, dt = -1),
         description = "Actual groundwater abstraction",
         tags = [:demand_allocation_output],
+    ),
+    "vegetation_canopy__height" => ParameterMetadata(;
+        lens = @optic(_.land.vegetation_parameters.canopy_height),
+        default = 0.12,
+        description = "Canopy height",
+        tags = [:vegetation_input],
     ),
     "vegetation__crop_factor" => ParameterMetadata(;
         lens = @optic(_.land.vegetation_parameters.crop_coefficient),

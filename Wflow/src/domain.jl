@@ -26,6 +26,8 @@
     river_fraction::Vector{Float64} = Float64[]
     # fraction of open water (excluding rivers) [-]
     water_fraction::Vector{Float64} = Float64[]
+    # Surface albedo [-]
+    albedo::Vector{Float64} = Float64[]
 end
 
 "Struct to store (shared) river parameters"
@@ -202,6 +204,7 @@ function LandParameters(dataset::NCDataset, config::Config, network::NetworkLand
     reservoir_coverage = reservoir_mask(dataset, config, network; region = "area")
     river_location = river_mask(dataset, config, network)
 
+    albedo = ncread(dataset, config, "land_surface__albedo", Domain; sel = network.indices)
     land_parameters = LandParameters(;
         area,
         flow_width,
@@ -209,6 +212,7 @@ function LandParameters(dataset::NCDataset, config::Config, network::NetworkLand
         reservoir_outlet,
         reservoir_coverage,
         river_location,
+        albedo,
     )
     return land_parameters
 end
@@ -240,6 +244,7 @@ function LandParameters(dataset::NCDataset, config::Config, domain::Domain)
 
     reservoir_outlet = reservoir_mask(dataset, config, network)
     reservoir_coverage = reservoir_mask(dataset, config, network; region = "area")
+    albedo = ncread(dataset, config, "land_surface__albedo", Domain; sel = network.indices)
 
     land_parameters = LandParameters(;
         x_length,
@@ -255,6 +260,7 @@ function LandParameters(dataset::NCDataset, config::Config, domain::Domain)
         reservoir_coverage,
         river_fraction,
         water_fraction,
+        albedo,
     )
     return land_parameters
 end

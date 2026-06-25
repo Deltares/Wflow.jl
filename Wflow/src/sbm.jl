@@ -8,6 +8,7 @@ abstract type AbstractAllocationModel end
     vegetation_parameters::VegetationParameters
     interception::AbstractInterceptionModel
     snow::AbstractSnowModel
+    land_surface_temperature::AbstractLandSurfaceTemperatureModel
     glacier::AbstractGlacierModel
     runoff::AbstractRunoffModel
     soil::SbmSoilModel
@@ -22,6 +23,12 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
     n = length(indices)
 
     atmospheric_forcing = AtmosphericForcing(; n)
+    do_land_surface_temperature = config.model.land_surface_temperature__flag
+    if do_land_surface_temperature
+        @reset atmospheric_forcing.shortwave_radiation_in = fill(MISSING_VALUE, n)
+        @reset atmospheric_forcing.wind_speed = fill(MISSING_VALUE, n)
+        @reset atmospheric_forcing.net_radiation = fill(MISSING_VALUE, n)
+    end
     vegetation_parameters = VegetationParameters(dataset, config, indices)
     if dt >= Hour(23)
         interception =
@@ -64,12 +71,18 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
         allocation = NoAllocationLandModel(n)
         demand = NoDemandModel(; n)
     end
+    if do_land_surface_temperature
+        land_surface_temperature = LandSurfaceTemperatureModel(n)
+    else
+        land_surface_temperature = NoLandSurfaceTemperatureModel()
+    end
 
     return LandHydrologySBM(;
         atmospheric_forcing,
         vegetation_parameters,
         interception,
         snow,
+        land_surface_temperature,
         glacier,
         runoff,
         soil,
@@ -87,8 +100,17 @@ function update_land_hydrology_model!(
     dt::Float64,
 )
     (; parameters) = domain.land
-    (; glacier, snow, interception, runoff, soil, demand, allocation, atmospheric_forcing) =
-        land_hydrology_model
+    (;
+        glacier,
+        snow,
+        land_surface_temperature,
+        interception,
+        runoff,
+        soil,
+        demand,
+        allocation,
+        atmospheric_forcing,
+    ) = land_hydrology_model
 
     update_interception_model!(interception, atmospheric_forcing, dt)
 
@@ -127,6 +149,20 @@ function update_land_hydrology_model!(
     )
 
     update_soil_water_flow!(soil, atmospheric_forcing, (; snow, runoff, demand), config, dt)
+
+    # Update land surface temperature if enabled
+    if config.model.land_surface_temperature__flag
+        wind_measurement_height = config.model.land_surface_wind__speed_reference_height
+        update_land_surface_temperature!(
+            land_surface_temperature,
+            soil,
+            atmospheric_forcing,
+            model.vegetation_parameters,
+            wind_measurement_height,
+            dt,
+        )
+    end
+
     @. soil.variables.actual_evapotranspiration += interception.variables.interception_rate
     return nothing
 end

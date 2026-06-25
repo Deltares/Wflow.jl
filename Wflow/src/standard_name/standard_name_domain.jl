@@ -31,4 +31,11 @@ const domain_standard_name_map = OrderedDict{String, ParameterMetadata}(
         description = "Water allocation area ids",
         tags = [:generic_input_map],
     ),
+    "land_surface__albedo" => ParameterMetadata(;
+        lens = @optic(_.domain.land.parameters.albedo),
+        description = "Land surface albedo",
+        default = 0.2,
+        allow_dynamic_input = true,
+        tags = [:generic_input_map],
+    ),
 )

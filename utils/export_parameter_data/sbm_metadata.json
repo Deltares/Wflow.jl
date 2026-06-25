@@ -26,6 +26,15 @@
     "allow_missing": false,
     "allow_dynamic_input": true
   },
+  "atmosphere_bottom_air__bulk_momentum_aerodynamic_resistance": {
+    "unit": "s m-1",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Aerodynamic resistance",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
   "atmosphere_water__precipitation_volume_flux": {
     "unit": "mm Δt-1",
     "default": null,
@@ -313,6 +322,78 @@
     "description": "Total actual evapotranspiration",
     "allow_missing": false,
     "allow_dynamic_input": false
+  },
+  "land_surface__temperature": {
+    "unit": "°C",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Land surface temperature",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "land_surface_air_flow__speed": {
+    "unit": "m s-1",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Wind speed",
+    "allow_missing": false,
+    "allow_dynamic_input": true
+  },
+  "land_surface_air_latent_heat_of_evaporation__energy_flux": {
+    "unit": "W m-2",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Latent heat flux",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "land_surface_air_net_sensible_heat__energy_flux": {
+    "unit": "W m-2",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Sensible heat flux",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "land_surface_incoming_shortwave_radiation__energy_flux": {
+    "unit": "W m-2",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Downward shortwave radiation",
+    "allow_missing": false,
+    "allow_dynamic_input": true
+  },
+  "land_surface_net_longwave_radiation__energy_flux": {
+    "unit": "W m-2",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Net longwave radiation",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "land_surface_net_shortwave_radiation__energy_flux": {
+    "unit": "W m-2",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Net shortwave radiation",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "land_surface_total_net_radiation__energy_flux": {
+    "unit": "W m-2",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Net radiation",
+    "allow_missing": false,
+    "allow_dynamic_input": true
   },
   "land_surface_water__abstraction_volume_flux": {
     "unit": "mm Δt-1",
@@ -878,6 +959,15 @@
     "fill": null,
     "type": "Float64",
     "description": "Canopy gap fraction",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "vegetation_canopy__height": {
+    "unit": "-",
+    "default": 0.12,
+    "fill": null,
+    "type": "Float64",
+    "description": "Canopy height",
     "allow_missing": false,
     "allow_dynamic_input": false
   },

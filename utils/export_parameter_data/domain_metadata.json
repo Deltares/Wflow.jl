@@ -17,6 +17,15 @@
     "allow_missing": false,
     "allow_dynamic_input": false
   },
+  "land_surface__albedo": {
+    "unit": "-",
+    "default": 0.2,
+    "fill": null,
+    "type": "Float64",
+    "description": "Land surface albedo",
+    "allow_missing": false,
+    "allow_dynamic_input": true
+  },
   "land_water_allocation_area__count": {
     "unit": "-",
     "default": 1,

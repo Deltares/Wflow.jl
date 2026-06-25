@@ -515,7 +515,7 @@ end
         @test isfile(path_log)
         rm(tomlpath_temp)
         lines = readlines(path_log)
-        @test count(startswith(line, "[ Info: ") for line in lines) == 63
+        @test count(startswith(line, "[ Info: ") for line in lines) == 65
         @test count(startswith(line, "┌ Debug: ") for line in lines) == 0
 
         # Another run with debug log level and a non-default path_log.
