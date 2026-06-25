@@ -205,7 +205,7 @@ end
             SVector(0.0001909439890049523, 0.01627933934181815, 0.058425012193036086, 0.0),
         ],
         n_unsatlayers = [3],
-        water_table_depth = [0.7588905603985703],
+        water_table_depth = [0.748312461531486],
         # Parameters
         maximum_number_of_layers,
         cumulative_layer_depth,
@@ -217,15 +217,15 @@ end
     )
 
     ssf_prev = 0.627032986563781
-    zi_prev = 0.7588905603985703
-    q_net = 773.9150244657355
+    zi_prev = 0.748312461531486
+    q_net = 0.008957349820205272
     slope = 0.4522336721420288
     sy = 0.20423455984891598
     d = 2.0
-    dt = 1.0
+    dt = 86400.0
     dx = 1117.0150713112287
     dw = 517.495693771673
-    ssfmax = 153.46698446681825
+    ssfmax = 0.0017762382461437296
     kh_profile = Wflow.KhExponentialConstant(kh_profile, [0.2])
     i = 1
 
@@ -243,13 +243,13 @@ end
         ssfmax,
         kh_profile,
         soil,
-        1,
+        i,
     )
 
-    @test ssf ≈ 0.6300110241913047
-    @test water_table_depth ≈ 0.7521780183868452
+    @test ssf ≈ 0.5171363105669935
+    @test water_table_depth ≈ 1.1202203724020348
     @test exfilt ≈ 0.0
-    @test net_flux ≈ 0.00133774649062672
+    @test net_flux ≈ -8.791255611224121e-7
 end
 
 @testitem "unit: accucapacity" begin
