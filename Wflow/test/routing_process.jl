@@ -108,7 +108,6 @@ end
     cumulative_layer_depth = [SVector(0.0, 0.1, 0.4, 1.2, 2.0)]
     maximum_number_of_layers = 4
     number_of_layers = [4]
-    n_unsatlayers = [3]
     theta_s = [0.48642662167549133]
     theta_r = [0.11939866840839386]
     theta_fc = [0.28219206182657536]
@@ -135,7 +134,7 @@ end
         unsaturated_layer_depth = [
             SVector(0.0001909439890049523, 0.01627933934181815, 0.019508197676020186, 0.0),
         ],
-        n_unsatlayers,
+        n_unsatlayers = [3],
         water_table_depth = [0.5198340870375974],
         # Parameters
         maximum_number_of_layers,
@@ -147,6 +146,8 @@ end
         actual_layer_thickness,
     )
 
+    # Case: !(ssfin + ssf_prev ≈ 0.0 && qnet <= 0)
+    # Case: !(zi > d)
     ssf, water_table_depth, exfilt, net_flux = Wflow.kinematic_wave_ssf(
         ssfin,
         ssf_prev,
@@ -168,10 +169,10 @@ end
     @test exfilt ≈ 0.0
     @test net_flux ≈ -3.904277181728481e-7
 
-    # Case: ssfin + ssf_prev ≈ 0.0 && r <= 0
+    # Case: ssfin + ssf_prev ≈ 0.0 && q_net <= 0
     ssf_prev = 0.0
-    hydraulic_radius = 0.0
-    zi_prev = 0.5198340870375974
+    q_net = 0.0
+    zi_prev = 0.0
     ssfmax = 0.0009215296489248933
     kh_profile = Wflow.KhExponential([0.002379589787235966], [1.0141291422769427])
     ssf, water_table_depth, exfilt, sy_d = Wflow.kinematic_wave_ssf(
@@ -195,30 +196,6 @@ end
     @test iszero(exfilt)
     @test sy_d ≈ 0.0
 
-    # Case: !(ssfin + ssf_prev ≈ 0.0 && r <= 0)
-    # Case: !(zi > d)
-    ssf_prev = 0.30038365579798126
-    ssf, water_table_depth, exfilt, sy_d = Wflow.kinematic_wave_ssf(
-        ssfin,
-        ssf_prev,
-        zi_prev,
-        q_net,
-        slope,
-        sy,
-        d,
-        dt,
-        dx,
-        dw,
-        ssfmax,
-        kh_profile,
-        soil_model,
-        i,
-    )
-    @test ssf ≈ 0.255794305836017
-    @test water_table_depth ≈ 0.7029236021516849
-    @test exfilt ≈ 0.0
-    @test net_flux ≈ -3.904277181728481e-7
-
     soil = init_sbm_soil_model(
         n,
         N;
@@ -227,7 +204,7 @@ end
         unsaturated_layer_depth = [
             SVector(0.0001909439890049523, 0.01627933934181815, 0.058425012193036086, 0.0),
         ],
-        n_unsatlayers,
+        n_unsatlayers = [3],
         water_table_depth = [0.7588905603985703],
         # Parameters
         maximum_number_of_layers,
