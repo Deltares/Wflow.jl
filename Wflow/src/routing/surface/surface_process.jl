@@ -63,7 +63,7 @@ function kinematic_wave(q_in, q_prev, q_lat, alpha, dt, dx)
             # Halley's correction: u -= f*f' / (f'^2 - f*f''/2)
             u -= (f_u * df_u) / (df_u * df_u - f_u * d2f_u / 2)
             if isnan(u) || u <= 0.0
-                u = KIN_WAVE_MIN_FLOW_QROOT
+                u = 0.0
             end
             if (abs(f_u) <= epsilon)
                 break
