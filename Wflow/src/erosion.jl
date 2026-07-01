@@ -1,5 +1,5 @@
 "Soil loss model"
-@with_kw struct SoilLossModel{
+@kwdef struct SoilLossModel{
     RE <: AbstractRainfallErosionModel,
     OFE <: AbstractOverlandFlowErosionModel,
     SE <: AbstractSoilErosionModel,

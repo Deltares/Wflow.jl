@@ -370,7 +370,7 @@ parameter = "atmosphere_air__temperature"
 coordinate.x = 6.255
 coordinate.y = 50.012
 header = "vwc_layer2_bycoord"
-parameter = "land.soil.variables.volumetric_water_content"
+parameter = "land.soil.variables.diagnostic.volumetric_water_content"
 layer = 2
 
 [[output.csv.column]]

@@ -1,7 +1,7 @@
 abstract type AbstractSoilErosionModel end
 
 "Struct for storing total soil erosion with differentiation model variables"
-@with_kw struct SoilErosionModelVariables
+@kwdef struct SoilErosionModelVariables
     n::Int
     # Total soil erosion rate [kg s⁻¹]
     soil_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
@@ -18,7 +18,7 @@ abstract type AbstractSoilErosionModel end
 end
 
 "Struct for storing soil erosion model boundary conditions"
-@with_kw struct SoilErosionBC
+@kwdef struct SoilErosionBC
     n::Int
     # Rainfall erosion rate [kg s⁻¹]
     rainfall_erosion::Vector{Float64} = fill(MISSING_VALUE, n)
@@ -27,7 +27,7 @@ end
 end
 
 "Struct for storing soil erosion model parameters"
-@with_kw struct SoilErosionParameters
+@kwdef struct SoilErosionParameters
     # Soil content clay [-]
     clay_fraction::Vector{Float64}
     # Soil content silt [-]
@@ -92,7 +92,7 @@ function SoilErosionParameters(
 end
 
 "Total soil erosion with differentiation model"
-@with_kw struct SoilErosionModel <: AbstractSoilErosionModel
+@kwdef struct SoilErosionModel <: AbstractSoilErosionModel
     n::Int
     boundary_conditions::SoilErosionBC = SoilErosionBC(; n)
     parameters::SoilErosionParameters

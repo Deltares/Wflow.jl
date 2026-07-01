@@ -2,7 +2,7 @@ abstract type AbstractSedimentRiverTransportModel end
 abstract type AbstractSedimentConcentrationsRiverModel end
 
 "Struct to store river sediment transport model variables"
-@with_kw struct SedimentRiverTransportVariables
+@kwdef struct SedimentRiverTransportVariables
     n::Int
     # Sediment flux [kg s⁻¹]
     sediment_rate::Vector{Float64} = fill(MISSING_VALUE, n)
@@ -33,7 +33,7 @@ abstract type AbstractSedimentConcentrationsRiverModel end
 end
 
 "Struct to store river sediment transport model boundary conditions"
-@with_kw struct SedimentRiverTransportBC
+@kwdef struct SedimentRiverTransportBC
     n::Int
     # Waterlevel [m]
     waterlevel::Vector{Float64} = fill(MISSING_VALUE, n)
@@ -53,7 +53,7 @@ end
 end
 
 "Struct to store river sediment transport model parameters"
-@with_kw struct SedimentRiverTransportParameters
+@kwdef struct SedimentRiverTransportParameters
     # River bed/bank content clay [-]
     clay_fraction::Vector{Float64}
     # River bed/bank content silt [-]
@@ -189,7 +189,7 @@ function SedimentRiverTransportParameters(
 end
 
 "Struct to store river sediment transport model"
-@with_kw struct SedimentRiverTransportModel <: AbstractSedimentRiverTransportModel
+@kwdef struct SedimentRiverTransportModel <: AbstractSedimentRiverTransportModel
     n::Int
     boundary_conditions::SedimentRiverTransportBC = SedimentRiverTransportBC(; n)
     parameters::SedimentRiverTransportParameters
@@ -815,7 +815,7 @@ function update_sediment_river_transport_model!(
 end
 
 "Struct to store river sediment concentrations model variables"
-@with_kw struct SedimentConcentrationsRiverVariables
+@kwdef struct SedimentConcentrationsRiverVariables
     n::Int
     # Total sediment concentration in the river [kg m⁻³]
     total::Vector{Float64} = fill(MISSING_VALUE, n)
@@ -826,7 +826,7 @@ end
 end
 
 "Struct to store river sediment concentrations model boundary conditions"
-@with_kw struct SedimentConcentrationsRiverBC
+@kwdef struct SedimentConcentrationsRiverBC
     n::Int
     # Discharge [m³ s⁻¹]
     q::Vector{Float64} = fill(MISSING_VALUE, n)
@@ -846,7 +846,7 @@ end
 end
 
 "Struct to store river sediment concentrations model parameters"
-@with_kw struct SedimentConcentrationsRiverParameters
+@kwdef struct SedimentConcentrationsRiverParameters
     # Clay mean diameter [m]
     median_diameter_clay::Vector{Float64}
     # Silt mean diameter [m]
@@ -902,7 +902,7 @@ function SedimentConcentrationsRiverParameters(
 end
 
 "Struct to store river sediment concentrations model"
-@with_kw struct SedimentConcentrationsRiverModel <: AbstractSedimentConcentrationsRiverModel
+@kwdef struct SedimentConcentrationsRiverModel <: AbstractSedimentConcentrationsRiverModel
     n::Int
     boundary_conditions::SedimentConcentrationsRiverBC = SedimentConcentrationsRiverBC(; n)
     parameters::SedimentConcentrationsRiverParameters

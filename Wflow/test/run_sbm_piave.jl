@@ -141,14 +141,21 @@ end
         @test reservoir.variables.storage ≈ [1.8959925656023118e8, 4.28e7, 7.16e7]
         @test reservoir.variables.outflow_average ≈
               [4.839249448770597, 9.70890592273304, 57.64196655435958]
-        @test soil.variables.exfiltration_saturated_water[[937, 939, 979, 1020, 1158]] ≈ [
+        @test soil.variables.fluxes.exfiltration_saturated_water[[
+            937,
+            939,
+            979,
+            1020,
+            1158,
+        ]] ≈ [
             3.402935369080744e-8,
             6.417375832730821e-8,
             4.360147407984595e-8,
             6.67422407607217e-8,
             1.6261642209308662e-7,
         ]
-        @test maximum(soil.variables.exfiltration_saturated_water) ≈ 2.710099850205676e-6
+        @test maximum(soil.variables.fluxes.exfiltration_saturated_water) ≈
+              2.710099850205676e-6
         @test mean(river_flow.variables.q_average) ≈ 60.35958015226597
         @test maximum(river_flow.variables.q_average) ≈ 235.44682290212157
     end
@@ -172,14 +179,21 @@ end
         @test reservoir.variables.storage ≈ [1.8954714734036595e8, 4.28e7, 7.16e7]
         @test reservoir.variables.outflow_average ≈
               [4.841325917420907, 9.278008188175482, 53.34402066559018]
-        @test soil.variables.exfiltration_saturated_water[[937, 939, 979, 1020, 1158]] ≈ [
+        @test soil.variables.fluxes.exfiltration_saturated_water[[
+            937,
+            939,
+            979,
+            1020,
+            1158,
+        ]] ≈ [
             3.609545735297789e-8,
             7.030072486327537e-8,
             4.9633115028848584e-8,
             7.007756240239878e-8,
             1.6873503884561887e-7,
         ]
-        @test maximum(soil.variables.exfiltration_saturated_water) ≈ 2.498618226159136e-6
+        @test maximum(soil.variables.fluxes.exfiltration_saturated_water) ≈
+              2.498618226159136e-6
         @test mean(river_flow.variables.q_average) ≈ 56.22490708883267
         @test maximum(river_flow.variables.q_average) ≈ 227.21143082238987
     end

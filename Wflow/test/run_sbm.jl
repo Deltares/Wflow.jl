@@ -164,8 +164,8 @@
     @testset "First timestep: soil" begin
         (; soil) = model.land
 
-        @test soil.variables.total_storage[50063] ≈ 0.559886196102425
-        @test soil.variables.total_storage[429] ≈ 0.5989948259600009 # river cell
+        @test model.land.variables.total_storage[50063] ≈ 0.559886196102425
+        @test model.land.variables.total_storage[429] ≈ 0.5989948259600009 # river cell
         @test soil.parameters.theta_s[50063] ≈ 0.48755401372909546
         @test soil.parameters.theta_r[50063] ≈ 0.15943120419979095
 
@@ -202,7 +202,7 @@
                 :air_entry_pressure => -0.10000000000000001,
                 :vertical_hydraulic_conductivity_factor => SVector((1.0, 1.0, 1.0, 1.0)),
                 :h3_low => -10,
-                :soil_fraction => 0.49508064804427593,
+                :bare_soil_fraction => 0.49508064804427593,
                 :cap_hmax => 2.0,
                 :actual_layer_thickness => SVector((
                     0.1,
@@ -266,7 +266,6 @@
                 :infiltration => 1.9033304037551905e-8,
                 :water_table_depth => 0.27873782910028516,
                 :relative_volumetric_water_content_root_zone => 54.55735722947444,
-                :total_storage => 0.43155732894128607,
                 :actual_leakage => 0.0,
                 :actual_evapotranspiration => 3.8825953512676096e-9,
                 :saturated_water_depth => 0.42879132006206927,
@@ -448,8 +447,8 @@
         @test soil.parameters.theta_s[50063] ≈ 0.48755401372909546
         @test soil.parameters.theta_r[50063] ≈ 0.15943120419979095
         # Total storage is affected by all modules, not just soil
-        @test soil.variables.total_storage[50063] ≈ 0.5599633189802773
-        @test soil.variables.total_storage[429] ≈ 0.6209840187839495  # river cell
+        @test model.land.variables.total_storage[50063] ≈ 0.5599633189802773
+        @test model.land.variables.total_storage[429] ≈ 0.6209840187839495  # river cell
 
         @test test_means(
             soil.variables,
@@ -488,8 +487,6 @@
                 :infiltration => 1.0256861822245556e-9,
                 :water_table_depth => 0.2831713993535127,
                 :relative_volumetric_water_content_root_zone => 54.646709985548235,
-                # Total storage is affected by all modules, not just soil
-                :total_storage => 0.43144808509560123,
                 :actual_leakage => 0.0,
                 :actual_evapotranspiration => 3.1762875630098438e-9,
                 :saturated_water_depth => 0.42734077095115,
@@ -1080,7 +1077,7 @@ end
             (; soil) = model.land
             (; kv_profile) = soil.parameters
             (; subsurface_flow) = model.routing
-            z = soil.variables.water_table_depth[i]
+            z = soil.variables.diagnostic.water_table_depth[i]
             vertical_hydraulic_conductivity_factor =
                 soil.parameters.vertical_hydraulic_conductivity_factor
             kv_z = Wflow.hydraulic_conductivity_at_depth(
@@ -1105,7 +1102,7 @@ end
             (; soil) = model.land
             (; kv_profile) = soil.parameters
             (; subsurface_flow) = model.routing
-            z = soil.variables.water_table_depth[i]
+            z = soil.variables.diagnostic.water_table_depth[i]
             vertical_hydraulic_conductivity_factor =
                 soil.parameters.vertical_hydraulic_conductivity_factor
             kv_z = Wflow.hydraulic_conductivity_at_depth(
@@ -1146,7 +1143,7 @@ end
             (; soil) = model.land
             (; kv_profile) = soil.parameters
             (; subsurface_flow) = model.routing
-            z = soil.variables.water_table_depth[i]
+            z = soil.variables.diagnostic.water_table_depth[i]
             vertical_hydraulic_conductivity_factor =
                 soil.parameters.vertical_hydraulic_conductivity_factor
             @test Wflow.hydraulic_conductivity_at_depth(
@@ -1170,7 +1167,7 @@ end
             (; soil) = model.land
             (; kv_profile) = soil.parameters
             (; subsurface_flow) = model.routing
-            z = soil.variables.water_table_depth[i]
+            z = soil.variables.diagnostic.water_table_depth[i]
             vertical_hydraulic_conductivity_factor =
                 soil.parameters.vertical_hydraulic_conductivity_factor
             @test Wflow.hydraulic_conductivity_at_depth(

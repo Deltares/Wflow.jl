@@ -1,5 +1,5 @@
 "Struct to store (shared) land parameters"
-@with_kw struct LandParameters
+@kwdef struct LandParameters
     # cell length x direction [m]
     x_length::Vector{Float64} = Float64[]
     # cell length y direction [m]
@@ -29,7 +29,7 @@
 end
 
 "Struct to store (shared) river parameters"
-@with_kw struct RiverParameters
+@kwdef struct RiverParameters
     # river flow width [m]
     flow_width::Vector{Float64} = Float64[]
     # river flow length [m]

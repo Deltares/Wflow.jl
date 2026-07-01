@@ -5,7 +5,7 @@
     n = 1
     dt = 86400.0
 
-    soil_model = init_sbm_soil_model(1, 1; soil_fraction = [0.2397957498236932])
+    soil_model = init_sbm_soil_model(1, 1; bare_soil_fraction = [0.2397957498236932])
     atmospheric_forcing =
         Wflow.AtmosphericForcing(; n, potential_evaporation = [6.712962769799762e-9])
 
@@ -14,6 +14,7 @@
         parameters = Wflow.GashParameters(;
             evaporation_to_precipitation_ratio = [0.25],
             vegetation_parameter_set = Wflow.VegetationParameters(;
+                n,
                 leaf_area_index = [1.5],
                 storage_wood = [2.0e-4],
                 light_extinction_coefficient = [0.67],
@@ -98,11 +99,11 @@ end
         infiltration = [2.635886044866978e-10],
     )
 
-    Wflow.unsaturated_zone_flow!(soil_model, dt)
+    Wflow.WflowSoil.unsaturated_zone_flow!(soil_model, dt)
 
-    @test soil_model.variables.unsaturated_layer_depth[1] ≈
+    @test soil_model.variables.states.unsaturated_layer_depth[1] ≈
           SVector(0.0013083267609636298, 0.00020814799974448514, 0.0, 0.0, 0.0, 0.0)
-    @test soil_model.variables.transfer[1] ≈ 8.065015493937412e-15
+    @test soil_model.variables.fluxes.transfer[1] ≈ 8.065015493937412e-15
 end
 
 @testitem "unit: soil_evaporation!" begin
@@ -129,11 +130,11 @@ end
         drainable_water_depth = [0.32113323174500624],
     )
 
-    Wflow.soil_evaporation!(soil_model, dt)
+    Wflow.WflowSoil.soil_evaporation!(soil_model, dt)
 
-    @test soil_model.variables.soil_evaporation_saturated_zone[1] == 0
-    @test soil_model.variables.soil_evaporation[1] ≈ 2.846757959937507e-9
-    @test soil_model.variables.drainable_water_depth[1] ≈ 0.32113323174500624
+    @test soil_model.variables.fluxes.soil_evaporation_saturated_zone[1] == 0
+    @test soil_model.variables.fluxes.soil_evaporation[1] ≈ 2.846757959937507e-9
+    @test soil_model.variables.diagnostic.drainable_water_depth[1] ≈ 0.32113323174500624
 end
 
 @testitem "unit: transpiration!" begin
@@ -180,13 +181,13 @@ end
         drainable_water_depth = [0.07240310797113221],
     )
 
-    Wflow.transpiration!(soil_model, dt)
+    Wflow.WflowSoil.transpiration!(soil_model, dt)
 
-    @test soil_model.variables.actual_evaporation_unsaturated_store[1] ≈
+    @test soil_model.variables.fluxes.actual_evaporation_unsaturated_store[1] ≈
           5.965093586654767e-10
-    @test soil_model.variables.actual_evaporation_saturated_zone[1] ≈ 0.0
-    @test soil_model.variables.drainable_water_depth[1] ≈ 0.07240310797113221
-    @test soil_model.variables.transpiration[1] ≈ 5.965093586654767e-10
+    @test soil_model.variables.fluxes.actual_evaporation_saturated_zone[1] ≈ 0.0
+    @test soil_model.variables.diagnostic.drainable_water_depth[1] ≈ 0.07240310797113221
+    @test soil_model.variables.fluxes.transpiration[1] ≈ 5.965093586654767e-10
 end
 
 @testitem "unit: capillary_flux!" begin
@@ -222,9 +223,9 @@ end
         theta_r = [0.0711537748575],
     )
 
-    Wflow.capillary_flux!(soil_model, dt)
+    Wflow.WflowSoil.capillary_flux!(soil_model, dt)
 
-    @test soil_model.variables.actual_capillary_flux[1] ≈ 8.235506588899334e-10
+    @test soil_model.variables.fluxes.actual_capillary_flux[1] ≈ 8.235506588899334e-10
 end
 
 @testitem "unit: update_soil_water_storage! SbmSoilModel" begin
@@ -293,17 +294,19 @@ end
 
     Wflow.update_soil_water_storage!(soil_model, external_models, dt)
 
-    @test soil_model.variables.runoff[1] ≈ 0.0
-    @test soil_model.variables.unsaturated_store_capacity[1] ≈ 0.28033060970129986
-    @test soil_model.variables.saturated_water_depth[1] ≈ 0.27155636944572653
-    @test soil_model.variables.drainable_water_depth[1] ≈ 0.14895887025738955
-    @test soil_model.variables.exfiltration_saturated_water[1] ≈ 0.0
-    @test soil_model.variables.volumetric_water_content[1] ≈
+    @test soil_model.variables.fluxes.runoff[1] ≈ 0.0
+    @test soil_model.variables.diagnostic.unsaturated_store_capacity[1] ≈
+          0.28033060970129986
+    @test soil_model.variables.states.saturated_water_depth[1] ≈ 0.27155636944572653
+    @test soil_model.variables.diagnostic.drainable_water_depth[1] ≈ 0.14895887025738955
+    @test soil_model.variables.fluxes.exfiltration_saturated_water[1] ≈ 0.0
+    @test soil_model.variables.diagnostic.volumetric_water_content[1] ≈
           [0.2678129742498539, 0.1885939848613844, 0.2811123711333945, 0.4721985172668562]
-    @test soil_model.variables.relative_volumetric_water_content[1] ≈
+    @test soil_model.variables.diagnostic.relative_volumetric_water_content[1] ≈
           [55.42837989378741, 39.03268341595556, 58.18091279434587, 97.72939072000436]
-    @test soil_model.variables.volumetric_water_content_root_zone[1] ≈ 0.20944108733203426
-    @test soil_model.variables.relative_volumetric_water_content_root_zone[1] ≈
+    @test soil_model.variables.diagnostic.volumetric_water_content_root_zone[1] ≈
+          0.20944108733203426
+    @test soil_model.variables.diagnostic.relative_volumetric_water_content_root_zone[1] ≈
           43.34734038380604
-    @test soil_model.variables.total_soil_water_storage[1] ≈ 0.43856081721959095
+    @test soil_model.variables.diagnostic.total_soil_water_storage[1] ≈ 0.43856081721959095
 end

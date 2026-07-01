@@ -1,5 +1,5 @@
 "Struct for storing lateral subsurface flow model variables"
-@with_kw struct LateralSsfVariables
+@kwdef struct LateralSsfVariables
     n::Int
     # Pseudo-water table depth [m] (top of the saturated zone)
     water_table_depth::Vector{Float64}
@@ -38,7 +38,7 @@
 end
 
 "Struct for storing lateral subsurface flow model parameters"
-@with_kw struct LateralSsfParameters{Kh}
+@kwdef struct LateralSsfParameters{Kh}
     # Horizontal hydraulic conductivity profile type [-]
     kh_profile::Kh
     # A multiplication factor applied to vertical hydraulic conductivity `kv` [-]
@@ -54,7 +54,7 @@ end
 end
 
 "Lateral subsurface flow model"
-@with_kw struct LateralSSFModel{Kh, B <: SubsurfaceFlowBC} <: AbstractSubsurfaceFlowModel
+@kwdef struct LateralSSFModel{Kh, B <: SubsurfaceFlowBC} <: AbstractSubsurfaceFlowModel
     timestepping::TimeStepping
     boundary_conditions::B
     parameters::LateralSsfParameters{Kh}
@@ -153,7 +153,7 @@ function LateralSSFModel(
     n = length(indices)
     timestepping = init_kinematic_wave_timestepping(config, n; domain = "subsurface")
     parameters = LateralSsfParameters(dataset, config, indices, soil.parameters, area)
-    water_table_depth = copy(soil.variables.water_table_depth)
+    water_table_depth = copy(soil.variables.diagnostic.water_table_depth)
     variables = LateralSsfVariables(parameters, water_table_depth)
     recharge = RechargeModel(; n)
     if config.model.river_subsurface_exchange_head_based__flag

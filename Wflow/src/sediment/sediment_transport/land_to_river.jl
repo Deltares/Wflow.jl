@@ -1,21 +1,21 @@
 abstract type AbstractSedimentToRiverModel end
 
 "Struct to store total sediment reaching the river model variables"
-@with_kw struct SedimentToRiverVariables
+@kwdef struct SedimentToRiverVariables
     n::Int
     # Total sediment rate to the river [kg s⁻¹]
     sediment_rate::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct to store total sediment reaching the river model boundary conditions"
-@with_kw struct SedimentToRiverBC
+@kwdef struct SedimentToRiverBC
     n::Int
     # Deposition material rate [kg s⁻¹]
     deposition::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct to store total sediment reaching the river model"
-@with_kw struct SedimentToRiverModel <: AbstractSedimentToRiverModel
+@kwdef struct SedimentToRiverModel <: AbstractSedimentToRiverModel
     n::Int
     boundary_conditions::SedimentToRiverBC = SedimentToRiverBC(; n)
     variables::SedimentToRiverVariables = SedimentToRiverVariables(; n)
@@ -52,7 +52,7 @@ function update_sediment_to_river_model!(
 end
 
 "Struct to store differentiated sediment reaching the river model variables"
-@with_kw struct SedimentToRiverDifferentiationVariables
+@kwdef struct SedimentToRiverDifferentiationVariables
     n::Int
     # Total sediment rate [kg s⁻¹]
     sediment_rate::Vector{Float64} = fill(MISSING_VALUE, n)
@@ -69,7 +69,7 @@ end
 end
 
 "Struct to store differentiated sediment reaching the river model boundary conditions"
-@with_kw struct SedimentToRiverDifferentiationBC
+@kwdef struct SedimentToRiverDifferentiationBC
     n::Int
     # Clay deposition rate [kg s⁻¹]
     deposition_clay::Vector{Float64} = fill(MISSING_VALUE, n)
@@ -84,7 +84,7 @@ end
 end
 
 "Struct to store differentiated sediment reaching the river model"
-@with_kw struct SedimentToRiverDifferentiationModel <: AbstractSedimentToRiverModel
+@kwdef struct SedimentToRiverDifferentiationModel <: AbstractSedimentToRiverModel
     n::Int
     boundary_conditions::SedimentToRiverDifferentiationBC =
         SedimentToRiverDifferentiationBC(; n)

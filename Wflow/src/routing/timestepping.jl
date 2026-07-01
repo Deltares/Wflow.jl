@@ -1,6 +1,6 @@
 
 "Timestepping for river, overland and subsurface flow routing."
-@with_kw struct TimeStepping
+@kwdef struct TimeStepping
     stable_timesteps::Vector{Float64} = Float64[]
     dt_fixed::Float64 = 0.0
     adaptive::Bool = true

@@ -71,7 +71,7 @@ cannot (easily) be implemented via the flux, but the head is set directly
 instead.
 """
 
-@with_kw struct GroundwaterFlowVariables
+@kwdef struct GroundwaterFlowVariables
     n::Int
     # hydraulic head [m]
     head::Vector{Float64}
@@ -101,7 +101,7 @@ instead.
     exfiltwater_average::Vector{Float64} = zeros(n)
 end
 
-@with_kw struct GroundwaterFlowParameters
+@kwdef struct GroundwaterFlowParameters
     # reference horizontal conductivity [m s⁻¹]
     hydraulic_conductivity::Vector{Float64}
     # top of groundwater layer [m]
@@ -156,12 +156,12 @@ function GroundwaterFlowParameters(
     return parameters
 end
 
-@with_kw struct ConstantHeadVariables
+@kwdef struct ConstantHeadVariables
     # [m]
     head::Vector{Float64}
 end
 
-@with_kw struct ConstantHead
+@kwdef struct ConstantHead
     variables::ConstantHeadVariables
     # [-]
     index::Vector{Int}
@@ -262,7 +262,7 @@ function GroundwaterFlowModel(
     connectivity = Connectivity(indices, reverse_indices, x_length, y_length)
 
     # cold state for groundwater head based on water table depth zi
-    initial_head = elevation .- soil.variables.water_table_depth
+    initial_head = elevation .- soil.variables.diagnostic.water_table_depth
     initial_head[river.network.land_indices] = elevation[river.network.land_indices]
     if config.model.constanthead__flag
         initial_head[constanthead.index] = constanthead.variables.head
@@ -271,12 +271,12 @@ function GroundwaterFlowModel(
     if config.model.cold_start__flag
         (;
             water_table_depth,
-            saturated_water_depth,
             unsaturated_store_capacity,
             unsaturated_layer_thickness,
             n_unsatlayers,
             total_soil_water_storage,
-        ) = soil.variables
+        ) = soil.variables.diagnostic
+        (; saturated_water_depth) = soil.variables.states
         (;
             theta_s,
             theta_r,

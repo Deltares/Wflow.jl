@@ -1,7 +1,7 @@
 abstract type AbstractSnowModel end
 
 "Struct for storing snow model variables"
-@with_kw struct SnowVariables
+@kwdef struct SnowVariables
     n::Int
     # Snow storage [m]
     snow_storage::Vector{Float64} = zeros(n)
@@ -20,7 +20,7 @@ abstract type AbstractSnowModel end
 end
 
 "Struct for storing snow model boundary conditions"
-@with_kw struct SnowBC
+@kwdef struct SnowBC
     n::Int
     # Effective precipitation [m s⁻¹]
     effective_precip::Vector{Float64} = fill(MISSING_VALUE, n)
@@ -31,7 +31,7 @@ end
 end
 
 "Struct for storing snow HBV model parameters"
-@with_kw struct SnowHbvParameters
+@kwdef struct SnowHbvParameters
     # Degree-day factor [m K⁻¹ s⁻¹]
     degree_day_factor::Vector{Float64}
     # Threshold temperature for snowfall [K]
@@ -45,7 +45,7 @@ end
 end
 
 "Snow HBV model"
-@with_kw struct SnowHbvModel <: AbstractSnowModel
+@kwdef struct SnowHbvModel <: AbstractSnowModel
     n::Int
     boundary_conditions::SnowBC = SnowBC(; n)
     parameters::SnowHbvParameters

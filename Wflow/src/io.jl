@@ -431,13 +431,13 @@ struct NCReader{T}
     cyclic_parameters::InputEntries
 end
 
-@with_kw struct OutputData{T}
+@kwdef struct OutputData{T}
     par::String
     vector::AbstractVector{T}
     unit::Unit
 end
 
-@with_kw struct NCWriter{
+@kwdef struct NCWriter{
     D <: Union{NCDataset, Nothing},
     R <: Union{Nothing, Dict{NetCDFScalarVariable, Function}},
 }
@@ -446,23 +446,23 @@ end
     # NetCDF dataset
     output_dataset::D = nothing
     # mapping of netCDF variable names to model parameters
-    output_map::Dict{String, OutputData} = Dict()
+    output_map::Dict{String, OutputData} = Dict{String, OutputData}()
     # The reducer associated with the output variables
     reducer::R = nothing
 end
 
-@with_kw struct CSVWriter
+@kwdef struct CSVWriter
     # Path to the CSV file
     output_path::Union{String, Nothing} = nothing
     # File handle to CSV file
     output_io::IO = IOBuffer()
     # Mapping of CSV variable names to model parameters
-    output_map::Dict{String, OutputData} = Dict()
+    output_map::Dict{String, OutputData} = Dict{String, OutputData}()
     # The reducer associated with the output variables
-    reducer::OrderedDict{CSVColumn, Function} = Dict()
+    reducer::OrderedDict{CSVColumn, Function} = Dict{CSVColumn, Function}()
 end
 
-@with_kw struct Writer{DG, DS, DE}
+@kwdef struct Writer{DG, DS, DE}
     # Writer for transient grid output (no reducer)
     grid_writer::NCWriter{DG, Nothing}
     # Writer for transient scalar output (with reducer)
@@ -661,7 +661,7 @@ end
 Create a Dict that maps parameter output names to arrays in the Model.
 """
 function out_map(output_names_dict, modelmap)
-    output_map = Dict{String, Any}()
+    output_map = Dict{String, OutputData}()
     for (par, output_name) in output_names_dict
         vector, metadata = get_field_in_model(modelmap, par)
         if isnothing(metadata)
