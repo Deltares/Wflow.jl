@@ -556,17 +556,17 @@
 
     @testset "river flow" begin
         q = model.routing.river_flow.variables.q_average
-        @test sum(q) ≈ 3684.854129413533
-        @test q[1622] ≈ 0.0007502630570895369
+        @test sum(q) ≈ 3684.852140874334
+        @test q[1622] ≈ 0.00075026328229499
         @test q[43] ≈ 11.640174323692957
-        @test q[domain.river.network.order[end]] ≈ 0.0439768293838379
+        @test q[domain.river.network.order[end]] ≈ 0.043976809930571785
     end
 
     @testset "reservoir simple" begin
         res = model.routing.river_flow.boundary_conditions.reservoir
         @test res.variables.outflow[1] ≈ 0.2174998614438593
         @test res.variables.outflow_average[1] ≈ 0.21749986282401396
-        @test res.boundary_conditions.inflow_average[1] ≈ 0.0005130587586065603
+        @test res.boundary_conditions.inflow_average[1] ≈ 0.0005130587494645402
         @test res.variables.storage[1] ≈ 2.751299001489657f7
         @test res.variables.actevap_cumulative[1] ≈ 0.00054000002145767148
         @test res.boundary_conditions.precipitation[1] ≈ 2.0833334161175625e-9
@@ -632,8 +632,8 @@ end
         q = model.routing.river_flow.variables.q_average
         @test q[4009] ≈ 8.426693946008998 # pit/ outlet, CartesianIndex(141, 228)
         @test q[4020] ≈ 0.006370691658310787 # downstream of pit 4009, CartesianIndex(141, 229)
-        @test q[2508] ≈ 131.41737804497976 # pit/ outlet
-        @test q[5808] ≈ 0.11941506934556971  # pit/ outlet
+        @test q[2508] ≈ 131.41740124407315 # pit/ outlet
+        @test q[5808] ≈ 0.11941506586989471  # pit/ outlet
     end
 end
 
@@ -698,7 +698,7 @@ end
         @test model.routing.river_flow.variables.q_average[44] ≈ 10.365364897089025
         @test reservoir.boundary_conditions.external_inflow[2] == -1.0
         @test reservoir.boundary_conditions.actual_external_abstraction_average[2] == 1.0
-        @test reservoir.boundary_conditions.inflow_average[2] ≈ -0.9054042537978068
+        @test reservoir.boundary_conditions.inflow_average[2] ≈ -0.9054042878240134
         @test reservoir.variables.outflow_average[2] ≈ 3.000999922024245
     end
 end
@@ -743,12 +743,12 @@ end
         @test actual_external_abstraction_average[44] ≈ 1.4800592763999205
         @test q_average[44] ≈ 1.2991010772732907
         Wflow.run_timestep!(model)
-        @test actual_external_abstraction_average[44] ≈ 5.508048289592481
-        @test q_average[44] ≈ 4.123510065449319
+        @test actual_external_abstraction_average[44] ≈ 5.509341540685494
+        @test q_average[44] ≈ 4.122878209438459
         Wflow.run_timestep!(model)
-        @test actual_external_abstraction_average[44] ≈ 9.768965817241988
+        @test actual_external_abstraction_average[44] ≈ 9.768399128401446
         @test external_inflow[44] == -10.0
-        @test q_average[44] ≈ 7.295339106606841
+        @test q_average[44] ≈ 7.295244400365228
     end
 end
 
@@ -1194,8 +1194,8 @@ end
             Wflow.run_timestep!(model)
             Wflow.run_timestep!(model)
             q = model.routing.river_flow.variables.q_average
-            @test sum(q) ≈ 3024.5130733315345
-            @test q[1622] ≈ 0.0006987110378921953
+            @test sum(q) ≈ 3024.5079459603826
+            @test q[1622] ≈ 0.0006987116204789493
             @test q[43] ≈ 8.767295043872874
         end
 
