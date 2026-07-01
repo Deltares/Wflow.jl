@@ -60,18 +60,6 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
         description = "Land surface temperature",
         tags = [:soil_output],
     ),
-    "land_surface_net_shortwave_radiation__energy_flux" => ParameterMetadata(;
-        lens = @optic(_.land.land_surface_temperature.variables.net_shortwave_radiation),
-        unit = Unit(; W = 1, m = -2),
-        description = "Net shortwave radiation",
-        tags = [:soil_output],
-    ),
-    "land_surface_net_longwave_radiation__energy_flux" => ParameterMetadata(;
-        lens = @optic(_.land.land_surface_temperature.variables.net_longwave_radiation),
-        unit = Unit(; W = 1, m = -2),
-        description = "Net longwave radiation",
-        tags = [:soil_output],
-    ),
     "land_surface_air_latent_heat_of_evaporation__energy_flux" => ParameterMetadata(;
         lens = @optic(_.land.land_surface_temperature.variables.latent_heat_flux),
         unit = Unit(; W = 1, m = -2),

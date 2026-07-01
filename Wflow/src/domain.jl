@@ -26,8 +26,14 @@
     river_fraction::Vector{Float64} = Float64[]
     # fraction of open water (excluding rivers) [-]
     water_fraction::Vector{Float64} = Float64[]
-    # Surface albedo [-]
+    # surface albedo [-]
     albedo::Vector{Float64} = Float64[]
+    # land surface aerodynamic length for momentum transfer [m]
+    z0m::Vector{Float64} = Float64[]
+    # land surface aerodynamic length for heat transfer [m]
+    z0h::Vector{Float64} = Float64[]
+    # zero‐plane displacement height [m]
+    d0::Vector{Float64} = Float64[]
 end
 
 "Struct to store (shared) river parameters"
