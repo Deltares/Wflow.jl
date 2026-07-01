@@ -1,4 +1,31 @@
 {
+  "atmosphere_bottom_air_flow__roughness_length": {
+    "unit": "m",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Land surface aerodynamic roughness length for momentum transfer",
+    "allow_missing": false,
+    "allow_dynamic_input": true
+  },
+  "atmosphere_bottom_air_flow__zero_plane_displacement_length": {
+    "unit": "m",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Zero-place displacement height",
+    "allow_missing": false,
+    "allow_dynamic_input": true
+  },
+  "atmosphere_bottom_air_heat_flow__roughness_length": {
+    "unit": "m",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Land surface aerodynamic roughness length for heat transfer",
+    "allow_missing": false,
+    "allow_dynamic_input": true
+  },
   "basin__local_drain_direction": {
     "unit": "-",
     "default": null,
