@@ -7,14 +7,16 @@ struct NoLandSurfaceTemperatureModel <: AbstractLandSurfaceTemperatureModel end
 "Struct for storing land surface temperature model variables"
 @with_kw struct LandSurfaceTemperatureVariables
     n::Int
-    aerodynamic_resistance::Vector{Float64} = fill(MISSING_VALUE, n)        # Aerodynamic resistance (s/m)
-    latent_heat_flux::Vector{Float64} = fill(MISSING_VALUE, n)              # Latent heat flux (W/m2)
-    sensible_heat_flux::Vector{Float64} = fill(MISSING_VALUE, n)            # Sensible heat flux (W/m2)
-    latent_heat_of_vaporization::Vector{Float64} = fill(MISSING_VALUE, n)   # Latent heat of vaporization (J/kg)
-    land_surface_temperature::Vector{Float64} = fill(MISSING_VALUE, n)      # Land surface temperature (K)
-    net_radiation::Vector{Float64} = fill(MISSING_VALUE, n)                 # Net radiation (W/m2)
-    net_shortwave_radiation::Vector{Float64} = fill(MISSING_VALUE, n)       # Net shortwave radiation (W/m2)
-    net_longwave_radiation::Vector{Float64} = fill(MISSING_VALUE, n)        # Net longwave radiation (W/m2)
+    # Aerodynamic resistance (s/m)
+    aerodynamic_resistance::Vector{Float64} = fill(MISSING_VALUE, n)
+    # Latent heat flux (W/m2)
+    latent_heat_flux::Vector{Float64} = fill(MISSING_VALUE, n)
+    # Sensible heat flux (W/m2)
+    sensible_heat_flux::Vector{Float64} = fill(MISSING_VALUE, n)
+    # Latent heat of vaporization (J/kg)
+    latent_heat_of_vaporization::Vector{Float64} = fill(MISSING_VALUE, n)
+    # Land surface temperature (K)
+    land_surface_temperature::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 @with_kw struct LandSurfaceTemperatureModel <: AbstractLandSurfaceTemperatureModel
