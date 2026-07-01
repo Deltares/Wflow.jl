@@ -16,6 +16,8 @@
     rooting_depth::Vector{Float64} = []
     # Crop coefficient Kc [-]
     crop_coefficient::Vector{Float64} = []
+    # Canopy height [m]
+    canopy_height::Vector{Float64} = []
 end
 
 "Initialize (shared) vegetation parameters"
@@ -29,6 +31,13 @@ function VegetationParameters(
         ncread(dataset, config, "vegetation_root__depth", LandHydrologySBM; sel = indices)
     crop_coefficient =
         ncread(dataset, config, "vegetation__crop_factor", LandHydrologySBM; sel = indices)
+    canopy_height = ncread(
+        dataset,
+        config,
+        "vegetation_canopy__height",
+        LandHydrologySBM;
+        sel = indices,
+    )
     if do_cyclic(config) && haskey(config.input.cyclic, "vegetation__leaf_area_index")
         storage_specific_leaf = ncread(
             dataset,
@@ -60,6 +69,7 @@ function VegetationParameters(
             maximum_canopy_storage = fill(MISSING_VALUE, n),
             rooting_depth,
             crop_coefficient,
+            canopy_height,
         )
     else
         canopy_gap_fraction = ncread(
@@ -85,6 +95,7 @@ function VegetationParameters(
             maximum_canopy_storage,
             rooting_depth,
             crop_coefficient,
+            canopy_height,
         )
     end
     return vegetation_parameter_set
