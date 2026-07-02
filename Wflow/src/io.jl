@@ -439,7 +439,7 @@ end
 
 @with_kw struct NCWriter{
     D <: Union{NCDataset, Nothing},
-    R <: Union{Nothing, Dict{NetCDFScalarVariable, Function}},
+    R <: Union{Nothing, Dict{NetCDFScalarVariable, <:Function}},
 }
     # Path to the NetCDF file
     output_path::Union{String, Nothing} = nothing
@@ -462,11 +462,11 @@ end
     reducer::OrderedDict{CSVColumn, Function} = Dict()
 end
 
-@with_kw struct Writer{DG, DS, DE}
+@with_kw struct Writer{DG, DS, DE, R}
     # Writer for transient grid output (no reducer)
     grid_writer::NCWriter{DG, Nothing}
     # Writer for transient scalar output (with reducer)
-    scalar_writer::NCWriter{DS, Dict{NetCDFScalarVariable, Function}}
+    scalar_writer::NCWriter{DS, Dict{NetCDFScalarVariable, R}}
     # Writer for for simulation end state output (no reducer)
     endstate_writer::NCWriter{DE, Nothing}
     # Writer for CSV output
@@ -993,7 +993,7 @@ reducer_func(::Nothing) = only
 reducer_func(reducer_type::ReducerType.T) = function_map[reducer_type]
 
 "Get a reducer function based on output settings for scalar data defined in a dictionary"
-function reducer(col, rev_inds, indices, x_nc, y_nc, config, dataset)
+function reducer(col, rev_inds, indices, x_nc, y_nc, config, dataset)::Function
     (; parameter, map, reducer, index, coordinate) = col
     fileformat = col isa CSVColumn ? "CSV" : "NetCDF"
     f = reducer_func(reducer)
