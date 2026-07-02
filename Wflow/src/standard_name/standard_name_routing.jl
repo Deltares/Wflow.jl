@@ -494,11 +494,6 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
             description = "Horizontal conductivity",
             tags = [:groundwater_unconfined_aquifer_input],
         ),
-    "subsurface_water__specific_yield" => ParameterMetadata(;
-        lens = @optic(_.routing.subsurface_flow.parameters.specific_yield),
-        description = "Specific yield",
-        tags = [:groundwater_unconfined_aquifer_input],
-    ),
     "subsurface__horizontal_saturated_hydraulic_conductivity_scale_parameter" =>
         ParameterMetadata(;
             lens = @optic(
