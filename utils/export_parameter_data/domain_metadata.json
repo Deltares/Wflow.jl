@@ -1,4 +1,13 @@
 {
+  "atmosphere_bottom_air__above_ground_height": {
+    "unit": "m",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Land surface \"skin\" layer height above the ground",
+    "allow_missing": false,
+    "allow_dynamic_input": true
+  },
   "atmosphere_bottom_air_flow__roughness_length": {
     "unit": "m",
     "default": null,
