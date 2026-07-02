@@ -16,11 +16,6 @@ hooks = [
 ]
 
 [[repos]]
-repo = "https://github.com/crate-ci/typos"
-rev = "v1.43.5"
-hooks = [{ id = "typos" }]
-
-[[repos]]
 repo = "local"
 
 [[repos.hooks]]
@@ -38,3 +33,13 @@ entry = "pixi run format-code"
 language = "system"
 types = ["julia"]
 pass_filenames = true
+
+[[repos.hooks]]
+id = "typos"
+name = "fix typos"
+description = "Fix spelling mistakes"
+language = "system"
+entry = "pixi run typos"
+args =["--write-changes", "--force-exclude"]
+types = ["text"]
+stages = ["pre-commit", "pre-merge-commit", "pre-push", "manual"]
