@@ -18,8 +18,8 @@
     bankfull_storage::Vector{Float64} = Float64[]
     # bankfull depth [m]
     bankfull_depth::Vector{Float64} = Float64[]
-    # maximum channel bed elevation at edge [m]
-    zb_max_at_edge::Vector{Float64} = Float64[]
+    # channel bed elevation at edge [m]
+    zb_at_edge::Vector{Float64} = Float64[]
     # Manning's roughness [s m-1/3]
     mannings_n::Vector{Float64} = Float64[]
     # Manning's roughness at edge [s m-1/3]
@@ -118,15 +118,16 @@ function RiverFlowStaggeredParameters(
     bankfull_storage = bankfull_depth .* flow_width .* flow_length
 
     # determine parameters at edges
-    zb_max_at_edge = compute_value_at_edge(zb, nodes_at_edge, n_edges, maximum)
     flow_width_at_edge = compute_value_at_edge(flow_width, nodes_at_edge, n_edges, minimum)
     flow_length_at_edge = compute_value_at_edge(flow_length, nodes_at_edge, n_edges, mean)
     mannings_n_at_edge =
         compute_mannings_n_at_edge(mannings_n, flow_length, nodes_at_edge, n_edges)
     if river_routing == RoutingType.local_inertial
+        zb_at_edge = compute_value_at_edge(zb, nodes_at_edge, n_edges, maximum)
         mannings_n_sq_at_edge = mannings_n_at_edge .* mannings_n_at_edge
         slope_at_edge = []
     elseif river_routing == RoutingType.manning_staggered
+        zb_at_edge = compute_value_at_edge(zb, nodes_at_edge, n_edges, first)
         mannings_n_sq_at_edge = []
         slope_at_edge =
             compute_slope_at_edge(zb, flow_length_at_edge, nodes_at_edge, n_edges)
@@ -142,7 +143,7 @@ function RiverFlowStaggeredParameters(
         zb,
         bankfull_storage,
         bankfull_depth,
-        zb_max_at_edge,
+        zb_at_edge,
         mannings_n,
         mannings_n_at_edge,
         mannings_n_sq_at_edge,
@@ -338,7 +339,7 @@ function update_river_channel_flow!(
         river_v.zs_dst[i] = river_p.zb[i_dst] + river_v.h[i_dst]
 
         river_v.zs_at_edge[i] = max(river_v.zs_src[i], river_v.zs_dst[i])
-        river_v.water_depth_at_edge[i] = (river_v.zs_at_edge[i] - river_p.zb_max_at_edge[i])
+        river_v.water_depth_at_edge[i] = (river_v.zs_at_edge[i] - river_p.zb_at_edge[i])
 
         # rectangular channel
         flow_area_at_edge = river_p.flow_width_at_edge[i] * river_v.water_depth_at_edge[i]
@@ -396,16 +397,8 @@ function update_river_channel_flow!(
 
         # use "upwind" option for water level and depth estimation at edge to avoid large q
         # fluctuations (compared to "max" option)
-        river_v.zs_at_edge[i] = ifelse(
-            river_v.q[i] == 0.0,
-            max(river_v.zs_src[i], river_v.zs_dst[i]),
-            river_v.zs_src[i],
-        )
-        river_v.water_depth_at_edge[i] = ifelse(
-            river_v.q[i] == 0.0,
-            river_v.zs_at_edge[i] - river_p.zb_max_at_edge[i],
-            river_v.h[i_src],
-        )
+        river_v.zs_at_edge[i] = river_v.zs_src[i]
+        river_v.water_depth_at_edge[i] = river_v.h[i_src]
 
         # rectangular channel
         flow_area_at_edge = river_p.flow_width_at_edge[i] * river_v.water_depth_at_edge[i]
@@ -457,7 +450,7 @@ function update_floodplain_flow!(
         i_dst = nodes_at_edge.dst[i]
 
         floodplain_v.water_depth_at_edge[i] =
-            max(river_v.zs_at_edge[i] - floodplain_p.zb_max_at_edge[i], 0.0)
+            max(river_v.zs_at_edge[i] - floodplain_p.zb_at_edge[i], 0.0)
 
         i1, i2 = interpolation_indices(
             floodplain_v.water_depth_at_edge[i],
@@ -559,13 +552,10 @@ function update_floodplain_flow!(
         i_src = nodes_at_edge.src[i]
         i_dst = nodes_at_edge.dst[i]
 
-        # use "upwind" option for water level and depth estimation at edge to avoid large q
+        # use "upwind" option for water depth estimation at edge to avoid large q
         # fluctuations (compared to "max" option)
-        floodplain_v.water_depth_at_edge[i] = ifelse(
-            floodplain_v.q[i] == 0.0,
-            max(river_v.zs_at_edge[i] - floodplain_p.zb_max_at_edge[i], 0.0),
-            floodplain_v.h[i_src],
-        )
+        floodplain_v.water_depth_at_edge[i] =
+            max(river_v.zs_at_edge[i] - floodplain_p.zb_at_edge[i], 0.0)
 
         i1, i2 = interpolation_indices(
             floodplain_v.water_depth_at_edge[i],

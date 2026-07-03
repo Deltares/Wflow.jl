@@ -456,7 +456,7 @@ end
             froude_limit = true,
             h_thresh = 0.001,
             zb = [315.1000061035156, 314.3999938964844, 278.8000183105469],
-            zb_max_at_edge = [315.1000061035156, 314.3999938964844],
+            zb_at_edge = [315.1000061035156, 314.3999938964844],
             bankfull_storage = [57155.32165002823, 100397.03622722626, 90180.89622545242],
             bankfull_depth = [1.0, 1.0, 1.0],
             mannings_n_sq_at_edge = [0.0008999999597668652, 0.0008999999597668652],
@@ -575,7 +575,7 @@ end
             froude_limit = true,
             h_thresh = 0.001,
             zb = [165.10784077644348, 165.10784077644348, 165.10784077644348],
-            zb_max_at_edge = [165.10784077644348, 165.10784077644348],
+            zb_at_edge = [165.10784077644348, 165.10784077644348],
             bankfull_storage = [107921.00118967971, 200292.17449130033, 69688.46493603183],
             bankfull_depth = [1.592156171798706, 1.592156171798706, 1.592156171798706],
             mannings_n = [0.029999999329447746, 0.029999999329447746, 0.029999999329447746],
@@ -632,7 +632,7 @@ end
                 mannings_n = [0.072, 0.072, 0.072],
                 mannings_n_at_edge = [0.072, 0.072],
                 mannings_n_sq_at_edge = [0.005184, 0.005184],
-                zb_max_at_edge = [166.6999969482422, 166.6999969482422],
+                zb_at_edge = [166.6999969482422, 166.6999969482422],
             ),
             variables = Wflow.FloodPlainStaggeredVariables(;
                 n,
@@ -738,7 +738,7 @@ end
             active_e = [1, 2],
             h_thresh = 0.001,
             zb = [415.6000061035156, 415.6000061035156, 415.6000061035156],
-            zb_max_at_edge = [415.6000061035156, 415.6000061035156],
+            zb_at_edge = [415.6000061035156, 415.6000061035156],
             bankfull_storage = [36208.125, 30283.125, 25717.5],
             bankfull_depth = [1.0, 1.0, 1.0],
             mannings_n = [0.029999999329447746, 0.029999999329447746, 0.029999999329447746],
@@ -795,7 +795,7 @@ end
                 ),
                 mannings_n = [0.072, 0.072, 0.072],
                 mannings_n_at_edge = [0.072, 0.072],
-                zb_max_at_edge = [416.6000061035156, 416.6000061035156],
+                zb_at_edge = [416.6000061035156, 416.6000061035156],
                 slope_at_edge = [1.0e-5, 1.0e-5],
             ),
             variables = Wflow.FloodPlainStaggeredVariables(;
@@ -1116,7 +1116,7 @@ end
             froude_limit = true,
             h_thresh = 1e-3,
             zb = [],
-            zb_max_at_edge = [],
+            zb_at_edge = [],
             bankfull_storage = [171137.5821314017],
             bankfull_depth = [1.3683528900146484],
             mannings_n_sq_at_edge = [],
@@ -1254,12 +1254,12 @@ end
     n_edges = ne(graph)
 
     # determine z, width, length and manning's n at edges
-    zb_max_at_edge = fill(0.0, n_edges)
+    zb_at_edge = fill(0.0, n_edges)
     flow_width_at_edge = fill(0.0, n_edges)
     flow_length_at_edge = fill(0.0, n_edges)
     mannings_n_sq_at_edge = fill(0.0, n_edges)
     for i in 1:n_edges
-        zb_max_at_edge[i] = max(zb[nodes_at_edge.src[i]], zb[nodes_at_edge.dst[i]])
+        zb_at_edge[i] = max(zb[nodes_at_edge.src[i]], zb[nodes_at_edge.dst[i]])
         flow_width_at_edge[i] =
             min(width[nodes_at_edge.dst[i]], width[nodes_at_edge.src[i]])
         flow_length_at_edge[i] = 0.5 * (dl[nodes_at_edge.dst[i]] + dl[nodes_at_edge.src[i]])
@@ -1298,7 +1298,7 @@ end
         active_n = collect(1:(n - 1)),
         active_e = collect(1:n_edges),
         h_thresh,
-        zb_max_at_edge,
+        zb_at_edge,
         mannings_n_sq_at_edge,
         flow_width_at_edge,
         flow_length_at_edge,
