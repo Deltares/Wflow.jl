@@ -13,6 +13,8 @@ function convert_value(::Type{T}, value::Any) where {T}
         T_ = get_something_type(T)
         if T_ <: AbstractConfigSection
             init_config_section(T_, value)
+        elseif T_ == VersionNumber
+            VersionNumber(value)
         else
             convert(T_, value)
         end
@@ -253,6 +255,9 @@ function to_dict(
            hasproperty(value, :_was_specified) &&
            !getfield(value, :_was_specified)
             continue
+        end
+        if value isa VersionNumber
+            value = string(value)
         end
         dict[String(field_name)] = to_dict(value)
     end
