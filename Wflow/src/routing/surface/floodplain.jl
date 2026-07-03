@@ -309,8 +309,8 @@ function compute_flood_flow_area(
     i1::Int,
     i2::Int,
 )
-    dh = h - profile.depth[i1]  # depth at i1
-    flow_area = profile.flow_area[i1, idx] + (profile.width[i2, idx] * dh) # area at i1, width at i2
+    delta_h = h - profile.depth[i1]  # depth at i1
+    flow_area = profile.flow_area[i1, idx] + (profile.width[i2, idx] * delta_h) # area at i1, width at i2
     return flow_area
 end
 
@@ -319,8 +319,8 @@ Compute floodplain wetted perimeter based on flow depth `h` and floodplain `dept
 `wetted_perimeter` of a floodplain profile.
 """
 function compute_wetted_perimeter(profile::FloodPlainProfile, h::Float64, idx::Int, i1::Int)
-    dh = h - profile.depth[i1] # depth at i1
-    wetted_perimeter = profile.wetted_perimeter[i1, idx] + 2.0 * dh # p at i1
+    delta_h = h - profile.depth[i1] # depth at i1
+    wetted_perimeter = profile.wetted_perimeter[i1, idx] + 2.0 * delta_h # p at i1
     return wetted_perimeter
 end
 
@@ -332,9 +332,9 @@ function compute_flood_depth(
     i::Int,
 )
     i1, i2 = interpolation_indices(flood_storage, @view profile.storage[:, i])
-    ΔA = (flood_storage - profile.storage[i1, i]) / flow_length
-    dh = ΔA / profile.width[i2, i]
-    flood_depth = profile.depth[i1] + dh
+    delta_A = (flood_storage - profile.storage[i1, i]) / flow_length
+    delta_h = delta_A / profile.width[i2, i]
+    flood_depth = profile.depth[i1] + delta_h
     return flood_depth
 end
 
