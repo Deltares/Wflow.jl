@@ -504,7 +504,7 @@ end
     @test dt ≈ 909.829412320351
     @test river_flow_model.variables.zs_src ≈ [315.14484852086804, 0.0]
     @test river_flow_model.variables.zs_dst ≈ [314.3999938964844, 0.0]
-    @test river_flow_model.variables.zs_max_at_edge ≈ [315.14484852086804, 0.0]
+    @test river_flow_model.variables.zs_at_edge ≈ [315.14484852086804, 0.0]
     @test river_flow_model.variables.water_depth_at_edge ≈ [0.04484241735241312, 0.0]
     @test river_flow_model.variables.q ≈ [0.534558444239785, 0.0]
     @test river_flow_model.variables.q_cumulative ≈ [486.35699517356477, 0.0]
@@ -667,8 +667,7 @@ end
     @test dt ≈ 49.40931052556788
     @test river_flow_model.variables.zs_src ≈ [166.98963199894177, 166.92754760786679]
     @test river_flow_model.variables.zs_dst ≈ [166.92754760786679, 166.86980277988906]
-    @test river_flow_model.variables.zs_max_at_edge ≈
-          [166.98963199894177, 166.92754760786679]
+    @test river_flow_model.variables.zs_at_edge ≈ [166.98963199894177, 166.92754760786679]
     @test river_flow_model.variables.water_depth_at_edge ≈
           [1.8817912224982933, 1.8197068314233036]
     @test river_flow_model.variables.q ≈ [137.1827776559179, 133.7538757670657]
@@ -833,21 +832,20 @@ end
     @test dt ≈ 2272.7523105527266
     @test river_flow_model.variables.zs_src ≈ [416.6029533901387, 418.03259945785163]
     @test river_flow_model.variables.zs_dst ≈ [418.03259945785163, 416.00221556263983]
-    @test river_flow_model.variables.zs_max_at_edge ≈ [418.0325994578516, 418.0325994578516]
+    @test river_flow_model.variables.zs_at_edge ≈ [416.6029533901387, 418.03259945785163]
     @test river_flow_model.variables.water_depth_at_edge ≈
-          [2.4325933543360065, 2.4325933543360065]
-    @test river_flow_model.variables.q ≈ [12.587380945649473, 12.587380945649473]
-    @test river_flow_model.variables.q_cumulative ≈ [28607.999128032203, 28607.999128032203]
+          [1.0029472866230495, 2.432593354336019]
+    @test river_flow_model.variables.q ≈ [3.0436243193280137, 12.587380945649572]
+    @test river_flow_model.variables.q_cumulative ≈ [6917.404204207213, 28607.999128032432]
 
     Wflow.update_floodplain_flow!(river_flow_model, domain.river, dt)
 
     @test river_flow_model.floodplain.variables.water_depth_at_edge ≈
-          [1.4325933543360065, 1.4325933543360065]
-    @test river_flow_model.floodplain.variables.q ≈
-          [0.050043034537710154, 3.279243909752683]
+          [0.0029472866230494782, 1.432593354336019]
+    @test river_flow_model.floodplain.variables.q ≈ [8.50693948416018e-5, 3.279243909752732]
 
     @test river_flow_model.floodplain.variables.q_cumulative ≈
-          [113.73542237265065, 7452.909172756367]
+          [0.1933416636835727, 7452.909172756478]
 
     Wflow.update_bc_reservoir_model!(
         river_flow_model.boundary_conditions.reservoir,
@@ -859,9 +857,9 @@ end
     Wflow.update_water_depth_and_storage!(river_flow_model, domain.river, dt)
 
     @test river_flow_model.variables.storage ≈
-          [8949.81915717859, 76573.27391575256, 39343.45963085314]
+          [30640.414081003582, 54882.67899192734, 39343.459630853366]
     @test river_flow_model.variables.h ≈
-          [0.2471770951182529, 2.528578999550164, 1.5298322010636003]
+          [0.8462303441838974, 1.8123188736937599, 1.529832201063609]
 
     Wflow.update_water_depth_and_storage!(
         river_flow_model.floodplain,
@@ -871,13 +869,13 @@ end
     )
 
     @test river_flow_model.variables.storage ≈
-          [8949.81915717859, 71871.75158640924, 33570.77415623845]
+          [30753.95616171255, 63042.829748341144, 33570.77415623857]
     @test river_flow_model.variables.h ≈
-          [0.2471770951182529, 2.373326781381025, 1.3053669352090385]
+          [0.849366161923948, 2.0817808514920815, 1.3053669352090433]
     @test river_flow_model.floodplain.variables.storage ≈
-          [0.0, 59966.73673951485, 13225.594647371057]
+          [0.0, 46991.52157304865, 13225.594647371276]
     @test river_flow_model.floodplain.variables.h ≈
-          [0.0, 1.3733267813810248, 0.3053669352090384]
+          [0.0, 1.0817808514920815, 0.3053669352090434]
 end
 
 @testitem "unit: kinematic river flow including 1D floodplain schematization" begin

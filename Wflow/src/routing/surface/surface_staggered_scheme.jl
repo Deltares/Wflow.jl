@@ -171,8 +171,8 @@ end
     q_channel_average::Vector{Float64} = q_average
     # water depth [m]
     h::Vector{Float64}
-    # maximum water elevation at edge [m]
-    zs_max_at_edge::Vector{Float64} = zeros(n_edges)
+    # water elevation at edge [m]
+    zs_at_edge::Vector{Float64} = zeros(n_edges)
     # water elevation of source node of edge [m]
     zs_src::Vector{Float64} = zeros(n_edges)
     # water elevation of downstream node of edge [m]
@@ -337,9 +337,8 @@ function update_river_channel_flow!(
         river_v.zs_src[i] = river_p.zb[i_src] + river_v.h[i_src]
         river_v.zs_dst[i] = river_p.zb[i_dst] + river_v.h[i_dst]
 
-        river_v.zs_max_at_edge[i] = max(river_v.zs_src[i], river_v.zs_dst[i])
-        river_v.water_depth_at_edge[i] =
-            (river_v.zs_max_at_edge[i] - river_p.zb_max_at_edge[i])
+        river_v.zs_at_edge[i] = max(river_v.zs_src[i], river_v.zs_dst[i])
+        river_v.water_depth_at_edge[i] = (river_v.zs_at_edge[i] - river_p.zb_max_at_edge[i])
 
         # rectangular channel
         flow_area_at_edge = river_p.flow_width_at_edge[i] * river_v.water_depth_at_edge[i]
@@ -395,12 +394,21 @@ function update_river_channel_flow!(
         river_v.zs_src[i] = river_p.zb[i_src] + river_v.h[i_src]
         river_v.zs_dst[i] = river_p.zb[i_dst] + river_v.h[i_dst]
 
-        river_v.zs_max_at_edge[i] = max(river_v.zs_src[i], river_v.zs_dst[i])
-        river_v.water_depth_at_edge[i] =
-            (river_v.zs_max_at_edge[i] - river_p.zb_max_at_edge[i])
+        # use "upwind" option for water level and depth estimation at edge to avoid large q
+        # fluctuations (compared to "max" option)
+        river_v.zs_at_edge[i] = ifelse(
+            river_v.q[i] == 0.0,
+            max(river_v.zs_src[i], river_v.zs_dst[i]),
+            river_v.zs_src[i],
+        )
+        river_v.water_depth_at_edge[i] = ifelse(
+            river_v.q[i] == 0.0,
+            river_v.zs_at_edge[i] - river_p.zb_max_at_edge[i],
+            river_v.h[i_src],
+        )
 
         # rectangular channel
-        flow_area_at_edge = river_p.flow_width_at_edge[i] * river_v.water_depth_at_edge[i] # flow area (rectangular channel)
+        flow_area_at_edge = river_p.flow_width_at_edge[i] * river_v.water_depth_at_edge[i]
         hydraulic_radius_at_edge =
             flow_area_at_edge / wetted_perimeter_channel(
                 river_v.water_depth_at_edge[i],
@@ -449,7 +457,7 @@ function update_floodplain_flow!(
         i_dst = nodes_at_edge.dst[i]
 
         floodplain_v.water_depth_at_edge[i] =
-            max(river_v.zs_max_at_edge[i] - floodplain_p.zb_max_at_edge[i], 0.0)
+            max(river_v.zs_at_edge[i] - floodplain_p.zb_max_at_edge[i], 0.0)
 
         i1, i2 = interpolation_indices(
             floodplain_v.water_depth_at_edge[i],
@@ -551,8 +559,13 @@ function update_floodplain_flow!(
         i_src = nodes_at_edge.src[i]
         i_dst = nodes_at_edge.dst[i]
 
-        floodplain_v.water_depth_at_edge[i] =
-            max(river_v.zs_max_at_edge[i] - floodplain_p.zb_max_at_edge[i], 0.0)
+        # use "upwind" option for water level and depth estimation at edge to avoid large q
+        # fluctuations (compared to "max" option)
+        floodplain_v.water_depth_at_edge[i] = ifelse(
+            floodplain_v.q[i] == 0.0,
+            max(river_v.zs_at_edge[i] - floodplain_p.zb_max_at_edge[i], 0.0),
+            floodplain_v.h[i_src],
+        )
 
         i1, i2 = interpolation_indices(
             floodplain_v.water_depth_at_edge[i],

@@ -1163,18 +1163,18 @@ end
     Wflow.run_timestep!(model)
 
     (; q_average, h) = river_flow.variables
-    @test sum(q_average) ≈ 2184.304753007843
-    @test q_average[1622] ≈ 0.0002190265220138185
-    @test q_average[43] ≈ 10.354333905435187
-    @test q_average[501] ≈ 0.02141198454056767
-    @test q_average[5808] ≈ 0.004920531981445287
-    @test h[1622] ≈ 0.0017967526822043184
-    @test h[43] ≈ 1.3192174478288576
-    @test h[501] ≈ 0.005400600297111819
-    @test h[5808] ≈ 0.005892191643178794
+    @test sum(q_average) ≈ 2154.461702897435
+    @test q_average[1622] ≈ 0.00021785973058570252
+    @test q_average[43] ≈ 10.354328744948932
+    @test q_average[501] ≈ 0.02130865759028468
+    @test q_average[5808] ≈ 0.00491918818651958
+    @test h[1622] ≈ 0.0017917389093431615
+    @test h[43] ≈ 1.3192092568550473
+    @test h[501] ≈ 0.005359393674061471
+    @test h[5808] ≈ 0.005889217903694072
     (; q_average, h) = river_flow.floodplain.variables
-    @test maximum(q_average) ≈ 1.0162290359867245
-    @test maximum(h) ≈ 1.149051908326585
+    @test maximum(q_average) ≈ 0.8621921506398305
+    @test maximum(h) ≈ 1.109416852290252
 end
 
 @testitem "Kinematic river flow including 1D floodplain schematization" begin
