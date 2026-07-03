@@ -82,6 +82,8 @@ subsurface_water__instantaneous_volume_flow_rate = "ssf"
   mostly) for river and floodplain routing on a staggered grid. This is an additional
   routing scheme to the local inertial river routing scheme, both make us of the staggered
   grid method.
+- Added an optional `wflow_version` field to the config .toml file. This setting is used by
+  the wflow model builder `hydromt_wflow` for incremental Wflow.jl version upgrading.
 
 ## v1.0.2 - 2026-03-05
 
