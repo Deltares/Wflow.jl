@@ -15,7 +15,7 @@ jobs:
       - uses: prefix-dev/setup-pixi@a09b6247153796b190642a2b53fac4241043cf6f # v0.10.0
         with:
           pixi-version: "latest"
-      - name: Update Julia manifest and SBOM file
+      - name: Update Julia manifest
         run: |
           pixi run install-julia
           pixi run update-registry-julia
