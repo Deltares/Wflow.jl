@@ -148,6 +148,7 @@ struct Model{
     R <: Routing,
     L <: AbstractLandModel,
     M <: AbstractMassBalance,
+    W <: Writer,
     T <: AbstractModelType,
 } <: AbstractModel{T}
     config::Config                  # all configuration options
@@ -157,7 +158,7 @@ struct Model{
     mass_balance::M                 # mass balance error
     clock::Clock                    # to keep track of simulation time
     reader::NCReader                # provides the model with dynamic input
-    writer::Writer                  # writes model output
+    writer::W                       # writes model output
     type::T                         # model type
 end
 
