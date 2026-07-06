@@ -539,6 +539,7 @@ window.Quarto = {
 <li>Support internal timestepping for kinematic wave lateral subsurface flow concept <code>LateralSSF</code>.</li>
 <li>Support including river and drainage head-dependent flux boundary conditions for kinematic wave lateral subsurface flow concept <code>LateralSSF</code>.</li>
 <li>Support for running only a subsection of the model, either by using a smaller active domain via <code>input.subbasin_location__count</code>, or specify specific subcatchments by linking <code>input.subbasin_location__count</code> to a subcatchment map, and indicate which subbasins should be active by providing their IDs in <code>input.subbasin_active_location__count</code>.</li>
+<li>Added an optional <code>wflow_version</code> field to the config .toml file. This setting is used by the wflow model builder <code>hydromt_wflow</code> for incremental Wflow.jl version upgrading.</li>
 </ul>
 </section>
 </section>
