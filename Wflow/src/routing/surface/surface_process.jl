@@ -29,7 +29,7 @@ function kinematic_wave(q_in, q_prev, q_lat, alpha, dt, dx)
         # constant_term = (dt/dx)*q_in + alpha*q_prev³ᐟ⁵) + dt*q_lat
         # Use q_prev^(3/5) = (q_prev¹ᐟ⁵)^3
         # Let [U] = [m³ s⁻¹]¹ᐟ⁵
-        u_prev = q_prev >= 0.0 ? Wflow.pow(q_prev, 0.2) : 0.0
+        u_prev = q_prev >= 0.0 ? pow(q_prev, 0.2) : 0.0
 
         # [m²] = [s m⁻¹] * [m³ s⁻¹] + [s³ᐟ⁵ m¹ᐟ⁵] * [U]³ + [s] * [m² s⁻¹]
         constant_term = dt_dx * q_in + alpha * u_prev * u_prev * u_prev + dt * q_lat
