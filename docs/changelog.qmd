@@ -71,6 +71,8 @@ subsurface_water__instantaneous_volume_flow_rate = "ssf"
   domain via `input.subbasin_location__count`, or specify specific subcatchments by linking
   `input.subbasin_location__count` to a subcatchment map, and indicate which subbasins
   should be active by providing their IDs in `input.subbasin_active_location__count`.
+- Added an optional `wflow_version` field to the config .toml file. This setting is used by
+  the wflow model builder `hydromt_wflow` for incremental Wflow.jl version upgrading.
 
 ## v1.0.2 - 2026-03-05
 

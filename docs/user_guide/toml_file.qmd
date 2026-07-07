@@ -10,14 +10,18 @@ structured in several sections, which are explained below.
 ## General
 The file paths provided in this file are relative to the location of the TOML file, or to
 `dir_input` and `dir_output` if they are specified. To indicate that a wflow model [runs
-from Delft-FEWS](fews.qmd), the `fews_run__flag` setting needs to be set at `true`.
+from Delft-FEWS](fews.qmd), the `fews_run__flag` setting needs to be set at `true`. The
+`wflow_version` setting represents the Wflow.jl version compatibility of the config .toml
+file. This setting is used by the wflow plugin
+[hydroMT-wflow](https://github.com/Deltares/hydromt_wflow) for incremental Wflow.jl version
+upgrading.
 
 ```toml
 dir_input = "data/input"      # optional, default is the path of the TOML
 dir_output = "data/output"    # optional, default is the path of the TOML
-fews_run__flag = false              # optional, default value is false
+fews_run__flag = false        # optional, default value is false
+wflow_version = "1.1"         # optional, default value is `nothing`
 ```
-
 
 ## Time info
 Time information is optional. When omitted, wflow will perform computations for each
