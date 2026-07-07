@@ -347,7 +347,7 @@ function run!(model::Model; close_files = true)
     # option to support running function twice without re-initializing
     # and thus opening the netCDF files
     if close_files
-        close_files(model; delete_output = false)
+        Wflow.close_files(model; delete_output = false)
     end
 
     # Write config to dir_output, to archive what settings were used
