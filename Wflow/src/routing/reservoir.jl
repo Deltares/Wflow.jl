@@ -532,11 +532,18 @@ function update_reservoir_outflow_obs(
     dt::Float64,
 )
     res_v = model.variables
+    (; maxstorage) = model.parameters
     (; precipitation, actevap, inflow) = boundary_vars
 
     storage_input = max((res_v.storage[i] + precipitation - actevap) / dt + inflow, 0.0) # prevent negative values
     outflow = min(res_v.outflow_obs[i], storage_input)
     storage = (storage_input - outflow) * dt
+    # check upper bound storage for reservoir with maximum storage parameter
+    if !isnan(maxstorage[i])
+        overflow = max(0.0, (storage - maxstorage[i]) / dt)
+        storage -= overflow * dt
+        outflow += overflow
+    end
     return outflow, storage
 end
 
