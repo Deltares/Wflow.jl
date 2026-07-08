@@ -682,7 +682,7 @@ function get_reducer_func(col, domain, args...)
             domain.land.network.indices,
             args...,
         )
-    elseif occursin("river", parameter)
+    elseif occursin("river", parameter) || occursin("floodplain", parameter)
         reducer_func = reducer(
             col,
             domain.river.network.reverse_indices,

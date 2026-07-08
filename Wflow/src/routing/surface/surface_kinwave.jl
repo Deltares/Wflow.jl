@@ -323,12 +323,12 @@ function kinwave_land_update!(
                     )
                 end
 
-                q[v], crossarea =
+                q[v], flow_area =
                     kinematic_wave(qin[v], q[v], qlat[v], alpha[v], dt, flow_length[v])
 
                 # update h, only if flow width > 0.0
                 if surface_flow_width[v] > 0.0
-                    h[v] = crossarea / surface_flow_width[v]
+                    h[v] = flow_area / surface_flow_width[v]
                 end
                 storage[v] = flow_length[v] * surface_flow_width[v] * h[v]
 
@@ -391,20 +391,36 @@ function update_floodplain_model!(
 ) where {T <: KinematicWave, F <: FloodPlainModel{<:Manning}}
     (; floodplain) = river_flow_model
     (; flow_length) = domain.parameters
+    (; graph, order) = domain.network
     (; profile, mannings_n, slope) = floodplain.parameters
     (; flow_capacity, h, q, q_cumulative, qin, qin_cumulative, storage) =
         floodplain.variables
 
-    for i in eachindex(flow_capacity)
-        if h[i] > 0.0
-            i1, i2 = interpolation_indices(h[i], @view profile.depth[:])
-            flow_area = compute_floodplain_flow_area(profile, h[i], i, i1, i2)
-            wetted_perimeter = compute_wetted_perimeter(profile, h[i], i, i1)
-            hydraulic_radius = flow_area/wetted_perimeter
-            flow_capacity[i] =
-                manning_flow(mannings_n[i], hydraulic_radius, slope[i], flow_area)
+    for (i, v) in enumerate(order)
+        i_ds = outneighbors(graph, v)
+        n = length(i_ds)
+        (n > 1) && error("bifurcations not supported")
+        to_pit = iszero(n)
+        if h[v] > 0.0
+            # check if downstream floodplain is active based on minimum flow area
+            i1, i2 = interpolation_indices(h[v], @view profile.depth[:])
+            flow_area = compute_floodplain_flow_area(profile, h[v], v, i1, i2)
+            if !to_pit
+                flow_area_ds =
+                    compute_floodplain_flow_area(profile, h[v], only(i_ds), i1, i2)
+            else
+                flow_area_ds = flow_area
+            end
+            if flow_area > 1.0e-05 && flow_area_ds > 1.0e-05
+                wetted_perimeter = compute_wetted_perimeter(profile, h[v], v, i1)
+                hydraulic_radius = flow_area/wetted_perimeter
+                flow_capacity[v] =
+                    manning_flow(mannings_n[v], hydraulic_radius, slope[v], flow_area)
+            else
+                flow_capacity[v] = 0.0
+            end
         else
-            flow_capacity[i] = 0.0
+            flow_capacity[v] = 0.0
         end
     end
     q .= accucapacityflux(storage, domain.network, flow_capacity, dt)
@@ -413,9 +429,6 @@ function update_floodplain_model!(
     flux_in!(qin, q, domain.network)
 
     @. qin_cumulative += qin * dt
-    for i in eachindex(storage)
-        h[i] = compute_flood_depth(profile, storage[i], flow_length[i], i)
-    end
 end
 
 update_floodplain_model!(

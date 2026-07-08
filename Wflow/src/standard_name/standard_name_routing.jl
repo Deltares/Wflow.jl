@@ -447,20 +447,19 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
         tags = [
             :staggered_grid_floodplain_1D_flow_state,
             :staggered_grid_floodplain_1D_flow_output,
-            :kinematic_wave_floodplain_1D_flow_state,
-            :kinematic_wave_floodplain_1D_flow_output,
         ],
     ),
-    #### Output
     "floodplain_water__volume" => ParameterMetadata(;
         lens = @optic(_.routing.river_flow.floodplain.variables.storage),
         unit = Unit(; m = 3),
         description = "Floodplain water volume",
         tags = [
             :staggered_grid_floodplain_1D_flow_output,
+            :kinematic_wave_floodplain_1D_flow_state,
             :kinematic_wave_floodplain_1D_flow_output,
         ],
     ),
+    #### Output
     "floodplain_water__volume_flow_rate" => ParameterMetadata(;
         lens = @optic(_.routing.river_flow.floodplain.variables.q_average),
         unit = Unit(; m = 3, s = -1),

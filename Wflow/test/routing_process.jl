@@ -1002,7 +1002,6 @@ end
 
     Wflow.update_floodplain_model!(river_flow_model, domain, dt)
 
-    @test river_flow_model.floodplain.variables.h ≈ [0.3054891336736904, 0.2126646996773224]
     @test river_flow_model.floodplain.variables.storage ≈
           [52745.30941770246, 41649.967280840756]
     @test river_flow_model.floodplain.variables.q ≈ [3.752513987924126, 2.7693140810933157]

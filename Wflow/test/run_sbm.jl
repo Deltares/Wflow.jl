@@ -1189,17 +1189,17 @@ end
 
     (; q_average, h) = river_flow.variables
     @test sum(q_average) ≈ 3716.1374347813075
-    @test q_average[1622] ≈ 0.0007502658165783512
+    @test q_average[1622] ≈ 0.0007502658174033337
     @test q_average[43] ≈ 11.640174323692953
-    @test q_average[501] ≈ 0.18015658196174816
+    @test q_average[501] ≈ 0.1801556062913406
     @test q_average[5808] ≈ 0.04397662216730808
     @test h[1622] ≈ 0.000979026922365117
     @test h[43] ≈ 0.1629855245095962
-    @test h[501] ≈ 0.16313139291053447
+    @test h[501] ≈ 0.16313131033747957
     @test h[5808] ≈ 0.005801893758984071
     (; q_average, h) = river_flow.floodplain.variables
-    @test maximum(q_average) ≈ 6.1187682616864505
-    @test maximum(h) ≈ 0.12485258241910993
+    @test maximum(q_average) ≈ 6.118766353571045
+    @test maximum(h) ≈ 1.3772452681705927
 end
 
 @testitem "run wflow sbm" begin

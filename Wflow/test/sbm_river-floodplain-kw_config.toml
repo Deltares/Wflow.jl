@@ -36,8 +36,7 @@ snowpack_liquid_water__depth = "snowwater"
 river_water__depth = "h_river"
 river_water__instantaneous_volume_flow_rate = "q_river"
 
-floodplain_water__instantaneous_volume_flow_rate = "q_floodplain"
-floodplain_water__depth = "h_floodplain"
+floodplain_water__volume = "storage_floodplain"
 reservoir_water_surface__elevation = "waterlevel_reservoir"
 
 subsurface_water__instantaneous_volume_flow_rate = "ssf"
