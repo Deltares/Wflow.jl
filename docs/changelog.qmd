@@ -7,6 +7,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Fixed
+- Allow spilling of reservoirs with a maximum storage when using reservoir observed outflow
+  data. The observed outflow was only capped based on reservoir water availability while an
+  upper bound on storage for reservoirs with a maximum storage was not applied. This has
+  been fixed so reservoir storage does not exceed maximum storage.
+
 ## v1.0.3 - 2026-06-23
 
 ### Fixed
