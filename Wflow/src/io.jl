@@ -840,12 +840,12 @@ function write_netcdf_timestep(model::AbstractModel, writer::NCWriter{<:NCDatase
         elseif elemtype <: SVector
             # check if an extra dimension and index is specified in the TOML file
             if haskey(output_dataset, extra_dim.name)
-                v = from_SI(reducer_(getindex.(A, layer)), unit; dt_val)
+                v = from_SI(reducer_(getindex.(vector, layer)), unit; dt_val)
                 output_dataset[name][:, time_index] .= v
             else
-                nlayer = length(first(A))
+                nlayer = length(first(vector))
                 for i in 1:nlayer
-                    v = from_SI(reducer_(getindex.(A, layer)), unit; dt_val)
+                    v = from_SI(reducer_(getindex.(vector, layer)), unit; dt_val)
                     output_dataset[name][:, i, time_index] .= v
                 end
             end
@@ -1028,7 +1028,7 @@ function reducer(col, rev_inds, indices, x_nc, y_nc, config, dataset)::Function
             end
             push!(inds[v], ind)
         end
-        return A -> (f(A[inds[id]]) for id in ids)
+        return A -> [f(A[inds[id]]) for id in ids]
     elseif !isnothing(reducer)
         # reduce over all active cells
         # needs to be behind the map if statement, because it also can use a reducer
