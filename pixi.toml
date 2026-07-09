@@ -12,7 +12,7 @@ platforms = ["win-64", "linux-64"]
 [tasks]
 # Installation
 # Julia
-install-julia = "juliaup add 1.12.5 && juliaup override set 1.12.5"
+install-julia = "juliaup add 1.12.6 && juliaup override set 1.12.6"
 # Prek
 install-prek = "prek install"
 update-registry-julia = "julia --eval='using Pkg; Registry.update()'"

@@ -260,6 +260,7 @@ end
 
 # Fields with a default value are optional
 @kwdef mutable struct Config <: AbstractConfigSection
+    wflow_version::Union{Nothing, VersionNumber} = nothing
     dir_input::String = "."
     dir_output::String = "."
     fews_run__flag::Bool = false
