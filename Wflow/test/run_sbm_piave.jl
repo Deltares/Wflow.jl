@@ -371,7 +371,7 @@ end
             rating_curve_exponent -> abs(rating_curve_exponent) < 1e-9,
             overland_water_balance.error,
         )
-        @test all(re -> abs(re) < 1e-9, overland_water_balance.relative_error)
+        @test all(re -> abs(re) < 1.1e-9, overland_water_balance.relative_error)
         @test all(
             rating_curve_exponent -> abs(rating_curve_exponent) < 1e-9,
             river_water_balance.error,

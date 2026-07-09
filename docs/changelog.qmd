@@ -40,9 +40,8 @@ subsurface_water__instantaneous_volume_flow_rate = "ssf"
 - The configuration TOML file written to `dir_output` at the end of a simulation now
   reflects the (potentially modified) in-memory configuration instead of being a copy of the
   original input TOML file.
-- Improved kinematic wave solver performance by replacing Newton-Raphson with
-  Halley's method, substituting `pow` calls with direct arithmetic on the 5th
-  root of discharge, and computing cross-sectional area as a byproduct of the
+- Improved kinematic wave solver performance by substituting `pow` calls with direct arithmetic
+  on the 5th root of discharge, and computing cross-sectional area as a byproduct of the
   solve instead of a separate `pow` call. The `beta` parameter has been removed
   from `ManningFlowParameters` and is now a module-level constant
   `BETA_KINWAVE` (#898).
@@ -68,6 +67,8 @@ subsurface_water__instantaneous_volume_flow_rate = "ssf"
   domain via `input.subbasin_location__count`, or specify specific subcatchments by linking
   `input.subbasin_location__count` to a subcatchment map, and indicate which subbasins
   should be active by providing their IDs in `input.subbasin_active_location__count`.
+- Added an optional `wflow_version` field to the config .toml file. This setting is used by
+  the wflow model builder `hydromt_wflow` for incremental Wflow.jl version upgrading.
 
 ## v1.0.3 - 2026-06-23
 

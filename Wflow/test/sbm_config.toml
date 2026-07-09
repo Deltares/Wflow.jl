@@ -5,6 +5,7 @@
 
 dir_input = "data/input"
 dir_output = "data/output"
+wflow_version = "1.1"
 
 [logging]
 loglevel = "info"
