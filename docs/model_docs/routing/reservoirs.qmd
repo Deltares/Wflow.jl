@@ -226,9 +226,11 @@ reservoir_water__outgoing_observed_volume_flow_rate = "reservoir_outflow"
 ```
 
 The reservoir outflow is not equal to the user-defined observed reservoir outflow in case
-not enough reservoir water storage is available. When missing data in the input netCDF file
-for observed reservoir outflow at a reservoir location is provided the rating curve of that
-reservoir location is used.
+not enough reservoir water storage is available. For reservoirs with a maximum storage,
+spillage is allowed when storage is exceeding the maximum storage with the user-defined
+observed reservoir outflow. Overflow because of spilling is added to the observed reservoir
+outflow. When missing data in the input netCDF file for observed reservoir outflow at a
+reservoir location is provided the rating curve of that reservoir location is used.
 
 ## References
 + Bos M.G., 1989. Discharge measurement structures. Third revised edition, International
