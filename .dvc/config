@@ -1,0 +1,6 @@
+[core]
+    remote = minio
+['remote "minio"']
+    url = s3://wflow/testdata
+    endpointurl = https://s3.deltares.nl:9000
+    allow_anonymous_login = true
