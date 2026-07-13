@@ -35,7 +35,6 @@ subsurface_water__instantaneous_volume_flow_rate = "ssf"
 ### Fixed
 - Fixed a bug where the maximum subsurface flow was not adjusted for subdaily timesteps
   (only when using `layered` or `layered_exponential` profiles)
-- Fixed an issue where the snow storage could become negative.
 
 ### Changed
 - All internal computations now use standardized SI units (m, s, kg, J, K) consistently
