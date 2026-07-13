@@ -11,11 +11,16 @@ different model configurations are possible. The following model configurations 
 supported in wflow:
 
  - wflow\_sbm:
-    - Land Hydrology `SBM` + kinematic wave for subsurface and surface flow
-    - Land Hydrology `SBM` + kinematic wave for subsurface and overland flow + local inertial river (+
-      optional floodplain)
-    - Land Hydrology `SBM` + kinematic wave for subsurface flow + local inertial river (1D) and land (2D)
-    - Land Hydrology `SBM` + groundwater flow + kinematic wave for surface flow
+
+    The Land Hydrology `SBM` concept can be combined with the following subsurface flow
+    concepts:
+    - kinematic wave lateral subsurface flow routing
+    - groundwater flow routing
+
+    and with the following surface routing schemes:
+    - kinematic wave for overland and river flow
+    - kinematic wave for overland flow + local inertial river (+ optional floodplain)
+    - local inertial river (1D) and land (2D)
  - wflow\_sediment as post processing of wflow\_sbm output
 
 Below, some explanation will be given on how to prepare a basic wflow\_sbm model. Example

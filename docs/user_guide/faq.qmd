@@ -110,11 +110,10 @@ the 1D floodplain method can be used instead.
 
 ![Schematization of the 2D floodplain concept (top view)](../images/floodplains_2d.png)
 
-It is also possible to run the model without 1D or 2D floodplains. This means that the model
-is using kinematic wave for land routing and either kinematic wave or local inertial for
-river routing. This can lead to unrealistically large water depths when the bankfull
-capacity is exceeded as there is no exchange of water between the river channel and (1D or
-2D) floodplains.
+It is also possible to run the model without 1D floodplains. This means that the model is
+using kinematic wave for land routing and either kinematic wave or local inertial for river
+routing. This can lead to unrealistically large water depths when the bankfull capacity is
+exceeded as there is no exchange of water between the river channel and floodplains.
 
 ### How do I run only a part of my model?
 You can easily run only a subsection of your model, by modifying the

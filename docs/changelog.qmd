@@ -32,10 +32,6 @@ of the standard name:
 subsurface_water__instantaneous_volume_flow_rate = "ssf"
 ```
 
-### Fixed
-- Fixed a bug where the maximum subsurface flow was not adjusted for subdaily timesteps
-  (only when using `layered` or `layered_exponential` profiles)
-
 ### Changed
 - All internal computations now use standardized SI units (m, s, kg, J, K) consistently
   throughout the codebase. Units are converted to/from the old units at I/O
@@ -73,6 +69,23 @@ subsurface_water__instantaneous_volume_flow_rate = "ssf"
   should be active by providing their IDs in `input.subbasin_active_location__count`.
 - Added an optional `wflow_version` field to the config .toml file. This setting is used by
   the wflow model builder `hydromt_wflow` for incremental Wflow.jl version upgrading.
+
+## v1.0.3 - 2026-06-23
+
+### Fixed
+- Fix unit external inflow for local inertial river (1D) and land (2D) routing. For the
+  computation of available river volume (to limit negative external inflow) the
+  `bankfull_depth` was assigned to this volume, this should be `bankfull_storage`.
+- Maximum subsurface flow was not adjusted for sub-daily timestep for `layered` and
+  `layered_exponential` profiles.
+- Fix deriving active indices for output variable `to_river`. Also, the mapping of standard
+  name (or model path) to active indices is now more strict (comparing prefix of these
+  strings instead of substring matching).
+- Fix `waterlevel` unit (from \[m\] to \[mm\]) in rainfall erosion computation of rainfall
+  erosion model `EUROSEM`. With the wrong unit (\[m\]) the rainfall impact reduction when
+  the soil is covered by water was underestimated.
+- Removed a conversion factor of 0.001 used for the computation of total kinetic energy as
+  part of rainfall erosion model `EUROSEM`, as it is not required based on the units.
 
 ## v1.0.2 - 2026-03-05
 
