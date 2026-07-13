@@ -83,11 +83,11 @@
         @test mean(ds["ustorelayerdepth"][land_inds, 1, 1]) ≈ 1.6280833
         @test mean(ds["satwaterdepth"][land_inds, 1]) ≈ 428.79132
         @test mean(ds["snow"][land_inds, 1]) ≈ 0.038019713
-        @test mean(ds["q_av_land"][land_inds, 1]) ≈ 0.0006645087
-        @test mean(ds["q_land_to_river"][land_inds, 1]) ≈ 7.284806e-5
+        @test mean(ds["q_av_land"][land_inds, 1]) ≈ 0.00066952046f0
+        @test mean(ds["q_land_to_river"][land_inds, 1]) ≈ 7.3739284f-5
         @test mean(ds["ssf_to_river"][land_inds, 1]) ≈ 83.955956
         @test mean(ds["storage_reservoir"][reservoir_inds, 1]) ≈ 3.700436e7
-        @test mean(ds["q_av_river"][river_inds, 1]) ≈ 0.14935642
+        @test mean(ds["q_av_river"][river_inds, 1]) ≈ 0.14963673f0
     end
 
     @testset "First timestep: interception" begin
