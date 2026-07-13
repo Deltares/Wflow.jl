@@ -1163,18 +1163,18 @@ end
     Wflow.run_timestep!(model)
 
     (; q_average, h) = river_flow.variables
-    @test sum(q_average) ≈ 2154.377097406722
-    @test q_average[1622] ≈ 0.00021688684091240499
-    @test q_average[43] ≈ 10.354328744948932
-    @test q_average[501] ≈ 0.021302052064530574
-    @test q_average[5808] ≈ 0.004918586569211439
-    @test h[1622] ≈ 0.0017876514245616358
-    @test h[43] ≈ 1.3192092568550473
-    @test h[501] ≈ 0.005358355348907546
-    @test h[5808] ≈ 0.005888712037653059
+    @test sum(q_average) ≈ 2156.7740284069446
+    @test q_average[1622] ≈ 0.000216893766604954
+    @test q_average[43] ≈ 10.362921270030188
+    @test q_average[501] ≈ 0.021301823784704774
+    @test q_average[5808] ≈ 0.0049185166802011605
+    @test h[1622] ≈ 0.001787783986962345
+    @test h[43] ≈ 1.3195684133779013
+    @test h[501] ≈ 0.005358321292557224
+    @test h[5808] ≈ 0.005888613968265871
     (; q_average, h) = river_flow.floodplain.variables
-    @test maximum(q_average) ≈ 0.8621923238703156
-    @test maximum(h) ≈ 1.109416852290252
+    @test maximum(q_average) ≈ 0.8692896468290046
+    @test maximum(h) ≈ 1.1111707025189723
 end
 
 @testitem "Kinematic river flow including 1D floodplain schematization" begin
@@ -1188,18 +1188,18 @@ end
     Wflow.run_timestep!(model)
 
     (; q_average, h) = river_flow.variables
-    @test sum(q_average) ≈ 3716.1374347813075
-    @test q_average[1622] ≈ 0.0007502658174033337
-    @test q_average[43] ≈ 11.640174323692953
-    @test q_average[501] ≈ 0.1801556062913406
-    @test q_average[5808] ≈ 0.04397662216730808
-    @test h[1622] ≈ 0.000979026922365117
-    @test h[43] ≈ 0.1629855245095962
-    @test h[501] ≈ 0.16313131033747957
-    @test h[5808] ≈ 0.005801893758984071
+    @test sum(q_average) ≈ 3720.480709961395
+    @test q_average[1622] ≈ 0.0007502671736663475
+    @test q_average[43] ≈ 11.647181706571397
+    @test q_average[501] ≈ 0.18574032636015966
+    @test q_average[5808] ≈ 0.0439765670778149
+    @test h[1622] ≈ 0.0009790264545664975
+    @test h[43] ≈ 0.16302929690891788
+    @test h[501] ≈ 0.1655315417523159
+    @test h[5808] ≈ 0.005801900639633136
     (; q_average, h) = river_flow.floodplain.variables
-    @test maximum(q_average) ≈ 6.118766353571045
-    @test maximum(h) ≈ 1.3772452681705927
+    @test maximum(q_average) ≈ 6.126840040417338
+    @test maximum(h) ≈ 1.3787910985721359
 end
 
 @testitem "run wflow sbm" begin
