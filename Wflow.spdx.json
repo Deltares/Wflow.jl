@@ -1165,12 +1165,12 @@
             ]
         },
         {
-            "name": "DelimitedFiles",
-            "SPDXID": "SPDXRef-DelimitedFiles-8bb1440f-4735-579b-a4ab-409b98df4dab",
-            "versionInfo": "1.9.1",
+            "name": "PropertyDicts",
+            "SPDXID": "SPDXRef-PropertyDicts-f8a19df8-e894-5f55-a973-672c1158cbca",
+            "versionInfo": "0.2.1",
             "supplier": "NOASSERTION",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaData/DelimitedFiles.jl.git@9e2f36d3c96a820c678f2f1f1782582fcf685bae",
+            "downloadLocation": "git+https://github.com/JuliaCollections/PropertyDicts.jl.git@a6b4c12d38387a4382fa53b8a6591f9c219add16",
             "filesAnalyzed": true,
             "packageVerificationCode": {
                 "packageVerificationCodeValue": "75953b0316ba1232a2fbba58bf6fb27d9a676e39"
