@@ -27,7 +27,7 @@ function kinematic_wave(q_in, q_prev, q_lat, alpha, dt, dx)
     else
         dt_dx = dt / dx
         # constant_term = (dt/dx)*q_in + alpha*q_prev³ᐟ⁵) + dt*q_lat
-        u_prev = q_prev >= 0.0 ? Wflow.pow(q_prev, 0.2) : 0.0
+        u_prev = q_prev >= 0.0 ? pow(q_prev, 0.2) : 0.0
 
         constant_term = dt_dx * q_in + alpha * u_prev * u_prev * u_prev + dt * q_lat
 
