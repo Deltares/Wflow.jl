@@ -6,27 +6,28 @@ Abstract type representing an aquifer, either confined or unconfined.
 The vertically averaged governing equation of an unconfined, inhomogeneous and
 isotropic aquifer in one dimension can be written as:
 
-S * ∂ϕ / ∂t = ∂ / ∂x * (kH * ∂ϕ / ∂x) + Q
+S * ∂h / ∂t = ∂ / ∂x * (kH * ∂h / ∂x) + Q
 
 with:
 * S: storativity (or storage coefficient)
-* ϕ: hydraulic head (groundwater level)
+* h: hydraulic head (groundwater level)
 * t: time
 * k: conductivity
 * H: H the (saturated) aquifer height: groundwater level - aquifer bottom
   elevation
-* η: elevation of aquifer bottom
 * Q: fluxes from boundary conditions (e.g. recharge or abstraction)
 
 The simplest finite difference formulation is forward in time, central in space,
 and can be written as:
 
-Sᵢ * (ϕᵢᵗ⁺¹ - ϕᵢᵗ) / Δt = -Cᵢ₋₁ * (ϕᵢ₋₁ - ϕᵢ) -Cᵢ * (ϕᵢ₊₁ - ϕᵢ) + Qᵢ
+Sᵢ * (hᵢᵗ⁺¹ - hᵢᵗ) * (Δx * Δy) / Δt = -Cᵢ₋₁ * (hᵗᵢ₋₁ - hᵗᵢ) -Cᵢ * (hᵗᵢ₊₁ - hᵗᵢ) + Qᵢ * (Δx * Δy)
 
 with:
 * ᵢ as cell index
 * ᵗ as time index
 * Δt as step size
+* Δx as the cell length in the x direction
+* Δy as the cell length in the y direction
 * Cᵢ₋₁ as the intercell conductance between cell i-1 and i
 * Cᵢ as the intercell conductance between cell i and i+1
 
@@ -41,9 +42,9 @@ with:
 k and H may both vary in space; intercell conductance is therefore an average
 using the properties of two cells. See the documentation below.
 
-There is only one unknown, ϕᵢᵗ⁺¹. Reshuffling terms:
+There is only one unknown, hᵢᵗ⁺¹. Reshuffling terms:
 
-ϕᵢᵗ⁺¹ = ϕᵢᵗ + (Cᵢ₋₁ * (ϕᵢ - ϕᵢ₋₁) + Cᵢ * (ϕᵢ₊₁ - ϕᵢ) + Qᵢ) * Δt / Sᵢ
+hᵢᵗ⁺¹ = hᵢᵗ + (Cᵢ₋₁ * (hᵗᵢ - hᵗᵢ₋₁) + Cᵢ * (hᵗᵢ₊₁ - hᵗᵢ) + Qᵢ * Δx * Δy) * Δt / (Sᵢ * Δx * Δy)
 
 This can be generalized to two dimensions, for both regular and irregular cell
 connectivity.
