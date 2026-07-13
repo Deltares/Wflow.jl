@@ -178,7 +178,7 @@ Base.iterate(input_entries::InputEntries, state) = iterate(input_entries.dict, s
     _location_maps::PropertyDictType
 end
 
-const input_field_names = String.(fieldnames(Wflow.InputSection))
+const input_field_names = String.(fieldnames(InputSection))
 
 ###
 ### Output section
