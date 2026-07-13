@@ -701,15 +701,6 @@
     "allow_missing": false,
     "allow_dynamic_input": false
   },
-  "subsurface_water__specific_yield": {
-    "unit": "-",
-    "default": null,
-    "fill": null,
-    "type": "Float64",
-    "description": "Specific yield",
-    "allow_missing": false,
-    "allow_dynamic_input": false
-  },
   "subsurface_water__to_river_volume_flow_rate": {
     "unit": "m3 day-1",
     "default": null,

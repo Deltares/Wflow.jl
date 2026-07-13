@@ -665,7 +665,7 @@ function out_map(output_names_dict, modelmap)
     for (par, output_name) in output_names_dict
         vector, metadata = get_field_in_model(modelmap, par)
         if isnothing(metadata)
-            @warn "No metadata was found for $par, so the output will be expressed in standard SI units ($(join(Wflow.STANDARD_UNITS, ", "))) and might fail."
+            @warn "No metadata was found for $par, so the output will be expressed in standard SI units ($(join(STANDARD_UNITS, ", "))) and might fail."
             metadata = ParameterMetadata()
         end
         output_map[output_name] = OutputData(; par, vector, metadata.unit)
