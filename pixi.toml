@@ -85,7 +85,6 @@ jupyter = "*"
 quarto = ">=1.8.26,<2"
 prek = "*"
 typos = "*"
-awscli = "*"
 
 
 [system-requirements]
