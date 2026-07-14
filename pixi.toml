@@ -80,12 +80,10 @@ dvc = "*"
 dvc-s3 = "*"
 juliaup = "*"
 python = ">=3.10"
-#jupyter = ">=1.1.1,<2"
-jupyter = "*"
+jupyter = ">=1.1.1,<2"
 quarto = ">=1.8.26,<2"
 prek = "*"
 typos = "*"
-
 
 [system-requirements]
 linux = "3.10.0"
