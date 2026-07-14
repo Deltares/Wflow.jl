@@ -487,11 +487,6 @@ function update_floodplain_flow!(
                 i1,
             ),
         )
-        hydraulic_radius_at_edge = ifelse(
-            floodplain_v.water_depth_at_edge[i] > profile.depth[i1],
-            hydraulic_radius_at_edge,
-            0.0,
-        )
 
         floodplain_v.q[i] = ifelse(
             flow_area_at_edge > 1.0e-05,
@@ -591,11 +586,6 @@ function update_floodplain_flow!(
                 i_dst,
                 i1,
             ),
-        )
-        hydraulic_radius_at_edge = ifelse(
-            floodplain_v.water_depth_at_edge[i] > profile.depth[i1],
-            hydraulic_radius_at_edge,
-            0.0,
         )
 
         floodplain_v.q[i] = ifelse(
