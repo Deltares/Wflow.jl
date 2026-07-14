@@ -41,29 +41,11 @@ Binaries of `wflow_cli` can be downloaded from our website
 [download.deltares.nl](https://download.deltares.nl/en/download/wflow/), and are currently
 available for Windows.
 
-After installing you can see three folders in the installation directory. It is only the
-`bin/wflow_cli` that is directly used. All three folders need to stay together however. The
-share folder contains TOML files with more information about the build.
-
-```bash
-bin\wflow_cli
-lib
-share
-```
-
+After installing `wflow_cli` is added to your path.
 Simply running `wflow_cli` with no arguments will give the following message:
 
 ```bash
 Usage: wflow_cli "path/to/config.toml"
-```
-
-Note that this only works if the `bin` folder is in your PATH. If you want to run it from any
-directory, you can add the `bin` folder to your PATH. Alternatively, you can run it from any
-location by specifying the full path to the executable. For example (but please adjust the path
-to your own installation):
-
-```bash
-"C:\Program Files\Deltares\wflow\wflow x.x.x\wflow_cli\bin\wflow_cli.exe" "path/to/config.toml"
 ```
 
 When starting a run, you will see basic run information on the screen, as well as a progress
