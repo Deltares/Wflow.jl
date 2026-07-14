@@ -25,7 +25,7 @@ initialize-julia = { depends-on = [
 ] }
 install = { depends-on = ["install-julia", "install-prek"] }
 # Test data
-download-test-data = { cmd = "julia --project ../utils/download_test_data.jl", cwd = "Wflow" }
+download-test-data = { cmd = "dvc pull", cwd = "." }
 # Build
 build-wflow-cli = { cmd = "julia --project create_app.jl", cwd = "build/create_binaries", depends-on = [
 	{ "task" = "instantiate-julia", "args" = [
@@ -85,6 +85,7 @@ jupyter = "*"
 quarto = ">=1.8.26,<2"
 prek = "*"
 typos = "*"
+awscli = "*"
 
 
 [system-requirements]

@@ -1,6 +1,7 @@
 [core]
-    remote = minio
-['remote "minio"']
+    remote = Wflow-testdata
+['remote "wflow-testdata"']
     url = s3://wflow/testdata
-    endpointurl = https://s3.deltares.nl:9000
-    allow_anonymous_login = true
+    endpointurl = https://s3.deltares.nl
+    profile = Wflow-testdata
+    region = eu-west-1
