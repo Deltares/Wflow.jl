@@ -6,3 +6,4 @@ extend-exclude = ["**/*.toml", "**/publications.qmd", "**/Licentie.rtf"]
 iy = "iy"
 puls = "puls"
 theis = "theis"
+stichting = "stichting"
