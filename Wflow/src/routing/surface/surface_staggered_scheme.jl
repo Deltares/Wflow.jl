@@ -129,8 +129,8 @@ function RiverFlowStaggeredParameters(
     elseif river_routing == RoutingType.manning_staggered
         zb_at_edge = compute_value_at_edge(zb, nodes_at_edge, n_edges, first)
         mannings_n_sq_at_edge = []
-        slope_at_edge =
-            compute_slope_at_edge(zb, flow_length_at_edge, nodes_at_edge, n_edges)
+        slope_at_edge = domain.parameters.slope
+        #compute_slope_at_edge(zb, flow_length_at_edge, nodes_at_edge, n_edges)
     end
 
     parameters = RiverFlowStaggeredParameters(;
@@ -245,7 +245,14 @@ function init_staggered_river_flow(
 
     # The following boundary conditions can be set at ghost nodes, downstream of river
     # outlets (pits): river length and river depth
-    alpha_coefficient = config.model.river_local_inertial_flow__alpha_coefficient # stability coefficient for model time step (0.2-0.7)
+
+    # stability coefficient for model time step (0.2-0.7)
+    (; river_routing) = config.model
+    alpha_coefficient = if river_routing == RoutingType.local_inertial
+        config.model.river_local_inertial_flow__alpha_coefficient
+    elseif river_routing == RoutingType.manning_staggered
+        config.model.river_staggered_manning_flow__alpha_coefficient
+    end
     timestepping = TimeStepping(; alpha_coefficient)
 
     parameters = RiverFlowStaggeredParameters(dataset, config, domain)
