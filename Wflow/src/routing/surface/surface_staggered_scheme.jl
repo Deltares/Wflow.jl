@@ -129,8 +129,8 @@ function RiverFlowStaggeredParameters(
     elseif river_routing == RoutingType.manning_staggered
         zb_at_edge = compute_value_at_edge(zb, nodes_at_edge, n_edges, first)
         mannings_n_sq_at_edge = []
-        slope_at_edge = domain.parameters.slope
-        #compute_slope_at_edge(zb, flow_length_at_edge, nodes_at_edge, n_edges)
+        slope_at_edge =
+            compute_slope_at_edge(zb, flow_length_at_edge, nodes_at_edge, n_edges)
     end
 
     parameters = RiverFlowStaggeredParameters(;
