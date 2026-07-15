@@ -640,7 +640,7 @@ function update_river_flow_model!(
         dt_s = check_timestepsize(dt_s, t, dt)
         river_channel_floodplain_exchange!(river_flow_model, domain.river.parameters, dt_s)
         kinwave_river_update!(river_flow_model, domain.river, dt_s)
-        update_floodplain_model!(river_flow_model, domain.river, dt)
+        update_floodplain_model!(river_flow_model, domain.river, dt_s)
         t += dt_s
     end
 

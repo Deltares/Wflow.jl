@@ -1204,18 +1204,18 @@ end
     Wflow.run_timestep!(model)
 
     (; q_average, h) = river_flow.variables
-    @test sum(q_average) ≈ 3720.480709961395
-    @test q_average[1622] ≈ 0.0007502671736663475
+    @test sum(q_average) ≈ 3664.1750799952056
+    @test q_average[1622] ≈ 0.000750262072108146
     @test q_average[43] ≈ 11.647181706571397
-    @test q_average[501] ≈ 0.18574032636015966
-    @test q_average[5808] ≈ 0.0439765670778149
-    @test h[1622] ≈ 0.0009790264545664975
+    @test q_average[501] ≈ 0.1624521220430912
+    @test q_average[5808] ≈ 0.04397694950619904
+    @test h[1622] ≈ 0.0009790317470641876
     @test h[43] ≈ 0.16302929690891788
-    @test h[501] ≈ 0.1655315417523159
-    @test h[5808] ≈ 0.005801900639633136
+    @test h[501] ≈ 0.1542630086179196
+    @test h[5808] ≈ 0.005801865652235309
     (; q_average, h) = river_flow.floodplain.variables
-    @test maximum(q_average) ≈ 6.126840040417338
-    @test maximum(h) ≈ 1.3787910985721359
+    @test maximum(q_average) ≈ 0.606783057904105
+    @test maximum(h) ≈ 1.5799312217287604
 end
 
 @testitem "run wflow sbm" begin
