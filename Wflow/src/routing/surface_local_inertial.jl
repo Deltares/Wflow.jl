@@ -358,11 +358,6 @@ function local_inertial_river_update!(
                     floodplain_v.hf[i],
                 ),
             )
-            hydraulic_radius = ifelse(
-                floodplain_v.hf[i] > floodplain_p.profile.depth[i1],
-                hydraulic_radius,
-                0.0,
-            )
 
             floodplain_v.q[i] = ifelse(
                 flow_area > 1.0e-05,
