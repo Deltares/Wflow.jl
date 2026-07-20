@@ -108,7 +108,7 @@ start a Julia session.
 
 Binaries of `wflow_cli` can be downloaded from our website
 [download.deltares.nl](https://download.deltares.nl/en/wflow/), and are currently available
-for Windows. Download and install the `.msix` file. This will put `wflow_cli` on your path.
+for Windows. Download and install the `.msix` file.
 
 To verify whether the installation was completed successfully, run `wflow_cli` with no
 arguments in the command line. This will display the following message:
