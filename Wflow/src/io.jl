@@ -42,6 +42,13 @@ const mover_params = (
     "land_surface_water__potential_evaporation_volume_flux",
 )
 
+# Map domain name to regular expression for matching with standard name or model path
+const domain_parameter_map = Dict{String, Regex}(
+    "reservoir" => r"reservoir|routing.river_flow.boundary_conditions.reservoir",
+    "river" => r"river|floodplain|routing.river_flow",
+    "drain" => r"land_drain|routing.subsurface_flow.boundaries.drain",
+)
+
 function routing_with_reservoirs(model)
     (; config) = model
     return config.model.reservoir__flag
@@ -439,7 +446,7 @@ end
 
 @with_kw struct NCWriter{
     D <: Union{NCDataset, Nothing},
-    R <: Union{Nothing, Dict{NetCDFScalarVariable, Function}},
+    R <: Union{Nothing, Dict{NetCDFScalarVariable, <:Function}},
 }
     # Path to the NetCDF file
     output_path::Union{String, Nothing} = nothing
@@ -462,11 +469,11 @@ end
     reducer::OrderedDict{CSVColumn, Function} = Dict()
 end
 
-@with_kw struct Writer{DG, DS, DE}
+@with_kw struct Writer{DG, DS, DE, R}
     # Writer for transient grid output (no reducer)
     grid_writer::NCWriter{DG, Nothing}
     # Writer for transient scalar output (with reducer)
-    scalar_writer::NCWriter{DS, Dict{NetCDFScalarVariable, Function}}
+    scalar_writer::NCWriter{DS, Dict{NetCDFScalarVariable, R}}
     # Writer for for simulation end state output (no reducer)
     endstate_writer::NCWriter{DE, Nothing}
     # Writer for CSV output
@@ -665,7 +672,7 @@ function out_map(output_names_dict, modelmap)
     for (par, output_name) in output_names_dict
         vector, metadata = get_field_in_model(modelmap, par)
         if isnothing(metadata)
-            @warn "No metadata was found for $par, so the output will be expressed in standard SI units ($(join(Wflow.STANDARD_UNITS, ", "))) and might fail."
+            @warn "No metadata was found for $par, so the output will be expressed in standard SI units ($(join(STANDARD_UNITS, ", "))) and might fail."
             metadata = ParameterMetadata()
         end
         output_map[output_name] = OutputData(; par, vector, metadata.unit)
@@ -675,34 +682,16 @@ end
 
 function get_reducer_func(col, domain, args...)
     (; parameter) = col
-    if occursin("reservoir", parameter)
-        reducer_func = reducer(
-            col,
-            domain.reservoir.network.reverse_indices,
-            domain.land.network.indices,
-            args...,
-        )
-    elseif occursin("river", parameter)
-        reducer_func = reducer(
-            col,
-            domain.river.network.reverse_indices,
-            domain.land.network.indices,
-            args...,
-        )
-    elseif occursin("drain", parameter)
-        reducer_func = reducer(
-            col,
-            domain.drain.network.reverse_indices,
-            domain.land.network.indices,
-            args...,
-        )
+    (; indices) = domain.land.network
+    if startswith(parameter, domain_parameter_map["reservoir"])
+        reducer_func =
+            reducer(col, domain.reservoir.network.reverse_indices, indices, args...)
+    elseif startswith(parameter, domain_parameter_map["river"])
+        reducer_func = reducer(col, domain.river.network.reverse_indices, indices, args...)
+    elseif startswith(parameter, domain_parameter_map["drain"])
+        reducer_func = reducer(col, domain.drain.network.reverse_indices, indices, args...)
     else
-        reducer_func = reducer(
-            col,
-            domain.land.network.reverse_indices,
-            domain.land.network.indices,
-            args...,
-        )
+        reducer_func = reducer(col, domain.land.network.reverse_indices, indices, args...)
     end
 end
 
@@ -840,12 +829,12 @@ function write_netcdf_timestep(model::AbstractModel, writer::NCWriter{<:NCDatase
         elseif elemtype <: SVector
             # check if an extra dimension and index is specified in the TOML file
             if haskey(output_dataset, extra_dim.name)
-                v = from_SI(reducer_(getindex.(A, layer)), unit; dt_val)
+                v = from_SI(reducer_(getindex.(vector, layer)), unit; dt_val)
                 output_dataset[name][:, time_index] .= v
             else
-                nlayer = length(first(A))
+                nlayer = length(first(vector))
                 for i in 1:nlayer
-                    v = from_SI(reducer_(getindex.(A, layer)), unit; dt_val)
+                    v = from_SI(reducer_(getindex.(vector, layer)), unit; dt_val)
                     output_dataset[name][:, i, time_index] .= v
                 end
             end
@@ -993,7 +982,7 @@ reducer_func(::Nothing) = only
 reducer_func(reducer_type::ReducerType.T) = function_map[reducer_type]
 
 "Get a reducer function based on output settings for scalar data defined in a dictionary"
-function reducer(col, rev_inds, indices, x_nc, y_nc, config, dataset)
+function reducer(col, rev_inds, indices, x_nc, y_nc, config, dataset)::Function
     (; parameter, map, reducer, index, coordinate) = col
     fileformat = col isa CSVColumn ? "CSV" : "NetCDF"
     f = reducer_func(reducer)
@@ -1028,7 +1017,7 @@ function reducer(col, rev_inds, indices, x_nc, y_nc, config, dataset)
             end
             push!(inds[v], ind)
         end
-        return A -> (f(A[inds[id]]) for id in ids)
+        return A -> [f(A[inds[id]]) for id in ids]
     elseif !isnothing(reducer)
         # reduce over all active cells
         # needs to be behind the map if statement, because it also can use a reducer

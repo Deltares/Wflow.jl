@@ -181,7 +181,7 @@ Base.iterate(input_entries::InputEntries, state) = iterate(input_entries.dict, s
     _location_maps::PropertyDictType
 end
 
-const input_field_names = String.(fieldnames(Wflow.InputSection))
+const input_field_names = String.(fieldnames(InputSection))
 
 ###
 ### Output section
@@ -263,6 +263,7 @@ end
 
 # Fields with a default value are optional
 @kwdef mutable struct Config <: AbstractConfigSection
+    wflow_version::Union{Nothing, VersionNumber} = nothing
     dir_input::String = "."
     dir_output::String = "."
     fews_run__flag::Bool = false

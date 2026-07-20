@@ -65,8 +65,8 @@ using Polyester: @batch
 using ProgressLogging: @progress
 using PropertyDicts: PropertyDict
 using StaticArrays: SVector, pushfirst, setindex
-using Statistics: mean, median, quantile!, quantile
-using TerminalLoggers
+using Statistics: mean, median, quantile!
+using TerminalLoggers: TerminalLogger
 using TOML: TOML
 
 const CFDataset = Union{NCDataset, NCDatasets.MFDataset}
@@ -150,6 +150,7 @@ struct Model{
     R <: Routing,
     L <: AbstractLandModel,
     M <: AbstractMassBalance,
+    W <: Writer,
     T <: AbstractModelType,
 } <: AbstractModel{T}
     config::Config                  # all configuration options
@@ -159,7 +160,7 @@ struct Model{
     mass_balance::M                 # mass balance error
     clock::Clock                    # to keep track of simulation time
     reader::NCReader                # provides the model with dynamic input
-    writer::Writer                  # writes model output
+    writer::W                       # writes model output
     type::T                         # model type
 end
 
@@ -240,10 +241,10 @@ include("standard_name/standard_name_sbm.jl")
 include("standard_name/standard_name_sediment.jl")
 
 const STANDARD_NAME_MAPS = (
-    ("sbm", Wflow.sbm_standard_name_map, LandHydrologySBM),
-    ("sediment", Wflow.sediment_standard_name_map, SoilLossModel),
-    ("domain", Wflow.domain_standard_name_map, Domain),
-    ("routing", Wflow.routing_standard_name_map, Routing),
+    ("sbm", sbm_standard_name_map, LandHydrologySBM),
+    ("sediment", sediment_standard_name_map, SoilLossModel),
+    ("domain", domain_standard_name_map, Domain),
+    ("routing", routing_standard_name_map, Routing),
 )
 
 include("utils.jl")

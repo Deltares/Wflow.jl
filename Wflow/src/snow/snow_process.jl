@@ -50,6 +50,9 @@ function snowpack_hbv(
         snow_water -= refreezing
     end
 
+    snow_storage = max(snow_storage, 0.0) # ensure snow storage is positive
+    snow_water = max(snow_water, 0.0)  # ensure snow water is positive
+
     snow_storage += snow_precip * dt # dry snow content
     snow_water += liquid_precip * dt # free water content in snow
 

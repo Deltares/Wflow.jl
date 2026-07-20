@@ -11,6 +11,7 @@
     @test dirname(config) == dirname(tomlpath)
 
     # test if the values are parsed as expected
+    @test config.wflow_version == v"1.1.0"
     @test config.time.starttime === DateTime(2000, 1, 1)
     @test config.time.endtime === DateTime(2000, 2)
     @test config.output.netcdf_grid.path == "output_moselle.nc"

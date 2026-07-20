@@ -27,11 +27,8 @@ function kinematic_wave(q_in, q_prev, q_lat, alpha, dt, dx)
     else
         dt_dx = dt / dx
         # constant_term = (dt/dx)*q_in + alpha*q_prev³ᐟ⁵) + dt*q_lat
-        # Use q_prev^(3/5) = (q_prev¹ᐟ⁵)^3
-        # Let [U] = [m³ s⁻¹]¹ᐟ⁵
-        u_prev = q_prev >= 0.0 ? Wflow.pow(q_prev, 0.2) : 0.0
+        u_prev = q_prev >= 0.0 ? pow(q_prev, 0.2) : 0.0
 
-        # [m²] = [s m⁻¹] * [m³ s⁻¹] + [s³ᐟ⁵ m¹ᐟ⁵] * [U]³ + [s] * [m² s⁻¹]
         constant_term = dt_dx * q_in + alpha * u_prev * u_prev * u_prev + dt * q_lat
 
         # Initial estimate: use u_prev as starting point (cheap, no pow calls)
@@ -43,36 +40,30 @@ function kinematic_wave(q_in, q_prev, q_lat, alpha, dt, dx)
             cbrt(constant_term / alpha)
         end
 
-        # Halley's method on f(u) = dt_dx * u^5 + alpha * u^3 - C = 0
+        # Newton iterations on f(u) = dt_dx * u^5 + alpha * u^3 - C = 0
         # f'(u)  = 5*dt_dx * u^4 + 3*alpha * u^2
-        # f''(u) = 20*dt_dx * u^3 + 6*alpha * u
         max_iters = 3000
         epsilon = 1.0e-12
 
         const_1 = 5.0 * dt_dx
         const_2 = 3.0 * alpha
-        const_3 = 20.0 * dt_dx
-        const_4 = 6.0 * alpha
 
         for _ in 1:max_iters
             u2 = u * u
             u3 = u2 * u
             f_u = u3 * (dt_dx * u2 + alpha) - constant_term
-            df_u = u2 * (const_1 * u2 + const_2)
-            d2f_u = u * (const_3 * u2 + const_4)
-            # Halley's correction: u -= f*f' / (f'^2 - f*f''/2)
-            u -= (f_u * df_u) / (df_u * df_u - f_u * d2f_u / 2)
-            if isnan(u) || u <= 0.0
-                u = KIN_WAVE_MIN_FLOW_QROOT
-            end
             if (abs(f_u) <= epsilon)
                 break
+            end
+            df_u = u2 * (const_1 * u2 + const_2)
+            u -= f_u / df_u
+            if isnan(u) || u <= 0.0
+                u = KIN_WAVE_MIN_FLOW_QROOT
             end
         end
         u = max(u, KIN_WAVE_MIN_FLOW_QROOT)
         u3 = u * u * u
         crossarea = alpha * u3
-        # [m³ s⁻¹] = [U]⁵
         q = u3 * u * u
         return q, crossarea
     end
