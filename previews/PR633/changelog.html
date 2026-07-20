@@ -77,9 +77,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-456590698c3c54fc61fdc624c2418dba.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="site_libs/bootstrap/bootstrap-dark-0ac10d74e4943a33dc67abbdb9faa848.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="site_libs/bootstrap/bootstrap-456590698c3c54fc61fdc624c2418dba.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-93cd05b917e18f0bcde614576ce7210e.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-dark-041bddf3088e88b71ce7ea3b391d6023.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="site_libs/bootstrap/bootstrap-93cd05b917e18f0bcde614576ce7210e.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -442,9 +442,12 @@ window.Quarto = {
   <ul>
   <li><a href="#unreleased" id="toc-unreleased" class="nav-link active" data-scroll-target="#unreleased">Unreleased</a>
   <ul class="collapse">
-  <li><a href="#fixed" id="toc-fixed" class="nav-link" data-scroll-target="#fixed">Fixed</a></li>
   <li><a href="#changed" id="toc-changed" class="nav-link" data-scroll-target="#changed">Changed</a></li>
   <li><a href="#added" id="toc-added" class="nav-link" data-scroll-target="#added">Added</a></li>
+  </ul></li>
+  <li><a href="#v1.0.3---2026-06-23" id="toc-v1.0.3---2026-06-23" class="nav-link" data-scroll-target="#v1.0.3---2026-06-23">v1.0.3 - 2026-06-23</a>
+  <ul class="collapse">
+  <li><a href="#fixed" id="toc-fixed" class="nav-link" data-scroll-target="#fixed">Fixed</a></li>
   </ul></li>
   <li><a href="#v1.0.2---2026-03-05" id="toc-v1.0.2---2026-03-05" class="nav-link" data-scroll-target="#v1.0.2---2026-03-05">v1.0.2 - 2026-03-05</a>
   <ul class="collapse">
@@ -518,18 +521,12 @@ window.Quarto = {
 <p>Supporting internal timestepping for the kinematic wave lateral subsurface flow concept (#827) requires that the flow state variable contains <code>instantaneous</code> in the <code>quantity</code> part of the standard name:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[state.variables]</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="dt">subsurface_water__instantaneous_volume_flow_rate</span> <span class="op">=</span> <span class="st">"ssf"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<section id="fixed" class="level3">
-<h3 class="anchored" data-anchor-id="fixed">Fixed</h3>
-<ul>
-<li>Fixed a bug where the maximum subsurface flow was not adjusted for subdaily timesteps (only when using <code>layered</code> or <code>layered_exponential</code> profiles)</li>
-</ul>
-</section>
 <section id="changed" class="level3">
 <h3 class="anchored" data-anchor-id="changed">Changed</h3>
 <ul>
 <li>All internal computations now use standardized SI units (m, s, kg, J, K) consistently throughout the codebase. Units are converted to/from the old units at I/O boundaries. This generally does not change model results (units are converted back before writing outputs), though small numerical differences may occur in some cases.</li>
 <li>The configuration TOML file written to <code>dir_output</code> at the end of a simulation now reflects the (potentially modified) in-memory configuration instead of being a copy of the original input TOML file.</li>
-<li>Improved kinematic wave solver performance by replacing Newton-Raphson with Halley’s method, substituting <code>pow</code> calls with direct arithmetic on the 5th root of discharge, and computing cross-sectional area as a byproduct of the solve instead of a separate <code>pow</code> call. The <code>beta</code> parameter has been removed from <code>ManningFlowParameters</code> and is now a module-level constant <code>BETA_KINWAVE</code> (#898).</li>
+<li>Improved kinematic wave solver performance by substituting <code>pow</code> calls with direct arithmetic on the 5th root of discharge, and computing cross-sectional area as a byproduct of the solve instead of a separate <code>pow</code> call. The <code>beta</code> parameter has been removed from <code>ManningFlowParameters</code> and is now a module-level constant <code>BETA_KINWAVE</code> (#898).</li>
 <li>Drainable porosity or specific yield, defined as the difference between <code>theta_s</code> (saturated water content) and <code>theta_fc</code> (water content at field capacity) is now used to compute the change of a falling water table for subsurface flow concepts <code>LateralSSF</code> and <code>UnconfinedAquifer</code>. For the change of a rising water table of these concepts a dynamic fillable porosity (based on <code>theta_s</code> and the water content of unsaturated soil layers) is used. This results in a better integration of the <code>SBM</code> soil model (unsaturated zone) with these subsurface flow concepts as specific yield is typically represented by drainable porosity for these concepts and not by the effective porosity (difference between saturated and residual water content) of the previous implementation. Water content at field capacity <code>theta_fc</code> is a new optional input parameter, when this parameter is not provided <code>theta_fc</code> is computed as the water content at a pressure head of -100 cm using the Brooks and Corey water retention model.</li>
 </ul>
 </section>
@@ -539,6 +536,20 @@ window.Quarto = {
 <li>Support internal timestepping for kinematic wave lateral subsurface flow concept <code>LateralSSF</code>.</li>
 <li>Support including river and drainage head-dependent flux boundary conditions for kinematic wave lateral subsurface flow concept <code>LateralSSF</code>.</li>
 <li>Support for running only a subsection of the model, either by using a smaller active domain via <code>input.subbasin_location__count</code>, or specify specific subcatchments by linking <code>input.subbasin_location__count</code> to a subcatchment map, and indicate which subbasins should be active by providing their IDs in <code>input.subbasin_active_location__count</code>.</li>
+<li>Added an optional <code>wflow_version</code> field to the config .toml file. This setting is used by the wflow model builder <code>hydromt_wflow</code> for incremental Wflow.jl version upgrading.</li>
+</ul>
+</section>
+</section>
+<section id="v1.0.3---2026-06-23" class="level2">
+<h2 class="anchored" data-anchor-id="v1.0.3---2026-06-23">v1.0.3 - 2026-06-23</h2>
+<section id="fixed" class="level3">
+<h3 class="anchored" data-anchor-id="fixed">Fixed</h3>
+<ul>
+<li>Fix unit external inflow for local inertial river (1D) and land (2D) routing. For the computation of available river volume (to limit negative external inflow) the <code>bankfull_depth</code> was assigned to this volume, this should be <code>bankfull_storage</code>.</li>
+<li>Maximum subsurface flow was not adjusted for sub-daily timestep for <code>layered</code> and <code>layered_exponential</code> profiles.</li>
+<li>Fix deriving active indices for output variable <code>to_river</code>. Also, the mapping of standard name (or model path) to active indices is now more strict (comparing prefix of these strings instead of substring matching).</li>
+<li>Fix <code>waterlevel</code> unit (from [m] to [mm]) in rainfall erosion computation of rainfall erosion model <code>EUROSEM</code>. With the wrong unit ([m]) the rainfall impact reduction when the soil is covered by water was underestimated.</li>
+<li>Removed a conversion factor of 0.001 used for the computation of total kinetic energy as part of rainfall erosion model <code>EUROSEM</code>, as it is not required based on the units.</li>
 </ul>
 </section>
 </section>

@@ -77,9 +77,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-456590698c3c54fc61fdc624c2418dba.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../site_libs/bootstrap/bootstrap-dark-0ac10d74e4943a33dc67abbdb9faa848.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="../site_libs/bootstrap/bootstrap-456590698c3c54fc61fdc624c2418dba.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-93cd05b917e18f0bcde614576ce7210e.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-041bddf3088e88b71ce7ea3b391d6023.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-93cd05b917e18f0bcde614576ce7210e.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -556,14 +556,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <p>There are several model configurations supported by wflow. These model configurations require slightly different input requirements, yet the general structure is similar for each model. A wflow model configuration consists of a <a href="../model_docs/land/landhydrology_sbm.html">Land hydrology SBM</a> model in combination with <code>routing</code> concepts that control how water is routed for example over the land or river domain. For the wflow_sbm model different model configurations are possible. The following model configurations are supported in wflow:</p>
 <ul>
-<li>wflow_sbm:
+<li><p>wflow_sbm:</p>
+<p>The Land Hydrology <code>SBM</code> concept can be combined with the following subsurface flow concepts:</p>
 <ul>
-<li>Land Hydrology <code>SBM</code> + kinematic wave for subsurface and surface flow</li>
-<li>Land Hydrology <code>SBM</code> + kinematic wave for subsurface and overland flow + local inertial river (+ optional floodplain)</li>
-<li>Land Hydrology <code>SBM</code> + kinematic wave for subsurface flow + local inertial river (1D) and land (2D)</li>
-<li>Land Hydrology <code>SBM</code> + groundwater flow + kinematic wave for surface flow</li>
+<li>kinematic wave lateral subsurface flow routing</li>
+<li>groundwater flow routing</li>
+</ul>
+<p>and with the following surface routing schemes:</p>
+<ul>
+<li>kinematic wave for overland and river flow</li>
+<li>kinematic wave for overland flow + local inertial river (+ optional floodplain)</li>
+<li>local inertial river (1D) and land (2D)</li>
 </ul></li>
-<li>wflow_sediment as post processing of wflow_sbm output</li>
+<li><p>wflow_sediment as post processing of wflow_sbm output</p></li>
 </ul>
 <p>Below, some explanation will be given on how to prepare a basic wflow_sbm model. Example data for other model configurations is provided in the section with <a href="../getting_started/download_example_models.html">sample data</a>.</p>
 <section id="wflow_sbm" class="level2">
