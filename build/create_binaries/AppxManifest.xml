@@ -5,7 +5,7 @@
   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities">
   <Identity
     Name="Deltares.Wflow"
-    Version="1.1.0.1"
+    Version="1.0.3.1"
     Publisher="CN=Stichting Deltares, O=Stichting Deltares, L=Delft, C=NL"
     ProcessorArchitecture="x64" />
   <Properties>
