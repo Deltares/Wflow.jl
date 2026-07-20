@@ -41,7 +41,7 @@ Binaries of `wflow_cli` can be downloaded from our website
 [download.deltares.nl](https://download.deltares.nl/en/download/wflow/), and are currently
 available for Windows.
 
-After installing `wflow_cli` is added to your path.
+After installing, you can run `wflow_cli` from a new terminal session.
 Simply running `wflow_cli` with no arguments will give the following message:
 
 ```bash
