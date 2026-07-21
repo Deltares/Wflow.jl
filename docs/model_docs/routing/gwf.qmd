@@ -34,10 +34,10 @@ governing equation for an inhomogeneous and isotropic aquifer in one dimension c
 written as:
 
 $$
-    S \frac{\partial \phi}{\partial t} =  \frac{\partial}{\partial x} \left(kH \frac{\phi}{\delta x}\right) + Q
+    S \frac{\partial h}{\partial t} =  \frac{\partial}{\partial x} \left(kH \frac{\delta h}{\delta x}\right) + Q
 $$
 
-where $\SIb{S}{m\ m^{-1}}$ is storativity (or specific yield), $\SIb{\phi}{m}$ is hydraulic
+where $\SIb{S}{m\ m^{-1}}$ is storativity (or specific yield), $\SIb{h}{m}$ is hydraulic
 head, $t$ is time, $\SIb{k}{m\ t^{-1}}$ is horizontal hydraulic conductivity, $\SIb{H}{m}$
 is the (saturated) aquifer height: groundwater level - aquifer bottom elevation and
 $\SIb{Q}{m\ t^{-1}}$ represents fluxes from boundary conditions (e.g. recharge or
@@ -47,12 +47,13 @@ The simplest finite difference formulation is forward in time, central in space,
 written as:
 
 $$
-    S_i  \frac{\phi_{i}^{t+1} - \phi_i^{t}}{\Delta t} = -C_{i-1}  (\phi_{i-1} - \phi_i) - C_i  (\phi_{i+1} - \phi_i) + Q_i
+    S_i \frac{h_{i}^{t+1} - h_i^{t}}{\Delta t} \Delta x  \Delta y = -C_{i-1}  (h_{i-1}^{t} - h_i^{t}) - C_i  (h_{i+1}^{t} - h_i^{t}) + Q_i \Delta x  \Delta y
 $$
 
-where $i$ is the cell index, $t$ is time, $\Delta t$ is the step size, $C_{i-1}$ is the the
-intercell conductance between cell $i-1$ and $i$ and $C_i$ is the intercell conductance
-between cell $i$ and $i+1$.
+where $i$ is the cell index, $t$ is time, $\Delta t$ is the time step size, $\SIb{\Delta
+x}{m}$ is the cell length in the $x$ direction and $\SIb{\Delta y}{m}$ is the cell length in
+the $y$ direction, $C_{i-1}$ is the intercell conductance between cell $i-1$ and $i$ and
+$C_i$ is the intercell conductance between cell $i$ and $i+1$.
 
 Conductance $C$ is defined as:
 
@@ -70,23 +71,27 @@ $$
     C_i = w  \frac{k_iH_i\cdot k_{i+1}H_{i+1}}{k_iH_i \cdot l_{i+1} + k_{i+1}H_{i+1} \cdot l_i}
 $$
 
-where $\SIb{H}{m}$ is the aquifer top - aquifer bottom, and $k$, $l_i$ is the length in cell
-$i$ ($0.5 \Delta x_i$),  $l_{i+1}$ is the length in cell $i+1$ ($0.5 \Delta x_{i+1}$) and
-$w$ as previously defined. For an unconfined aquifer the intercell conductance is scaled by
-using the "upstream saturated fraction" as the MODFLOW documentation calls it. In this
-approach, the saturated thickness of a cell-to-cell is approximated using the cell with the
-highest head. This results in a consistent overestimation of the saturated thickness, but it
-avoids complexities related with cell drying and rewetting, such as having to define a
-"wetting threshold" or a "wetting factor". See also the documentation for MODFLOW-NWT
-(Niswonger et al., 2011) or MODFLOW6 (Langevin et al., 2017) for more background
-information. For more background on drying and rewetting, see for example McDonald et al.
-(1991).
+where $l_i$ is the length in cell $i$ ($0.5 \Delta x_i$), $l_{i+1}$ is the length in cell
+$i+1$ ($0.5 \Delta x_{i+1}$) and $H$, $k$, and $w$ as previously defined. For an unconfined
+aquifer the intercell conductance is computed by using the "upstream saturated fraction" as
+the MODFLOW documentation calls it. In this approach, the saturated thickness of a
+cell-to-cell is approximated using the cell with the highest head. This results in a
+consistent overestimation of the saturated thickness, but it avoids complexities related
+with cell drying and rewetting, such as having to define a "wetting threshold" or a "wetting
+factor". See also the documentation for MODFLOW-NWT (Niswonger et al., 2011) or MODFLOW6
+(Langevin et al., 2017) for more background information. For more background on drying and
+rewetting, see for example McDonald et al. (1991). For an unconfined aquifer with a
+`uniform` `conductivity_profile` the fully saturated intercell conductance is computed once
+and scaled each time step by degree of saturation based on the saturated thickness of the
+cell with the highest head. For an unconfined aquifer with an `exponential`
+`conductivity_profile` the intercell conducantce is computed each time step using the degree
+of saturation based on the saturated thickness of the cell with the highest head.
 
-For the finite difference formulation, there is only one unknown, $\phi_i^{t+1}$. Reshuffling
+For the finite difference formulation, there is only one unknown, $h_i^{t+1}$. Reshuffling
 terms:
 
 $$
-\phi_i^{t+1} = \phi_i^t + (C_{i-1}  (\phi_i - \phi_{i-1}) + C_i  (\phi_{i+1} - \phi_i) + Q_i) \frac{Δt}{S_i}
+h_i^{t+1} = h_i^t + (C_{i-1}  (h_i^{t} - h_{i-1}^{t}) + C_i  (h_{i+1}^{t} - h_i^{t}) + Q_i \Delta x  \Delta y) \frac{Δt}{S_i \Delta x  \Delta y}
 $$
 
 This can be generalized to two dimensions, for both regular and irregular cell connectivity.
@@ -97,14 +102,13 @@ $$
   \frac{\Delta t k H}{\Delta x  \Delta y S}  \le \alpha
 $$
 
-where $\SIb{\Delta t}{d}$ is the stable time step size, $\SIb{\Delta x}{m}$ is the cell
-length in the $x$ direction and $\SIb{\Delta y}{m}$ is the cell length in the $y$ direction,
-$\SIb{k}{m^2\ d^{-1}}$ is the horizontal hydraulic conductivity, $\SIb{H}{m}$ is the
-saturated thickness of the aquifer and $\alpha$ is a coefficient to enhance the stability of
-the simulation. For each cell $\frac{\Delta x  \Delta y S}{k H}$ is calculated, the minimum
-of these values is determined, and multiplied by $\alpha$, to get the stable time step size.
-The stability coefficient $\alpha$ (default = 0.25 as recommended by Chu and Willis (1984))
-can be set as follows in the TOML file:
+where $\SIb{\Delta t}{d}$ is the stable time step size, $\SIb{k}{m^2\ d^{-1}}$ is the
+horizontal hydraulic conductivity, $\SIb{H}{m}$ is the saturated thickness of the aquifer,
+$\alpha$ is a coefficient to enhance the stability of the simulation and $\Delta x$ and
+$\Delta y$ as previously defined. For each cell $\frac{\Delta x  \Delta y S}{k H}$ is
+calculated, the minimum of these values is determined, and multiplied by $\alpha$, to get
+the stable time step size. The stability coefficient $\alpha$ (default = 0.25 as recommended
+by Chu and Willis (1984)) can be set as follows in the TOML file:
 
 ```toml
 [model]
@@ -134,7 +138,7 @@ via the flux, but the head is set directly instead.
 
 The groundwater flow component of model type `sbm_gwf` consists of a single layer unconfined
 aquifer. The list of input parameters for an unconfined aquifer can be found
-[here](../parameters_routing.qmd#input-gwf-unconfined). Hydraulic head $\SIb{\phi}{m}$ is an
+[here](../parameters_routing.qmd#input-gwf-unconfined). Hydraulic head $\SIb{h}{m}$ is an
 output and state [variable](../parameters_routing.qmd#state-gwf-unconfined).
 
 Below an example of setting the `conductivity_profile` and input parameters in the TOML
@@ -173,17 +177,17 @@ $$
   \subtext{Q}{riv} =
   \begin{align*}
     \begin{cases}
-      C_i \min \left\{\subtext{h}{riv} - \subtext{B}{riv}, \subtext{h}{riv} - \phi\right\} &\text{ if }\quad \subtext{h}{riv} > \phi \\
-      C_e (\subtext{h}{riv} - \phi) &\text{ if }\quad \subtext{h}{riv} \le \phi
+      C_i \min \left\{\subtext{h}{riv} - \subtext{B}{riv}, \subtext{h}{riv} - h\right\} &\text{ if }\quad \subtext{h}{riv} > h \\
+      C_e (\subtext{h}{riv} - h) &\text{ if }\quad \subtext{h}{riv} \le h
     \end{cases}
   \end{align*}
 $$
 
 where $\SIb{\subtext{Q}{riv}}{L^3 T^{-1}}$ is the exchange flux from river to aquifer,
-$\SIb{C_i}{L^2 T^{-1}}$ is the river bed infiltration conductance, $\SIb{C_e}{L^2 T^{-1}}$ is
-the river bed exfiltration conductance, $\SIb{\subtext{B}{riv}}{L}$ the bottom of the river
-bed, $\SIb{\subtext{h}{riv}}{L}$ is the river stage and $\SIb{\phi}{L}$ is the hydraulic head
-in the river cell.
+$\SIb{C_i}{L^2 T^{-1}}$ is the river bed infiltration conductance, $\SIb{C_e}{L^2 T^{-1}}$
+is the river bed exfiltration conductance, $\SIb{\subtext{B}{riv}}{L}$ the bottom of the
+river bed, $\SIb{\subtext{h}{riv}}{L}$ is the river stage and $\SIb{h}{L}$ is the hydraulic
+head in the river cell.
 
 The list of input parameters for the river boundary of groundwater flow that can be provided
 through the TOML file can be found [here](../parameters_routing.qmd#input-gwf-river).
@@ -197,13 +201,13 @@ in combination with the river bottom is used to update the river stage each time
 The flux from drains to the aquifer is calculated as follows:
 
 $$
-\subtext{Q}{drain} = \subtext{C}{drain} \min(0, \subtext{h}{drain} - \phi)
+\subtext{Q}{drain} = \subtext{C}{drain} \min(0, \subtext{h}{drain} - h)
 $$
 
 where $\SIb{\subtext{Q}{drain}}{L^3\ T^{-1}}$ is the exchange flux from drains to aquifer,
 $\SIb{\subtext{C}{drain}}{L^2\ T^{-1}}$ is the drain conductance,
-$\SIb{\subtext{h}{drain}}{L}$ is the drain elevation and $\SIb{\phi}{L}$ is the hydraulic
-head in the cell with drainage.
+$\SIb{\subtext{h}{drain}}{L}$ is the drain elevation and $\SIb{h}{L}$ is the hydraulic head
+in the cell with drainage.
 
 The list of input parameters for the drainage boundary of groundwater flow that can be
 provided through the TOML file can be found
@@ -247,14 +251,14 @@ domain to the location of the fixed boundary (for example a large lake). The flu
 boundary $\SIb{Q_{hb}}{L^3\ T^{-1}}$ is calculated as follows:
 
 $$
-Q_{hb} = C_{hb} (\phi_{hb} - \phi)
+Q_{hb} = C_{hb} (h_{hb} - h)
 $$
 
-with $\SIb{C_{hb}}{L^2\ T^{-1}}$ the conductance of the head boundary, $\SIb{\phi_{hb}}{L}$
-the head of the head boundary and $\phi$ the head of the aquifer cell.
+with $\SIb{C_{hb}}{L^2\ T^{-1}}$ the conductance of the head boundary, $\SIb{h_{hb}}{L}$
+the head of the head boundary and $h$ the head of the aquifer cell.
 
 The head boundary flux $Q_{hb}$ is an output variable, and is used to update the total flux
-in a cell where this type of boundary occurs. The parameter Head $\phi_{hb}$ can be
+in a cell where this type of boundary occurs. The parameter Head $h_{hb}$ can be
 specified as a fixed or time dependent value.
 
 ::: {.callout-note}
