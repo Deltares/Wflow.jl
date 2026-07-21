@@ -14,6 +14,9 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   data. The observed outflow was only capped based on reservoir water availability while an
   upper bound on storage for reservoirs with a maximum storage was not applied. This has
   been fixed so reservoir storage does not exceed maximum storage.
+- Removed incorrect check for floodplain `hydraulic_radius` (introduced in v1.0.3). The
+  check is also not required as floodplain flow computation is based on a `flow_area`
+  threshold.
 - Documentation: fixed units for finite difference formulation for groundwater flow in one
   dimension. These are fixed by multiplying the $S$ and $Q$ terms with $\Delta x$ and
   $\Delta y$.
