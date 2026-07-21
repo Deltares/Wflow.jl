@@ -625,44 +625,44 @@ function set_effective_flowwidth!(
             we_x[idx] = reservoir_outlet[v] ? 0.0 : max(we_x[idx] - 0.5 * w, 0.0)
             we_y[idx] = reservoir_outlet[v] ? 0.0 : max(we_y[idx] - 0.5 * w, 0.0)
         elseif dir == CartesianIndex(-1, -1)
-            if edge_indices.idx_left[idx] <= n
-                we_y[edge_indices.idx_left[idx]] =
+            if edge_indices.ind_x_down[idx] <= n
+                we_y[edge_indices.ind_x_down[idx]] =
                     reservoir_outlet[v] ? 0.0 :
-                    max(we_y[edge_indices.idx_left[idx]] - 0.5 * w, 0.0)
+                    max(we_y[edge_indices.ind_x_down[idx]] - 0.5 * w, 0.0)
             end
-            if edge_indices.idx_down[idx] <= n
-                we_x[edge_indices.idx_down[idx]] =
+            if edge_indices.ind_y_down[idx] <= n
+                we_x[edge_indices.ind_y_down[idx]] =
                     reservoir_outlet[v] ? 0.0 :
-                    max(we_x[edge_indices.idx_down[idx]] - 0.5 * w, 0.0)
+                    max(we_x[edge_indices.ind_y_down[idx]] - 0.5 * w, 0.0)
             end
         elseif dir == CartesianIndex(1, 0)
             we_y[idx] = reservoir_outlet[v] ? 0.0 : max(we_y[idx] - w, 0.0)
         elseif dir == CartesianIndex(0, 1)
             we_x[idx] = reservoir_outlet[v] ? 0.0 : max(we_x[idx] - w, 0.0)
         elseif dir == CartesianIndex(-1, 0)
-            if edge_indices.idx_left[idx] <= n
-                we_y[edge_indices.idx_left[idx]] =
+            if edge_indices.ind_x_down[idx] <= n
+                we_y[edge_indices.ind_x_down[idx]] =
                     reservoir_outlet[v] ? 0.0 :
-                    max(we_y[edge_indices.idx_left[idx]] - w, 0.0)
+                    max(we_y[edge_indices.ind_x_down[idx]] - w, 0.0)
             end
         elseif dir == CartesianIndex(0, -1)
-            if edge_indices.idx_down[idx] <= n
-                we_x[edge_indices.idx_down[idx]] =
+            if edge_indices.ind_y_down[idx] <= n
+                we_x[edge_indices.ind_y_down[idx]] =
                     reservoir_outlet[v] ? 0.0 :
-                    max(we_x[edge_indices.idx_down[idx]] - w, 0.0)
+                    max(we_x[edge_indices.ind_y_down[idx]] - w, 0.0)
             end
         elseif dir == CartesianIndex(1, -1)
             we_y[idx] = max(we_y[idx] - 0.5 * w, 0.0)
-            if edge_indices.idx_down[idx] <= n
-                we_x[edge_indices.idx_down[idx]] =
+            if edge_indices.ind_y_down[idx] <= n
+                we_x[edge_indices.ind_y_down[idx]] =
                     reservoir_outlet[v] ? 0.0 :
-                    max(we_x[edge_indices.idx_down[idx]] - 0.5 * w, 0.0)
+                    max(we_x[edge_indices.ind_y_down[idx]] - 0.5 * w, 0.0)
             end
         elseif dir == CartesianIndex(-1, 1)
-            if edge_indices.idx_left[idx] <= n
-                we_y[edge_indices.idx_left[idx]] =
+            if edge_indices.ind_x_down[idx] <= n
+                we_y[edge_indices.ind_x_down[idx]] =
                     reservoir_outlet[v] ? 0.0 :
-                    max(we_y[edge_indices.idx_left[idx]] - 0.5 * w, 0.0)
+                    max(we_y[edge_indices.ind_x_down[idx]] - 0.5 * w, 0.0)
             end
             we_x[idx] = reservoir_outlet[v] ? 0.0 : max(we_x[idx] - 0.5 * w, 0.0)
         end

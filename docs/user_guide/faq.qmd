@@ -34,7 +34,14 @@ output](./toml_file.qmd#output-netcdf-section).
 
 The choice of a specific river routing option can vary depending on the model and use case.
 However, the numerical properties of the routing schemes provide an indication of their
-advantages and disadvantages.
+advantages and disadvantages. The following river routing schemes are available:
+
+- Kinematic wave
+- Mannings flow on a staggered grid
+- Local inertial routing on a staggered grid
+
+These routing schemes support an optional 1D floodplain schematization (routing is done
+separately for the river channel and floodplain).
 
 The kinematic wave method is driven by the river slope within each cell, assuming that the
 water surface slope is parallel to the bed slope. This results in sharper discharge peaks
@@ -42,6 +49,10 @@ with minimal damping, as the waves travel through the system without deformation
 approach is especially suitable for steep (upstream) areas where flow propagation is
 dominated by topography. The kinematic wave approach does not include any form of backwater
 effects.
+
+As the kinematic wave method, the use of Manning's equation on a staggered grid is also
+driven by the river slope and thus most suitable for steep terrain where backwater effects
+are negligible.
 
 On the other hand, the local inertial method incorporates the slope of the water surface
 into the momentum equation. This results in 'damping effects' on flow propagating through
@@ -51,19 +62,16 @@ slope is limited or during the propagation of larger flood waves where the water
 slope is greater than the river slope itself. The local inertial method does incorporate
 backwater effects, although not as comprehensively as the full dynamic wave equation.
 
-Generally, the kinematic wave method is computationally faster than the local inertial
-method for river (and land) routing. For the multi-threading execution of the kinematic
-wave, solved with a nonlinear scheme using Newton's method, the order of execution
-(sub-basins) is important (from upstream to downstream sub-basin). For the momentum equation
-of the local inertial approach an explicit numerical method is used and can be solved
-independently for each cell during multi-threading execution. As a consequence, speedups for
-local inertial routing are larger than for kinematic wave routing using multi-threading
-(compared to a single thread run) and the difference between local inertial and kinematic
-wave routing run times gets smaller as the number of threads increase.
-
-Currently, only the local inertial approach supports the inclusion of floodplains in river
-routing, see also [this
-question](./faq.qmd#what-is-the-difference-between-1d-2d-and-no-floodplains).
+Generally, the kinematic wave method and the use of Manning's equation on a staggered grid
+is computationally faster than the local inertial method for river (and land) routing. For
+the multi-threading execution of the kinematic wave, solved with a nonlinear scheme using
+Newton's method, the order of execution (sub-basins) is important (from upstream to
+downstream sub-basin). For the momentum equation of river flow on a staggered grid an
+explicit numerical method is used and can be solved independently for each cell during
+multi-threading execution. As a consequence, speedups for river flow on a staggered grid are
+larger than for kinematic wave routing using multi-threading (compared to a single thread
+run) and the difference between river flow on a staggered grid and kinematic wave routing
+run times gets smaller as the number of threads increase.
 
 ### Which land routing option should I choose?
 
@@ -85,11 +93,11 @@ combination of kinematic wave for land routing and local inertial for river rout
 
 Effects of floodplain flow can be included in several ways. A one-dimensional sub-grid
 approximation (hence the name 1D floodplains) can be included when kinematic wave land
-routing is combined with local inertial river routing. The water surface elevations of the
-river channel and the floodplain are the same and it is assumed that water is exchanged
-instantaneously between the river channel and the floodplain. When the water depth in the
-river channel rises above the river bankfull depth, water is exchanged between the river
-channel and the floodplain resulting in an attenuation of the discharge peaks.
+routing is combined with river routing. The water surface elevations of the river channel
+and the floodplain are the same and it is assumed that water is exchanged instantaneously
+between the river channel and the floodplain. When the water depth in the river channel
+rises above the river bankfull depth, water is exchanged between the river channel and the
+floodplain resulting in an attenuation of the discharge peaks.
 
 ![Schematization of the 1D floodplain concept (side view)](../images/floodplains_1d.png)
 
@@ -110,10 +118,9 @@ the 1D floodplain method can be used instead.
 
 ![Schematization of the 2D floodplain concept (top view)](../images/floodplains_2d.png)
 
-It is also possible to run the model without 1D floodplains. This means that the model is
-using kinematic wave for land routing and either kinematic wave or local inertial for river
-routing. This can lead to unrealistically large water depths when the bankfull capacity is
-exceeded as there is no exchange of water between the river channel and floodplains.
+It is also possible to run the model without 1D floodplains. This can lead to
+unrealistically large water depths when the bankfull capacity is exceeded as there is no
+exchange of water between the river channel and floodplains.
 
 ### How do I run only a part of my model?
 You can easily run only a subsection of your model, by modifying the

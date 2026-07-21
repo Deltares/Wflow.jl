@@ -67,6 +67,16 @@ subsurface_water__instantaneous_volume_flow_rate = "ssf"
   domain via `input.subbasin_location__count`, or specify specific subcatchments by linking
   `input.subbasin_location__count` to a subcatchment map, and indicate which subbasins
   should be active by providing their IDs in `input.subbasin_active_location__count`.
+- An optional 1D floodplain schematization to kinematic wave routing of river flow. This is
+  the same 1D floodplain schematization used by the local inertial river flow model. River
+  channel-floodplain water exchange is assumed to be instantaneous. Routing is done
+  separately for the river channel and floodplain. Floodplain water is routed down slope
+  using the `accucapacityflux` function with a transport capacity based on Manning's
+  equation.
+- Support the use of Manning's equation (assuming that the topography controls water flow
+  mostly) for river and floodplain routing on a staggered grid. This is an additional
+  routing scheme to the local inertial river routing scheme, both make us of the staggered
+  grid method.
 - Added an optional `wflow_version` field to the config .toml file. This setting is used by
   the wflow model builder `hydromt_wflow` for incremental Wflow.jl version upgrading.
 

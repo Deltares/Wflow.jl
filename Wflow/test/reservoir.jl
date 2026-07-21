@@ -149,7 +149,7 @@ end
         ),
     )
 
-    river_flow_vars = Wflow.FlowVariables(; n = 2, q = [0.04, 0.04])
+    river_flow_vars = Wflow.RiverFlowVariables(; n = 2, q = [0.04, 0.04])
 
     graph = DiGraph(2)
     add_edge!(graph, 1, 2)
@@ -198,8 +198,11 @@ end
         ),
     )
 
-    river_flow_vars =
-        Wflow.FlowVariables(; n = 2, q = [0.00012002923701686638, 0.21747539140212965])
+    n_river = 2
+    river_flow_vars = Wflow.RiverFlowVariables(;
+        n = n_river,
+        q = [0.00012002923701686638, 0.21747539140212965],
+    )
 
     graph = DiGraph(2)
     add_edge!(graph, 1, 2)

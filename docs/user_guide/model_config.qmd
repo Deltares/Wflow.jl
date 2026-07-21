@@ -59,13 +59,12 @@ reservoir_water_surface__elevation = "waterlevel_reservoir"
 ```
 
 ## Enabling floodplain routing
-As part of the local inertial model for river flow.
 
-### 1D floodplains
+### 1D floodplains on a staggered grid
 
 ```toml
 [model]
-river_routing = "local_inertial"
+river_routing = "local_inertial"    # one of ("local_inertial" or "manning_staggered")
 floodplain_1d__flag = true
 
 [input.static]
@@ -77,7 +76,22 @@ floodplain_water__instantaneous_volume_flow_rate = "q_floodplain"
 floodplain_water__depth = "h_floodplain"
 ```
 
-### 2D floodplains
+### 1D floodplains (kinematic wave routing)
+
+```toml
+[model]
+river_routing = "kinematic_wave"
+floodplain_1d__flag = true
+
+[input.static]
+floodplain_water__sum_of_volume_per_depth = "floodplain_volume"
+floodplain_water_flow__manning_n_parameter = "floodplain_n"
+
+[state.variables]
+floodplain_water__volume = "storage_floodplain"
+```
+
+### 2D floodplains (local inertial routing)
 
 ```toml
 [model]

@@ -1,4 +1,13 @@
 {
+  "floodplain__slope": {
+    "unit": "m m-1",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Floodplain slope",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
   "floodplain_water__depth": {
     "unit": "m",
     "default": null,
