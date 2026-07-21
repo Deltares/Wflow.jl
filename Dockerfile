@@ -5,11 +5,15 @@ RUN apt-get update && apt-get install -y \
     g++ git gcc && \
     rm -rf /var/lib/apt/lists/*
 ADD . /app
+
+RUN rm -rf /app/.git
+ENV JULIA_PKG_USE_CLI_GIT=true
+
 WORKDIR /app/build/create_binaries/
-RUN julia --project=/app/Wflow -e "using Pkg; Pkg.instantiate();"
-RUN julia --project=/app/Wflow /app/utils/download_test_data.jl
-RUN julia --project -e "using Pkg; Pkg.instantiate()"
-RUN julia --project create_app.jl
-RUN rm -rf /app/test/data/*
+RUN julia --project=/app/Wflow -e "using Pkg; Pkg.instantiate();" && \
+    julia --project=/app/Wflow /app/utils/download_test_data.jl && \
+    julia --project -e "using Pkg; Pkg.instantiate()" && \
+    julia --project create_app.jl && \
+    rm -rf /app/test/data/*
 
 ENTRYPOINT [ "/app/build/create_binaries/wflow_bundle/bin/wflow_cli" ]
