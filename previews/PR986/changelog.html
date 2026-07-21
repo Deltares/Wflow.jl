@@ -44,9 +44,9 @@ ul.task-list li input[type="checkbox"] {
 <link href="site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-755f3d0eab8415b4e3fa9fd8adc7fc1e.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="site_libs/bootstrap/bootstrap-dark-9ea96b87fbd38e19140a9aa718c47ee6.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="site_libs/bootstrap/bootstrap-755f3d0eab8415b4e3fa9fd8adc7fc1e.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-57af290dc9fe3718a784f223abee5c66.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-dark-6f57cee11f6c00479ae0e87f88397d5d.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="site_libs/bootstrap/bootstrap-57af290dc9fe3718a784f223abee5c66.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -484,6 +484,7 @@ window.Quarto = {
 <h3 class="anchored" data-anchor-id="fixed">Fixed</h3>
 <ul>
 <li>Allow spilling of reservoirs with a maximum storage when using reservoir observed outflow data. The observed outflow was only capped based on reservoir water availability while an upper bound on storage for reservoirs with a maximum storage was not applied. This has been fixed so reservoir storage does not exceed maximum storage.</li>
+<li>Removed incorrect check for floodplain <code>hydraulic_radius</code> (introduced in v1.0.3). The check is also not required as floodplain flow computation is based on a <code>flow_area</code> threshold.</li>
 <li>Documentation: fixed units for finite difference formulation for groundwater flow in one dimension. These are fixed by multiplying the <span class="math inline">\(S\)</span> and <span class="math inline">\(Q\)</span> terms with <span class="math inline">\(\Delta x\)</span> and <span class="math inline">\(\Delta y\)</span>.</li>
 <li>Intercell conductance for unconfined aquifer with <code>exponential</code> <code>conductivity_profile</code>. The conductance was not scaled by using the “upstream saturated fraction” which uses the degree of saturation based on the saturated thickness of the cell with the highest head.</li>
 </ul>
