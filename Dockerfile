@@ -6,7 +6,6 @@ RUN apt-get update && apt-get install -y \
     rm -rf /var/lib/apt/lists/*
 ADD . /app
 
-RUN rm -rf /app/.git
 ENV JULIA_PKG_USE_CLI_GIT=true
 
 WORKDIR /app/build/create_binaries/
