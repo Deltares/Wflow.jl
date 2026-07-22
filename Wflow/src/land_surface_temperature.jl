@@ -1,6 +1,8 @@
 # after Devi Purnamasari et al. 2025
 # https://doi.org/10.5194/hess-29-1483-2025
 
+const VON_KARMAN = 0.41
+
 abstract type AbstractLandSurfaceTemperatureModel end
 struct NoLandSurfaceTemperatureModel <: AbstractLandSurfaceTemperatureModel end
 
@@ -35,10 +37,11 @@ function update_land_surface_temperature!(
     land_surface_temperature_model::LandSurfaceTemperatureModel,
     soil_model::SbmSoilModel,
     atmospheric_forcing::AtmosphericForcing,
-    vegetation_parameters::VegetationParameters,
+    parameters::LandParameters,
     wind_measurement_height::Float64,
     dt::Float64,
 )
+    (; d0, z0m, z0h, skin_layer_height) = parameters
     n = length(land_surface_temperature_model.variables.land_surface_temperature)
 
     for i in 1:n
@@ -61,12 +64,14 @@ function update_land_surface_temperature!(
             )
 
         # Calculate aerodynamic resistance using wind speed at canopy height
-        canopy_height = max(vegetation_parameters.canopy_height[i], 0.12)
         land_surface_temperature_model.variables.aerodynamic_resistance[i] =
-            wind_and_aero_resistance(
+            compute_aerodynamic_resistance(
                 atmospheric_forcing.wind_speed[i],
                 wind_measurement_height,
-                canopy_height,
+                skin_layer_height[i],
+                d0[i],
+                z0m[i],
+                z0h[i],
             )
 
         # Calculate land surface temperature
@@ -85,7 +90,7 @@ function update_land_surface_temperature!(
     model::NoLandSurfaceTemperatureModel,
     soil_model::SbmSoilModel,
     atmospheric_forcing::AtmosphericForcing,
-    vegetation_parameters::VegetationParameters,
+    parameters::LandParameters,
     wind_measurement_height::Float64,
     dt::Float64,
 )
@@ -95,7 +100,7 @@ end
 """ 'latent heat of vaporization' :: λ=2501 - 2.375 Ta (A1) """
 function compute_latent_heat_of_vaporization(air_temperature::Float64)
     air_temperature_degc = from_SI(air_temperature, ABSOLUTE_DEGREES)
-    return (2501.0 - 2.375 * air_temperature_degc) * 1000.0 # J/kg converted fro kj.kg
+    return (2501.0 - 2.375 * air_temperature_degc) * 1000.0 # J/kg converted from kJ/kg
 end
 
 """ 'latent heat flux' :: LE=λ x ρwater x ET (3)"""
@@ -139,54 +144,22 @@ Alternative aerodynamic conductance calculation from AWRA05
 https://www.researchgate.net/publication/233757155_AWRA_Technical_Report_3_Landscape_Model_version_05_Technical_Description
 
 """
-function wind_and_aero_resistance(
-    wind_speed_measured::Float64,
+function compute_aerodynamic_resistance(
+    wind_speed::Float64,
     z_measured::Float64,
-    canopy_height::Float64;
-    zm_ref::Float64 = 2.0, # reference height for wind speed (m)
-    k::Float64 = 0.41, # von Kármán constant
+    skin_layer_height::Float64,
+    d0::Float64,
+    z0m::Float64,
+    z0h::Float64,
 )
-    # Handle measurement height below canopy
-    if z_measured < canopy_height
-        z_measured = canopy_height
-    end
+    zm_ref = round(skin_layer_height + 2.0)
 
-    # Simplified empirical d/h ratios and roughness height adjustments
-    if canopy_height < 1.0
-        ref_h = 0.12
-        dh_ratio = 2.0 / 3.0
-        z0m_ratio = 1.23e-1
-        z0h_ratio = 0.1
-
-    elseif canopy_height >= 1.0
-        z0m_ratio = 1.23e-1 * (canopy_height / 2.0) #z0m increases with canopy height
-        ref_h = 0.33
-        dh_ratio = 2.0 / 3.0
-        z0h_ratio = 0.2
-    end
-
-    # Calculate canopy height and roughness height
-    d = dh_ratio * ref_h
-    z0m = z0m_ratio * ref_h
-    z0h = z0h_ratio * z0m  # Canopy sublayer roughness
-
-    # Wind speed conversion to reference height (2m) for consistency with FAO-56
     wind_speed_ref =
-        max(wind_speed_measured * (log(zm_ref / z0m) / log(z_measured / z0m)), 0.5)
+        max(wind_speed * (log((zm_ref-d0) / z0m) / log((z_measured-d0) / z0m)), 0.5)
 
-    if canopy_height < 1.0
-        # Aerodynamic resistance using reference height
-        # ra = (log((zm_ref - d) / z0m)) * (log((zm_ref - d) / z0h)) / (k^2 * wind_speed_ref)
-        ra = log((zm_ref - d) / z0m) / (k^2 * wind_speed_ref)
-    elseif canopy_height >= 1.0
-        #AWRA05
-        f_h = log((813 / canopy_height) - 5.45)
-        ku = 0.305 / (f_h * (f_h + 2.3))
-        ga = ku * wind_speed_ref
-        ra = 1 / ga
-    end
+    ra = (log((zm_ref-d0)/z0m)*log((zm_ref-d0)/z0h)) / (VON_KARMAN^2 * wind_speed_ref)
 
-    return max(ra, 10.0)
+    return ra
 end
 
 """ 'land surface temperature' :: Ts=(H ra) /(ρacp)+Ta,(4)"""

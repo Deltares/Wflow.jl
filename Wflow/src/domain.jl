@@ -35,7 +35,7 @@
     # zero‐plane displacement height [m]
     d0::Vector{Float64} = Float64[]
     # land surface "skin" layer height above ground [m]
-    h_s::Vector{Float64} = Float64[]
+    skin_layer_height::Vector{Float64} = Float64[]
 end
 
 "Struct to store (shared) river parameters"

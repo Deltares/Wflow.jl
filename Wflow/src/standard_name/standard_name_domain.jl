@@ -60,7 +60,7 @@ const domain_standard_name_map = OrderedDict{String, ParameterMetadata}(
         tags = [:generic_input_map],
     ),
     "atmosphere_bottom_air__above_ground_height" => ParameterMetadata(;
-        lens = @optic(_.domain.land.parameters.h_s),
+        lens = @optic(_.domain.land.parameters.skin_layer_height),
         unit = Unit(; m = 1),
         description = "Land surface \"skin\" layer height above the ground",
         allow_dynamic_input = true,

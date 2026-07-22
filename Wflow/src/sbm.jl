@@ -157,7 +157,7 @@ function update_land_hydrology_model!(
             land_surface_temperature,
             soil,
             atmospheric_forcing,
-            model.vegetation_parameters,
+            parameters,
             wind_measurement_height,
             dt,
         )
