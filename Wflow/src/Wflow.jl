@@ -77,6 +77,8 @@ const VERSION =
 const GRAVITATIONAL_ACCELERATION = 9.80665 # m s⁻²
 const WATER_DENSITY = 1e3 # [kg m⁻³]
 const WATER_KINEMATIC_VISCOSITY = 1.16e-6 # [m² s⁻¹]
+# local drain direction pit [-]
+const LDD_PIT = 5
 
 mutable struct Clock{T}
     time::T
@@ -141,7 +143,7 @@ include("routing/routing.jl")
 include("domain.jl")
 
 """
-    Model{R <: Routing, L <: AbstractLandModel, M <: AbstractMassBalance, T <: AbstractModelType} <: AbstractModel{T}
+    Model{R <: Routing, L <: AbstractLandModel, M <: AbstractMassBalance, W <: Writer, T <: AbstractModelType} <: AbstractModel{T}
 
 Composite type that represents all different aspects of a Wflow Model, such as the network,
 parameters, clock, configuration and input and output.
@@ -212,8 +214,10 @@ include("routing/subsurface/lateral_subsurface_flow.jl")
 include("routing/subsurface/subsurface_process.jl")
 include("routing/subsurface/boundary_conditions.jl")
 include("routing/surface/reservoir.jl")
+include("routing/surface/floodplain.jl")
+include("routing/surface/surface_flow.jl")
 include("routing/surface/surface_kinwave.jl")
-include("routing/surface/surface_local_inertial.jl")
+include("routing/surface/surface_staggered_scheme.jl")
 include("routing/surface/surface_routing.jl")
 include("routing/surface/surface_process.jl")
 include("demand/water_demand.jl")

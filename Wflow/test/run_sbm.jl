@@ -357,7 +357,7 @@
             Dict(:to_river_average => 7.373928060045205e-5),
         )
         @test test_means(
-            overland_flow.variables.flow,
+            overland_flow.variables,
             Dict(
                 :qin => 0.0008814607677874327,
                 :storage => 16.837627069604082,
@@ -557,7 +557,7 @@
             Dict(:to_river_average => 0.0006441014921670179),
         )
         @test test_means(
-            overland_flow.variables.flow,
+            overland_flow.variables,
             Dict(
                 :qin => 0.006930522031750806,
                 :storage => 88.26124686793727,
@@ -882,7 +882,7 @@ end
 end
 
 @testitem "Local-inertial option for river flow including 1D floodplain schematization" begin
-    tomlpath = joinpath(@__DIR__, "sbm_river-floodplain-local-inertial_config.toml")
+    tomlpath = joinpath(@__DIR__, "sbm_river-floodplain-staggered-scheme_config.toml")
     config = Wflow.Config(tomlpath)
     config.dir_output = mktempdir()
     model = Wflow.Model(config)
@@ -896,8 +896,9 @@ end
 
     @testset "river flow (local inertial) floodplain schematization" begin
         # floodplain geometry checks (index 3)
-        @test profile.storage[:, 3] ≈ [0.0, 8641.0, 19011.0, 31685.0, 51848.0, 80653.0]
-        @test profile.width[:, 3] ≈ [
+        idx = 3
+        @test profile.storage[:, idx] ≈ [0.0, 8641.0, 19011.0, 31685.0, 51848.0, 80653.0]
+        @test profile.width[:, idx] ≈ [
             30.0,
             99.28617594254938,
             119.15260323159785,
@@ -905,7 +906,7 @@ end
             231.6754039497307,
             330.9730700179533,
         ]
-        @test profile.wetted_perimeter[:, 3] ≈ [
+        @test profile.wetted_perimeter[:, idx] ≈ [
             69.28617594254938,
             70.28617594254938,
             91.15260323159785,
@@ -913,7 +914,7 @@ end
             205.6754039497307,
             305.9730700179533,
         ]
-        @test profile.flow_area[:, 3] ≈ [
+        @test profile.flow_area[:, idx] ≈ [
             0.0,
             49.64308797127469,
             109.21938958707361,
@@ -921,116 +922,63 @@ end
             297.8700179533214,
             463.35655296229805,
         ]
-        @test dh .* profile.width[2:end, 3] * flow_length[3] ≈ Δv
-        @test profile.flow_area[:, 3] * flow_length[3] ≈ profile.storage[:, 3]
+        @test dh .* profile.width[2:end, idx] * flow_length[idx] ≈ Δv
+        @test profile.flow_area[:, 3] * flow_length[idx] ≈ profile.storage[:, idx]
         # flood depth from flood storage (8000.0)
         flood_vol = 8000.0
-        river_flow.variables.storage[3] =
-            flood_vol + river_flow.parameters.bankfull_storage[3]
-        i1, i2 = Wflow.interpolation_indices(flood_vol, profile.storage[:, 3])
+        river_flow.variables.storage[idx] =
+            flood_vol + river_flow.parameters.bankfull_storage[idx]
+        i1, i2 = Wflow.interpolation_indices(flood_vol, profile.storage[:, idx])
         @test (i1, i2) == (1, 2)
-        flood_depth = Wflow.flood_depth(profile, flood_vol, flow_length[3], 3)
+        flood_depth = Wflow.compute_flood_depth(profile, flood_vol, flow_length[idx], idx)
         @test flood_depth ≈ 0.46290938548779076
-        @test (flood_depth - profile.depth[i1]) * profile.width[i2, 3] * flow_length[3] +
-              profile.storage[i1, 3] ≈ flood_vol
+        @test (flood_depth - profile.depth[i1]) *
+              profile.width[i2, idx] *
+              flow_length[idx] + profile.storage[i1, idx] ≈ flood_vol
         # flood depth from flood storage (12000.0)
         flood_vol = 12000.0
-        river_flow.variables.storage[3] =
-            flood_vol + river_flow.parameters.bankfull_storage[3]
-        i1, i2 = Wflow.interpolation_indices(flood_vol, profile.storage[:, 3])
-        @test (i1, i2) == (2, 3)
-        flood_depth = Wflow.flood_depth(profile, flood_vol, flow_length[3], 3)
+        river_flow.variables.storage[idx] =
+            flood_vol + river_flow.parameters.bankfull_storage[idx]
+        i1, i2 = Wflow.interpolation_indices(flood_vol, profile.storage[:, idx])
+        @test (i1, i2) == (2, idx)
+        flood_depth = Wflow.compute_flood_depth(profile, flood_vol, flow_length[idx], idx)
         @test flood_depth ≈ 0.6619575699132112
-        @test (flood_depth - profile.depth[i1]) * profile.width[i2, 3] * flow_length[3] +
-              profile.storage[i1, 3] ≈ flood_vol
+        @test (flood_depth - profile.depth[i1]) *
+              profile.width[i2, idx] *
+              flow_length[idx] + profile.storage[i1, idx] ≈ flood_vol
         # test extrapolation of segment
         flood_vol = 95000.0
-        river_flow.variables.storage[3] =
-            flood_vol + river_flow.parameters.bankfull_storage[3]
-        i1, i2 = Wflow.interpolation_indices(flood_vol, profile.storage[:, 3])
+        river_flow.variables.storage[idx] =
+            flood_vol + river_flow.parameters.bankfull_storage[idx]
+        i1, i2 = Wflow.interpolation_indices(flood_vol, profile.storage[:, idx])
         @test (i1, i2) == (6, 6)
-        flood_depth = Wflow.flood_depth(profile, flood_vol, flow_length[3], 3)
+        flood_depth = Wflow.compute_flood_depth(profile, flood_vol, flow_length[idx], idx)
         @test flood_depth ≈ 2.749036625585836
-        @test (flood_depth - profile.depth[i1]) * profile.width[i2, 3] * flow_length[3] +
-              profile.storage[i1, 3] ≈ flood_vol
-        river_flow.variables.storage[3] = 0.0 # reset storage
+        @test (flood_depth - profile.depth[i1]) *
+              profile.width[i2, idx] *
+              flow_length[idx] + profile.storage[i1, idx] ≈ flood_vol
+        river_flow.variables.storage[idx] = 0.0 # reset storage
         # flow area and wetted perimeter based on hf
         h = 0.5
         i1, i2 = Wflow.interpolation_indices(h, profile.depth)
-        @test Wflow.flow_area(
-            profile.width[i2, 3],
-            profile.flow_area[i1, 3],
-            profile.depth[i1],
-            h,
-        ) ≈ 49.64308797127469
-        @test Wflow.wetted_perimeter(
-            profile.wetted_perimeter[i1, 3],
-            profile.depth[i1],
-            h,
-        ) ≈ 70.28617594254938
+        @test Wflow.compute_flood_flow_area(profile, h, idx, i1, i2) ≈ 49.64308797127469
+        @test Wflow.compute_wetted_perimeter(profile, h, idx, i1) ≈ 70.28617594254938
         h = 1.5
         i1, i2 = Wflow.interpolation_indices(h, profile.depth)
-        @test Wflow.flow_area(
-            profile.width[i2, 3],
-            profile.flow_area[i1, 3],
-            profile.depth[i1],
-            h,
-        ) ≈ 182.032315978456
-        @test Wflow.wetted_perimeter(
-            profile.wetted_perimeter[i1, 3],
-            profile.depth[i1],
-            h,
-        ) ≈ 118.62585278276481
+        @test Wflow.compute_flood_flow_area(profile, h, idx, i1, i2) ≈ 182.032315978456
+        @test Wflow.compute_wetted_perimeter(profile, h, idx, i1) ≈ 118.62585278276481
         h = 1.7
         i1, i2 = Wflow.interpolation_indices(h, profile.depth)
-        @test Wflow.flow_area(
-            profile.width[i2, 3],
-            profile.flow_area[i1, 3],
-            profile.depth[i1],
-            h,
-        ) ≈ 228.36739676840216
-        @test Wflow.wetted_perimeter(
-            profile.wetted_perimeter[i1, 3],
-            profile.depth[i1],
-            h,
-        ) ≈ 119.02585278276482
+        @test Wflow.compute_flood_flow_area(profile, h, idx, i1, i2) ≈ 228.36739676840216
+        @test Wflow.compute_wetted_perimeter(profile, h, idx, i1) ≈ 119.02585278276482
         h = 3.2
         i1, i2 = Wflow.interpolation_indices(h, profile.depth)
-        @test Wflow.flow_area(
-            profile.width[i2, 3],
-            profile.flow_area[i1, 3],
-            profile.depth[i1],
-            h,
-        ) ≈ 695.0377019748654
-        @test Wflow.wetted_perimeter(
-            profile.wetted_perimeter[i1, 3],
-            profile.depth[i1],
-            h,
-        ) ≈ 307.3730700179533
+        @test Wflow.compute_flood_flow_area(profile, h, idx, i1, i2) ≈ 695.0377019748654
+        @test Wflow.compute_wetted_perimeter(profile, h, idx, i1) ≈ 307.3730700179533
         h = 4.0
         i1, i2 = Wflow.interpolation_indices(h, profile.depth)
-        @test Wflow.flow_area(
-            profile.width[i2, 3],
-            profile.flow_area[i1, 3],
-            profile.depth[i1],
-            h,
-        ) ≈ 959.816157989228
-        @test Wflow.wetted_perimeter(
-            profile.wetted_perimeter[i1, 3],
-            profile.depth[i1],
-            h,
-        ) ≈ 308.9730700179533
-        @test Wflow.flow_area(
-            profile.width[i2, 4],
-            profile.flow_area[i1, 4],
-            profile.depth[i1],
-            h,
-        ) ≈ 407.6395313908081
-        @test Wflow.wetted_perimeter(
-            profile.wetted_perimeter[i1, 4],
-            profile.depth[i1],
-            h,
-        ) ≈ 90.11775307900271
+        @test Wflow.compute_flood_flow_area(profile, h, idx, i1, i2) ≈ 959.816157989228
+        @test Wflow.compute_wetted_perimeter(profile, h, idx, i1) ≈ 308.9730700179533
     end
 
     Wflow.run_timestep!(model)
@@ -1219,6 +1167,57 @@ end
     end
 end
 
+@testitem "River flow including 1D floodplain schematization using Manning's equation on a staggered grid" begin
+    tomlpath = joinpath(@__DIR__, "sbm_river-floodplain-staggered-scheme_config.toml")
+    config = Wflow.Config(tomlpath)
+    config.model.river_routing = "manning_staggered"
+    config.dir_output = mktempdir()
+    model = Wflow.Model(config)
+    (; river_flow) = model.routing
+
+    Wflow.run_timestep!(model)
+    Wflow.run_timestep!(model)
+
+    (; q_average, h) = river_flow.variables
+    @test sum(q_average) ≈ 2156.7740284069446
+    @test q_average[1622] ≈ 0.000216893766604954
+    @test q_average[43] ≈ 10.362921270030188
+    @test q_average[501] ≈ 0.021301823784704774
+    @test q_average[5808] ≈ 0.0049185166802011605
+    @test h[1622] ≈ 0.001787783986962345
+    @test h[43] ≈ 1.3195684133779013
+    @test h[501] ≈ 0.005358321292557224
+    @test h[5808] ≈ 0.005888613968265871
+    (; q_average, h) = river_flow.floodplain.variables
+    @test maximum(q_average) ≈ 0.8692896468290046
+    @test maximum(h) ≈ 1.1111707025189723
+end
+
+@testitem "Kinematic river flow including 1D floodplain schematization" begin
+    tomlpath = joinpath(@__DIR__, "sbm_river-floodplain-kw_config.toml")
+    config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
+    model = Wflow.Model(config)
+    (; river_flow) = model.routing
+
+    Wflow.run_timestep!(model)
+    Wflow.run_timestep!(model)
+
+    (; q_average, h) = river_flow.variables
+    @test sum(q_average) ≈ 3664.1750799952056
+    @test q_average[1622] ≈ 0.000750262072108146
+    @test q_average[43] ≈ 11.647181706571397
+    @test q_average[501] ≈ 0.1624521220430912
+    @test q_average[5808] ≈ 0.04397694950619904
+    @test h[1622] ≈ 0.0009790317470641876
+    @test h[43] ≈ 0.16302929690891788
+    @test h[501] ≈ 0.1542630086179196
+    @test h[5808] ≈ 0.005801865652235309
+    (; q_average, h) = river_flow.floodplain.variables
+    @test maximum(q_average) ≈ 0.606783057904105
+    @test maximum(h) ≈ 1.5799312217287604
+end
+
 @testitem "run wflow sbm" begin
     tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     config = Wflow.Config(tomlpath)
@@ -1293,7 +1292,7 @@ end
 end
 
 @testitem "water balance river local inertial routing with floodplain" begin
-    tomlpath = joinpath(@__DIR__, "sbm_river-floodplain-local-inertial_config.toml")
+    tomlpath = joinpath(@__DIR__, "sbm_river-floodplain-staggered-scheme_config.toml")
     config = Wflow.Config(tomlpath)
     config.dir_output = mktempdir()
     config.model.water_mass_balance__flag = true
@@ -1314,6 +1313,53 @@ end
             river_water_balance.error,
         )
         @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
+    end
+    Wflow.close_files(model; delete_output = false)
+end
+
+@testitem "water balance river flow with floodplain using Manning's equation on a staggered grid" begin
+    tomlpath = joinpath(@__DIR__, "sbm_river-floodplain-staggered-scheme_config.toml")
+    config = Wflow.Config(tomlpath)
+    config.model.river_routing = "manning_staggered"
+    config.model.water_mass_balance__flag = true
+    config.dir_output = mktempdir()
+    model = Wflow.Model(config)
+    (; river_water_balance) = model.mass_balance.routing
+    Wflow.run_timestep!(model)
+    @testset "water balance first timestep" begin
+        @test all(e -> abs(e) < 1e-9, river_water_balance.error)
+        @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
+    end
+    Wflow.run_timestep!(model)
+    @testset "water balance second timestep" begin
+        @test all(e -> abs(e) < 0.00012, river_water_balance.error)
+        @test all(re -> abs(re) < 0.33, river_water_balance.relative_error)
+        inds = findall(x -> x > 2.0e-3, model.routing.river_flow.variables.q_average)
+        @test all(e -> abs(e) < 1e-9, river_water_balance.error[inds])
+        @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error[inds])
+    end
+    Wflow.close_files(model; delete_output = false)
+end
+
+@testitem "water balance river kinematic wave routing with floodplain" begin
+    tomlpath = joinpath(@__DIR__, "sbm_river-floodplain-kw_config.toml")
+    config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
+    config.model.water_mass_balance__flag = true
+    model = Wflow.Model(config)
+    (; river_water_balance) = model.mass_balance.routing
+    Wflow.run_timestep!(model)
+    @testset "water balance first timestep" begin
+        @test all(e -> abs(e) < 1e-9, river_water_balance.error)
+        @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
+    end
+    Wflow.run_timestep!(model)
+    @testset "water balance second timestep" begin
+        @test all(e -> abs(e) < 3e-5, river_water_balance.error)
+        @test all(re -> abs(re) < 12.2, river_water_balance.relative_error)
+        inds = findall(x -> x > 1e-3, model.routing.river_flow.variables.q_average)
+        @test all(re -> abs(re) < 1e-9, river_water_balance.error[inds])
+        @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error[inds])
     end
     Wflow.close_files(model; delete_output = false)
 end

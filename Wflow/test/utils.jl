@@ -137,7 +137,7 @@ end
 
     for file_name in [
         "sbm_gwf_config.toml",
-        "sbm_river-floodplain-local-inertial_config.toml",
+        "sbm_river-floodplain-staggered-scheme_config.toml",
         "sbm_river-land-local-inertial_config.toml",
         "sbm_gwf_piave_demand_config.toml",
         "sediment_config.toml",
@@ -190,6 +190,9 @@ end
                     "soil_exponential_vertical_saturated_hydraulic_conductivity_profile_below_surface__depth",
                     "soil_layer_water__vertical_saturated_hydraulic_conductivity",
                 ])
+            elseif map_name == "routing"
+                # The lens of this standard name is valid but not part of any test model.
+                Set(["floodplain__slope"])
             else
                 Set{String}()
             end

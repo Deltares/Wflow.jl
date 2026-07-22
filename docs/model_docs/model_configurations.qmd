@@ -19,9 +19,13 @@ supported in wflow:
 
     and with the following surface routing schemes:
     - kinematic wave for overland and river flow
-    - kinematic wave for overland flow + local inertial river (+ optional floodplain)
+    - kinematic wave for overland flow + local inertial river
+    - kinematic wave for overland flow + river flow on a staggered grid using Manning's equation
     - local inertial river (1D) and land (2D)
  - wflow\_sediment as post processing of wflow\_sbm output
+
+The river flow routing schemes support an optional 1D floodplain schematization (routing is
+done separately for the river channel and floodplain).
 
 Below, some explanation will be given on how to prepare a basic wflow\_sbm model. Example
 data for other model configurations is provided in the section with [sample
@@ -64,16 +68,21 @@ four directions (adjacent cells) is used. This is described in more detail in th
 type = "sbm_gwf"
 ```
 
-### Local inertial river
-By default the model types `sbm` and `sbm_gwf` use the kinematic wave approach for river flow.
-There is also the option to use the local inertial model for river flow with an optional 1D
-floodplain schematization (routing is done separately for the river channel and floodplain), by
-providing the following in the TOML file:
+### River flow on a staggered grid
+By default the model types `sbm` and `sbm_gwf` use the kinematic wave approach for river
+flow, including an optional 1D floodplain schematization. There is also the option to use
+river flow routing on a staggered grid, with the following two routing schemes:
+
+- Local inertial routing
+- Mannings flow
+
+Both support an optional 1D floodplain schematization.
+The river routing scheme can be set as follows in the TOML file:
 
 ```toml
 [model]
-river_routing = "local_inertial"    # optional, default is "kinematic_wave"
-floodplain_1d__flag = true                # optional, default is false
+river_routing = "local_inertial"    # one of ["kinematic_wave", "local_inertial", "manning_staggered"], default is "kinematic_wave"
+floodplain_1d__flag = true          # optional, default is false
 ```
 
 ### Local inertial river (1D) and land (2D)
