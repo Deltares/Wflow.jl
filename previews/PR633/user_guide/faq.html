@@ -526,11 +526,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="which-river-routing-option-should-i-choose" class="level3">
 <h3 class="anchored" data-anchor-id="which-river-routing-option-should-i-choose">Which river routing option should I choose?</h3>
-<p>The choice of a specific river routing option can vary depending on the model and use case. However, the numerical properties of the routing schemes provide an indication of their advantages and disadvantages.</p>
+<p>The choice of a specific river routing option can vary depending on the model and use case. However, the numerical properties of the routing schemes provide an indication of their advantages and disadvantages. The following river routing schemes are available:</p>
+<ul>
+<li>Kinematic wave</li>
+<li>Mannings flow on a staggered grid</li>
+<li>Local inertial routing on a staggered grid</li>
+</ul>
+<p>These routing schemes support an optional 1D floodplain schematization (routing is done separately for the river channel and floodplain).</p>
 <p>The kinematic wave method is driven by the river slope within each cell, assuming that the water surface slope is parallel to the bed slope. This results in sharper discharge peaks with minimal damping, as the waves travel through the system without deformation. This approach is especially suitable for steep (upstream) areas where flow propagation is dominated by topography. The kinematic wave approach does not include any form of backwater effects.</p>
+<p>As the kinematic wave method, the use of Manning’s equation on a staggered grid is also driven by the river slope and thus most suitable for steep terrain where backwater effects are negligible.</p>
 <p>On the other hand, the local inertial method incorporates the slope of the water surface into the momentum equation. This results in ‘damping effects’ on flow propagating through the cells and yields better results in scenarios where the water surface slope differs from the bed slope. This is particularly relevant in flat (downstream) regions where the river slope is limited or during the propagation of larger flood waves where the water surface slope is greater than the river slope itself. The local inertial method does incorporate backwater effects, although not as comprehensively as the full dynamic wave equation.</p>
-<p>Generally, the kinematic wave method is computationally faster than the local inertial method for river (and land) routing. For the multi-threading execution of the kinematic wave, solved with a nonlinear scheme using Newton’s method, the order of execution (sub-basins) is important (from upstream to downstream sub-basin). For the momentum equation of the local inertial approach an explicit numerical method is used and can be solved independently for each cell during multi-threading execution. As a consequence, speedups for local inertial routing are larger than for kinematic wave routing using multi-threading (compared to a single thread run) and the difference between local inertial and kinematic wave routing run times gets smaller as the number of threads increase.</p>
-<p>Currently, only the local inertial approach supports the inclusion of floodplains in river routing, see also <a href="../user_guide/faq.html#what-is-the-difference-between-1d-2d-and-no-floodplains">this question</a>.</p>
+<p>Generally, the kinematic wave method and the use of Manning’s equation on a staggered grid is computationally faster than the local inertial method for river (and land) routing. For the multi-threading execution of the kinematic wave, solved with a nonlinear scheme using Newton’s method, the order of execution (sub-basins) is important (from upstream to downstream sub-basin). For the momentum equation of river flow on a staggered grid an explicit numerical method is used and can be solved independently for each cell during multi-threading execution. As a consequence, speedups for river flow on a staggered grid are larger than for kinematic wave routing using multi-threading (compared to a single thread run) and the difference between river flow on a staggered grid and kinematic wave routing run times gets smaller as the number of threads increase.</p>
 </section>
 <section id="which-land-routing-option-should-i-choose" class="level3">
 <h3 class="anchored" data-anchor-id="which-land-routing-option-should-i-choose">Which land routing option should I choose?</h3>
@@ -539,7 +545,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="what-is-the-difference-between-1d-2d-and-no-floodplains" class="level3">
 <h3 class="anchored" data-anchor-id="what-is-the-difference-between-1d-2d-and-no-floodplains">What is the difference between 1D, 2D and no floodplains?</h3>
-<p>Effects of floodplain flow can be included in several ways. A one-dimensional sub-grid approximation (hence the name 1D floodplains) can be included when kinematic wave land routing is combined with local inertial river routing. The water surface elevations of the river channel and the floodplain are the same and it is assumed that water is exchanged instantaneously between the river channel and the floodplain. When the water depth in the river channel rises above the river bankfull depth, water is exchanged between the river channel and the floodplain resulting in an attenuation of the discharge peaks.</p>
+<p>Effects of floodplain flow can be included in several ways. A one-dimensional sub-grid approximation (hence the name 1D floodplains) can be included when kinematic wave land routing is combined with river routing. The water surface elevations of the river channel and the floodplain are the same and it is assumed that water is exchanged instantaneously between the river channel and the floodplain. When the water depth in the river channel rises above the river bankfull depth, water is exchanged between the river channel and the floodplain resulting in an attenuation of the discharge peaks.</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="../images/floodplains_1d.png" class="img-fluid figure-img"></p>
@@ -554,7 +560,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <figcaption>Schematization of the 2D floodplain concept (top view)</figcaption>
 </figure>
 </div>
-<p>It is also possible to run the model without 1D floodplains. This means that the model is using kinematic wave for land routing and either kinematic wave or local inertial for river routing. This can lead to unrealistically large water depths when the bankfull capacity is exceeded as there is no exchange of water between the river channel and floodplains.</p>
+<p>It is also possible to run the model without 1D floodplains. This can lead to unrealistically large water depths when the bankfull capacity is exceeded as there is no exchange of water between the river channel and floodplains.</p>
 </section>
 <section id="how-do-i-run-only-a-part-of-my-model" class="level3">
 <h3 class="anchored" data-anchor-id="how-do-i-run-only-a-part-of-my-model">How do I run only a part of my model?</h3>
