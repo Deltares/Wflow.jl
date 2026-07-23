@@ -53,7 +53,6 @@ function update_land_surface_temperature!(
             compute_latent_heat_flux(
                 atmospheric_forcing.temperature[i],
                 soil_model.variables.actevap[i],
-                dt,
             )
 
         # Calculate sensible heat flux
@@ -97,17 +96,16 @@ function update_land_surface_temperature!(
     return nothing
 end
 
-""" 'latent heat of vaporization' :: λ=2501 - 2.375 Ta (A1) """
+"Compute latent heat of vaporization"
 function compute_latent_heat_of_vaporization(air_temperature::Float64)
     air_temperature_degc = from_SI(air_temperature, ABSOLUTE_DEGREES)
     return (2501.0 - 2.375 * air_temperature_degc) * 1000.0 # J/kg converted from kJ/kg
 end
 
-""" 'latent heat flux' :: LE=λ x ρwater x ET (3)"""
+"Compute latent heat flux"
 function compute_latent_heat_flux(
     air_temperature::Float64,
     actual_evapotranspiration::Float64,
-    dt::Float64,
 )
     latent_heat_of_vaporization = compute_latent_heat_of_vaporization(air_temperature)
     latent_heat_flux =
@@ -115,34 +113,26 @@ function compute_latent_heat_flux(
     return latent_heat_flux
 end
 
-""" 'sensible heat flux' :: H  ≈ RNet - LE - G"""
+"Compute sensible heat flux"
 function compute_sensible_heat_flux(net_radiation::Float64, latent_heat_flux::Float64)
-    #TODO:run the snow module assimilate soil temperature
-    # allowing a better estimate for G, currently G is daytime proportional to (0.1 nighttime, 0.5 daytime)
-    G = 0.1 * net_radiation
-    sensible_heat_flux = net_radiation - latent_heat_flux - G
+    # estimation of ground heat flux can be improved, currently estimated with a fixed
+    # linear coefficient (0.1) applied to net_radiation
+    ground_heat_flux = 0.1 * net_radiation
+    sensible_heat_flux = net_radiation - latent_heat_flux - ground_heat_flux
     return sensible_heat_flux
 end
 
 """
-'aerodynamic resistance' :: ra = (ln(z/z0m) - psi_m) / (k^2 * u)
-no clean way yet to deal with variable canopy height empirically
+Compute aerodynamic resistance `ra` of the land surface "skin" (vegetation canopy, soil,
+snow etc.) based on Thom's equation assuming neutral stability conditions.
 
-| Cover type        | Typical d/h   | Reference                                    |
-| ----------------- | ------------- | -------------------------------------------- |
-| Short grass       | 0.67          | Allen et al. (1998), Brutsaert (1982)        |
-| Wheat, shrubs     | 0.65          | Brutsaert (1982); Thom (1975); Shuttleworth  |
-| Tall crops (corn) | 0.6           | Monteith & Unsworth (1990)                   |
-| Forest            | 0.5 (capped)  | Garratt (1992); Shuttleworth & Gurney (1990) |
-
-Sensitive to canopy density & LAI
-
-Seasonal and structural variability
-
-Forest cap avoids z - d < 0 issues
-Alternative aerodynamic conductance calculation from AWRA05
-https://www.researchgate.net/publication/233757155_AWRA_Technical_Report_3_Landscape_Model_version_05_Technical_Description
-
+The provided wind speed should be consistent with the aerodynamic roughness length for
+momentum transfer `z0m` and zero-displacement height `d0` of the surface terrain (and not
+based on "open-terrain" (short grass) as observed typically by meteorological stations). The
+wind speed measurement height `z_measured` should be greater than the sum of `d0` and `z0m`
+to convert the wind speed to the reference height `zm_ref` properly. The measurement heights
+of wind and humidity are assumed to be equal, `z0h  is the aerodynamic roughness length for
+heat transfer.
 """
 function compute_aerodynamic_resistance(
     wind_speed::Float64,
@@ -152,17 +142,24 @@ function compute_aerodynamic_resistance(
     z0m::Float64,
     z0h::Float64,
 )
+    # set reference height (~2.0 m above surface skin layer height).
     zm_ref = round(skin_layer_height + 2.0)
 
-    wind_speed_ref =
-        max(wind_speed * (log((zm_ref-d0) / z0m) / log((z_measured-d0) / z0m)), 0.5)
+    # wind speed at reference height and constrained to be greater than 0.5 m/s to consider
+    # vapour exchange on the surface induced by air buoyancy and layer instability effects.
+    min_wind_speed = 0.5
+    wind_speed_ref = max(
+        wind_speed * (log((zm_ref-d0) / z0m) / log((z_measured-d0) / z0m)),
+        min_wind_speed,
+    )
 
+    # compute aerodynamic resistance based on Thom's equation.
     ra = (log((zm_ref-d0)/z0m)*log((zm_ref-d0)/z0h)) / (VON_KARMAN^2 * wind_speed_ref)
 
     return ra
 end
 
-""" 'land surface temperature' :: Ts=(H ra) /(ρacp)+Ta,(4)"""
+"Compute land surface temperature"
 function compute_land_surface_temperature(
     sensible_heat_flux::Float64,
     aerodynamic_resistance::Float64,
