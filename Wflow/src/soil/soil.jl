@@ -1214,9 +1214,13 @@ function update_soil_water_flow!(
     # actual infiltration and excess water
     actual_infiltration!(soil_model)
 
-    # Correct fluxes in case of reinfiltration, also to ensure correct soil and path
-    # infiltration, and excesswater
-    update_infiltration_fluxes!(soil_model)
+    # Correct fluxes in case of reinfiltration, and only compute excess water if reinfiltration
+    # is not enabled
+    if config.model.land_surface_water_reinfiltration__flag
+        update_infiltration_fluxes!(soil_model)
+    else
+        @. v.excesswater = water_flux_surface - v.actinfilt - v.infiltexcess
+    end
 
     actual_infiltration_soil_path!(soil_model)
 
