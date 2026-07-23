@@ -693,13 +693,12 @@ function update_bc_soil_model!(
     evaporation!(demand.paddy, potential_soilevaporation)
     potential_soilevaporation .= potential_soilevaporation .- get_evaporation(demand.paddy)
 
-    water_flux_surface .=
-        max.(
-            runoff.boundary_conditions.water_flux_surface .+
-            get_irrigation_allocated(allocation) .- runoff.variables.runoff_river .-
-            runoff.variables.runoff_land .+ get_water_depth(demand.paddy),
-            0.0,
-        )
+    water_flux_surface .= max.(
+        runoff.boundary_conditions.water_flux_surface .+
+        get_irrigation_allocated(allocation) .- runoff.variables.runoff_river .-
+        runoff.variables.runoff_land .+ get_water_depth(demand.paddy),
+        0.0,
+    )
     return nothing
 end
 
@@ -773,22 +772,29 @@ function update_available_for_infiltration!(
     return nothing
 end
 
-function correct_infiltration!(model::SbmSoilModel)
-    v = model.variables
-    (; water_flux_surface) = model.boundary_conditions
+function update_infiltration_fluxes!(soil_model::SbmSoilModel)
+    (;
+        infilt_surfacewater,
+        actinfilt,
+        infiltexcess,
+        excesswater,
+        potential_infiltration,
+        potential_infiltration_surfacewater,
+    ) = soil_model.variables
+    (; water_flux_surface) = soil_model.boundary_conditions
 
-    n = length(v.actinfilt)
+    n = length(actinfilt)
     threaded_foreach(1:n; basesize = 1000) do i
-        v.infilt_surfacewater[i],
-        v.actinfilt[i],
-        v.infiltexcess[i],
-        v.excesswater[i],
-        water_flux_surface[i] = correct_infiltration(
-            v.potential_infiltration[i],
-            v.potential_infiltration_surfacewater[i],
+        infilt_surfacewater[i],
+        actinfilt[i],
+        infiltexcess[i],
+        excesswater[i],
+        water_flux_surface[i] = update_infiltration_fluxes(
+            potential_infiltration[i],
+            potential_infiltration_surfacewater[i],
             water_flux_surface[i],
-            v.actinfilt[i],
-            v.infiltexcess[i],
+            actinfilt[i],
+            infiltexcess[i],
         )
     end
 end
@@ -1196,7 +1202,7 @@ function update_soil_water_flow!(
         soil_model,
         domain,
         runoff,
-        config.model.reinfiltration_surfacewater__flag,
+        config.model.land_surface_water_reinfiltration__flag,
     )
 
     infiltration!(soil_model)
@@ -1210,7 +1216,7 @@ function update_soil_water_flow!(
 
     # Correct fluxes in case of reinfiltration, also to ensure correct soil and path
     # infiltration, and excesswater
-    correct_infiltration!(soil_model)
+    update_infiltration_fluxes!(soil_model)
 
     actual_infiltration_soil_path!(soil_model)
 
@@ -1391,9 +1397,6 @@ function update_soil_water_storage!(
     # and the h_max parameter of a paddy field)
     update_runoff!(demand.paddy, v.runoff)
     @. v.net_runoff = v.runoff - ae_openw_l
-
-    # correct overland flow water levels in case of reinfiltration
-    correct_overland_flow_level!(soil_model, overland_flow, domain, config)
 
     return nothing
 end

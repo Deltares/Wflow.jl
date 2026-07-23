@@ -278,7 +278,7 @@ infiltration. The correction factor is based on the ratio of
 Returns `infilt_surfacewater`, corrected `actinfilt`, corrected `infiltexcess`, `excesswater`,
 and corrected `water_flux_surface`.
 """
-function correct_infiltration(
+function update_infiltration_fluxes(
     potential_infiltration,
     potential_infiltration_surfacewater,
     water_flux_surface,
@@ -303,34 +303,4 @@ function correct_infiltration(
     excesswater = water_flux_surface - actinfilt - infiltexcess
 
     return infilt_surfacewater, actinfilt, infiltexcess, excesswater, water_flux_surface
-end
-
-function correct_overland_flow_level(
-    overlandflow_depth,
-    infilt_surfacewater,
-    river_fraction,
-    surface_flow_width,
-    alpha,
-    beta,
-)
-    if infilt_surfacewater > 0.0
-        # Get original h_land in mm
-        original_h_land = overlandflow_depth * 1000.0
-
-        # Correct values for river fraction to ensure correct water accounting
-        infiltrated_surfacewater = (infilt_surfacewater / (1.0 - river_fraction))
-        # Calculate new h_land in m
-        h = (original_h_land - infiltrated_surfacewater) / 1000.0
-
-        q = ifelse(
-            surface_flow_width > 0.0 && h > 0.0 && alpha > 0.0 && beta != 0.0,
-            # Compute cross-sectional area from h
-            pow.(max.((h * surface_flow_width) / alpha, 1e-10), 1.0 / beta),
-            0.0,  # Set q to 0.0 if conditions are not met
-        )
-    else
-        q = nothing
-        h = overlandflow_depth
-    end
-    return q, h
 end

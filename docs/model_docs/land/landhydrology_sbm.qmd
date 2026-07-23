@@ -960,14 +960,14 @@ let
 end
 ```
 
-#### Infiltration from surface water
+#### Land surface water infiltration
 
-Infiltration from surface water (overland flow) is supported when enabling the following
-setting in the TOML file:
+Infiltration from land surface water (overland flow) is supported when enabling the
+following setting in the TOML file:
 
 ```toml
 [model]
-reinfiltration_surfacewater__flag = true
+land_surface_water_reinfiltration__flag = true
 ```
 
 This can be done with both `kinematic_wave` and `local_inertial` land routing settings. When

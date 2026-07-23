@@ -1023,8 +1023,7 @@ function local_inertial_update_water_depth!(
                 ) * dt
             # Apply surface water infiltration correction for river cells
             if land_bc.infiltration_volume[i] > 0.0
-                land_v.storage[i] =
-                    max(0.0, land_v.storage[i] - land_bc.infiltration_volume[i])
+                land_v.storage[i] -= land_bc.infiltration_volume[i]
             end
             if land_v.storage[i] < 0.0
                 land_v.error[i] = land_v.error[i] + abs(land_v.storage[i])
@@ -1072,15 +1071,14 @@ function local_inertial_update_water_depth!(
                     land_v.qx[xd] - land_v.qx[i] + land_v.qy[yd] - land_v.qy[i] +
                     land_bc.runoff[i]
                 ) * dt
+            if land_bc.infiltration_volume[i] > 0.0
+                land_v.storage[i] -= land_bc.infiltration_volume[i]
+            end
             if land_v.storage[i] < 0.0
                 land_v.error[i] = land_v.error[i] + abs(land_v.storage[i])
                 land_v.storage[i] = 0.0 # set storage to zero
             end
             # Apply surface water infiltration correction if available
-            if land_bc.infiltration_volume[i] > 0.0
-                land_v.storage[i] =
-                    max(0.0, land_v.storage[i] - land_bc.infiltration_volume[i])
-            end
             land_v.h[i] = land_v.storage[i] / (x_length[i] * y_length[i])
         end
     end
@@ -1370,19 +1368,16 @@ Update overland flow water level and storage for LocalInertialOverlandFlow model
 surface water infiltration. For local inertial flow, the infiltration is applied by updating
 the boundary conditions which are then used in the water depth update function.
 """
-function correct_overland_flow_level!(
-    model::SbmSoilModel,
-    overland_flow::LocalInertialOverlandFlowModel,
+function update_overland_flow_and_depth!(
+    overland_flow_model::LocalInertialOverlandFlowModel,
+    soil_model::SbmSoilModel,
     domain::Domain,
-    config::Config,
 )
-    (; infilt_surfacewater) = model.variables
+    (; infilt_surfacewater) = soil_model.variables
     (; area) = domain.land.parameters
 
-    if config.model.reinfiltration_surfacewater__flag
-        # Update the boundary condition for surface water infiltration
-        # This will be used in local_inertial_update_water_depth!
-        overland_flow.boundary_conditions.infiltration_volume .=
-            infilt_surfacewater .* area .* 0.001
-    end
+    # Update the boundary condition for surface water infiltration
+    # This will be used in local_inertial_update_water_depth!
+    overland_flow_model.boundary_conditions.infiltration_volume .=
+        infilt_surfacewater .* area .* 0.001
 end

@@ -299,7 +299,7 @@ end
     config = Wflow.Config(;
         model = Wflow.ModelSection(;
             type = Wflow.ModelType.sbm,
-            reinfiltration_surfacewater__flag = false,
+            land_surface_water_reinfiltration__flag = false,
         ),
         input = Wflow.InputSection(;
             path_forcing = "",
