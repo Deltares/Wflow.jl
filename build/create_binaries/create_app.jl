@@ -1,6 +1,5 @@
 using PackageCompiler
 using TOML
-using LibGit2
 using Pkg
 using LicenseCheck
 
