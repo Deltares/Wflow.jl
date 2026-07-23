@@ -1,4 +1,3 @@
-
 "Map from PCRaster LDD value to a CartesianIndex"
 const PCR_DIR = [
     CartesianIndex(-1, -1),  # 1

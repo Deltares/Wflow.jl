@@ -1,4 +1,40 @@
 {
+  "atmosphere_bottom_air__above_ground_height": {
+    "unit": "m",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Land surface \"skin\" layer height above the ground",
+    "allow_missing": false,
+    "allow_dynamic_input": true
+  },
+  "atmosphere_bottom_air_flow__roughness_length": {
+    "unit": "m",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Land surface aerodynamic roughness length for momentum transfer",
+    "allow_missing": false,
+    "allow_dynamic_input": true
+  },
+  "atmosphere_bottom_air_flow__zero_plane_displacement_length": {
+    "unit": "m",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Zero-place displacement height",
+    "allow_missing": false,
+    "allow_dynamic_input": true
+  },
+  "atmosphere_bottom_air_heat_flow__roughness_length": {
+    "unit": "m",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Land surface aerodynamic roughness length for heat transfer",
+    "allow_missing": false,
+    "allow_dynamic_input": true
+  },
   "basin__local_drain_direction": {
     "unit": "-",
     "default": null,
@@ -16,6 +52,15 @@
     "description": "Pit location mask",
     "allow_missing": false,
     "allow_dynamic_input": false
+  },
+  "land_surface__albedo": {
+    "unit": "-",
+    "default": 0.2,
+    "fill": null,
+    "type": "Float64",
+    "description": "Land surface albedo",
+    "allow_missing": false,
+    "allow_dynamic_input": true
   },
   "land_water_allocation_area__count": {
     "unit": "-",
