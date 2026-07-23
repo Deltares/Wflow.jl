@@ -1,0 +1,7 @@
+[core]
+    remote = wflow-testdata
+
+['remote "wflow-testdata"']
+    url = s3://wflow/testdata
+    endpointurl = https://s3.deltares.nl/
+    region = eu-west-1
