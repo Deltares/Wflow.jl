@@ -12,7 +12,7 @@
     z0h = 0.1 * z0m
 
     latent_heat_of_vaporization = Wflow.compute_latent_heat_of_vaporization(temperature)
-    latent_heat_flux = Wflow.compute_latent_heat_flux(temperature, actevap, dt)
+    latent_heat_flux = Wflow.compute_latent_heat_flux(temperature, actevap)
     sensible_heat_flux = Wflow.compute_sensible_heat_flux(net_radiation, latent_heat_flux)
     aerodynamic_resistance = Wflow.compute_aerodynamic_resistance(
         wind_speed,
