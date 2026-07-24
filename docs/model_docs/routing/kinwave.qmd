@@ -76,6 +76,32 @@ kinematic_wave__adaptive_time_step_flag = true    # optional, default is false
 [Reservoir](./reservoirs.qmd) models representing reservoirs, (natural) lakes or other water
 storage features can be included as part of the river kinematic wave network.
 
+## Floodplain routing
+It is possible to include a [floodplain
+schematization](./staggered-grid.qmd#floodplain-schematization) as part of the kinematic
+wave river flow routing, using the following setting in the TOML file:
+
+```toml
+[model]
+floodplain_1d__flag = true  # include 1D floodplain schematization (default = false)
+```
+
+At the start of each time step, channel-floodplain water exchange, assumed to be
+instantaneous, is computed based on total water volume and the channel storage capacity. The
+exchange is added to the lateral inflow term of the kinematic wave equation. Routing is done
+separately for the river channel and floodplain. Floodplain water is routed down slope using
+the `accucapacityflux` function with a transport capacity based on Manning's equation:
+
+$$
+Q_{t+\Delta t} = n^{-1} R_t^{2/3} \sqrt{c_\mathrm{floodplain\ slope}} A_t
+$$
+
+where $\SIb{Q_{t+\Delta t}}{m^3\ s^{-1}}$ is the floodplain flow at time step $t+\Delta t$,
+$\SIb{n}{m^{-\frac{1}{3}}\ s}$ is the Manning's roughness coefficient, $\SIb{R_t}{m}$ is the
+hydraulic radius at the previous time step,  $c_\mathrm{floodplain\ slope}$ is the
+floodplain bed slope and $\SIb{A_t}{m^2}$ is the cross sectional flow area at the previous
+time step.
+
 ## External inflows
 External inflows $\SIb{}{m^3\ s^{-1}}$ for example water supply or abstractions can be added
 to the kinematic wave for river flow routing, as a static or cyclic parameter or as part of

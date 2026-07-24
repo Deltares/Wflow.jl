@@ -1,4 +1,13 @@
 {
+  "floodplain__slope": {
+    "unit": "m m-1",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Floodplain slope",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
   "floodplain_water__depth": {
     "unit": "m",
     "default": null,
@@ -689,15 +698,6 @@
     "fill": null,
     "type": "Float64",
     "description": "Subsurface flow",
-    "allow_missing": false,
-    "allow_dynamic_input": false
-  },
-  "subsurface_water__specific_yield": {
-    "unit": "-",
-    "default": null,
-    "fill": null,
-    "type": "Float64",
-    "description": "Specific yield",
     "allow_missing": false,
     "allow_dynamic_input": false
   },

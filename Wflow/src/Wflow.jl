@@ -65,8 +65,8 @@ using Polyester: @batch
 using ProgressLogging: @progress
 using PropertyDicts: PropertyDict
 using StaticArrays: SVector, pushfirst, setindex
-using Statistics: mean, median, quantile!, quantile
-using TerminalLoggers
+using Statistics: mean, median, quantile!
+using TerminalLoggers: TerminalLogger
 using TOML: TOML
 
 const CFDataset = Union{NCDataset, NCDatasets.MFDataset}
@@ -75,6 +75,8 @@ const VERSION =
     VersionNumber(TOML.parsefile(joinpath(@__DIR__, "..", "Project.toml"))["version"])
 
 const GRAVITATIONAL_ACCELERATION = 9.80665 # m s⁻²
+# local drain direction pit [-]
+const LDD_PIT = 5
 
 mutable struct Clock{T}
     time::T
@@ -139,7 +141,7 @@ include("routing/routing.jl")
 include("domain.jl")
 
 """
-    Model{R <: Routing, L <: AbstractLandModel, M <: AbstractMassBalance, T <: AbstractModelType} <: AbstractModel{T}
+    Model{R <: Routing, L <: AbstractLandModel, M <: AbstractMassBalance, W <: Writer, T <: AbstractModelType} <: AbstractModel{T}
 
 Composite type that represents all different aspects of a Wflow Model, such as the network,
 parameters, clock, configuration and input and output.
@@ -209,8 +211,10 @@ include("routing/subsurface/lateral_subsurface_flow.jl")
 include("routing/subsurface/subsurface_process.jl")
 include("routing/subsurface/boundary_conditions.jl")
 include("routing/surface/reservoir.jl")
+include("routing/surface/floodplain.jl")
+include("routing/surface/surface_flow.jl")
 include("routing/surface/surface_kinwave.jl")
-include("routing/surface/surface_local_inertial.jl")
+include("routing/surface/surface_staggered_scheme.jl")
 include("routing/surface/surface_routing.jl")
 include("routing/surface/surface_process.jl")
 include("demand/water_demand.jl")
@@ -238,10 +242,10 @@ include("standard_name/standard_name_sbm.jl")
 include("standard_name/standard_name_sediment.jl")
 
 const STANDARD_NAME_MAPS = (
-    ("sbm", Wflow.sbm_standard_name_map, LandHydrologySBM),
-    ("sediment", Wflow.sediment_standard_name_map, SoilLossModel),
-    ("domain", Wflow.domain_standard_name_map, Domain),
-    ("routing", Wflow.routing_standard_name_map, Routing),
+    ("sbm", sbm_standard_name_map, LandHydrologySBM),
+    ("sediment", sediment_standard_name_map, SoilLossModel),
+    ("domain", domain_standard_name_map, Domain),
+    ("routing", routing_standard_name_map, Routing),
 )
 
 include("utils.jl")

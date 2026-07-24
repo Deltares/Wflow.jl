@@ -70,6 +70,25 @@ generate_table(Wflow.Routing, :kinematic_wave_river_state; relative_widths = [3,
 generate_table(Wflow.Routing, :kinematic_wave_river_output; relative_widths = [3, 3, 1, 1, 2])
 ```
 
+### 1D floodplain flow
+#### Input
+```{julia}
+# | code-fold: true
+generate_table(Wflow.Routing, :kinematic_wave_floodplain_1D_flow_input; relative_widths = [6, 4, 2, 2, 2, 2])
+```
+
+#### States
+```{julia}
+# | code-fold: true
+generate_table(Wflow.Routing, :kinematic_wave_floodplain_1D_flow_state; relative_widths = [3, 3, 1, 1, 2])
+```
+
+#### Output
+```{julia}
+# | code-fold: true
+generate_table(Wflow.Routing, :kinematic_wave_floodplain_1D_flow_output; relative_widths = [3, 3, 1, 1, 2])
+```
+
 ### Overland flow
 #### Input
 ```{julia}
@@ -108,52 +127,55 @@ generate_table(Wflow.Routing, :kinematic_lateral_subsurface_state; relative_widt
 generate_table(Wflow.Routing, :kinematic_lateral_subsurface_output; relative_widths = [3, 3, 1, 1, 2])
 ```
 
-## Local inertial
+## Staggered grid
+River and floodplain flow routing on a staggered grid make use of the local inertial or
+Manning's equation.
+
 ### River flow
 #### Input
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.Routing, :local_inertial_river_input; relative_widths = [6, 4, 2, 2, 2, 2])
+generate_table(Wflow.Routing, :staggered_grid_river_input; relative_widths = [6, 4, 2, 2, 2, 2])
 ```
 
 #### Static or cyclic/forcing input
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.Routing, :local_inertial_river_static_cyclic_forcing_input; relative_widths = [6, 4, 2, 2, 2, 2])
+generate_table(Wflow.Routing, :staggered_grid_river_static_cyclic_forcing_input; relative_widths = [6, 4, 2, 2, 2, 2])
 ```
 
 #### States
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.Routing, :local_inertial_river_state; relative_widths = [3, 3, 1, 1, 2])
+generate_table(Wflow.Routing, :staggered_grid_river_state; relative_widths = [3, 3, 1, 1, 2])
 ```
 
 #### Output
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.Routing, :local_inertial_river_output; relative_widths = [3, 3, 1, 1, 2])
+generate_table(Wflow.Routing, :staggered_grid_river_output; relative_widths = [3, 3, 1, 1, 2])
 ```
 
 ### 1D floodplain flow
 #### Input
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.Routing, :local_inertial_floodplain_1D_flow_input; relative_widths = [6, 4, 2, 2, 2, 2])
+generate_table(Wflow.Routing, :staggered_grid_floodplain_1D_flow_input; relative_widths = [6, 4, 2, 2, 2, 2])
 ```
 
 #### States
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.Routing, :local_inertial_floodplain_1D_flow_state; relative_widths = [3, 3, 1, 1, 2])
+generate_table(Wflow.Routing, :staggered_grid_floodplain_1D_flow_state; relative_widths = [3, 3, 1, 1, 2])
 ```
 
 #### Output
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.Routing, :local_inertial_floodplain_1D_flow_output; relative_widths = [3, 3, 1, 1, 2])
+generate_table(Wflow.Routing, :staggered_grid_floodplain_1D_flow_output; relative_widths = [3, 3, 1, 1, 2])
 ```
 
-### Overland flow
+### Local inertial overland flow (2D)
 #### Input
 ```{julia}
 # | code-fold: true

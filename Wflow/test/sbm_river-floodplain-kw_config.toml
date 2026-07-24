@@ -5,7 +5,6 @@
 
 dir_input = "data/input"
 dir_output = "data/output"
-wflow_version = "1.1"
 
 [logging]
 loglevel = "info"
@@ -37,6 +36,7 @@ snowpack_liquid_water__depth = "snowwater"
 river_water__depth = "h_river"
 river_water__instantaneous_volume_flow_rate = "q_river"
 
+floodplain_water__volume = "storage_floodplain"
 reservoir_water_surface__elevation = "waterlevel_reservoir"
 
 subsurface_water__instantaneous_volume_flow_rate = "ssf"
@@ -94,6 +94,8 @@ river__slope = "RiverSlope"
 river__width = "wflow_riverwidth"
 river_bank_water__depth = "RiverDepth"
 river_bank_water__elevation = "RiverZ"
+floodplain__slope = "RiverSlope"
+floodplain_water__sum_of_volume_per_depth = "floodplain_volume"
 
 land_surface_water_flow__manning_n_parameter = "N"
 land_surface__slope = "Slope"
@@ -121,6 +123,7 @@ offset = 0.0
 
 [model]
 kinematic_wave__adaptive_time_step_flag = true
+floodplain_1d__flag = true
 snow_gravitational_transport__flag = true
 cold_start__flag = true
 reservoir__flag = true
@@ -146,8 +149,6 @@ subsurface_water__volume_flow_rate = "ssf_av"
 land_surface_water__volume_flow_rate = "q_av_land"
 land_surface_water__depth = "h_land"
 land.interception.variables.canopy_storage = "canopystorage"
-land_surface_water__to_river_volume_flow_rate = "q_land_to_river"
-subsurface_water__to_river_volume_flow_rate = "ssf_to_river"
 
 [output.netcdf_scalar]
 path = "output_scalar_moselle.nc"

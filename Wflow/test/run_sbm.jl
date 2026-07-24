@@ -19,26 +19,26 @@
         row = csv_first_row(model.writer.csv_writer.output_path)
 
         @test row.time == DateTime("2000-01-02T00:00:00")
-        @test row.Q ≈ 6.504946776799171
+        @test row.Q ≈ 6.51896457078291
         @test row.storage ≈ 2.753500258633802e7
         @test row.temp_bycoord ≈ 2.390000104904175
         @test row.vwc_layer2_bycoord ≈ 0.25938707367146907
         @test row.temp_byindex ≈ 2.390000104904175
-        @test row.Q_6336050 ≈ 0.0031759508929959544
-        @test row.Q_6336510 ≈ 0.01278682587610146
-        @test row.Q_6836100 ≈ 0.008741053540441504
-        @test row.Q_6336500 ≈ 0.002406203339582039
-        @test row.Q_6836190 ≈ 0.0025349488458642046
-        @test row.Q_6336800 ≈ 0.004368075580441462
-        @test row.Q_6336900 ≈ 0.003934294374817718
-        @test row.Q_6336930 ≈ 0.01381216902016
-        @test row.Q_6336910 ≈ 0.0030740079361179225
-        @test row.Q_6136500 ≈ 0.00043545328783658126
-        @test row.Q_6136520 ≈ 0.000412024150923924
-        @test row.Q_6136150 ≈ 0.0029661013246156565
-        @test row.Q_6136151 ≈ 0.0027847974999332813
-        @test row.Q_6136160 ≈ 3.154622606318124
-        @test row.Q_6136202 ≈ 1.1754540303915215
+        @test row.Q_6336050 ≈ 0.0031759377363730205
+        @test row.Q_6336510 ≈ 0.012786790324738775
+        @test row.Q_6836100 ≈ 0.008741032056925667
+        @test row.Q_6336500 ≈ 0.002406190146911565
+        @test row.Q_6836190 ≈ 0.0025349458471960987
+        @test row.Q_6336800 ≈ 0.004368063187329026
+        @test row.Q_6336900 ≈ 0.003934285102643289
+        @test row.Q_6336930 ≈ 0.013812122830226762
+        @test row.Q_6336910 ≈ 0.003073989979752312
+        @test row.Q_6136500 ≈ 0.0004354507864599342
+        @test row.Q_6136520 ≈ 0.0004120202318992052
+        @test row.Q_6136150 ≈ 0.002966089426294981
+        @test row.Q_6136151 ≈ 0.0027847862794023407
+        @test row.Q_6136160 ≈ 3.168783298511726
+        @test row.Q_6136202 ≈ 1.180248354149892
         @test row.recharge_1 ≈ -0.002257181032501202
     end
 
@@ -46,32 +46,48 @@
         ds = model.writer.scalar_writer.output_dataset
         @test ds["time"][1] == DateTime("2000-01-02T00:00:00")
         @test ds["Q"][:][1:20] ≈ [
-            0.6442139,
-            1.6144257,
-            1.6131837,
-            1.5442443,
-            12.546244,
-            4.767698,
-            0.09143856,
-            4.166856,
-            0.010489026,
-            5.6183286,
-            5.608439,
-            0.0059947344,
-            0.0066055492,
+            0.6467097,
+            1.6202765,
+            1.6190344,
+            1.5443956,
+            12.574552,
+            4.7676983,
+            0.091438554,
+            4.17581,
+            0.010489009,
+            5.637136,
+            5.627238,
+            0.005994721,
+            0.00660555,
             0.0063990145,
-            0.004162496,
-            1.2043678,
-            0.0022157491,
-            1.7636175,
-            7.7863965,
-            2.709964,
+            0.004162501,
+            1.204368,
+            0.002215743,
+            1.76471,
+            7.812117,
+            2.7111123,
         ]
         @test ds["river_gauge__count"].attrib["cf_role"] == "timeseries_id"
         @test ds["temp_index"][:] ≈ [2.39]
         @test ds["temp_coord"][:] ≈ [2.39]
         @test keys(ds.dim) ==
               ["time", "layer", "river_gauge__count", "temp_bycoord", "temp_byindex"]
+    end
+
+    @testset "NetCDF grid output" begin
+        ds = model.writer.grid_writer.output_dataset
+        land_inds = model.domain.land.network.indices
+        river_inds = model.domain.river.network.indices
+        reservoir_inds = model.domain.reservoir.network.indices_outlet
+        @test ds["time"][1] == DateTime("2000-01-02T00:00:00")
+        @test mean(ds["ustorelayerdepth"][land_inds, 1, 1]) ≈ 1.6280833
+        @test mean(ds["satwaterdepth"][land_inds, 1]) ≈ 428.79132
+        @test mean(ds["snow"][land_inds, 1]) ≈ 0.038019713
+        @test mean(ds["q_av_land"][land_inds, 1]) ≈ 0.00066952046f0
+        @test mean(ds["q_land_to_river"][land_inds, 1]) ≈ 7.3739284f-5
+        @test mean(ds["ssf_to_river"][land_inds, 1]) ≈ 83.955956
+        @test mean(ds["storage_reservoir"][reservoir_inds, 1]) ≈ 3.700436e7
+        @test mean(ds["q_av_river"][river_inds, 1]) ≈ 0.14963673f0
     end
 
     @testset "First timestep: interception" begin
@@ -165,7 +181,7 @@
         (; soil) = model.land
 
         @test soil.variables.total_storage[50063] ≈ 0.559886196102425
-        @test soil.variables.total_storage[429] ≈ 0.5989948259600009 # river cell
+        @test soil.variables.total_storage[429] ≈ 0.5990190440335157 # river cell
         @test soil.parameters.theta_s[50063] ≈ 0.48755401372909546
         @test soil.parameters.theta_r[50063] ≈ 0.15943120419979095
 
@@ -338,18 +354,18 @@
         )
         @test test_means(
             overland_flow.variables,
-            Dict(:to_river_average => 7.2848055222914435e-5),
+            Dict(:to_river_average => 7.373928060045205e-5),
         )
         @test test_means(
-            overland_flow.variables.flow,
+            overland_flow.variables,
             Dict(
-                :qin => 0.00089086351171593122,
-                :storage => 16.914628942221,
-                :h => 2.969784057393903e-5,
-                :qin_average => 0.00059166067952359249,
+                :qin => 0.0008814607677874327,
+                :storage => 16.837627069604082,
+                :h => 2.9564322924558242e-5,
+                :qin_average => 0.0005957811072624188,
                 :qlat => 2.6373852250863608e-7,
-                :q => 0.0010160565843809637,
-                :q_average => 0.00066450873474650687,
+                :q => 0.00100502725590832,
+                :q_average => 0.0006695203878628707,
             ),
         )
     end
@@ -363,7 +379,7 @@
                 :actual_external_abstraction_average => 0.0,
                 :external_inflow => 0.0,
                 :abstraction => 0.0,
-                :inwater => 0.010231632451838139,
+                :inwater => 0.010239313191393264,
             ),
         )
         @test test_means(river_flow.parameters, Dict(:bankfull_depth => 1.1024306883272645))
@@ -379,13 +395,13 @@
         @test test_means(
             river_flow.variables,
             Dict(
-                :qin => 0.29084047475454816,
-                :storage => 931.35597624692161,
-                :h => 0.019029209285808049,
-                :qin_average => 0.14990440354072712,
-                :qlat => 1.7628453567888727e-5,
-                :q => 0.29029797394167772,
-                :q_average => 0.14935645293415184,
+                :qin => 0.2913807867319717,
+                :storage => 932.0195935401414,
+                :h => 0.019042263781528044,
+                :qin_average => 0.15018463203103016,
+                :qlat => 1.764678335118554e-5,
+                :q => 0.29083828590983446,
+                :q_average => 0.14963668140831687,
             ),
         )
     end
@@ -449,7 +465,7 @@
         @test soil.parameters.theta_r[50063] ≈ 0.15943120419979095
         # Total storage is affected by all modules, not just soil
         @test soil.variables.total_storage[50063] ≈ 0.5599633189802773
-        @test soil.variables.total_storage[429] ≈ 0.6209840187839495  # river cell
+        @test soil.variables.total_storage[429] ≈ 0.6209711860794906  # river cell
 
         @test test_means(
             soil.variables,
@@ -538,35 +554,35 @@
         )
         @test test_means(
             overland_flow.variables,
-            Dict(:to_river_average => 0.00064316539719498872),
+            Dict(:to_river_average => 0.0006441014921670179),
         )
         @test test_means(
-            overland_flow.variables.flow,
+            overland_flow.variables,
             Dict(
-                :qin => 0.0069527815375203259,
-                :storage => 88.41912734612589,
-                :h => 0.00015596174801490019,
-                :qin_average => 0.0047461547800561193,
+                :qin => 0.006930522031750806,
+                :storage => 88.26124686793727,
+                :h => 0.00015568220380452697,
+                :qin_average => 0.004748233266248948,
                 :qlat => 1.6550140762075119e-6,
-                :q => 0.0080249579262317433,
-                :q_average => 0.0053893201772511092,
+                :q => 0.007997645265035764,
+                :q_average => 0.005392334758415966,
             ),
         )
     end
 
     @testset "river flow" begin
         q = model.routing.river_flow.variables.q_average
-        @test sum(q) ≈ 3684.854129413533
-        @test q[1622] ≈ 0.0007502630570895369
-        @test q[43] ≈ 11.640174323692957
-        @test q[domain.river.network.order[end]] ≈ 0.0439768293838379
+        @test sum(q) ≈ 3689.112809015297
+        @test q[1622] ≈ 0.0007502647238607093
+        @test q[43] ≈ 11.647181706571427
+        @test q[domain.river.network.order[end]] ≈ 0.04397674649145891
     end
 
     @testset "reservoir simple" begin
         res = model.routing.river_flow.boundary_conditions.reservoir
         @test res.variables.outflow[1] ≈ 0.2174998614438593
         @test res.variables.outflow_average[1] ≈ 0.21749986282401396
-        @test res.boundary_conditions.inflow_average[1] ≈ 0.0005130587586065603
+        @test res.boundary_conditions.inflow_average[1] ≈ 0.0005130587928021776
         @test res.variables.storage[1] ≈ 2.751299001489657f7
         @test res.variables.actevap_cumulative[1] ≈ 0.00054000002145767148
         @test res.boundary_conditions.precipitation[1] ≈ 2.0833334161175625e-9
@@ -632,8 +648,8 @@ end
         q = model.routing.river_flow.variables.q_average
         @test q[4009] ≈ 8.426693946008998 # pit/ outlet, CartesianIndex(141, 228)
         @test q[4020] ≈ 0.006370691658310787 # downstream of pit 4009, CartesianIndex(141, 229)
-        @test q[2508] ≈ 131.41737804497976 # pit/ outlet
-        @test q[5808] ≈ 0.11941506934556971  # pit/ outlet
+        @test q[2508] ≈ 131.40633771165267 # pit/ outlet
+        @test q[5808] ≈ 0.11941506348341313  # pit/ outlet
     end
 end
 
@@ -695,10 +711,10 @@ end
         @test model.routing.river_flow.boundary_conditions.external_inflow[44] ≈ 0.75
         @test model.routing.river_flow.boundary_conditions.actual_external_abstraction_average[44] ==
               0.0
-        @test model.routing.river_flow.variables.q_average[44] ≈ 10.365364897089025
+        @test model.routing.river_flow.variables.q_average[44] ≈ 10.368564006862416
         @test reservoir.boundary_conditions.external_inflow[2] == -1.0
         @test reservoir.boundary_conditions.actual_external_abstraction_average[2] == 1.0
-        @test reservoir.boundary_conditions.inflow_average[2] ≈ -0.9054042537978068
+        @test reservoir.boundary_conditions.inflow_average[2] ≈ -0.9054043739531411
         @test reservoir.variables.outflow_average[2] ≈ 3.000999922024245
     end
 end
@@ -720,10 +736,10 @@ end
         @test model.routing.river_flow.boundary_conditions.external_inflow[44] ≈ 0.75
         @test model.routing.river_flow.boundary_conditions.actual_external_abstraction_average[44] ==
               0.0
-        @test model.routing.river_flow.variables.q_average[44] ≈ 10.326210164434384
+        @test model.routing.river_flow.variables.q_average[44] ≈ 10.329420603096422
         @test reservoir.boundary_conditions.external_inflow[2] == -1.0
         @test reservoir.boundary_conditions.actual_external_abstraction_average[2] == 1.0
-        @test reservoir.boundary_conditions.inflow_average[2] ≈ -0.9090852656640709
+        @test reservoir.boundary_conditions.inflow_average[2] ≈ -0.9090844053547061
         @test reservoir.variables.outflow_average[2] ≈ 3.000999922022744
     end
 end
@@ -740,15 +756,15 @@ end
     (; q_average) = model.routing.river_flow.variables
     @testset "river external negative inflow" begin
         Wflow.run_timestep!(model)
-        @test actual_external_abstraction_average[44] ≈ 1.4800592763999205
-        @test q_average[44] ≈ 1.2991010772732907
+        @test actual_external_abstraction_average[44] ≈ 1.4838702261318804
+        @test q_average[44] ≈ 1.3048021595466355
         Wflow.run_timestep!(model)
-        @test actual_external_abstraction_average[44] ≈ 5.508048289592481
-        @test q_average[44] ≈ 4.123510065449319
+        @test actual_external_abstraction_average[44] ≈ 5.5146539321673576
+        @test q_average[44] ≈ 4.122849673086071
         Wflow.run_timestep!(model)
-        @test actual_external_abstraction_average[44] ≈ 9.768965817241988
+        @test actual_external_abstraction_average[44] ≈ 9.765747847574119
         @test external_inflow[44] == -10.0
-        @test q_average[44] ≈ 7.295339106606841
+        @test q_average[44] ≈ 7.287100612499896
     end
 end
 
@@ -799,14 +815,14 @@ end
 
     @testset "river flow and depth (local inertial)" begin
         q = model.routing.river_flow.variables.q_average
-        @test sum(q) ≈ 3674.9826484892055
-        @test q[1622] ≈ 7.266165539770211e-5
-        @test q[43] ≈ 11.412913790413869
-        @test q[501] ≈ 2.7237177111088933
+        @test sum(q) ≈ 3679.798964503519
+        @test q[1622] ≈ 7.309368394797505e-5
+        @test q[43] ≈ 11.420249198908577
+        @test q[501] ≈ 2.745661280608689
         h = model.routing.river_flow.variables.h
-        @test h[1622] ≈ 0.0019132839771304254
-        @test h[43] ≈ 0.4517927241864443
-        @test h[501] ≈ 0.3736919888456138
+        @test h[1622] ≈ 0.00191717249843822
+        @test h[43] ≈ 0.45188988413698933
+        @test h[501] ≈ 0.3743096620425691
         q_channel = model.routing.river_flow.variables.q_channel_average
         @test q ≈ q_channel
     end
@@ -823,15 +839,15 @@ end
     (; q_average) = model.routing.river_flow.variables
     @testset "river external negative inflow (local inertial)" begin
         Wflow.run_timestep!(model)
-        @test actual_external_abstraction_average[44] ≈ 2.7605062760705117
-        @test q_average[44] ≈ 0.0007404199646763214
+        @test actual_external_abstraction_average[44] ≈ 2.7708423834202285
+        @test q_average[44] ≈ 0.000741442481132122
         Wflow.run_timestep!(model)
-        @test actual_external_abstraction_average[44] ≈ 9.632823305808886
-        @test q_average[44] ≈ 0.008032294694728919
+        @test actual_external_abstraction_average[44] ≈ 9.635951726338709
+        @test q_average[44] ≈ 0.007875054990103231
         Wflow.run_timestep!(model)
         @test actual_external_abstraction_average[44] ≈ 9.999999999999991
         @test external_inflow[44] == -10.0
-        @test q_average[44] ≈ 6.944679106931151
+        @test q_average[44] ≈ 6.93559317803526
     end
     Wflow.close_files(model; delete_output = false)
 end
@@ -866,7 +882,7 @@ end
 end
 
 @testitem "Local-inertial option for river flow including 1D floodplain schematization" begin
-    tomlpath = joinpath(@__DIR__, "sbm_river-floodplain-local-inertial_config.toml")
+    tomlpath = joinpath(@__DIR__, "sbm_river-floodplain-staggered-scheme_config.toml")
     config = Wflow.Config(tomlpath)
     config.dir_output = mktempdir()
     model = Wflow.Model(config)
@@ -880,8 +896,9 @@ end
 
     @testset "river flow (local inertial) floodplain schematization" begin
         # floodplain geometry checks (index 3)
-        @test profile.storage[:, 3] ≈ [0.0, 8641.0, 19011.0, 31685.0, 51848.0, 80653.0]
-        @test profile.width[:, 3] ≈ [
+        idx = 3
+        @test profile.storage[:, idx] ≈ [0.0, 8641.0, 19011.0, 31685.0, 51848.0, 80653.0]
+        @test profile.width[:, idx] ≈ [
             30.0,
             99.28617594254938,
             119.15260323159785,
@@ -889,7 +906,7 @@ end
             231.6754039497307,
             330.9730700179533,
         ]
-        @test profile.wetted_perimeter[:, 3] ≈ [
+        @test profile.wetted_perimeter[:, idx] ≈ [
             69.28617594254938,
             70.28617594254938,
             91.15260323159785,
@@ -897,7 +914,7 @@ end
             205.6754039497307,
             305.9730700179533,
         ]
-        @test profile.flow_area[:, 3] ≈ [
+        @test profile.flow_area[:, idx] ≈ [
             0.0,
             49.64308797127469,
             109.21938958707361,
@@ -905,116 +922,63 @@ end
             297.8700179533214,
             463.35655296229805,
         ]
-        @test dh .* profile.width[2:end, 3] * flow_length[3] ≈ Δv
-        @test profile.flow_area[:, 3] * flow_length[3] ≈ profile.storage[:, 3]
+        @test dh .* profile.width[2:end, idx] * flow_length[idx] ≈ Δv
+        @test profile.flow_area[:, 3] * flow_length[idx] ≈ profile.storage[:, idx]
         # flood depth from flood storage (8000.0)
         flood_vol = 8000.0
-        river_flow.variables.storage[3] =
-            flood_vol + river_flow.parameters.bankfull_storage[3]
-        i1, i2 = Wflow.interpolation_indices(flood_vol, profile.storage[:, 3])
+        river_flow.variables.storage[idx] =
+            flood_vol + river_flow.parameters.bankfull_storage[idx]
+        i1, i2 = Wflow.interpolation_indices(flood_vol, profile.storage[:, idx])
         @test (i1, i2) == (1, 2)
-        flood_depth = Wflow.flood_depth(profile, flood_vol, flow_length[3], 3)
+        flood_depth = Wflow.compute_flood_depth(profile, flood_vol, flow_length[idx], idx)
         @test flood_depth ≈ 0.46290938548779076
-        @test (flood_depth - profile.depth[i1]) * profile.width[i2, 3] * flow_length[3] +
-              profile.storage[i1, 3] ≈ flood_vol
+        @test (flood_depth - profile.depth[i1]) *
+              profile.width[i2, idx] *
+              flow_length[idx] + profile.storage[i1, idx] ≈ flood_vol
         # flood depth from flood storage (12000.0)
         flood_vol = 12000.0
-        river_flow.variables.storage[3] =
-            flood_vol + river_flow.parameters.bankfull_storage[3]
-        i1, i2 = Wflow.interpolation_indices(flood_vol, profile.storage[:, 3])
-        @test (i1, i2) == (2, 3)
-        flood_depth = Wflow.flood_depth(profile, flood_vol, flow_length[3], 3)
+        river_flow.variables.storage[idx] =
+            flood_vol + river_flow.parameters.bankfull_storage[idx]
+        i1, i2 = Wflow.interpolation_indices(flood_vol, profile.storage[:, idx])
+        @test (i1, i2) == (2, idx)
+        flood_depth = Wflow.compute_flood_depth(profile, flood_vol, flow_length[idx], idx)
         @test flood_depth ≈ 0.6619575699132112
-        @test (flood_depth - profile.depth[i1]) * profile.width[i2, 3] * flow_length[3] +
-              profile.storage[i1, 3] ≈ flood_vol
+        @test (flood_depth - profile.depth[i1]) *
+              profile.width[i2, idx] *
+              flow_length[idx] + profile.storage[i1, idx] ≈ flood_vol
         # test extrapolation of segment
         flood_vol = 95000.0
-        river_flow.variables.storage[3] =
-            flood_vol + river_flow.parameters.bankfull_storage[3]
-        i1, i2 = Wflow.interpolation_indices(flood_vol, profile.storage[:, 3])
+        river_flow.variables.storage[idx] =
+            flood_vol + river_flow.parameters.bankfull_storage[idx]
+        i1, i2 = Wflow.interpolation_indices(flood_vol, profile.storage[:, idx])
         @test (i1, i2) == (6, 6)
-        flood_depth = Wflow.flood_depth(profile, flood_vol, flow_length[3], 3)
+        flood_depth = Wflow.compute_flood_depth(profile, flood_vol, flow_length[idx], idx)
         @test flood_depth ≈ 2.749036625585836
-        @test (flood_depth - profile.depth[i1]) * profile.width[i2, 3] * flow_length[3] +
-              profile.storage[i1, 3] ≈ flood_vol
-        river_flow.variables.storage[3] = 0.0 # reset storage
+        @test (flood_depth - profile.depth[i1]) *
+              profile.width[i2, idx] *
+              flow_length[idx] + profile.storage[i1, idx] ≈ flood_vol
+        river_flow.variables.storage[idx] = 0.0 # reset storage
         # flow area and wetted perimeter based on hf
         h = 0.5
         i1, i2 = Wflow.interpolation_indices(h, profile.depth)
-        @test Wflow.flow_area(
-            profile.width[i2, 3],
-            profile.flow_area[i1, 3],
-            profile.depth[i1],
-            h,
-        ) ≈ 49.64308797127469
-        @test Wflow.wetted_perimeter(
-            profile.wetted_perimeter[i1, 3],
-            profile.depth[i1],
-            h,
-        ) ≈ 70.28617594254938
+        @test Wflow.compute_flood_flow_area(profile, h, idx, i1, i2) ≈ 49.64308797127469
+        @test Wflow.compute_wetted_perimeter(profile, h, idx, i1) ≈ 70.28617594254938
         h = 1.5
         i1, i2 = Wflow.interpolation_indices(h, profile.depth)
-        @test Wflow.flow_area(
-            profile.width[i2, 3],
-            profile.flow_area[i1, 3],
-            profile.depth[i1],
-            h,
-        ) ≈ 182.032315978456
-        @test Wflow.wetted_perimeter(
-            profile.wetted_perimeter[i1, 3],
-            profile.depth[i1],
-            h,
-        ) ≈ 118.62585278276481
+        @test Wflow.compute_flood_flow_area(profile, h, idx, i1, i2) ≈ 182.032315978456
+        @test Wflow.compute_wetted_perimeter(profile, h, idx, i1) ≈ 118.62585278276481
         h = 1.7
         i1, i2 = Wflow.interpolation_indices(h, profile.depth)
-        @test Wflow.flow_area(
-            profile.width[i2, 3],
-            profile.flow_area[i1, 3],
-            profile.depth[i1],
-            h,
-        ) ≈ 228.36739676840216
-        @test Wflow.wetted_perimeter(
-            profile.wetted_perimeter[i1, 3],
-            profile.depth[i1],
-            h,
-        ) ≈ 119.02585278276482
+        @test Wflow.compute_flood_flow_area(profile, h, idx, i1, i2) ≈ 228.36739676840216
+        @test Wflow.compute_wetted_perimeter(profile, h, idx, i1) ≈ 119.02585278276482
         h = 3.2
         i1, i2 = Wflow.interpolation_indices(h, profile.depth)
-        @test Wflow.flow_area(
-            profile.width[i2, 3],
-            profile.flow_area[i1, 3],
-            profile.depth[i1],
-            h,
-        ) ≈ 695.0377019748654
-        @test Wflow.wetted_perimeter(
-            profile.wetted_perimeter[i1, 3],
-            profile.depth[i1],
-            h,
-        ) ≈ 307.3730700179533
+        @test Wflow.compute_flood_flow_area(profile, h, idx, i1, i2) ≈ 695.0377019748654
+        @test Wflow.compute_wetted_perimeter(profile, h, idx, i1) ≈ 307.3730700179533
         h = 4.0
         i1, i2 = Wflow.interpolation_indices(h, profile.depth)
-        @test Wflow.flow_area(
-            profile.width[i2, 3],
-            profile.flow_area[i1, 3],
-            profile.depth[i1],
-            h,
-        ) ≈ 959.816157989228
-        @test Wflow.wetted_perimeter(
-            profile.wetted_perimeter[i1, 3],
-            profile.depth[i1],
-            h,
-        ) ≈ 308.9730700179533
-        @test Wflow.flow_area(
-            profile.width[i2, 4],
-            profile.flow_area[i1, 4],
-            profile.depth[i1],
-            h,
-        ) ≈ 407.6395313908081
-        @test Wflow.wetted_perimeter(
-            profile.wetted_perimeter[i1, 4],
-            profile.depth[i1],
-            h,
-        ) ≈ 90.11775307900271
+        @test Wflow.compute_flood_flow_area(profile, h, idx, i1, i2) ≈ 959.816157989228
+        @test Wflow.compute_wetted_perimeter(profile, h, idx, i1) ≈ 308.9730700179533
     end
 
     Wflow.run_timestep!(model)
@@ -1022,16 +986,16 @@ end
 
     @testset "river flow (local inertial) with floodplain schematization simulation" begin
         q = model.routing.river_flow.variables.q_average
-        @test sum(q) ≈ 3665.2261366163852
-        @test q[1622] ≈ 7.26616553794276e-5
-        @test q[43] ≈ 11.412913790413914
-        @test q[501] ≈ 2.684242648974844
-        @test q[5808] ≈ 0.00221158569545013
+        @test sum(q) ≈ 3670.0024631822253
+        @test q[1622] ≈ 7.309368402943178e-5
+        @test q[43] ≈ 11.420249198908518
+        @test q[501] ≈ 2.7055936824783817
+        @test q[5808] ≈ 0.00221647711951938
         h = model.routing.river_flow.variables.h
-        @test h[1622] ≈ 0.001913283977158018
-        @test h[43] ≈ 0.45179272418645067
-        @test h[501] ≈ 0.3685482876724819
-        @test h[5808] ≈ 0.007318613650752014
+        @test h[1622] ≈ 0.0019171724983151994
+        @test h[43] ≈ 0.45188988413698994
+        @test h[501] ≈ 0.3691276106163231
+        @test h[5808] ≈ 0.007330355804224263
     end
 
     # set boundary condition local inertial routing from netCDF file
@@ -1043,15 +1007,15 @@ end
 
     @testset "change boundary condition for local inertial routing (including floodplain)" begin
         q = model.routing.river_flow.variables.q_average
-        @test sum(q) ≈ 3665.4127709930654
-        @test q[1622] ≈ 7.26616553794276e-5
-        @test q[43] ≈ 11.412913790413914
-        @test q[501] ≈ 2.684242648974844
-        @test q[5808] ≈ 0.05460501423141849
+        @test sum(q) ≈ 3670.18913777281
+        @test q[1622] ≈ 7.309368402943178e-5
+        @test q[43] ≈ 11.420249198908518
+        @test q[501] ≈ 2.7055936824783817
+        @test q[5808] ≈ 0.05461954982102065
         h = model.routing.river_flow.variables.h
-        @test h[1622] ≈ 0.001913283977158018
-        @test h[43] ≈ 0.45179272418645067
-        @test h[501] ≈ 0.3685482876724819
+        @test h[1622] ≈ 0.0019171724983151994
+        @test h[43] ≈ 0.45188988413698994
+        @test h[501] ≈ 0.3691276106163231
         @test h[5808] ≈ 2.0000269327006985
     end
     Wflow.close_files(model; delete_output = false)
@@ -1194,13 +1158,64 @@ end
             Wflow.run_timestep!(model)
             Wflow.run_timestep!(model)
             q = model.routing.river_flow.variables.q_average
-            @test sum(q) ≈ 3024.5130733315345
-            @test q[1622] ≈ 0.0006987110378921953
-            @test q[43] ≈ 8.767295043872874
+            @test sum(q) ≈ 3029.0096440518732
+            @test q[1622] ≈ 0.0006987143273555755
+            @test q[43] ≈ 8.783121149650151
         end
 
         Wflow.close_files(model; delete_output = false)
     end
+end
+
+@testitem "River flow including 1D floodplain schematization using Manning's equation on a staggered grid" begin
+    tomlpath = joinpath(@__DIR__, "sbm_river-floodplain-staggered-scheme_config.toml")
+    config = Wflow.Config(tomlpath)
+    config.model.river_routing = "manning_staggered"
+    config.dir_output = mktempdir()
+    model = Wflow.Model(config)
+    (; river_flow) = model.routing
+
+    Wflow.run_timestep!(model)
+    Wflow.run_timestep!(model)
+
+    (; q_average, h) = river_flow.variables
+    @test sum(q_average) ≈ 2156.7740284069446
+    @test q_average[1622] ≈ 0.000216893766604954
+    @test q_average[43] ≈ 10.362921270030188
+    @test q_average[501] ≈ 0.021301823784704774
+    @test q_average[5808] ≈ 0.0049185166802011605
+    @test h[1622] ≈ 0.001787783986962345
+    @test h[43] ≈ 1.3195684133779013
+    @test h[501] ≈ 0.005358321292557224
+    @test h[5808] ≈ 0.005888613968265871
+    (; q_average, h) = river_flow.floodplain.variables
+    @test maximum(q_average) ≈ 0.8692896468290046
+    @test maximum(h) ≈ 1.1111707025189723
+end
+
+@testitem "Kinematic river flow including 1D floodplain schematization" begin
+    tomlpath = joinpath(@__DIR__, "sbm_river-floodplain-kw_config.toml")
+    config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
+    model = Wflow.Model(config)
+    (; river_flow) = model.routing
+
+    Wflow.run_timestep!(model)
+    Wflow.run_timestep!(model)
+
+    (; q_average, h) = river_flow.variables
+    @test sum(q_average) ≈ 3664.1750799952056
+    @test q_average[1622] ≈ 0.000750262072108146
+    @test q_average[43] ≈ 11.647181706571397
+    @test q_average[501] ≈ 0.1624521220430912
+    @test q_average[5808] ≈ 0.04397694950619904
+    @test h[1622] ≈ 0.0009790317470641876
+    @test h[43] ≈ 0.16302929690891788
+    @test h[501] ≈ 0.1542630086179196
+    @test h[5808] ≈ 0.005801865652235309
+    (; q_average, h) = river_flow.floodplain.variables
+    @test maximum(q_average) ≈ 0.606783057904105
+    @test maximum(h) ≈ 1.5799312217287604
 end
 
 @testitem "run wflow sbm" begin
@@ -1277,7 +1292,7 @@ end
 end
 
 @testitem "water balance river local inertial routing with floodplain" begin
-    tomlpath = joinpath(@__DIR__, "sbm_river-floodplain-local-inertial_config.toml")
+    tomlpath = joinpath(@__DIR__, "sbm_river-floodplain-staggered-scheme_config.toml")
     config = Wflow.Config(tomlpath)
     config.dir_output = mktempdir()
     config.model.water_mass_balance__flag = true
@@ -1298,6 +1313,53 @@ end
             river_water_balance.error,
         )
         @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
+    end
+    Wflow.close_files(model; delete_output = false)
+end
+
+@testitem "water balance river flow with floodplain using Manning's equation on a staggered grid" begin
+    tomlpath = joinpath(@__DIR__, "sbm_river-floodplain-staggered-scheme_config.toml")
+    config = Wflow.Config(tomlpath)
+    config.model.river_routing = "manning_staggered"
+    config.model.water_mass_balance__flag = true
+    config.dir_output = mktempdir()
+    model = Wflow.Model(config)
+    (; river_water_balance) = model.mass_balance.routing
+    Wflow.run_timestep!(model)
+    @testset "water balance first timestep" begin
+        @test all(e -> abs(e) < 1e-9, river_water_balance.error)
+        @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
+    end
+    Wflow.run_timestep!(model)
+    @testset "water balance second timestep" begin
+        @test all(e -> abs(e) < 0.00012, river_water_balance.error)
+        @test all(re -> abs(re) < 0.33, river_water_balance.relative_error)
+        inds = findall(x -> x > 2.0e-3, model.routing.river_flow.variables.q_average)
+        @test all(e -> abs(e) < 1e-9, river_water_balance.error[inds])
+        @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error[inds])
+    end
+    Wflow.close_files(model; delete_output = false)
+end
+
+@testitem "water balance river kinematic wave routing with floodplain" begin
+    tomlpath = joinpath(@__DIR__, "sbm_river-floodplain-kw_config.toml")
+    config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
+    config.model.water_mass_balance__flag = true
+    model = Wflow.Model(config)
+    (; river_water_balance) = model.mass_balance.routing
+    Wflow.run_timestep!(model)
+    @testset "water balance first timestep" begin
+        @test all(e -> abs(e) < 1e-9, river_water_balance.error)
+        @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
+    end
+    Wflow.run_timestep!(model)
+    @testset "water balance second timestep" begin
+        @test all(e -> abs(e) < 3e-5, river_water_balance.error)
+        @test all(re -> abs(re) < 12.2, river_water_balance.relative_error)
+        inds = findall(x -> x > 1e-3, model.routing.river_flow.variables.q_average)
+        @test all(re -> abs(re) < 1e-9, river_water_balance.error[inds])
+        @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error[inds])
     end
     Wflow.close_files(model; delete_output = false)
 end

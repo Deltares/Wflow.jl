@@ -167,7 +167,7 @@ get_metadata(name::AbstractString, L::Type) = get_standard_name_map(L)[name]
 
 # When no model or model type is specified, search all standard name maps
 get_metadata(name::AbstractString; kwargs...) =
-    get_metadata(name, map(d -> d[3], Wflow.STANDARD_NAME_MAPS)...; kwargs...)
+    get_metadata(name, map(d -> d[3], STANDARD_NAME_MAPS)...; kwargs...)
 
 function get_field_in_model(model, name::AbstractString; check_allow_dynamic_input = false)
     metadata = get_metadata(name; model)

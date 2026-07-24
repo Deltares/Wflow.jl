@@ -47,15 +47,23 @@ end
 
 """
     surface_routing!(
-        model::Model{R}
-    ) where {R <: Routing{<:LocalInertialOverlandFlowModel, <:LocalInertialRiverFlowModel}}
+    model::Model{R},
+) where {
+    R <: Routing{
+        <:OverlandFlowModel{<:LocalInertial},
+        <:RiverFlowModel{<:LocalInertial},
+    },
+}
 
 Run surface routing (land and river) for a model type that contains the routing components
-`LocalInertialOverlandFlowModel` and `LocalInertialRiverFlowModel` for a single timestep.
+`OverlandFlowModel{<:LocalInertial}` and `RiverFlowModel{<:LocalInertial}` for a single
+timestep.
 """
 function surface_routing!(
     model::Model{R},
-) where {R <: Routing{<:LocalInertialOverlandFlowModel, <:LocalInertialRiverFlowModel}}
+) where {
+    R <: Routing{<:OverlandFlowModel{<:LocalInertial}, <:RiverFlowModel{<:LocalInertial}},
+}
     (; routing, land, domain, clock, config) = model
     (; soil, runoff) = land
     (; overland_flow, river_flow, subsurface_flow) = routing

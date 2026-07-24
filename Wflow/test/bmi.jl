@@ -66,7 +66,7 @@
         ) ≈ getindex.(model.land.soil.variables.volumetric_water_content, 2)[1:3]
         var_name = "river_water__instantaneous_volume_flow_rate"
         @test BMI.get_value_at_indices(model, var_name, zeros(3), [1, 100, 5617]) ≈
-              [0.5295678995697858, 7.185077029190254, 0.023139147404872613]
+              [0.5310990487057508, 7.196755768938445, 0.023139100812763765]
         BMI.set_value(
             model,
             "soil_water_saturated_zone_top__depth",

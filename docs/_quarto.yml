@@ -109,7 +109,7 @@ website:
         - text: Routing concepts
           contents:
           - file: model_docs/routing/kinwave.qmd
-          - file: model_docs/routing/local-inertial.qmd
+          - file: model_docs/routing/staggered-grid.qmd
           - file: model_docs/routing/reservoirs.qmd
           - file: model_docs/routing/gwf.qmd
           - file: model_docs/routing/sediment_flux.qmd

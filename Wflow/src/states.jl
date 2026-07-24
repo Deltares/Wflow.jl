@@ -124,9 +124,16 @@ function extract_required_states(config::Config)
     end
 
     # Floodplain states
-    floodplain_states =
-        do_floodplains ?
-        get_states_by_tag(Routing, :local_inertial_floodplain_1D_flow_state) : String[]
+    floodplain_states = if !do_floodplains
+        String[]
+    else
+        if config.model.river_routing == RoutingType.local_inertial ||
+           config.model.river_routing == RoutingType.manning_staggered
+            get_states_by_tag(Routing, :staggered_grid_floodplain_1D_flow_state)
+        else
+            get_states_by_tag(Routing, :kinematic_wave_floodplain_1D_flow_state)
+        end
+    end
 
     # Reservoir states
     reservoir_states =

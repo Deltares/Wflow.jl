@@ -102,7 +102,7 @@ function kinematic_wave_ssf(
     soil::SbmSoilModel,
     i,
 )
-    if q_in + q_prev ≈ 0.0
+    if q_in + q_prev ≈ 0.0 && q_net_bnds <= 0.0
         return 0.0, d, 0.0, 0.0
     else
         # initial estimate
@@ -196,8 +196,8 @@ function kinematic_wave_ssf(
     soil::SbmSoilModel,
     i,
 )
-    if q_in + q_prev ≈ 0.0 && r <= 0.0
-        return 0.0, d, 0.0
+    if q_in + q_prev ≈ 0.0 && q_net_bnds <= 0.0
+        return 0.0, d, 0.0, 0.0
     else
         # initial estimate
         q_ini = (q_prev + q_in) / 2.0

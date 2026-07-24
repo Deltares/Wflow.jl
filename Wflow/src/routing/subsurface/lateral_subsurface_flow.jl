@@ -224,12 +224,9 @@ function kinwave_subsurface_update!(
     (; river) = subsurface_flow_model.boundary_conditions
 
     ns = length(order_of_subdomains)
-    for hydraulic_conductivity in 1:ns
-        threaded_foreach(
-            eachindex(order_of_subdomains[hydraulic_conductivity]);
-            basesize = 1,
-        ) do i
-            m = order_of_subdomains[hydraulic_conductivity][i]
+    for k in 1:ns
+        threaded_foreach(eachindex(order_of_subdomains[k]); basesize = 1) do i
+            m = order_of_subdomains[k][i]
             for (n, v) in zip(subdomain_indices[m], order_subdomain[m])
                 if isnothing(river)
                     # for a river cell without a reservoir part of the upstream subsurface flow

@@ -143,9 +143,11 @@ conductivity_profile = "exponential"  # saturated hydraulic conductivity depth p
 [input.static]
 land_surface__elevation = "wflow_dem"
 subsurface_surface_water__horizontal_saturated_hydraulic_conductivity = "kh_surface"
-subsurface_water__specific_yield = "specific_yield"
 subsurface__horizontal_saturated_hydraulic_conductivity_scale_parameter = "gwf_f"
 ```
+
+Note that specific yield is not an input parameter and depends on the `SBM` `soil` model as
+described previously.
 
 ## Constant head
 For model type `sbm_gwf` Dirichlet boundary conditions can be specified (optional) in the

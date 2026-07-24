@@ -309,6 +309,12 @@ function from_SI(x::AbstractFloat, unit::Unit; kwargs...)
     end
 end
 
+function from_SI(x::AbstractArray, unit::Unit; kwargs...)
+    out = copy(x)
+    from_SI!(out, unit; kwargs...)
+    return out
+end
+
 # Fallback method for non-Floats, e.g. nothing, missing, Bool, Int
 from_SI(x, unit::Unit; kwargs...) = x
 

@@ -106,7 +106,13 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
     land_v = routing.overland_flow.variables
     river_v = routing.river_flow.variables
 
-    (; land_routing, cold_start__flag, reservoir__flag, floodplain_1d__flag) = config.model
+    (;
+        river_routing,
+        land_routing,
+        cold_start__flag,
+        reservoir__flag,
+        floodplain_1d__flag,
+    ) = config.model
 
     # read and set states in model object if cold_start=false
     if !cold_start__flag
@@ -165,7 +171,7 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
         river_v.storage[1:nriv] .=
             river_v.h[1:nriv] .* flow_width[1:nriv] .* flow_length[1:nriv]
 
-        if floodplain_1d__flag
+        if floodplain_1d__flag && river_routing != RoutingType.kinematic_wave
             initialize_storage!(routing.river_flow, domain, nriv)
         end
 

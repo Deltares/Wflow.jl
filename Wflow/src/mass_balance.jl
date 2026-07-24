@@ -125,13 +125,12 @@ function compute_total_storage!(
 end
 
 """
-    get_storage(river_flow_model::LocalInertialRiverFlowModel, i)
-    get_storage(river_flow_model::KinWaveRiverFlowModel, i)
+    get_storage(river_flow_model::RiverFlowModel, i)
 
-Return storage of a river flow model at index `i`. For `LocalInertialRiverFlowModel` floodplain
-storage is added to river storage if an optional floodplain is included.
+Return storage of a river flow model at index `i`, floodplain storage is added to river
+storage if an optional floodplain is included.
 """
-function get_storage(river_flow_model::LocalInertialRiverFlowModel, i)
+function get_storage(river_flow_model::AbstractRiverFlowModel, i)
     (; storage) = river_flow_model.variables
     if isnothing(river_flow_model.floodplain)
         return storage[i]
@@ -140,8 +139,6 @@ function get_storage(river_flow_model::LocalInertialRiverFlowModel, i)
         return total_storage
     end
 end
-get_storage(river_flow_model::KinWaveRiverFlowModel, i) =
-    river_flow_model.variables.storage[i]
 
 """
 Save river (+ floodplain) storage at previous time step as `storage_prev` of river
@@ -291,7 +288,7 @@ compute_flow_balance!(reservoir_model::Nothing, water_balance::NoMassBalance, dt
 
 "Compute water mass balance error and relative error for river kinematic wave routing."
 function compute_flow_balance!(
-    river_flow_model::KinWaveRiverFlowModel,
+    river_flow_model::RiverFlowModel{<:KinematicWave},
     water_balance::MassBalance,
     network::NetworkRiver,
     dt::Float64,
@@ -299,12 +296,16 @@ function compute_flow_balance!(
     (; storage_prev, error, relative_error) = water_balance
     (; inwater, external_inflow, actual_external_abstraction_average, abstraction) =
         river_flow_model.boundary_conditions
-    (; qin_average, q_average, storage) = river_flow_model.variables
+    (; qin_average, q_average) = river_flow_model.variables
 
     for i in eachindex(storage_prev)
         total_in = inwater[i] + qin_average[i] + max(0.0, external_inflow[i])
         total_out = q_average[i] + actual_external_abstraction_average[i] + abstraction[i]
-        storage_rate = (storage[i] - storage_prev[i]) / dt
+        storage = river_flow_model.variables.storage[i]
+        if !isnothing(river_flow_model.floodplain)
+            storage += river_flow_model.floodplain.variables.storage[i]
+        end
+        storage_rate = (storage - storage_prev[i]) / dt
         error[i], relative_error[i] =
             compute_mass_balance_error(total_in, total_out, storage_rate)
     end
@@ -316,7 +317,7 @@ Compute water mass balance error and relative error for river (and floodplain) l
 inertial routing.
 """
 function compute_flow_balance!(
-    river_flow_model::LocalInertialRiverFlowModel,
+    river_flow_model::RiverFlowModel{<:AbstractStaggeredRoutingMethod},
     water_balance::MassBalance,
     network::NetworkRiver,
     dt::Float64,
@@ -326,18 +327,17 @@ function compute_flow_balance!(
         river_flow_model.boundary_conditions
     (; edges_at_node) = network
 
-    q_av_average = river_flow_model.variables.q_average
-    actual_external_abstraction_av_average = actual_external_abstraction_average
+    (; q_average) = river_flow_model.variables
 
     for i in river_flow_model.parameters.active_n
         total_in = 0.0
         total_out = 0.0
-        q_src = sum_at(q_av_average, edges_at_node.src[i])
+        q_src = sum_at(q_average, edges_at_node.src[i])
         total_in, total_out = add_inflow(total_in, total_out, [q_src, inwater[i]])
         total_in += max(0.0, external_inflow[i])
-        q_dst = sum_at(q_av_average, edges_at_node.dst[i])
+        q_dst = sum_at(q_average, edges_at_node.dst[i])
         total_in, total_out = add_outflow(total_in, total_out, q_dst)
-        total_out += actual_external_abstraction_av_average[i] + abstraction[i]
+        total_out += actual_external_abstraction_average[i] + abstraction[i]
         storage = river_flow_model.variables.storage[i]
 
         if !isnothing(river_flow_model.floodplain)
@@ -380,7 +380,7 @@ Compute water mass balance error and relative error for overland flow kinematic 
 routing.
 """
 function compute_flow_balance!(
-    overland_flow_model::KinWaveOverlandFlowModel,
+    overland_flow_model::OverlandFlowModel{<:KinematicWave},
     water_balance::MassBalance,
     dt::Float64,
 )
@@ -404,8 +404,8 @@ Compute water mass balance error and relative error for 1D river local inertial 
 computed for each land cell (total storage) considering both river and overland flow.
 """
 function compute_flow_balance!(
-    river_flow_model::LocalInertialRiverFlowModel,
-    overland_flow_model::LocalInertialOverlandFlowModel,
+    river_flow_model::RiverFlowModel{<:LocalInertial},
+    overland_flow_model::OverlandFlowModel{<:LocalInertial},
     water_balance::MassBalance,
     domain::Domain,
     dt::Float64,
@@ -426,14 +426,14 @@ function compute_flow_balance!(
     qy_av_average = qy_average
 
     for i in 1:(overland_flow_model.parameters.n)
-        idx_down = indices.idx_down[i]
-        idx_left = indices.idx_left[i]
+        ind_y_down = indices.ind_y_down[i]
+        ind_x_down = indices.ind_x_down[i]
         total_in = 0.0
         total_out = 0.0
         total_in, total_out = add_inflow(
             total_in,
             total_out,
-            [qx_av_average[idx_left], qy_av_average[idx_down], runoff[i]],
+            [qx_av_average[ind_x_down], qy_av_average[ind_y_down], runoff[i]],
         )
         total_in, total_out =
             add_outflow(total_in, total_out, [qx_av_average[i], qy_av_average[i]])
@@ -512,7 +512,9 @@ end
 
 function compute_flow_routing_balance!(
     model::Model{R},
-) where {R <: Routing{<:LocalInertialOverlandFlowModel, <:LocalInertialRiverFlowModel}}
+) where {
+    R <: Routing{<:OverlandFlowModel{<:LocalInertial}, <:RiverFlowModel{<:LocalInertial}},
+}
     (; river_flow, overland_flow, subsurface_flow) = model.routing
     (; reservoir) = river_flow.boundary_conditions
     (; overland_water_balance, reservoir_water_balance, subsurface_water_balance) =
