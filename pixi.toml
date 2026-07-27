@@ -78,7 +78,7 @@ inputs = ["Manifest.toml"]
 outputs = ["Wflow.spdx.json"]
 
 [dependencies]
-julia = "==1.12.6"
+julia = { version = "==1.12.6", channel = "https://prefix.dev/julia-forge" }
 python = ">=3.10"
 jupyter = ">=1.1.1,<2"
 quarto = ">=1.8.26,<2"
