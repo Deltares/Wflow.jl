@@ -6,7 +6,7 @@ RUN apt-get update && apt-get install -y \
     rm -rf /var/lib/apt/lists/*
 ADD . /app
 WORKDIR /app/wflow
-RUN dvc pull
+RUN pixi run dvc pull
 WORKDIR /app/build/create_binaries/
 RUN julia --project=/app/Wflow -e "using Pkg; Pkg.instantiate();" && \
     julia --project -e "using Pkg; Pkg.instantiate()" && \
