@@ -5,12 +5,9 @@ RUN apt-get update && apt-get install -y \
     g++ git gcc && \
     rm -rf /var/lib/apt/lists/*
 ADD . /app
-WORKDIR /app/wflow
-RUN pixi run dvc pull
 WORKDIR /app/build/create_binaries/
 RUN julia --project=/app/Wflow -e "using Pkg; Pkg.instantiate();" && \
     julia --project -e "using Pkg; Pkg.instantiate()" && \
-    julia --project create_app.jl && \
-    rm -rf /app/test/data/*
+    julia --project create_app.jl
 
 ENTRYPOINT [ "/app/build/create_binaries/wflow_bundle/bin/wflow_cli" ]
