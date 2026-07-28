@@ -63,7 +63,7 @@ pixi run parameter_metadata_json_gen
 ### CI guardrail
 
 A GitHub Actions workflow (`parameter_metadata_json_gen.yml`) runs automatically on pushes to
-`master` and on PRs that modify files under `Wflow/src/standard_name/`. It re-generates the JSON
+`main` and on PRs that modify files under `Wflow/src/standard_name/`. It re-generates the JSON
 files and runs `git diff --exit-code` to ensure the committed JSON stays in sync with the source
 standard name maps. If you update any standard name metadata, re-run the export and commit the
 updated JSON files.

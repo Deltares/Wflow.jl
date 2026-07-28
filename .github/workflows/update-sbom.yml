@@ -2,7 +2,7 @@ name: Update SBOM
 on:
   push:
       branches:
-        - 'master'
+        - 'main'
       paths:
         - 'Manifest.toml'
   # on demand

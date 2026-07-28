@@ -8,9 +8,9 @@ listed in the Table below:
 
 |  model  | TOML configuration file |
 |:--------------- | ------------------|
-| wflow\_sbm + kinematic wave | [sbm_config.toml](https://raw.githubusercontent.com/Deltares/Wflow.jl/master/Wflow/test/sbm_config.toml) |
-| wflow\_sbm + groundwater flow | [sbm\_gwf\_piave\_demand\_config.toml](https://raw.githubusercontent.com/Deltares/Wflow.jl/master/Wflow/test/sbm_gwf_piave_demand_config.toml) |
-| wflow_sediment | [sediment_config.toml](https://raw.githubusercontent.com/Deltares/Wflow.jl/master/Wflow/test/sediment_config.toml) |
+| wflow\_sbm + kinematic wave | [sbm_config.toml](https://raw.githubusercontent.com/Deltares/Wflow.jl/main/Wflow/test/sbm_config.toml) |
+| wflow\_sbm + groundwater flow | [sbm\_gwf\_piave\_demand\_config.toml](https://raw.githubusercontent.com/Deltares/Wflow.jl/main/Wflow/test/sbm_gwf_piave_demand_config.toml) |
+| wflow_sediment | [sediment_config.toml](https://raw.githubusercontent.com/Deltares/Wflow.jl/main/Wflow/test/sediment_config.toml) |
 
 The associated Model files (input static, forcing and state files) can easily be downloaded and
 for this we share the following Julia code (per Model) that downloads the required files to
@@ -20,7 +20,7 @@ and [Command Line Interface](./running_wflow.qmd#using-the-command-line-interfac
 ## wflow\_sbm + kinematic wave
 ```julia
 # urls to TOML and netCDF of the Moselle example model
-toml_url = "https://raw.githubusercontent.com/Deltares/Wflow.jl/master/Wflow/test/sbm_config.toml"
+toml_url = "https://raw.githubusercontent.com/Deltares/Wflow.jl/main/Wflow/test/sbm_config.toml"
 staticmaps = "https://github.com/visr/wflow-artifacts/releases/download/v1.0.0/staticmaps-moselle.nc"
 forcing = "https://github.com/visr/wflow-artifacts/releases/download/v1.0.0/forcing-moselle.nc"
 instates = "https://github.com/visr/wflow-artifacts/releases/download/v1.0.0/instates-moselle.nc"
@@ -41,7 +41,7 @@ download(toml_url, toml_path)
 ## wflow\_sbm + groundwater flow
 ```julia
 # urls to TOML and netCDF of the Piave example model
-toml_url = "https://raw.githubusercontent.com/Deltares/Wflow.jl/master/Wflow/test/sbm_gwf_piave_demand_config.toml"
+toml_url = "https://raw.githubusercontent.com/Deltares/Wflow.jl/main/Wflow/test/sbm_gwf_piave_demand_config.toml"
 staticmaps = "https://github.com/visr/wflow-artifacts/releases/download/v1.0.0/staticmaps-piave.nc"
 forcing = "https://github.com/visr/wflow-artifacts/releases/download/v1.0.0/forcing-piave.nc"
 instates = "https://github.com/visr/wflow-artifacts/releases/download/v1.0.0/instates-piave-gwf.nc"
@@ -62,7 +62,7 @@ download(toml_url, toml_path)
 ## wflow\_sediment
 ```julia
 # urls to TOML and netCDF of the Moselle example model
-toml_url = "https://raw.githubusercontent.com/Deltares/Wflow.jl/master/Wflow/test/sediment_config.toml"
+toml_url = "https://raw.githubusercontent.com/Deltares/Wflow.jl/main/Wflow/test/sediment_config.toml"
 staticmaps = "https://github.com/visr/wflow-artifacts/releases/download/v1.0.0/staticmaps-moselle-sed.nc"
 forcing = "https://github.com/visr/wflow-artifacts/releases/download/v1.0.0/forcing-moselle-sed.nc"
 instates = "https://github.com/visr/wflow-artifacts/releases/download/v1.0.0/instates-moselle-sed.nc"
