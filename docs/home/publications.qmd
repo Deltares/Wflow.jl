@@ -21,7 +21,7 @@ van Verseveld, Willem, Visser, Martijn, Buitink, Joost, Boisgontier, Hélène, B
 Laurène, Weerts, Albrecht, Bootsma, Huite,  Baptista, Carlos Fernando, de Koning, Bart,
 Hartgring, Sebastian, Shin, Peter, Pronk, Maarten, Dalmijn, Brendan, Eilander, Dirk, Hofer,
 Julian, Hegnauer, Mark, Mendoza, Raul, Nelemans, Peter, & Meshgi, Ali, (YEAR).
-Deltares/Wflow.jl: unstable-master. <https://github.com/Deltares/Wflow.jl>, obtained:
+Deltares/Wflow.jl: unstable-main. <https://github.com/Deltares/Wflow.jl>, obtained:
 DATE\_OF\_DOWNLOAD.
 
 ## Publications using wflow
