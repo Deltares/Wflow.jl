@@ -17,7 +17,6 @@ jobs:
           pixi-version: "latest"
       - name: Update Julia manifest
         run: |
-          pixi run install-julia
           pixi run update-registry-julia
           pixi run update-manifest-julia
         env:
