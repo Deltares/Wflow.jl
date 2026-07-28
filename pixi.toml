@@ -25,7 +25,7 @@ initialize-julia = { depends-on = [
 		"Wflow",
 	] },
 ] }
-install = { depends-on = ["install-julia", "install-prek"] }
+install = { depends-on = ["install-prek"] }
 # Test data
 download-test-data = { cmd = "julia --project ../utils/download_test_data.jl", cwd = "Wflow" }
 # Build
