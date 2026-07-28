@@ -1,5 +1,5 @@
 @testitem "Client server Wflow ZMQ Server" begin
-    import ZMQ, JSON3, StructTypes, Wflow
+    import ZMQ, JSON, Wflow
     using Statistics: mean
     using Logging: with_logger, NullLogger
     using Wflow: to_SI, MM
@@ -15,8 +15,8 @@
     ZMQ.connect(socket, "tcp://localhost:5555")
 
     function request(message)
-        ZMQ.send(socket, JSON3.write(message))
-        ret_value = JSON3.read(ZMQ.recv(socket), Dict; allow_inf = true)
+        ZMQ.send(socket, JSON.json(message))
+        ret_value = JSON.parse(ZMQ.recv(socket); dicttype = Dict{String, Any})
         return ret_value
     end
 
@@ -33,13 +33,21 @@
         @test request((fn = "get_time_units",)) == Dict("time_units" => "s")
     end
 
-    @testset "Reading and writing NaN values allowed" begin
+    @testset "non-finite responses encoded as null" begin
+        # the server encoder maps NaN, Inf and -Inf to null, since JSON cannot represent them.
+        encoded = WflowServer.serialize_response(Dict("value" => [NaN, Inf, -Inf, 1.0]))
+        @test !occursin("NaN", encoded)
+        @test !occursin("Infinity", encoded)
+        @test occursin("[null,null,null,1.0]", encoded)
+        @test JSON.parse(encoded)["value"] == [nothing, nothing, nothing, 1.0]
+
+        # end-to-end check that a model response containing NaN arrives as null
         msg = (
             fn = "get_value",
             name = "soil_layer_1_water__volume_fraction",
             dest = fill(0.0, 50063),
         )
-        @test isnan(mean(request(msg)["value"]))
+        @test any(isnothing, request(msg)["value"])
     end
 
     @testset "update functions" begin
