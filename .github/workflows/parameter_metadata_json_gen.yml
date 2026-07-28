@@ -15,8 +15,6 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: julia-actions/cache@a45e8fa8be21c18a06b7177052533149e61e9b38 # v3.1.0
       - uses: prefix-dev/setup-pixi@a09b6247153796b190642a2b53fac4241043cf6f # v0.10.0
-      - name: prepare pixi
-        run: pixi run install-julia
       - name: Test parameter metadata JSON generation
         run: pixi run parameter_metadata_json_gen
       - name: Ensure that there was no change in the metadata

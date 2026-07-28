@@ -13,6 +13,5 @@
     },
     "[markdown]": {
         "rewrap.wordWrapColumn": 92
-    },
-    "julia.executablePath": "julia +1.12.6"
+    }
 }
