@@ -9,8 +9,17 @@ Add the following metadata files to the newly created build:
 - dep_licenses/
 """
 
-function collect_dependency_license(ctx, license_dir, visited_uuids, package_uuid)
-    package_uuid in visited_uuids && return
+"""
+Recursively copy the license of `package_uuid` and all of its transitive dependencies (as
+found in `ctx`'s manifest) into `license_dir`, skipping uuids already in `visited_uuids`.
+"""
+function collect_dependency_license(
+    ctx::Pkg.Types.Context,
+    license_dir::AbstractString,
+    visited_uuids::Set{Base.UUID},
+    package_uuid::Base.UUID,
+)::Nothing
+    package_uuid in visited_uuids && return nothing
     push!(visited_uuids, package_uuid)
 
     pkg_entry = ctx.env.manifest.deps[package_uuid]
@@ -20,7 +29,7 @@ function collect_dependency_license(ctx, license_dir, visited_uuids, package_uui
 
     if isnothing(pkg_entry.tree_hash)
         # Stdlib packages do not have a tree hash.
-        return
+        return nothing
     end
 
     install_path =
@@ -30,14 +39,23 @@ function collect_dependency_license(ctx, license_dir, visited_uuids, package_uui
         license_file_path = joinpath(install_path, license.license_filename)
         cp(license_file_path, joinpath(license_dir, pkg_entry.name); force = true)
     end
+    return nothing
 end
 
-function collect_dependency_licenses(project_dir, license_dir)
+"""
+Collect the licenses of all (transitive) dependencies of the project at `project_dir`,
+copying each into `license_dir`.
+"""
+function collect_dependency_licenses(
+    project_dir::AbstractString,
+    license_dir::AbstractString,
+)::Nothing
     ctx = PackageCompiler.create_pkg_context(project_dir)
-    visited_uuids = Set{eltype(values(ctx.env.project.deps))}()
+    visited_uuids = Set{Base.UUID}()
     for package_uuid in values(ctx.env.project.deps)
         collect_dependency_license(ctx, license_dir, visited_uuids, package_uuid)
     end
+    return nothing
 end
 
 function add_metadata(project_dir, license_file, output_dir, git_repo, sbom_file)
