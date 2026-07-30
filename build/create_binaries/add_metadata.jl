@@ -1,15 +1,4 @@
 """
-Add the following metadata files to the newly created build:
-
-- Build.toml
-- Project.toml
-- Manifest.toml
-- README.md
-- LICENSE
-- dep_licenses/
-"""
-
-"""
 Recursively copy the license of `package_uuid` and all of its transitive dependencies (as
 found in `ctx`'s manifest) into `license_dir`, skipping uuids already in `visited_uuids`.
 """
@@ -58,7 +47,25 @@ function collect_dependency_licenses(
     return nothing
 end
 
-function add_metadata(project_dir, license_file, output_dir, git_repo, sbom_file)
+"""
+Add the following metadata to the app bundle at `output_dir`, built from `project_dir`
+within the `git_repo` checkout:
+
+- Build.toml
+- Project.toml
+- Manifest.toml
+- README.md
+- LICENSE
+- Wflow.spdx.json
+- dep_licenses/
+"""
+function add_metadata(
+    project_dir::AbstractString,
+    license_file::AbstractString,
+    output_dir::AbstractString,
+    git_repo::AbstractString,
+    sbom_file::AbstractString,
+)::Nothing
     # save some environment variables in a Build.toml file for debugging purposes
     vars = ["BUILD_NUMBER", "BUILD_VCS_NUMBER"]
     dict = Dict(var => ENV[var] for var in vars if haskey(ENV, var))
@@ -124,4 +131,5 @@ function add_metadata(project_dir, license_file, output_dir, git_repo, sbom_file
     license_dir = joinpath(output_dir, "dep_licenses")
     mkpath(license_dir)
     collect_dependency_licenses(normpath(git_repo, "Wflow"), license_dir)
+    return nothing
 end
