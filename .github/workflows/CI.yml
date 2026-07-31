@@ -3,8 +3,8 @@ on:
   pull_request:
   push:
     branches:
-      - master
-      - v1
+      - main
+      - release/v1.0
     tags: '*'
 
 # needed to allow julia-actions/cache to delete old caches that it has created
