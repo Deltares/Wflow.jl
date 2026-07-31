@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.25">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Publications – Wflow.jl</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../_static/logo.png" rel="icon" type="image/png">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-707d8167ce6003fca903bfe2be84ab7f.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-de23326470d527ab07850dcbc28c194f.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-df0e259328ccecb091c97ea61d343a64.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-de23326470d527ab07850dcbc28c194f.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "textbox",
+  "limit": 5,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script type="text/javascript" src="../_static/version.js"></script>
+<script>
+  window.MathJax = {
+    tex: {
+      macros: {
+        SI: ["#1\\;\\mathrm\{#2\}", 2],
+        SIb: ["#1\\;[\\mathrm\{#2\}]", 2],
+        subtext: ["#1_\\text\{#2\}", 2]
+      }
+    }
+  };
+</script>
+
+
+<link rel="stylesheet" href="../_static/styles.css">
+</head>
+
+<body class="nav-sidebar floating nav-fixed quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = false;
+    const darkModeDefault = authorPrefersDark;
+      document.querySelector('link#quarto-text-highlighting-styles.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+      document.querySelector('link#quarto-bootstrap.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="../index.html" class="navbar-brand navbar-brand-logo">
+    <img src="../_static/logo.png" alt="" class="navbar-logo light-content">
+    <img src="../_static/logo.png" alt="" class="navbar-logo dark-content">
+    </a>
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Wflow.jl</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="../index.html" aria-current="page"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../getting_started/index.html"> 
+<span class="menu-text">Getting started</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../user_guide/index.html"> 
+<span class="menu-text">User guide</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../model_docs/index.html"> 
+<span class="menu-text">Model documentation</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../developments/index.html"> 
+<span class="menu-text">Developments</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-bi-github" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+      <i class="bi bi-github" role="img">
+</i> 
+ <span class="menu-text"></span>
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-menu-bi-github">    
+        <li>
+    <a class="dropdown-item" href="https://github.com/Deltares/Wflow.jl">
+ <span class="dropdown-text">Source Code</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://github.com/Deltares/Wflow.jl/issues/new/choose">
+ <span class="dropdown-text">Report an Issue</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-version" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Version</span>
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-menu-version">    
+        <li class="dropdown-header">empty</li>
+    </ul>
+  </li>
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../home/publications.html">Publications</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header sidebar-header-stacked">
+      <a href="../index.html" class="sidebar-logo-link">
+      </a>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Wflow.jl</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../home/case_studies.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Case studies</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../home/publications.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Publications</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../changelog.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Changelog</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="99">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#citing-wflow" id="toc-citing-wflow" class="nav-link active" data-scroll-target="#citing-wflow">Citing wflow</a></li>
+  <li><a href="#publications-using-wflow" id="toc-publications-using-wflow" class="nav-link" data-scroll-target="#publications-using-wflow">Publications using wflow</a>
+  <ul class="collapse">
+  <li><a href="#peer-reviewed-journal-papers" id="toc-peer-reviewed-journal-papers" class="nav-link" data-scroll-target="#peer-reviewed-journal-papers">Peer reviewed journal papers</a></li>
+  <li><a href="#phd-msc-bsc-theses-internship-reports" id="toc-phd-msc-bsc-theses-internship-reports" class="nav-link" data-scroll-target="#phd-msc-bsc-theses-internship-reports">PhD, MSc, BSc Theses &amp; Internship reports</a></li>
+  <li><a href="#reports" id="toc-reports" class="nav-link" data-scroll-target="#reports">Reports</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Publications</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="citing-wflow" class="level2">
+<h2 class="anchored" data-anchor-id="citing-wflow">Citing wflow</h2>
+<p>For publications, please cite the following paper introducing Wflow.jl and describing the wflow_sbm concept, together with some case studies:</p>
+<p>van Verseveld, W. J., Weerts, A. H., Visser, M., Buitink, J., Imhoff, R. O., Boisgontier, H., Bouaziz, L., Eilander, D., Hegnauer, M., ten Velden, C., and Russell, B., 2024. Wflow_sbm v0.7.3, a spatially distributed hydrological model: from global data to local applications. Geosci. Model Dev., 17, 3199–3234. <a href="https://doi.org/10.5194/gmd-17-3199-2024" class="uri">https://doi.org/10.5194/gmd-17-3199-2024</a>.</p>
+<p>To cite a specific software version please use the DOI provided in the Zenodo badge <a href="https://zenodo.org/badge/latestdoi/246787232"><img src="https://zenodo.org/badge/246787232.svg" class="img-fluid" alt="DOI"></a>, that points to the latest release. The DOIs of previous versions are also available at Zenodo. If you use a snapshot of the development (without a DOI) please cite as follows:</p>
+<p>van Verseveld, Willem, Visser, Martijn, Buitink, Joost, Boisgontier, Hélène, Bouaziz, Laurène, Weerts, Albrecht, Bootsma, Huite, Baptista, Carlos Fernando, de Koning, Bart, Hartgring, Sebastian, Shin, Peter, Pronk, Maarten, Dalmijn, Brendan, Eilander, Dirk, Hofer, Julian, Hegnauer, Mark, Mendoza, Raul, Nelemans, Peter, &amp; Meshgi, Ali, (YEAR). Deltares/Wflow.jl: unstable-master. <a href="https://github.com/Deltares/Wflow.jl" class="uri">https://github.com/Deltares/Wflow.jl</a>, obtained: DATE_OF_DOWNLOAD.</p>
+</section>
+<section id="publications-using-wflow" class="level2">
+<h2 class="anchored" data-anchor-id="publications-using-wflow">Publications using wflow</h2>
+<section id="peer-reviewed-journal-papers" class="level3">
+<h3 class="anchored" data-anchor-id="peer-reviewed-journal-papers">Peer reviewed journal papers</h3>
+<p>Aerts, J. P. M., Hut, R. W., van de Giesen, N. C., Drost, N., van Verseveld, W. J., Weerts, A. H., and Hazenberg, P., 2022. Large-sample assessment of varying spatial resolution on the streamflow estimates of the wflow_sbm hydrological model. Hydrol. Earth Syst. Sci., 26, 4407–4430. <a href="https://doi.org/10.5194/hess-26-4407-2022" class="uri">https://doi.org/10.5194/hess-26-4407-2022</a>.</p>
+<p>de Boer-Euser, T., Bouaziz, L., De Niel, J., Brauer, C., Dewals, B., Drogue, G., Fenicia, F., Grelier, B., Nossent, J., Pereira, F., Savenije, H., Thirel, G., Willems, P., 2017. Looking beyond general metrics for model comparison – lessons from an international model intercomparison study. Hydrol. Earth Syst. Sci. 21, 423–440. <a href="https://doi:10.5194/hess-21-423-2017" class="uri">https://doi:10.5194/hess-21-423-2017</a>.</p>
+<p>Bouaziz, L.J.E., Fenicia, F., Thirel, G., de Boer-Euser, T., Buitink, J., Brauer, C.C., De Niel, J., Dewals, B.J., Drogue, G., Grelier, B., Melsen, L. A., Moustakas, S., Nossent, J., Pereira, F., Sprokkereef, E., Stam, J., Weerts, A.H., Willems, P., Savenije, H.H.G., Hrachowitz, M., 2021. Behind the scenes of streamflow model performance. Hydrol. Earth Syst. Sci., 25, 1069–1095. <a href="https://doi.org/10.5194/hess-25-1069-2021" class="uri">https://doi.org/10.5194/hess-25-1069-2021</a>.</p>
+<p>Bouaziz, L. J. E., Aalbers, E. E., Weerts, A. H., Hegnauer, M., Buiteveld, H., Lammersen, R., Stam, J., Sprokkereef, E., Savenije, H. H. G., and Hrachowitz, M., 2022. Ecosystem adaptation to climate change: the sensitivity of hydrological predictions to time-dynamic model parameters, Hydrol. Earth Syst. Sci., 26, 1295–1318. <a href="https://doi.org/10.5194/hess-26-1295-2022" class="uri">https://doi.org/10.5194/hess-26-1295-2022</a>.</p>
+<p>Buskop, F.E., F. Sperna Weiland and B. van den Hurk, 2024. Amplifying exploration of regional climate risks: clustering future projections on regionally relevant impact drivers instead of emission scenarios, Environ. Res.: Climate, 3, 045030. <a href="https://iopscience.iop.org/article/10.1088/2752-5295/ad9f8f" class="uri">https://iopscience.iop.org/article/10.1088/2752-5295/ad9f8f</a>.</p>
+<p>Casson, D. R., Werner, M., Weerts, A., and Solomatine, D., 2018. Global re-analysis datasets to improve hydrological assessment and snow water equivalent estimation in a sub-Arctic watershed. Hydrol. Earth Syst. Sci., 22, 4685–4697. <a href="https://doi.org/10.5194/hess-22-4685-2018" class="uri">https://doi.org/10.5194/hess-22-4685-2018</a>.</p>
+<p>Droppers, B., Rakovec, O., Avila, L., Azimi, S., Cortés-Torres N., De León Pérez, D., Imhoff, R., Francés, F., Kollet, S., Rigon, R., Weerts, A. &amp; Samaniego, L, 2024. Multi-model hydrological reference dataset over continental Europe and an African basin. Sci Data, 11, 1009. <a href="https://doi.org/10.1038/s41597-024-03825-9" class="uri">https://doi.org/10.1038/s41597-024-03825-9</a>.</p>
+<p>Droppers, B., Rakovec, O., Avila, L., Azimi, S., Cortés-Torres N., De León Pérez, D., Imhoff, R., Francés, F., Kollet, S., Rigon, R., Weerts, A. &amp; Samaniego, L, 2024. Multi-model hydrological reference dataset over continental Europe and an African basin. Sci Data, 11, 1009. <a href="https://doi.org/10.1038/s41597-024-03825-9" class="uri">https://doi.org/10.1038/s41597-024-03825-9</a>.</p>
+<p>Emerton, R.E., Stephens, E.M., Pappenberger, F., Pagano, T.C., Weerts, A.H., Wood, A.W., Salamon, P., Brown, J.D., Hjerdt, N., Donnelly, C., Baugh, C.A., Cloke, H.L., 2016. Continental and global scale flood forecasting systems. WIREs Water 3, 391–418. <a href="https://doi.org/10.1002/wat2.1137" class="uri">https://doi.org/10.1002/wat2.1137</a>.</p>
+<p>Gebremicael, T.G., Mohamed, Y.A., Van der Zaag, P., 2019. Attributing the hydrological impact of different land use types and their long-term dynamics through combining parsimonious hydrological modelling, alteration analysis and PLSR analysis. Science of The Total Environment, 660, 1155-1167, <a href="https://doi.org/10.1016/jscitotenv.2019.01.085" class="uri">https://doi.org/10.1016/jscitotenv.2019.01.085</a>.</p>
+<p>Giardino, A., Schrijvershof, R., Nederhoff, C.M., de Vroeg, H., Brière, C., Tonnon, P.-K., Caires, S., Walstra, D.J., Sosa, J., van Verseveld, W., Schellekens, J., Sloff, C.J., 2018. A quantitative assessment of human interventions and climate change on the West African sediment budget, Ocean &amp; Coastal Management, 156, 249-265. <a href="https://doi.org/10.1016/j.ocecoaman.2017.11.008" class="uri">https://doi.org/10.1016/j.ocecoaman.2017.11.008</a>.</p>
+<p>Hally, A., Caumont, O., Garrote, L., Richard, E., Weerts, A., Delogu, F., Fiori, E., Rebora, N., Parodi, A., Mihalović, A., Ivković, M., Dekić, L., van Verseveld, W., Nuissier, O., Ducrocq, V., D’Agostino, D., Galizia, A., Danovaro, E., Clematis, A., 2015. Hydrometeorological multi-model ensemble simulations of the 4 November 2011 flash flood event in Genoa, Italy, in the framework of the DRIHM project. Nat. Hazards Earth Syst. Sci. 15, 537–555. <a href="https://doi:10.5194/nhess-15-537-2015" class="uri">https://doi:10.5194/nhess-15-537-2015</a>.</p>
+<p>Hassaballah, K., Mohamed, Y., Uhlenbrook, S., and Biro, K., 2017. Analysis of streamflow response to land use and land cover changes using satellite data and hydrological modelling: case study of Dinder and Rahad tributaries of the Blue Nile (Ethiopia–Sudan), Hydrol. Earth Syst. Sci., 21, 5217–5242. <a href="https://doi.org/10.5194/hess-21-5217-2017" class="uri">https://doi.org/10.5194/hess-21-5217-2017</a>.</p>
+<p>Imhoff, R.O., Buitink, J., van Verseveld, W.J., Weerts, A.H., 2024. A fast high resolution distributed hydrological model for forecasting, climate scenarios and digital twin applications using wflow_sbm. Environmental Modelling &amp; Software, 179, 106099. <a href="https://doi.org/10.1016/j.envsoft.2024.106099" class="uri">https://doi.org/10.1016/j.envsoft.2024.106099</a></p>
+<p>Imhoff, R.O, van Verseveld, W.J., van Osnabrugge, B., Weerts, A.H., 2020. Scaling Point-Scale (Pedo)transfer Functions to Seamless Large-Domain Parameter Estimates for High-Resolution Distributed Hydrologic Modeling: An Example for the Rhine River. Water Resources Research, 56, e2019WR026807. <a href="https://doi.org/10.1029/2019WR026807" class="uri">https://doi.org/10.1029/2019WR026807</a>.</p>
+<p>Imhoff, R.O., van Verseveld, W., van Osnabrugge, B., Weerts, A.H., 2020. Ruimtelijk schaalbare hydrologische modelparameters uit open-source omgevingsdata: een voorbeeld voor de Rijn. Stromingen: vakblad voor hydrologen, 26(3), 19-36 <a href="https://edepot.wur.nl/540682" class="uri">https://edepot.wur.nl/540682</a>.</p>
+<p>Jeuken, A., Bouaziz, L., Corzo, G., Alfonso, L., 2016. Analyzing Needs for Climate Change Adaptation in the Magdalena River Basin in Colombia, in: Filho, W.L., Musa, H., Cavan, G., O’Hare, P., Seixas, J. (Eds.), Climate Change Adaptation, Resilience and Hazards, Climate Change Management. Springer International Publishing, pp.&nbsp;329–344 <a href="https://doi.org/10.1007/978-3-319-39880-8" class="uri">https://doi.org/10.1007/978-3-319-39880-8</a>.</p>
+<p>López López, P., Wanders, N., Schellekens, J., Renzullo, L.J., Sutanudjaja, E.H., Bierkens, M.F.P., 2016. Improved large-scale hydrological modelling through the assimilation of streamflow and downscaled satellite soil moisture observations. Hydrol. Earth Syst. Sci., 20, 3059–3076. <a href="https://doi.org/10.5194/hess-20-3059-2016" class="uri">https://doi.org/10.5194/hess-20-3059-2016</a>.</p>
+<p>Mendoza, R., van Verseveld, W., Seijger, C. and Weerts, A. (2025), Assessment of Saturated Hydraulic Conductivity-Depth Relationships and Extended Soil Column Thickness in Catchment Hydrological Modelling. Hydrological Processes, 39, e70149. <a href="https://doi.org/10.1002/hyp.70149" class="uri">https://doi.org/10.1002/hyp.70149</a></p>
+<p>Pranoto, B., Soekarno, H., Hartulistiyoso, E., Nur Aidi, M., Sutrisno, D., Pohan, D., Radhika, Sutejo, B., Heru Kuncoro, A., Nahib, I., 2024. Integrating Flood Early Warning System (FEWS) for Optimizing Small Hydropower Sites: A West Java Case Study. EVERGREEN Joint Journal of Novel Carbon Resource Sciences &amp; Green Asia Strategy, 11, 3, 2691-2699. <a href="https://www.tj.kyushu-u.ac.jp/evergreen/contents/EG2024-11_3_content/pdf/p2691-2699.pdf" class="uri">https://www.tj.kyushu-u.ac.jp/evergreen/contents/EG2024-11_3_content/pdf/p2691-2699.pdf</a></p>
+<p>Purnamasari, D., Teuling, A. J., and Weerts, A. H., 2025. Identifying irrigated areas using land surface temperature and hydrological modelling: application to the Rhine basin. Hydrol. Earth Syst. Sci., 29, 1483–1503. <a href="https://doi.org/10.5194/hess-29-1483-2025" class="uri">https://doi.org/10.5194/hess-29-1483-2025</a></p>
+<p>Rakovec, O., Weerts, A.H., Sumihar, J., Uijlenhoet, R., 2015. Operational aspects of asynchronous filtering for flood forecasting. Hydrol. Earth Syst. Sci., 19, 2911–2924, <a href="https://doi.org/10.5194/hess-19-2911-2015" class="uri">https://doi.org/10.5194/hess-19-2911-2015</a>.</p>
+<p>Ratri, D.N., A.H. Weerts, R. Muharsyah, K. Whan, A. Klein Tank, E. Aldrian, M. H. Hariadi, Calibration of ECMWF SEAS5 based streamflow forecast in Seasonal hydrological forecasting for Citarum river basin, West Java, Indonesia, Journal of Hydrology: Regional Studies,45,101305, <a href="https://doi.org/10.1016/j.ejrh.2022.101305" class="uri">https://doi.org/10.1016/j.ejrh.2022.101305</a>.</p>
+<p>Rusli, S.R., A.H. Weerts, A. Taufiq, V. Bense, 2021. Estimating water balance components and their uncertainty bounds in highly groundwater-dependent and data-scarce area: An example for the Upper Citarum basin, J. Hydrol. Regional Studies, <a href="https://doi.org/10.1016/j.ejrh.2021.100911" class="uri">https://doi.org/10.1016/j.ejrh.2021.100911</a>.</p>
+<p>Rusli, S.R., V.F. Bense, A. Taufiq, A.H. Weerts,2023. Quantifying basin-scale changes in groundwater storage using GRACE and one-way coupled hydrological and groundwater flow model in the data-scarce Bandung groundwater Basin, Indonesia, Groundwater for Sustainable Development,22, 100953, <a href="https://doi.org/10.1016/j.gsd.2023.100953" class="uri">https://doi.org/10.1016/j.gsd.2023.100953</a>.</p>
+<p>Rusli, S.R., A.H. Weerts, S.M.T. Mustafa, D.E. Irawan, A. Taufiq, V.F. Bense, 2023. Quantifying aquifer interaction using numerical groundwater flow model evaluated by environmental water tracer data: Application to the data-scarce area of the Bandung groundwater basin, West Java, Indonesia, Journal of Hydrology: Regional Studies, 50, <a href="https://doi.org/10.1016/j.ejrh.2023.101585" class="uri">https://doi.org/10.1016/j.ejrh.2023.101585</a>.</p>
+<p>Rusli, S. R., Bense, V. F., Mustafa, S. M. T., and Weerts, A. H.,2024. The impact of future changes in climate variables and groundwater abstraction on basin-scale groundwater availability, Hydrol. Earth Syst. Sci., 28, 5107–5131, https://doi.org/10.5194/hess-28-5107-2024, <a href="https://doi.org/10.5194/hess-28-5107-2024" class="uri">https://doi.org/10.5194/hess-28-5107-2024</a>.</p>
+<p>Schaller, N., Sillmann, J., Müller, M., Haarsma, R., Hazeleger, W., Hegdahl, T.J., Kelder, T., van den Oord, G., Weerts, A., Whan, K., 2020. The role of spatial and temporal model resolution in a flood event storyline approach in western Norway. Weather and Climate Extremes, doi: <a href="https://doi.org/10.1016/j.wace.2020.100259" class="uri">https://doi.org/10.1016/j.wace.2020.100259</a>.</p>
+<p>Seizarwati, W. and M. Syahidah, 2021. Rainfall-Runoff Simulation for Water Availability Estimation in Small Island Using Distributed Hydrological Model wflow. IOP Conf. Ser.: Earth Environ. Sci., 930,012050, doi:10.1088/1755-1315/930/1/012050. <a href="https://iopscience.iop.org/article/10.1088/1755-1315/930/1/012050/pdf" class="uri">https://iopscience.iop.org/article/10.1088/1755-1315/930/1/012050/pdf</a></p>
+<p>Sperna Weiland, F.C., R.D. Visser, P. Greve, B. Bisselink, L. Brunner and A.H. Weerts, 2021. Estimating Regionalized Hydrological Impacts of Climate Change Over Europe by Performance-Based Weighting of CORDEX Projections, Frontiers of Water, <a href="https://doi.org/10.3389/frwa.2021.713537" class="uri">https://doi.org/10.3389/frwa.2021.713537</a>.</p>
+<p>Tangdamrongsub, N., Steele-Dunne, S.C., Gunter, B.C., Ditmar, P.G., Weerts, A.H., 2015. Data assimilation of GRACE terrestrial water storage estimates into a regional hydrological model of the Rhine River basin. Hydrol. Earth Syst. Sci. 19, 2079–2100. <a href="https://doi:10.5194/hess-19-2079-2015" class="uri">https://doi:10.5194/hess-19-2079-2015</a>.</p>
+<p>van der Laan, E., P. Hazenberg, A.H. Weerts, 2024. Simulation of long-term storage dynamics of headwater reservoirs across the globe using public cloud computing infrastructure. Science of The Total Environment, 172678, <a href="https://doi.org/10.1016/j.scitotenv.2024.172678" class="uri">https://doi.org/10.1016/j.scitotenv.2024.172678</a>.</p>
+<p>van Osnabrugge, B., Weerts, A.H., Uijlenhoet, R., 2017. genRE: A method to extend gridded precipitation climatology data sets in near real-time for hydrological forecasting purposes. Water Resources Research, 53. <a href="https://doi.org/10.1002/2017WR021201" class="uri">https://doi.org/10.1002/2017WR021201</a>.</p>
+<p>van Osnabrugge, B., Uijlenhoet, R., Weerts, A., 2019. Contribution of potential evaporation forecasts to 10-day streamflow forecast skill for the Rhine River, Hydrol. Earth Syst. Sci., 23, 1453–1467, <a href="https://doi.org/10.5194/hess-23-1453-2019" class="uri">https://doi.org/10.5194/hess-23-1453-2019</a>.</p>
+<p>van der Vat, M., Boderie, P., Bons, K.A., Hegnauer, M., Hendriksen, G., van Oorschot, M., Ottow, B., Roelofsen, F., Sankhua, R.N., Sinha, S.K., Warren, A., Young, W., 2019. Participatory Modelling of Surface and Groundwater to Support Strategic Planning in the Ganga Basin in India. Water, 11, 2443. <a href="https://doi.org/10.3390/w11122443" class="uri">https://doi.org/10.3390/w11122443</a>.</p>
+<p>Wannasin, C., Brauer, C. C., Uijlenhoet, R., van Verseveld, W. J., Weerts, A. H., 2021. Daily flow simulation in Thailand Part I: Testing a distributed hydrological model with seamless parameter maps based on global data. Journal of Hydrology: Regional Studies, 34, 1-19. <a href="https://doi.org/10.1016/j.ejrh.2021.100794" class="uri">https://doi.org/10.1016/j.ejrh.2021.100794</a>.</p>
+<p>Wannasin, C., Brauer, C. C., Uijlenhoet, R., van Verseveld, W. J., Weerts, A. H., 2021. Daily flow simulation in Thailand Part II: Unraveling effects of reservoir operation. Journal of Hydrology: RegionalStudies, 34, 1-17. <a href="https://doi.org/10.1016/j.ejrh.2021.100792" class="uri">https://doi.org/10.1016/j.ejrh.2021.100792</a>.</p>
+<p>Wang, X., Zhang, J., Babovic, V., 2016. Improving real-time forecasting of water quality indicators with combination of process-based models and data assimilation technique. Ecological Indicators 66, 428–439. <a href="https://doi:10.1016/j.ecolind.2016.02.016" class="uri">https://doi:10.1016/j.ecolind.2016.02.016</a>.</p>
+<p>Zang, S., Weerts, A., van Verseveld, W. J., Li, Z., &amp; Huang, P., 2025. Compound effects of river routing and local rainfall-runoff for inflow simulation of a large reservoir. Hydrological Sciences Journal. <a href="https://doi.org/10.1080/02626667.2025.2496280" class="uri">https://doi.org/10.1080/02626667.2025.2496280</a></p>
+</section>
+<section id="phd-msc-bsc-theses-internship-reports" class="level3">
+<h3 class="anchored" data-anchor-id="phd-msc-bsc-theses-internship-reports">PhD, MSc, BSc Theses &amp; Internship reports</h3>
+<p>Abdelnour, A., 2022. Bias Correction of Climate Simulations to Assess Climate Change Impacts on Low Flows in the Rhine River, MSc thesis, Delft Universitry of technology, <a href="https://repository.tudelft.nl/islandora/object/uuid:50489399-cbd2-467f-9b82-98e5f3e371e9" class="uri">https://repository.tudelft.nl/islandora/object/uuid:50489399-cbd2-467f-9b82-98e5f3e371e9</a>.</p>
+<p>Ali, M.A., 2023. Machine learning for predicting spatially variable lateral hydraulic conductivity: a step towards efficient hydrological model calibration and global applicability, Intersnhip report, Deltares.</p>
+<p>Arnal, L., 2014. An intercomparison of flood forecasting models for the Meuse River basin, MSc Thesis, Vrije Universiteit, Amsterdam, <a href="https://hal.inrae.fr/hal-02600749" class="uri">https://hal.inrae.fr/hal-02600749</a>.</p>
+<p>Alkemade, G., 2019. Routing and calibration of distributed hydrological models, MSc Thesis, Vrije Universiteit, Amsterdam, Faculty of Science, Hydrology.</p>
+<p>Azadeh Karami Fard, 2015. Modeling runoff of an Ethiopian catchment with WFLOW, MSc. Thesis, Vrije Universiteit, Amsterdam.</p>
+<p>Benschop, J., 2023. The application of hybrid lateral routing in hydrological simulations of the Rhine catchment, MSc Thesis, Hydrology and Environmental Hydraulics Group, Wageningen University.</p>
+<p>Beusen, B., 2021. The effect of rooting depth on discharge and evapotranspiration in (semi-)arid areas, MSc Thesis, Hydrology and Quantitative Water Management Group, Wageningen University.</p>
+<p>Beusen, B., 2021. Plastic transport and the effect of climate change in the Rhine, Internship report, Deltares.</p>
+<p>Bouaziz, L. J. E., 2021. Internal processes in hydrological models: A glance at the Meuse basin from space. Delft University of Technology, Delft, the Netherlands, Doctoral dissertation, <a href="https://doi.org/10.4233/uuid:09d84cc1-27e2-4327-a8c7-207a75952061" class="uri">https://doi.org/10.4233/uuid:09d84cc1-27e2-4327-a8c7-207a75952061</a>.</p>
+<p>Hartgring, S., 2023. On Forecasting the Rur River: Using hindcasts and forecasts of the 2021 flood event to improve understanding of flood forecasting in the Rur catchment. Delft University of Technology, Delft, the Netherlands, MSc thesis, <a href="http://resolver.tudelft.nl/uuid:2909d997-a983-490a-a588-87119998543a" class="uri">http://resolver.tudelft.nl/uuid:2909d997-a983-490a-a588-87119998543a</a>.</p>
+<p>Jaime, D.E.V, 2021. Ensemble hydrological forecasts to derive extreme return periods: Case Study of the Overijsselse Vecht River using the wflow_sbm model, MSc thesis, Unesco IHE, Delft.</p>
+<p>López López, P., 2018. Application of Global Hydrological Datasets for River Basin Modelling Utrecht University, Utrecht, the Netherlands, pp.&nbsp;1-214, Doctoral dissertation, <a href="http://dspace.library.uu.nl/handle/1874/364148" class="uri">http://dspace.library.uu.nl/handle/1874/364148</a>.</p>
+<p>Maat, W.H., 2015. Simulating discharges and forecasting floods using a conceptual rainfall-runoff model for the Bolivian Mamoré basin, MSc Thesis, University of Twente, Enschede. <a href="https://essay.utwente.nl/67046/" class="uri">https://essay.utwente.nl/67046/</a>.</p>
+<p>van Osnabrugge, B., 2020. Interpolate, simulate, assimilate: operational aspects of improving hydrological forecasts in the Rhine basin. Wageningen University, Doctoral dissertation, <a href="https://doi.org/10.18174/513157" class="uri">https://doi.org/10.18174/513157</a>.</p>
+<p>Rohrmueller, I., 2019. BENCHMARKING THE NEW WFLOW DISTRIBUTED HYDROLOGICAL MODEL, MSc Thesis, School of Engineering - Newcastle University.</p>
+<p>Rusli, S.R., 2024. Deepening the quantitative understanding of groundwater systems in data-scarce areas: application in the Bandung Groundwater Basin, Indonesia. Wageningen University, Doctoral dissertation, <a href="https://doi.org/10.18174/640983" class="uri">https://doi.org/10.18174/640983</a>.</p>
+<p>Tretjakova, D., 2015. Investigating the effect of using fully-distributed model and data assimilation on the performance of hydrological forecasting in the Karasu catchment, Turkey, MSc thesis, Wageningen University.</p>
+<p>van der Gaast, R.H., 2024. Evaluating the transferability of data-driven pedo-transfer functions for the wflow_sbm parameter KsatHorFrac in central and Western Europe. Universiteit Twente, Enschede, The Netherlands, <a href="https://essay.utwente.nl/103634/1/vandergaast_MA_ET.pdf" class="uri">https://essay.utwente.nl/103634/1/vandergaast_MA_ET.pdf</a>.</p>
+<p>Verbrugge, M., 2019. Reservoir Operation Optimization, a case study in the Chao Phraya Basin, BSc thesis, Hydrology and Quantitative Water Management Group, Wageningen University.</p>
+<p>Verbrugge, M., 2023. Bias-correcting meteorological forcing to improve seasonal discharge forecasting of the Rhine, Internship report, Deltares.</p>
+<p>Viguures, P., 2020. Modelling of flash floods in current and future climate with high resolution convection permitting regional climate models in the European Alps, MSc Thesis, Wageningen University.</p>
+<p>Visser, B., 2020. Impact of climate change on local water resources of European catchments, Intersnhip report, Deltares.</p>
+<p>Wannasin, C., 2023. Modelling and forecasting daily streamflow with reservoir operation in the upper Chao Phraya River basin, Thailand. Wageningen University, Doctoral dissertation, <a href="https://doi.org/10.18174/584572" class="uri">https://doi.org/10.18174/584572</a>.</p>
+</section>
+<section id="reports" class="level3">
+<h3 class="anchored" data-anchor-id="reports">Reports</h3>
+<p>World Bank. 2021. Plastic Waste Discharges from Rivers and Coastlines in Indonesia. Marine Plastics Series;. World Bank, Washington, DC. © World Bank, <a href="https://openknowledge.worldbank.org/handle/10986/35607" class="uri">https://openknowledge.worldbank.org/handle/10986/35607</a>, License: CC BY 3.0 IGO.</p>
+<p>World Meteorological Organization (WMO), 2023. State of Global Water Resources report 2022, WMO-No.&nbsp;1333, <a href="https://library.wmo.int/idurl/4/68473" class="uri">https://library.wmo.int/idurl/4/68473</a>.</p>
+<p>World Meteorological Organization (WMO), 2024. State of Global Water Resources report 2023, WMO-No.&nbsp;1362, <a href="https://library.wmo.int/idurl/4/69033" class="uri">https://library.wmo.int/idurl/4/69033</a>.</p>
+
+
+</section>
+</section>
+
+<a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>Made possible by: <a href="https://www.deltares.nl/en" target="_blank" rel="noreferrer noopener"> <img src="../_static/images/deltares-blue.svg" alt="Deltares" class="footer-image-light" style="height: 40px;"> <img src="../_static/images/deltares-white.svg" alt="Deltares" class="footer-image-dark" style="height: 40px;"> </a></p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
