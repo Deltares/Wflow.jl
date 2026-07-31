@@ -17,14 +17,7 @@ platforms = ["win-64", "linux-64"]
 install-julia = "juliaup add 1.12.6 && juliaup override set 1.12.6"
 # Prek
 install-prek = "prek install --overwrite"
-update-registry-julia = "julia --eval='using Pkg; Registry.update()'"
 update-manifest-julia = "julia --project utils/update-manifest.jl"
-initialize-julia = { depends-on = [
-	"update-registry-julia",
-	{ "task" = "instantiate-julia", "args" = [
-		"Wflow",
-	] },
-] }
 install = { depends-on = ["install-prek"] }
 # Test data
 download-test-data = { cmd = "julia --project ../utils/download_test_data.jl", cwd = "Wflow" }
@@ -43,7 +36,9 @@ test-wflow-cli = { cmd = "julia --project --eval 'using Pkg; Pkg.test(allow_rere
 	"download-test-data",
 ] }
 test-wflow-cov = { cmd = "julia --project --eval 'using Pkg; Pkg.test(allow_reresolve=false, coverage=true, julia_args=[\"--check-bounds=yes\"])'", cwd = "Wflow", depends-on = [
-	"initialize-julia",
+	{ "task" = "instantiate-julia", "args" = [
+		"Wflow",
+	] },
 	"download-test-data",
 ] }
 # Server
@@ -60,7 +55,6 @@ test-wflow-server = { cmd = "julia --project=server --eval 'using Pkg; Pkg.test(
 instantiate-formatting = { cmd = "julia --project=utils/formatting --eval 'using Pkg; Pkg.instantiate(); using JuliaFormatter'" }
 format-code = { cmd = "julia --project=utils/formatting --eval 'using JuliaFormatter; format(isempty(ARGS) ? \".\" : ARGS) || exit(1)'" }
 # Docs
-install-ci = { depends-on = ["update-registry-julia"] }
 quarto-check = { cmd = "quarto check all" }
 quarto-render = { cmd = "julia --project=docs --eval 'using Pkg; Pkg.build(\"IJulia\")' && quarto render docs --to html --execute" }
 quarto-preview = { cmd = "quarto preview docs" }
@@ -69,7 +63,7 @@ parameter_metadata_json_gen = { cmd = "julia --project=utils/export_parameter_da
 
 [tasks.instantiate-julia]
 args = [{ "arg" = "cwd", "default" = "." }]
-cmd = "julia --project={{cwd}} --eval='using Pkg; Pkg.instantiate()'"
+cmd = "julia --project={{cwd}} --eval='using Pkg; Pkg.Registry.update(); Pkg.instantiate()'"
 
 [tasks.generate-sbom]
 depends-on = ["instantiate-julia"]

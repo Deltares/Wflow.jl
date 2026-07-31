@@ -26,8 +26,8 @@ jobs:
       - uses: prefix-dev/setup-pixi@a09b6247153796b190642a2b53fac4241043cf6f # v0.10.0
         with:
           pixi-version: "latest"
-      - name: Prepare pixi
-        run: pixi run install-ci
+      - name: Instantiate Julia project
+        run: pixi run instantiate-julia docs
 
       - name: Check Quarto installation and all engines
         run: pixi run quarto-check
