@@ -1,7 +1,7 @@
 name: Quarto documentation
 on:
   push:
-    branches: [main]
+    branches: [main, release/v1.0]
     tags: [v*]
   pull_request:
 
@@ -52,6 +52,16 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./docs/_site
           destination_dir: dev
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish Quarto Project as v1.0
+        if: github.event_name == 'push' && github.ref == 'refs/heads/release/v1.0'
+        uses: peaceiris/actions-gh-pages@84c30a85c19949d7eee79c4ff27748b70285e453 # v4.1.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs/_site
+          destination_dir: v1.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

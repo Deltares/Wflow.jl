@@ -50,7 +50,7 @@ instates = "https://github.com/visr/wflow-artifacts/releases/download/v1.0.0/ins
 testdir = @__DIR__
 inputdir = joinpath(testdir, "data/input")
 isdir(inputdir) || mkpath(inputdir)
-toml_path = joinpath(@testdir, "sbm_gwf_piave_demand_config.toml")
+toml_path = joinpath(testdir, "sbm_gwf_piave_demand_config.toml")
 
 # download resources to current and data dirs
 download(staticmaps, joinpath(inputdir, "staticmaps-piave.nc"))

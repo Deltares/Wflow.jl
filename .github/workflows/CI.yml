@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - v1
+      - release/v1.0
     tags: '*'
 
 # needed to allow julia-actions/cache to delete old caches that it has created
