@@ -48,13 +48,13 @@ automatically resolved and installed from the Pkg General registry.
 
 ### Install from GitHub
 
-You can also install wflow from the `master` branch on the repository as follows:
+You can also install wflow from the `main` branch on the repository as follows:
 
 ```bash
-pkg> add Wflow:Wflow#master
+pkg> add Wflow:Wflow#main
 ```
 
-This command tracks the `master` branch and updates to the latest commit on that branch when
+This command tracks the `main` branch and updates to the latest commit on that branch when
 you run `update`, or simply `up`, in the Pkg REPL. The `add` installs wflow in your home
 directory under `.julia/packages/Wflow`. Note that packages installed under `packages` by `add`
 should not be changed in the directory, as the change could disrupt Pkg's automatic dependency

@@ -19,6 +19,7 @@ function (@main)(_)
     redirect_stdio(; stdout = path, stderr = path) do
         println("Update the Julia Manifest.toml to get the latest dependencies.\n")
         println("__Changed packages__\n```")
+        Pkg.Registry.update()
         Pkg.update()
         println("```\n\n__Packages still outdated after update__\n```")
         Pkg.status(; outdated = true)
