@@ -1,43 +1,71 @@
 """
-Add the following metadata files to the newly created build:
+Recursively copy the license of `package_uuid` and all of its transitive dependencies (as
+found in `ctx`'s manifest) into `license_dir`, skipping uuids already in `visited_uuids`.
+"""
+function collect_dependency_license(
+    ctx::Pkg.Types.Context,
+    license_dir::AbstractString,
+    visited_uuids::Set{Base.UUID},
+    package_uuid::Base.UUID,
+)::Nothing
+    package_uuid in visited_uuids && return nothing
+    push!(visited_uuids, package_uuid)
+
+    pkg_entry = ctx.env.manifest.deps[package_uuid]
+    for dep_uuid in values(pkg_entry.deps)
+        collect_dependency_license(ctx, license_dir, visited_uuids, dep_uuid)
+    end
+
+    if isnothing(pkg_entry.tree_hash)
+        # Stdlib packages do not have a tree hash.
+        return nothing
+    end
+
+    install_path =
+        Pkg.Operations.find_installed(pkg_entry.name, package_uuid, pkg_entry.tree_hash)
+    license = LicenseCheck.find_license(install_path)
+    if !isnothing(license)
+        license_file_path = joinpath(install_path, license.license_filename)
+        cp(license_file_path, joinpath(license_dir, pkg_entry.name); force = true)
+    end
+    return nothing
+end
+
+"""
+Collect the licenses of all (transitive) dependencies of the project at `project_dir`,
+copying each into `license_dir`.
+"""
+function collect_dependency_licenses(
+    project_dir::AbstractString,
+    license_dir::AbstractString,
+)::Nothing
+    ctx = PackageCompiler.create_pkg_context(project_dir)
+    visited_uuids = Set{Base.UUID}()
+    for package_uuid in values(ctx.env.project.deps)
+        collect_dependency_license(ctx, license_dir, visited_uuids, package_uuid)
+    end
+    return nothing
+end
+
+"""
+Add the following metadata to the app bundle at `output_dir`, built from `project_dir`
+within the `git_repo` checkout:
 
 - Build.toml
 - Project.toml
 - Manifest.toml
 - README.md
 - LICENSE
+- Wflow.spdx.json
 - dep_licenses/
 """
-
-function collect_dependency_licenses(project_dir, license_dir)
-    ctx = PackageCompiler.create_pkg_context(project_dir)
-    pending_uuids = collect(values(ctx.env.project.deps))
-    visited_uuids = Set{eltype(pending_uuids)}()
-
-    while !isempty(pending_uuids)
-        package_uuid = pop!(pending_uuids)
-        package_uuid in visited_uuids && continue
-        push!(visited_uuids, package_uuid)
-
-        pkg_entry = ctx.env.manifest.deps[package_uuid]
-        append!(pending_uuids, values(pkg_entry.deps))
-
-        if isnothing(pkg_entry.tree_hash)
-            # Stdlib packages do not have a tree hash.
-            continue
-        end
-
-        install_path =
-            Pkg.Operations.find_installed(pkg_entry.name, package_uuid, pkg_entry.tree_hash)
-        license = LicenseCheck.find_license(install_path)
-        if !isnothing(license)
-            license_file_path = joinpath(install_path, license.license_filename)
-            cp(license_file_path, joinpath(license_dir, pkg_entry.name); force = true)
-        end
-    end
-end
-
-function add_metadata(project_dir, license_file, output_dir, git_repo, sbom_file)
+function add_metadata(
+    project_dir::AbstractString,
+    license_file::AbstractString,
+    output_dir::AbstractString,
+    git_repo::AbstractString,
+    sbom_file::AbstractString,
+)::Nothing
     # save some environment variables in a Build.toml file for debugging purposes
     vars = ["BUILD_NUMBER", "BUILD_VCS_NUMBER"]
     dict = Dict(var => ENV[var] for var in vars if haskey(ENV, var))
@@ -103,4 +131,5 @@ function add_metadata(project_dir, license_file, output_dir, git_repo, sbom_file
     license_dir = joinpath(output_dir, "dep_licenses")
     mkpath(license_dir)
     collect_dependency_licenses(normpath(git_repo, "Wflow"), license_dir)
+    return nothing
 end
