@@ -7,9 +7,7 @@ RUN apt-get update && apt-get install -y \
 ADD . /app
 WORKDIR /app/build/create_binaries/
 RUN julia --project=/app/Wflow -e "using Pkg; Pkg.instantiate();" && \
-    julia --project=/app/Wflow /app/utils/download_test_data.jl && \
     julia --project -e "using Pkg; Pkg.instantiate()" && \
-    julia --project create_app.jl && \
-    rm -rf /app/test/data/*
+    julia --project create_app.jl
 
 ENTRYPOINT [ "/app/build/create_binaries/wflow_bundle/bin/wflow_cli" ]
