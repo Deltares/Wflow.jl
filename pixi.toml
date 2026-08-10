@@ -20,7 +20,7 @@ install-prek = "prek install --overwrite"
 update-manifest-julia = "julia --project utils/update-manifest.jl"
 install = { depends-on = ["install-prek"] }
 # Test data
-download-test-data = { cmd = "dvc pull", cwd = "." }
+download-test-data = { cmd = "dvc pull", cwd = ".", env = { CRYPTOGRAPHY_OPENSSL_NO_LEGACY = "1" } }
 # Build
 build-wflow-cli = { cmd = "julia --project create_app.jl", cwd = "build/create_binaries", depends-on = [
 	{ "task" = "instantiate-julia", "args" = [
