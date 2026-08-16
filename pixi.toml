@@ -74,7 +74,7 @@ outputs = ["Wflow.spdx.json"]
 [dependencies]
 dvc = "*"
 dvc-s3 = "*"
-julia = { version = "==1.12.6", channel = "https://prefix.dev/julia-forge" }
+julia = { version = "==1.12.7", channel = "https://prefix.dev/julia-forge" }
 python = ">=3.10"
 jupyter = ">=1.1.1,<2"
 quarto = ">=1.8.26,<2"
