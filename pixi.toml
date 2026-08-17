@@ -14,7 +14,7 @@ platforms = ["win-64", "linux-64"]
 # Julia
 # Note: this is for developers to have their global julia use the right version.
 # Use `pixi run julia` for the package used by CI.
-install-julia = "juliaup add 1.12.6 && juliaup override set 1.12.6"
+install-julia = "juliaup add 1.12.7 && juliaup override set 1.12.7"
 # Prek
 install-prek = "prek install --overwrite"
 update-manifest-julia = "julia --project utils/update-manifest.jl"
@@ -74,7 +74,7 @@ outputs = ["Wflow.spdx.json"]
 [dependencies]
 dvc = "*"
 dvc-s3 = "*"
-julia = { version = "==1.12.6", channel = "https://prefix.dev/julia-forge" }
+julia = { version = "==1.12.7", channel = "https://prefix.dev/julia-forge" }
 python = ">=3.10"
 jupyter = ">=1.1.1,<2"
 quarto = ">=1.8.26,<2"
