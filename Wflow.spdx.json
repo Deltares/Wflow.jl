@@ -3,13 +3,13 @@
     "dataLicense": "CC0-1.0",
     "SPDXID": "SPDXRef-DOCUMENT",
     "name": "Wflow.jl",
-    "documentNamespace": "https://github.com/Deltares/Wflow.jl/Wflow.spdx.json-d742517f-c37f-4ed3-b41b-bbe4674dbba4",
+    "documentNamespace": "https://github.com/Deltares/Wflow.jl/Wflow.spdx.json-0700f918-f45c-49bb-bb24-bed74eae1ae5",
     "creationInfo": {
         "creators": [
             "Organization:  Deltares  (software@deltares.nl)"
         ],
-        "created": "2026-08-06T11:00:37Z",
-        "comment": "Target Platform: Platform(\"x86_64\", \"linux\"; libgfortran_version = \"5.0.0\", julia_version = \"1.12.6\", libc = \"glibc\", libstdcxx_version = \"3.4.30\", cxxstring_abi = \"cxx11\")"
+        "created": "2026-08-17T09:42:48Z",
+        "comment": "Target Platform: Platform(\"x86_64\", \"linux\"; libgfortran_version = \"5.0.0\", julia_version = \"1.12.7\", libc = \"glibc\", libstdcxx_version = \"3.4.30\", cxxstring_abi = \"cxx11\")"
     },
     "comment": "Registries used for populating Package data:\nGeneral registry: https://github.com/JuliaRegistries/General.git\nOfficial general Julia package registry where people can\nregister any package they want without too much debate about\nnaming and without enforced standards on documentation or\ntesting. We nevertheless encourage documentation, testing and\nsome amount of consideration when choosing package names.\n",
     "packages": [
@@ -19,7 +19,7 @@
             "versionInfo": "1.11.0",
             "supplier": "Organization:  JuliaLang  ()",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.6#stdlib/Libdl",
+            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.7#stdlib/Libdl",
             "filesAnalyzed": true,
             "packageVerificationCode": {
                 "packageVerificationCodeValue": "09c028a09c7c5489ba26c6f61672f12781519ed5"
@@ -45,7 +45,7 @@
             "versionInfo": "1.11.0",
             "supplier": "Organization:  JuliaLang  ()",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.6#stdlib/Artifacts",
+            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.7#stdlib/Artifacts",
             "filesAnalyzed": true,
             "packageVerificationCode": {
                 "packageVerificationCodeValue": "62de3884124893a18ee97251eacf51a10b1d09ae"
@@ -94,13 +94,13 @@
         {
             "name": "CompilerSupportLibraries_jll",
             "SPDXID": "SPDXRef-CompilerSupportLibraries-jll-e66e0078-7015-5450-92f7-15fbd957f2ae",
-            "versionInfo": "1.3.0+1",
+            "versionInfo": "1.3.1+2",
             "supplier": "Organization:  JuliaLang  ()",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaBinaryWrappers/CompilerSupportLibraries_jll.jl.git@51d6d98076cb575e156ac945080125509fa78a3f",
+            "downloadLocation": "git+https://github.com/JuliaBinaryWrappers/CompilerSupportLibraries_jll.jl.git@7ef4da70c167df5217dccf217c6cff3a20e02873",
             "filesAnalyzed": true,
             "packageVerificationCode": {
-                "packageVerificationCodeValue": "3519d1803c0caf11538ee1eab3488206ccda1c07"
+                "packageVerificationCodeValue": "d8909fd537192999a44b9bdf7e70995178da7b4e"
             },
             "homepage": "https://julialang.org",
             "sourceInfo": "This package is part of the Julia standard library.\nDownload Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
@@ -113,7 +113,7 @@
                 {
                     "referenceCategory": "PACKAGE-MANAGER",
                     "referenceType": "purl",
-                    "referenceLocator": "pkg:julia/CompilerSupportLibraries_jll@1.3.0+1?uuid=e66e0078-7015-5450-92f7-15fbd957f2ae"
+                    "referenceLocator": "pkg:julia/CompilerSupportLibraries_jll@1.3.1+2?uuid=e66e0078-7015-5450-92f7-15fbd957f2ae"
                 }
             ]
         },
@@ -149,10 +149,10 @@
             "versionInfo": "1.12.0",
             "supplier": "Organization:  JuliaLang  ()",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.6#stdlib/LinearAlgebra",
+            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.7#stdlib/LinearAlgebra",
             "filesAnalyzed": true,
             "packageVerificationCode": {
-                "packageVerificationCodeValue": "633a9fe97d22b1786e94e17a926fc98c262d86c1"
+                "packageVerificationCodeValue": "b23846496c8a8ffb333a0ac0286beae94c73c3f4"
             },
             "homepage": "https://julialang.org",
             "sourceInfo": "This package is part of the Julia standard library and is located in the Julia source code tree.",
@@ -207,7 +207,7 @@
             "versionInfo": "1.11.0",
             "supplier": "Organization:  JuliaLang  ()",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.6#stdlib/Unicode",
+            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.7#stdlib/Unicode",
             "filesAnalyzed": true,
             "packageVerificationCode": {
                 "packageVerificationCodeValue": "9b3bfd2372c63f70063ed3e3f89e407f55cdbf57"
@@ -233,7 +233,7 @@
             "versionInfo": "1.11.0",
             "supplier": "Organization:  JuliaLang  ()",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.6#stdlib/Printf",
+            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.7#stdlib/Printf",
             "filesAnalyzed": true,
             "packageVerificationCode": {
                 "packageVerificationCodeValue": "c55ff13dd479e98ca597af1cdc28b6f287ba0e9b"
@@ -259,7 +259,7 @@
             "versionInfo": "1.11.0",
             "supplier": "Organization:  JuliaLang  ()",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.6#stdlib/Dates",
+            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.7#stdlib/Dates",
             "filesAnalyzed": true,
             "packageVerificationCode": {
                 "packageVerificationCodeValue": "71289a9643167f34722fc70914f339ca7d4072cc"
@@ -460,7 +460,7 @@
             "versionInfo": "1.11.0",
             "supplier": "Organization:  JuliaLang  ()",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.6#stdlib/Logging",
+            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.7#stdlib/Logging",
             "filesAnalyzed": true,
             "packageVerificationCode": {
                 "packageVerificationCodeValue": "731d414cc5709dc3feb6db3b61208e8c5afca324"
@@ -486,7 +486,7 @@
             "versionInfo": "1.11.0",
             "supplier": "Organization:  JuliaLang  ()",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.6#stdlib/Random",
+            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.7#stdlib/Random",
             "filesAnalyzed": true,
             "packageVerificationCode": {
                 "packageVerificationCodeValue": "f473f1734bd718d8d00ea5d33952fbacdb4d0ef1"
@@ -512,7 +512,7 @@
             "versionInfo": "1.11.0",
             "supplier": "Organization:  JuliaLang  ()",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.6#stdlib/UUIDs",
+            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.7#stdlib/UUIDs",
             "filesAnalyzed": true,
             "packageVerificationCode": {
                 "packageVerificationCodeValue": "fdee1a154075774a2a6b680c5e8fe76fc794dc97"
@@ -829,10 +829,10 @@
             "versionInfo": "1.11.0",
             "supplier": "Organization:  JuliaLang  ()",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.6#stdlib/Serialization",
+            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.7#stdlib/Serialization",
             "filesAnalyzed": true,
             "packageVerificationCode": {
-                "packageVerificationCodeValue": "f62a55df53f2a541d6f9ebc305f216d5eeaafbcc"
+                "packageVerificationCodeValue": "375986255b0f704d59658f367c8a94c57ea5c7d4"
             },
             "homepage": "https://julialang.org",
             "sourceInfo": "This package is part of the Julia standard library and is located in the Julia source code tree.",
@@ -881,10 +881,10 @@
             "versionInfo": "1.12.0",
             "supplier": "Organization:  JuliaLang  ()",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.6#stdlib/SparseArrays",
+            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.7#stdlib/SparseArrays",
             "filesAnalyzed": true,
             "packageVerificationCode": {
-                "packageVerificationCodeValue": "184745e0298e386ee482304052f446183fbe3c7c"
+                "packageVerificationCodeValue": "b421d12bf0ffd0aaff476d3e42cf7ce882b44bec"
             },
             "homepage": "https://julialang.org",
             "sourceInfo": "This package is part of the Julia standard library and is located in the Julia source code tree.",
@@ -939,7 +939,7 @@
             "versionInfo": "1.11.0",
             "supplier": "Organization:  JuliaLang  ()",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.6#stdlib/StyledStrings",
+            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.7#stdlib/StyledStrings",
             "filesAnalyzed": true,
             "packageVerificationCode": {
                 "packageVerificationCodeValue": "f8363636ab1ce17b20ad9f5b97440a924699cd08"
@@ -968,7 +968,7 @@
             "versionInfo": "1.11.0",
             "supplier": "Organization:  JuliaLang  ()",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.6#stdlib/Base64",
+            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.7#stdlib/Base64",
             "filesAnalyzed": true,
             "packageVerificationCode": {
                 "packageVerificationCodeValue": "50ce0af2d4765e9462d31dfeda8933c8d25373c8"
@@ -994,7 +994,7 @@
             "versionInfo": "1.12.0",
             "supplier": "Organization:  JuliaLang  ()",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.6#stdlib/JuliaSyntaxHighlighting",
+            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.7#stdlib/JuliaSyntaxHighlighting",
             "filesAnalyzed": true,
             "packageVerificationCode": {
                 "packageVerificationCodeValue": "a93f7aae423b56ee03847590b88adc05009268c7"
@@ -1023,7 +1023,7 @@
             "versionInfo": "1.11.0",
             "supplier": "Organization:  JuliaLang  ()",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.6#stdlib/Markdown",
+            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.7#stdlib/Markdown",
             "filesAnalyzed": true,
             "packageVerificationCode": {
                 "packageVerificationCodeValue": "742c9f6bd32160f43d5c0d98c8f1a7489a725bdc"
@@ -1049,7 +1049,7 @@
             "versionInfo": "1.11.0",
             "supplier": "Organization:  JuliaLang  ()",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.6#stdlib/InteractiveUtils",
+            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.7#stdlib/InteractiveUtils",
             "filesAnalyzed": true,
             "packageVerificationCode": {
                 "packageVerificationCodeValue": "f62333db0f8b773792f831326a89c577f1b983ab"
@@ -1163,7 +1163,7 @@
             "versionInfo": "1.11.0",
             "supplier": "Organization:  JuliaLang  ()",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.6#stdlib/Mmap",
+            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.7#stdlib/Mmap",
             "filesAnalyzed": true,
             "packageVerificationCode": {
                 "packageVerificationCodeValue": "17ec71eb4ef98577e285493035d9b8f063964411"
@@ -1972,7 +1972,7 @@
             "versionInfo": "1.3.0",
             "supplier": "Organization:  JuliaLang  ()",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.6#stdlib/NetworkOptions",
+            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.7#stdlib/NetworkOptions",
             "filesAnalyzed": true,
             "packageVerificationCode": {
                 "packageVerificationCodeValue": "9794cfded94b432e3afead3df7051730514c3a1c"
@@ -2172,13 +2172,13 @@
         {
             "name": "OpenSSL_jll",
             "SPDXID": "SPDXRef-OpenSSL-jll-458c3c95-2e84-50aa-8efc-19380b2a3a95",
-            "versionInfo": "3.5.4+0",
+            "versionInfo": "3.5.6+0",
             "supplier": "Organization:  JuliaLang  ()",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaBinaryWrappers/OpenSSL_jll.jl.git@f19301ae653233bc88b1810ae908194f07f8db9d",
+            "downloadLocation": "git+https://github.com/JuliaBinaryWrappers/OpenSSL_jll.jl.git@2ac022577e5eac7da040de17776d51bb770cd895",
             "filesAnalyzed": true,
             "packageVerificationCode": {
-                "packageVerificationCodeValue": "62b7183829976ae4d845df70c96b5b2cb533dad1"
+                "packageVerificationCodeValue": "2fa2fc6db2351f5484b89a81e9943a112091909f"
             },
             "homepage": "https://julialang.org",
             "sourceInfo": "This package is part of the Julia standard library.\nDownload Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
@@ -2191,7 +2191,7 @@
                 {
                     "referenceCategory": "PACKAGE-MANAGER",
                     "referenceType": "purl",
-                    "referenceLocator": "pkg:julia/OpenSSL_jll@3.5.4+0?uuid=458c3c95-2e84-50aa-8efc-19380b2a3a95"
+                    "referenceLocator": "pkg:julia/OpenSSL_jll@3.5.6+0?uuid=458c3c95-2e84-50aa-8efc-19380b2a3a95"
                 }
             ]
         },
@@ -2944,7 +2944,7 @@
             "versionInfo": "2025.11.4",
             "supplier": "Organization:  JuliaLang  ()",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.6#stdlib/MozillaCACerts_jll",
+            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.7#stdlib/MozillaCACerts_jll",
             "filesAnalyzed": true,
             "packageVerificationCode": {
                 "packageVerificationCodeValue": "8997078c70bf315e85662e3a4cca81b9e98625cb"
@@ -3077,7 +3077,7 @@
             "versionInfo": "1.11.0",
             "supplier": "Organization:  JuliaLang  ()",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.6#stdlib/FileWatching",
+            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.7#stdlib/FileWatching",
             "filesAnalyzed": true,
             "packageVerificationCode": {
                 "packageVerificationCodeValue": "aa0959051f9bae82bec09c681d1863c847351e4b"
@@ -3103,7 +3103,7 @@
             "versionInfo": "1.1.2",
             "supplier": "Organization:  JuliaLang  ()",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.6#stdlib/ArgTools",
+            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.7#stdlib/ArgTools",
             "filesAnalyzed": true,
             "packageVerificationCode": {
                 "packageVerificationCodeValue": "662b336a52abae0f2c017d4ee9c146913cd100b9"
@@ -3161,7 +3161,7 @@
             "versionInfo": "1.10.0",
             "supplier": "Organization:  JuliaLang  ()",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.6#stdlib/Tar",
+            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.7#stdlib/Tar",
             "filesAnalyzed": true,
             "packageVerificationCode": {
                 "packageVerificationCodeValue": "14e532447ffa5db7a55e1500d150b51dbb16f2e7"
@@ -3216,7 +3216,7 @@
             "versionInfo": "1.11.0",
             "supplier": "Organization:  JuliaLang  ()",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.6#stdlib/LibGit2",
+            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.7#stdlib/LibGit2",
             "filesAnalyzed": true,
             "packageVerificationCode": {
                 "packageVerificationCodeValue": "69abffd45e5f14959c7c3ecdd4def18e6f745be4"
@@ -3268,10 +3268,10 @@
             "versionInfo": "1.12.1",
             "supplier": "Organization:  JuliaLang  ()",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.6#stdlib/Pkg",
+            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.7#stdlib/Pkg",
             "filesAnalyzed": true,
             "packageVerificationCode": {
-                "packageVerificationCodeValue": "285b883f24e205db1fdc9c49ba1b601d1a7aaec9"
+                "packageVerificationCodeValue": "a1a99ece717662028d0ee1ae24c627234a92d93a"
             },
             "homepage": "https://julialang.org",
             "sourceInfo": "This package is part of the Julia standard library and is located in the Julia source code tree.",
