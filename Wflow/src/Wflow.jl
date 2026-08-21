@@ -93,7 +93,7 @@ function Clock(config)
 end
 
 function Clock(config, reader)
-    nctimes = reader.dataset["time"][:]
+    nctimes = reader.dataset_times
 
     # if the timestep is not given, use the difference between netCDF time 1 and 2
     if isnothing(config.time.timestepsecs)

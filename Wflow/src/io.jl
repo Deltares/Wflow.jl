@@ -1,3 +1,41 @@
+"NetCDF forcing files with only the currently selected file open."
+mutable struct RollingDataset{D <: NCDataset}
+    paths::Vector{String}
+    file_end_indices::Vector{Int}
+    dataset::D
+    file_index::Int
+end
+
+function RollingDataset(paths::Vector{String})
+    times_per_file = map(paths) do path
+        NCDataset(path) do dataset
+            dataset["time"][:]
+        end
+    end
+    file_end_indices = cumsum(length.(times_per_file))
+    times = reduce(vcat, times_per_file)
+    dataset = NCDataset(first(paths))
+    return RollingDataset(paths, file_end_indices, dataset, 1), times
+end
+
+"Select the forcing dataset and local index for a global time index."
+function dataset_index!(dataset::RollingDataset, index::Int)
+    file_index = searchsortedfirst(dataset.file_end_indices, index)
+    checkbounds(dataset.paths, file_index)
+    if file_index != dataset.file_index
+        close(dataset.dataset)
+        dataset.file_index = 0
+        dataset.dataset = NCDataset(dataset.paths[file_index])
+        dataset.file_index = file_index
+    end
+    previous_end =
+        file_index == firstindex(dataset.file_end_indices) ? 0 :
+        dataset.file_end_indices[file_index - 1]
+    return dataset.dataset, index - previous_end
+end
+
+Base.close(dataset::RollingDataset) = close(dataset.dataset)
+
 """Turn "a.aa.aaa" into (:a, :aa, :aaa)"""
 symbols(s::AbstractString) = Tuple(Symbol(x) for x in split(s, '.'))
 
@@ -7,7 +45,7 @@ param(obj, fields::AbstractString) = param(obj, symbols(fields))
 
 "Extract a netCDF variable at a given time"
 function get_at(
-    ds::CFDataset,
+    ds::RollingDataset,
     var::InputEntry,
     metadata,
     times::AbstractVector{<:TimeType},
@@ -19,6 +57,11 @@ function get_at(
     t < first(times) && throw(DomainError("time $t before dataset begin $(first(times))"))
     i === nothing && throw(DomainError("time $t after dataset end $(last(times))"))
     return get_at(ds, var, metadata, i, dt)
+end
+
+function get_at(ds::RollingDataset, var::InputEntry, metadata, i::Int, dt::Float64)
+    dataset, local_index = dataset_index!(ds, i)
+    return get_at(dataset, var, metadata, local_index, dt)
 end
 
 function get_at(ds::CFDataset, var::InputEntry, metadata, i::Int, dt::Float64)
@@ -430,7 +473,7 @@ function add_time(ds, time)
 end
 
 struct NCReader{T}
-    dataset::CFDataset
+    dataset::RollingDataset
     dataset_times::Vector{T}
     cyclic_dataset::Union{NCDataset, Nothing}
     cyclic_times::Dict{String, Vector{Tuple{Int, Int}}}
@@ -507,11 +550,10 @@ function NCReader(config)
     if isempty(dynamic_paths)
         error("No files found with name '$glob_path' in '$glob_dir'")
     end
-    dataset = NCDataset(dynamic_paths; aggdim = "time", deferopen = false)
+    dataset, nctimes = RollingDataset(dynamic_paths)
 
-    if haskey(dataset["time"].attrib, "_FillValue")
+    if haskey(dataset.dataset["time"].attrib, "_FillValue")
         @warn "Time dimension contains `_FillValue` attribute, this is not in line with CF conventions."
-        nctimes = dataset["time"][:]
         times_dropped = collect(skipmissing(nctimes))
         # check if length has changed (missing in time dimension are not allowed), and throw
         # an error if the lengths are different
@@ -522,7 +564,6 @@ function NCReader(config)
             nctimes_type = eltype(nctimes)
         end
     else
-        nctimes = dataset["time"][:]
         nctimes_type = eltype(nctimes)
     end
 
