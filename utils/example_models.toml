@@ -1,0 +1,26 @@
+[examples.sbm]
+archive = "wflow-sbm-example.zip"
+config = "Wflow/test/sbm_config.toml"
+inputs = [
+    "forcing-moselle.nc",
+    "instates-moselle.nc",
+    "staticmaps-moselle.nc",
+]
+
+[examples.sbm_gwf]
+archive = "wflow-sbm-gwf-example.zip"
+config = "Wflow/test/sbm_gwf_piave_demand_config.toml"
+inputs = [
+    "forcing-piave.nc",
+    "instates-piave-gwf.nc",
+    "staticmaps-piave.nc",
+]
+
+[examples.sediment]
+archive = "wflow-sediment-example.zip"
+config = "Wflow/test/sediment_config.toml"
+inputs = [
+    "forcing-moselle-sed.nc",
+    "instates-moselle-sed.nc",
+    "staticmaps-moselle-sed.nc",
+]

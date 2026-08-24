@@ -72,6 +72,7 @@ inputs = ["Manifest.toml"]
 outputs = ["Wflow.spdx.json"]
 
 [dependencies]
+boto3 = "*"
 dvc = "*"
 dvc-s3 = "*"
 julia = { version = "==1.12.7", channel = "https://prefix.dev/julia-forge" }

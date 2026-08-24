@@ -21,6 +21,52 @@ below.
 pixi run install
 ```
 
+## Test and example data
+
+Wflow test model configurations (`.toml` files under `Wflow/test`) are tracked directly in Git.
+Their input data under `Wflow/test/data/input` is versioned with [DVC](https://dvc.org/): Git tracks
+the directory through `Wflow/test/data/input.dvc`, while the files themselves are stored in the
+public `wflow/testdata` folder on the Deltares MinIO server. Download the input data matching the
+current Git revision with:
+
+```sh
+pixi run download-test-data
+```
+
+Maintainers can update the data using the `wflow-testdata-rw` DVC remote. Configure MinIO
+credentials locally or through the standard AWS environment variables; never commit credentials.
+After changing files under `Wflow/test/data/input`, update and publish the DVC state with:
+
+```sh
+pixi run dvc add Wflow/test/data/input
+pixi run dvc push --remote wflow-testdata-rw
+```
+
+`utils/example_models.toml` defines which Git-tracked configuration and which DVC-tracked input
+files together constitute each example model used by the documentation. A DVC pipeline packages
+these selections into three public archives as non-cached, persistent outputs. On `main` these are
+published under `wflow/examples/dev`; release branches use their corresponding
+`wflow/examples/vX.Y` folder. After updating test data, example configurations, the selection, or
+the publishing utility, publish the archives and commit the updated lockfile:
+
+```sh
+pixi run dvc repro publish-example-models
+git add Wflow/test/data/input.dvc dvc.lock
+```
+
+When creating the `release/v1.1` branch, replace `examples/dev` with `examples/v1.1` in the stage
+command and all outputs in `dvc.yaml`. Make the same replacement in the download links in
+`docs/getting_started/download_example_models.qmd`, then publish and commit the release-specific
+pipeline state:
+
+```sh
+pixi run dvc repro publish-example-models
+git add dvc.yaml dvc.lock docs/getting_started/download_example_models.qmd
+```
+
+CI only downloads the DVC data and checks `dvc status`; it never uploads data. A consistency
+failure means that a maintainer must reproduce the stage and commit `dvc.lock` before merging.
+
 ## Parameter and variable metadata JSON export
 
 Wflow maintains an internal standard name system (`STANDARD_NAME_MAPS`) that serves as the single
@@ -33,7 +79,7 @@ making it accessible for external tools, documentation generation, and validatio
 The export produces four JSON files in `utils/export_parameter_data/`:
 
 | File | Contents |
-|---|---|
+| --- | --- |
 | `sbm_metadata.json` | Land hydrology (SBM) parameters and variables |
 | `routing_metadata.json` | Routing parameters and variables |
 | `sediment_metadata.json` | Soil erosion and sediment transport parameters and variables |

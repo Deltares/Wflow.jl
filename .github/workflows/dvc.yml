@@ -1,0 +1,31 @@
+name: DVC consistency
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  status:
+    name: Example models
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: prefix-dev/setup-pixi@f00437f565399d418b0acc85936d12c1fb668347 # v0.10.1
+        with:
+          pixi-version: "latest"
+      - uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809 # v4.2.4
+        with:
+          path: .dvc/cache
+          key: dvc-${{ hashFiles('Wflow/test/data/input.dvc') }}
+      - name: Download test data
+        env:
+          CRYPTOGRAPHY_OPENSSL_NO_LEGACY: "1"
+        run: pixi run download-test-data
+      - name: Check DVC pipeline
+        env:
+          CRYPTOGRAPHY_OPENSSL_NO_LEGACY: "1"
+        run: |
+          pixi run dvc status publish-example-models --json > dvc-status.json
+          pixi run python -c 'import json, sys; status = json.load(open("dvc-status.json")); print(json.dumps(status, indent=2)); sys.exit(bool(status))'
