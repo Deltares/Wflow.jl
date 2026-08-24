@@ -77,9 +77,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-93cd05b917e18f0bcde614576ce7210e.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../site_libs/bootstrap/bootstrap-dark-041bddf3088e88b71ce7ea3b391d6023.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="../site_libs/bootstrap/bootstrap-93cd05b917e18f0bcde614576ce7210e.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-8f8caa1f945c043ede73075b24bf5e44.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-efa3076535823ede8f03e0209d9c2631.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-8f8caa1f945c043ede73075b24bf5e44.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -539,7 +539,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="ci-guardrail" class="level3">
 <h3 class="anchored" data-anchor-id="ci-guardrail">CI guardrail</h3>
-<p>A GitHub Actions workflow (<code>parameter_metadata_json_gen.yml</code>) runs automatically on pushes to <code>master</code> and on PRs that modify files under <code>Wflow/src/standard_name/</code>. It re-generates the JSON files and runs <code>git diff --exit-code</code> to ensure the committed JSON stays in sync with the source standard name maps. If you update any standard name metadata, re-run the export and commit the updated JSON files.</p>
+<p>A GitHub Actions workflow (<code>parameter_metadata_json_gen.yml</code>) runs automatically on pushes to <code>main</code> and on PRs that modify files under <code>Wflow/src/standard_name/</code>. It re-generates the JSON files and runs <code>git diff --exit-code</code> to ensure the committed JSON stays in sync with the source standard name maps. If you update any standard name metadata, re-run the export and commit the updated JSON files.</p>
 </section>
 </section>
 <section id="styledecisions" class="level2">
