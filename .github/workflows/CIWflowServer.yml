@@ -3,8 +3,8 @@ on:
   pull_request:
   push:
     branches:
-      - master
-      - v1
+      - main
+      - release/v1.0
     tags: '*'
 
 # needed to allow julia-actions/cache to delete old caches that it has created
@@ -26,12 +26,10 @@ jobs:
           - x64
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: julia-actions/cache@a45e8fa8be21c18a06b7177052533149e61e9b38 # v3.1.0
-      - uses: prefix-dev/setup-pixi@a09b6247153796b190642a2b53fac4241043cf6f # v0.10.0
+      - uses: julia-actions/cache@a7bed9df697e5d7309d68afe7542a87621a8b6c8 # v3.3.0
+      - uses: prefix-dev/setup-pixi@f00437f565399d418b0acc85936d12c1fb668347 # v0.10.1
         with:
           pixi-version: "latest"
-      - name: Prepare pixi
-        run: pixi run install-julia
       - name: Test WflowServer
         run: |
           pixi run test-wflow-server

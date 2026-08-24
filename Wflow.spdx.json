@@ -3,13 +3,13 @@
     "dataLicense": "CC0-1.0",
     "SPDXID": "SPDXRef-DOCUMENT",
     "name": "Wflow.jl",
-    "documentNamespace": "https://github.com/Deltares/Wflow.jl/Wflow.spdx.json-351e41d9-a18f-4ab3-85bd-f352fe726556",
+    "documentNamespace": "https://github.com/Deltares/Wflow.jl/Wflow.spdx.json-0700f918-f45c-49bb-bb24-bed74eae1ae5",
     "creationInfo": {
         "creators": [
             "Organization:  Deltares  (software@deltares.nl)"
         ],
-        "created": "2026-07-13T12:45:53Z",
-        "comment": "Target Platform: Platform(\"x86_64\", \"linux\"; libgfortran_version = \"5.0.0\", julia_version = \"1.12.6\", libc = \"glibc\", libstdcxx_version = \"3.4.30\", cxxstring_abi = \"cxx11\")"
+        "created": "2026-08-17T09:42:48Z",
+        "comment": "Target Platform: Platform(\"x86_64\", \"linux\"; libgfortran_version = \"5.0.0\", julia_version = \"1.12.7\", libc = \"glibc\", libstdcxx_version = \"3.4.30\", cxxstring_abi = \"cxx11\")"
     },
     "comment": "Registries used for populating Package data:\nGeneral registry: https://github.com/JuliaRegistries/General.git\nOfficial general Julia package registry where people can\nregister any package they want without too much debate about\nnaming and without enforced standards on documentation or\ntesting. We nevertheless encourage documentation, testing and\nsome amount of consideration when choosing package names.\n",
     "packages": [
@@ -19,7 +19,7 @@
             "versionInfo": "1.11.0",
             "supplier": "Organization:  JuliaLang  ()",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.6#stdlib/Libdl",
+            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.7#stdlib/Libdl",
             "filesAnalyzed": true,
             "packageVerificationCode": {
                 "packageVerificationCodeValue": "09c028a09c7c5489ba26c6f61672f12781519ed5"
@@ -45,7 +45,7 @@
             "versionInfo": "1.11.0",
             "supplier": "Organization:  JuliaLang  ()",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.6#stdlib/Artifacts",
+            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.7#stdlib/Artifacts",
             "filesAnalyzed": true,
             "packageVerificationCode": {
                 "packageVerificationCodeValue": "62de3884124893a18ee97251eacf51a10b1d09ae"
@@ -94,13 +94,13 @@
         {
             "name": "CompilerSupportLibraries_jll",
             "SPDXID": "SPDXRef-CompilerSupportLibraries-jll-e66e0078-7015-5450-92f7-15fbd957f2ae",
-            "versionInfo": "1.3.0+1",
+            "versionInfo": "1.3.1+2",
             "supplier": "Organization:  JuliaLang  ()",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaBinaryWrappers/CompilerSupportLibraries_jll.jl.git@51d6d98076cb575e156ac945080125509fa78a3f",
+            "downloadLocation": "git+https://github.com/JuliaBinaryWrappers/CompilerSupportLibraries_jll.jl.git@7ef4da70c167df5217dccf217c6cff3a20e02873",
             "filesAnalyzed": true,
             "packageVerificationCode": {
-                "packageVerificationCodeValue": "3519d1803c0caf11538ee1eab3488206ccda1c07"
+                "packageVerificationCodeValue": "d8909fd537192999a44b9bdf7e70995178da7b4e"
             },
             "homepage": "https://julialang.org",
             "sourceInfo": "This package is part of the Julia standard library.\nDownload Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
@@ -113,7 +113,7 @@
                 {
                     "referenceCategory": "PACKAGE-MANAGER",
                     "referenceType": "purl",
-                    "referenceLocator": "pkg:julia/CompilerSupportLibraries_jll@1.3.0+1?uuid=e66e0078-7015-5450-92f7-15fbd957f2ae"
+                    "referenceLocator": "pkg:julia/CompilerSupportLibraries_jll@1.3.1+2?uuid=e66e0078-7015-5450-92f7-15fbd957f2ae"
                 }
             ]
         },
@@ -149,10 +149,10 @@
             "versionInfo": "1.12.0",
             "supplier": "Organization:  JuliaLang  ()",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.6#stdlib/LinearAlgebra",
+            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.7#stdlib/LinearAlgebra",
             "filesAnalyzed": true,
             "packageVerificationCode": {
-                "packageVerificationCodeValue": "633a9fe97d22b1786e94e17a926fc98c262d86c1"
+                "packageVerificationCodeValue": "b23846496c8a8ffb333a0ac0286beae94c73c3f4"
             },
             "homepage": "https://julialang.org",
             "sourceInfo": "This package is part of the Julia standard library and is located in the Julia source code tree.",
@@ -184,6 +184,7 @@
                 "packageVerificationCodeValue": "0d59a4f81366f9b4dd7c3f42d50ffabdbfa874b9"
             },
             "homepage": "https://github.com/JuliaStats/Statistics.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -206,7 +207,7 @@
             "versionInfo": "1.11.0",
             "supplier": "Organization:  JuliaLang  ()",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.6#stdlib/Unicode",
+            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.7#stdlib/Unicode",
             "filesAnalyzed": true,
             "packageVerificationCode": {
                 "packageVerificationCodeValue": "9b3bfd2372c63f70063ed3e3f89e407f55cdbf57"
@@ -232,7 +233,7 @@
             "versionInfo": "1.11.0",
             "supplier": "Organization:  JuliaLang  ()",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.6#stdlib/Printf",
+            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.7#stdlib/Printf",
             "filesAnalyzed": true,
             "packageVerificationCode": {
                 "packageVerificationCodeValue": "c55ff13dd479e98ca597af1cdc28b6f287ba0e9b"
@@ -258,7 +259,7 @@
             "versionInfo": "1.11.0",
             "supplier": "Organization:  JuliaLang  ()",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.6#stdlib/Dates",
+            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.7#stdlib/Dates",
             "filesAnalyzed": true,
             "packageVerificationCode": {
                 "packageVerificationCodeValue": "71289a9643167f34722fc70914f339ca7d4072cc"
@@ -290,6 +291,7 @@
                 "packageVerificationCodeValue": "05816d2dddb19085a0872b52871e72c7a0b51aaa"
             },
             "homepage": "https://github.com/JuliaObjects/ConstructionBase.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -318,6 +320,7 @@
                 "packageVerificationCodeValue": "e4eb24060849d5c1b36c5c80c8cc5f17223f2cc6"
             },
             "homepage": "https://github.com/JuliaFunctional/CompositionsBase.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -346,6 +349,7 @@
                 "packageVerificationCodeValue": "b551a46b93f802b142439546c82e8e99540ed6aa"
             },
             "homepage": "https://github.com/JuliaMath/InverseFunctions.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -374,6 +378,7 @@
                 "packageVerificationCodeValue": "60a805e46073bc69096355e98a798602bca4c675"
             },
             "homepage": "https://github.com/FluxML/MacroTools.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -402,6 +407,7 @@
                 "packageVerificationCodeValue": "69afc969e00dc8f4441ebe3c11ee98829b2c3588"
             },
             "homepage": "https://github.com/JuliaObjects/Accessors.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -454,7 +460,7 @@
             "versionInfo": "1.11.0",
             "supplier": "Organization:  JuliaLang  ()",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.6#stdlib/Logging",
+            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.7#stdlib/Logging",
             "filesAnalyzed": true,
             "packageVerificationCode": {
                 "packageVerificationCodeValue": "731d414cc5709dc3feb6db3b61208e8c5afca324"
@@ -480,7 +486,7 @@
             "versionInfo": "1.11.0",
             "supplier": "Organization:  JuliaLang  ()",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.6#stdlib/Random",
+            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.7#stdlib/Random",
             "filesAnalyzed": true,
             "packageVerificationCode": {
                 "packageVerificationCodeValue": "f473f1734bd718d8d00ea5d33952fbacdb4d0ef1"
@@ -506,7 +512,7 @@
             "versionInfo": "1.11.0",
             "supplier": "Organization:  JuliaLang  ()",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.6#stdlib/UUIDs",
+            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.7#stdlib/UUIDs",
             "filesAnalyzed": true,
             "packageVerificationCode": {
                 "packageVerificationCodeValue": "fdee1a154075774a2a6b680c5e8fe76fc794dc97"
@@ -538,6 +544,7 @@
                 "packageVerificationCodeValue": "af24100cd903a41f6be6afc887c1ebb837cfe732"
             },
             "homepage": "https://github.com/JuliaLogging/ProgressLogging.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -566,6 +573,7 @@
                 "packageVerificationCodeValue": "8f2eb9c19ce3599db2258b1f803bfcb05b00b402"
             },
             "homepage": "https://github.com/Deltares/BasicModelInterface.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -594,6 +602,7 @@
                 "packageVerificationCodeValue": "a2c8e49e7e0ac591f5aaa76a78fb083eb01be139"
             },
             "homepage": "https://github.com/JuliaCollections/OrderedCollections.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -613,15 +622,16 @@
         {
             "name": "DataStructures",
             "SPDXID": "SPDXRef-DataStructures-864edb3b-99cc-5e75-8d2d-829cb0a9cfe8",
-            "versionInfo": "0.19.5",
+            "versionInfo": "0.19.6",
             "supplier": "NOASSERTION",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaCollections/DataStructures.jl.git@6fb53a69613a0b2b68a0d12671717d307ab8b24e",
+            "downloadLocation": "git+https://github.com/JuliaCollections/DataStructures.jl.git@b0bc6d2cad1fed8b7fd59a1551a991cb3d2809e6",
             "filesAnalyzed": true,
             "packageVerificationCode": {
-                "packageVerificationCodeValue": "90ec2ea3c85631d8db45560c09367773aafcd86b"
+                "packageVerificationCodeValue": "52b9d2172f68746b4bf7032a7bb5cd1baeab1e6d"
             },
             "homepage": "https://github.com/JuliaCollections/DataStructures.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -634,7 +644,7 @@
                 {
                     "referenceCategory": "PACKAGE-MANAGER",
                     "referenceType": "purl",
-                    "referenceLocator": "pkg:julia/DataStructures@0.19.5?uuid=864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
+                    "referenceLocator": "pkg:julia/DataStructures@0.19.6?uuid=864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
                 }
             ]
         },
@@ -679,6 +689,7 @@
                 "packageVerificationCodeValue": "3b369ca0fc452ea321d32dd774d130d0c9467f04"
             },
             "homepage": "https://github.com/JuliaPackaging/Preferences.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -707,6 +718,7 @@
                 "packageVerificationCodeValue": "d5baf5959e6db9d990ff413de40d09afef50b8e2"
             },
             "homepage": "https://github.com/JuliaLang/PrecompileTools.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -735,6 +747,7 @@
                 "packageVerificationCodeValue": "ff04d8d51c1e43270f81bdf86dfd2fe293500e87"
             },
             "homepage": "https://github.com/JuliaArrays/StaticArraysCore.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -763,6 +776,7 @@
                 "packageVerificationCodeValue": "0df70e7dd6bb14ea46cd467b4185a903cd2a40cd"
             },
             "homepage": "https://github.com/JuliaArrays/StaticArrays.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT",
@@ -792,6 +806,7 @@
                 "packageVerificationCodeValue": "bfe37b9e45e4677b9f06188ce6bdfa3e64cd7aaa"
             },
             "homepage": "https://github.com/JuliaLinearAlgebra/ArnoldiMethod.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -814,10 +829,10 @@
             "versionInfo": "1.11.0",
             "supplier": "Organization:  JuliaLang  ()",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.6#stdlib/Serialization",
+            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.7#stdlib/Serialization",
             "filesAnalyzed": true,
             "packageVerificationCode": {
-                "packageVerificationCodeValue": "f62a55df53f2a541d6f9ebc305f216d5eeaafbcc"
+                "packageVerificationCodeValue": "375986255b0f704d59658f367c8a94c57ea5c7d4"
             },
             "homepage": "https://julialang.org",
             "sourceInfo": "This package is part of the Julia standard library and is located in the Julia source code tree.",
@@ -866,10 +881,10 @@
             "versionInfo": "1.12.0",
             "supplier": "Organization:  JuliaLang  ()",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.6#stdlib/SparseArrays",
+            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.7#stdlib/SparseArrays",
             "filesAnalyzed": true,
             "packageVerificationCode": {
-                "packageVerificationCodeValue": "184745e0298e386ee482304052f446183fbe3c7c"
+                "packageVerificationCodeValue": "b421d12bf0ffd0aaff476d3e42cf7ce882b44bec"
             },
             "homepage": "https://julialang.org",
             "sourceInfo": "This package is part of the Julia standard library and is located in the Julia source code tree.",
@@ -901,6 +916,7 @@
                 "packageVerificationCodeValue": "718515bc376ee990ab971b62714ecf50d65598c1"
             },
             "homepage": "https://github.com/GunnarFarneback/Inflate.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -923,7 +939,7 @@
             "versionInfo": "1.11.0",
             "supplier": "Organization:  JuliaLang  ()",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.6#stdlib/StyledStrings",
+            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.7#stdlib/StyledStrings",
             "filesAnalyzed": true,
             "packageVerificationCode": {
                 "packageVerificationCodeValue": "f8363636ab1ce17b20ad9f5b97440a924699cd08"
@@ -952,7 +968,7 @@
             "versionInfo": "1.11.0",
             "supplier": "Organization:  JuliaLang  ()",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.6#stdlib/Base64",
+            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.7#stdlib/Base64",
             "filesAnalyzed": true,
             "packageVerificationCode": {
                 "packageVerificationCodeValue": "50ce0af2d4765e9462d31dfeda8933c8d25373c8"
@@ -978,7 +994,7 @@
             "versionInfo": "1.12.0",
             "supplier": "Organization:  JuliaLang  ()",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.6#stdlib/JuliaSyntaxHighlighting",
+            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.7#stdlib/JuliaSyntaxHighlighting",
             "filesAnalyzed": true,
             "packageVerificationCode": {
                 "packageVerificationCodeValue": "a93f7aae423b56ee03847590b88adc05009268c7"
@@ -1007,7 +1023,7 @@
             "versionInfo": "1.11.0",
             "supplier": "Organization:  JuliaLang  ()",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.6#stdlib/Markdown",
+            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.7#stdlib/Markdown",
             "filesAnalyzed": true,
             "packageVerificationCode": {
                 "packageVerificationCodeValue": "742c9f6bd32160f43d5c0d98c8f1a7489a725bdc"
@@ -1033,7 +1049,7 @@
             "versionInfo": "1.11.0",
             "supplier": "Organization:  JuliaLang  ()",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.6#stdlib/InteractiveUtils",
+            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.7#stdlib/InteractiveUtils",
             "filesAnalyzed": true,
             "packageVerificationCode": {
                 "packageVerificationCodeValue": "f62333db0f8b773792f831326a89c577f1b983ab"
@@ -1065,6 +1081,7 @@
                 "packageVerificationCodeValue": "44f96d650023e485e1c838df6e7465b1b598ee36"
             },
             "homepage": "https://github.com/mauro3/SimpleTraits.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -1093,6 +1110,7 @@
                 "packageVerificationCodeValue": "c96d0c0705fa1133b041ba5e6b78fe2525e39797"
             },
             "homepage": "https://github.com/JuliaGraphs/Graphs.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "BSD-2-Clause",
@@ -1122,6 +1140,7 @@
                 "packageVerificationCodeValue": "67a4f68803a8059e695f5961a290bd64e9448653"
             },
             "homepage": "https://github.com/fredrikekre/EnumX.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -1144,7 +1163,7 @@
             "versionInfo": "1.11.0",
             "supplier": "Organization:  JuliaLang  ()",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.6#stdlib/Mmap",
+            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.7#stdlib/Mmap",
             "filesAnalyzed": true,
             "packageVerificationCode": {
                 "packageVerificationCodeValue": "17ec71eb4ef98577e285493035d9b8f063964411"
@@ -1165,17 +1184,18 @@
             ]
         },
         {
-            "name": "PropertyDicts",
-            "SPDXID": "SPDXRef-PropertyDicts-f8a19df8-e894-5f55-a973-672c1158cbca",
-            "versionInfo": "0.2.1",
+            "name": "DelimitedFiles",
+            "SPDXID": "SPDXRef-DelimitedFiles-8bb1440f-4735-579b-a4ab-409b98df4dab",
+            "versionInfo": "1.9.1",
             "supplier": "NOASSERTION",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaCollections/PropertyDicts.jl.git@a6b4c12d38387a4382fa53b8a6591f9c219add16",
+            "downloadLocation": "git+https://github.com/JuliaData/DelimitedFiles.jl.git@9e2f36d3c96a820c678f2f1f1782582fcf685bae",
             "filesAnalyzed": true,
             "packageVerificationCode": {
                 "packageVerificationCodeValue": "75953b0316ba1232a2fbba58bf6fb27d9a676e39"
             },
             "homepage": "https://github.com/JuliaData/DelimitedFiles.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -1204,6 +1224,7 @@
                 "packageVerificationCodeValue": "58d4b3431ae1623c957a6f4b71e8fcef7a1a7ce2"
             },
             "homepage": "https://github.com/JuliaSIMD/ManualMemory.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -1232,6 +1253,7 @@
                 "packageVerificationCodeValue": "4c11e2bf54d34c03e26f4c96866651340794bec4"
             },
             "homepage": "https://github.com/JuliaSIMD/ThreadingUtilities.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -1260,6 +1282,7 @@
                 "packageVerificationCodeValue": "f22cb16b1d746e2399882e4d8cd54519b4ae5ac0"
             },
             "homepage": "https://github.com/SciML/IfElse.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -1279,15 +1302,16 @@
         {
             "name": "SciMLPublic",
             "SPDXID": "SPDXRef-SciMLPublic-431bcebd-1456-4ced-9d72-93c2757fff0b",
-            "versionInfo": "1.2.0",
+            "versionInfo": "1.2.4",
             "supplier": "NOASSERTION",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/SciML/SciMLPublic.jl.git@912a1a941afb2a232183a485d86a437a25f88520",
+            "downloadLocation": "git+https://github.com/SciML/SciMLPublic.jl.git@cf9aaf8b9ed5db993259ea8b24cf2b7ba9bd3b79",
             "filesAnalyzed": true,
             "packageVerificationCode": {
-                "packageVerificationCodeValue": "9d8f1158360a684ad6f47af0fe7342e4edf2b6b8"
+                "packageVerificationCodeValue": "ef7b4ed297e0e95899df620a2d92884076f3727b"
             },
             "homepage": "https://github.com/SciML/SciMLPublic.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -1300,22 +1324,23 @@
                 {
                     "referenceCategory": "PACKAGE-MANAGER",
                     "referenceType": "purl",
-                    "referenceLocator": "pkg:julia/SciMLPublic@1.2.0?uuid=431bcebd-1456-4ced-9d72-93c2757fff0b"
+                    "referenceLocator": "pkg:julia/SciMLPublic@1.2.4?uuid=431bcebd-1456-4ced-9d72-93c2757fff0b"
                 }
             ]
         },
         {
             "name": "CommonWorldInvalidations",
             "SPDXID": "SPDXRef-CommonWorldInvalidations-f70d9fcc-98c5-4d4a-abd7-e4cdeebd8ca8",
-            "versionInfo": "1.1.0",
+            "versionInfo": "1.1.2",
             "supplier": "NOASSERTION",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/SciML/CommonWorldInvalidations.jl.git@f1697a56da59e8a2cefcbbfe71c13354a6f18c61",
+            "downloadLocation": "git+https://github.com/SciML/CommonWorldInvalidations.jl.git@ef2022bff55342a8c9846cdf218f62e475f0444d",
             "filesAnalyzed": true,
             "packageVerificationCode": {
-                "packageVerificationCodeValue": "9facbfaffdc185e3650391b50cd3f73eb5907405"
+                "packageVerificationCodeValue": "17b182ffbf6c7d0ab87ccd4b26536f6c4d34b644"
             },
             "homepage": "https://github.com/SciML/CommonWorldInvalidations.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -1328,22 +1353,23 @@
                 {
                     "referenceCategory": "PACKAGE-MANAGER",
                     "referenceType": "purl",
-                    "referenceLocator": "pkg:julia/CommonWorldInvalidations@1.1.0?uuid=f70d9fcc-98c5-4d4a-abd7-e4cdeebd8ca8"
+                    "referenceLocator": "pkg:julia/CommonWorldInvalidations@1.1.2?uuid=f70d9fcc-98c5-4d4a-abd7-e4cdeebd8ca8"
                 }
             ]
         },
         {
             "name": "Static",
             "SPDXID": "SPDXRef-Static-aedffcd0-7271-4cad-89d0-dc628f76c6d3",
-            "versionInfo": "1.4.1",
+            "versionInfo": "1.4.5",
             "supplier": "NOASSERTION",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/SciML/Static.jl.git@cbc2fed5b692d12e199397471ba6c5988f69b629",
+            "downloadLocation": "git+https://github.com/SciML/Static.jl.git@4abff9ad312e476839c25b9398f619255af9a0e4",
             "filesAnalyzed": true,
             "packageVerificationCode": {
-                "packageVerificationCodeValue": "af9e5f8c8bfab3e7d8e5f997b3270dbd9c93b157"
+                "packageVerificationCodeValue": "246feb3df7b672a4581113cef4e2dcf54d0535d6"
             },
             "homepage": "https://github.com/SciML/Static.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -1356,7 +1382,7 @@
                 {
                     "referenceCategory": "PACKAGE-MANAGER",
                     "referenceType": "purl",
-                    "referenceLocator": "pkg:julia/Static@1.4.1?uuid=aedffcd0-7271-4cad-89d0-dc628f76c6d3"
+                    "referenceLocator": "pkg:julia/Static@1.4.5?uuid=aedffcd0-7271-4cad-89d0-dc628f76c6d3"
                 }
             ]
         },
@@ -1372,6 +1398,7 @@
                 "packageVerificationCodeValue": "13aeb7fd6ba1b13c74ee159488ab339b9768efc7"
             },
             "homepage": "https://github.com/JuliaSIMD/BitTwiddlingConvenienceFunctions.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -1400,6 +1427,7 @@
                 "packageVerificationCodeValue": "a9e60ed8edd81ce4e4f1b32b2794eb0dff51d312"
             },
             "homepage": "https://github.com/m-j-w/CpuId.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -1428,6 +1456,7 @@
                 "packageVerificationCodeValue": "54a815fd42f86bf316eb71b10ea95b7f75f86ed2"
             },
             "homepage": "https://github.com/JuliaSIMD/CPUSummary.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -1456,6 +1485,7 @@
                 "packageVerificationCodeValue": "2353307bbe2fcced98a16ba09bd6682575d33da4"
             },
             "homepage": "https://github.com/JuliaSIMD/PolyesterWeave.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -1484,6 +1514,7 @@
                 "packageVerificationCodeValue": "3719f53950b6d844dcf1e564048d0f51ff1eb899"
             },
             "homepage": "https://github.com/JuliaGPU/Adapt.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -1503,15 +1534,16 @@
         {
             "name": "ArrayInterface",
             "SPDXID": "SPDXRef-ArrayInterface-4fba245c-0d91-5ea0-9b3e-6abc04ee57a9",
-            "versionInfo": "7.27.0",
+            "versionInfo": "7.28.1",
             "supplier": "NOASSERTION",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaArrays/ArrayInterface.jl.git@75757da5d9f771ef5909fc84f81d2f9d24127315",
+            "downloadLocation": "git+https://github.com/JuliaArrays/ArrayInterface.jl.git@60f11b38ebeabd984f5535838d91e197d97202f0",
             "filesAnalyzed": true,
             "packageVerificationCode": {
-                "packageVerificationCodeValue": "855a4d7499e6065bcfc1c810855f7d47b91514dd"
+                "packageVerificationCodeValue": "4b6f9262c1404a0ed3e3df3929800c688870ec50"
             },
             "homepage": "https://github.com/JuliaArrays/ArrayInterface.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -1524,7 +1556,7 @@
                 {
                     "referenceCategory": "PACKAGE-MANAGER",
                     "referenceType": "purl",
-                    "referenceLocator": "pkg:julia/ArrayInterface@7.27.0?uuid=4fba245c-0d91-5ea0-9b3e-6abc04ee57a9"
+                    "referenceLocator": "pkg:julia/ArrayInterface@7.28.1?uuid=4fba245c-0d91-5ea0-9b3e-6abc04ee57a9"
                 }
             ]
         },
@@ -1540,6 +1572,7 @@
                 "packageVerificationCodeValue": "76de5eebbf85c7543c1a18534be2a8e66abd3da2"
             },
             "homepage": "https://github.com/JuliaLang/Compat.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -1568,6 +1601,7 @@
                 "packageVerificationCodeValue": "be952377266356c366f8c09aba273d0e70226292"
             },
             "homepage": "https://github.com/JuliaArrays/StaticArrayInterface.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -1596,6 +1630,7 @@
                 "packageVerificationCodeValue": "13f4ce91a0003a31d1635209c4a9dc5dce3f53ee"
             },
             "homepage": "https://github.com/JuliaSIMD/SIMDTypes.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -1624,6 +1659,7 @@
                 "packageVerificationCodeValue": "6dab017b7618f81c2dbbe06ef526d964778b8289"
             },
             "homepage": "https://github.com/JuliaSIMD/LayoutPointers.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -1652,6 +1688,7 @@
                 "packageVerificationCodeValue": "aee8a8d90663194c8ebdd32bbb7dd95841b63431"
             },
             "homepage": "https://github.com/JuliaSIMD/CloseOpenIntervals.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -1680,6 +1717,7 @@
                 "packageVerificationCodeValue": "75d7dfeca76a83c8705e6892c23e2cc3090dc859"
             },
             "homepage": "https://github.com/JuliaSIMD/StrideArraysCore.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -1708,6 +1746,7 @@
                 "packageVerificationCodeValue": "70970d03731b2580dd33021158d9b34455127f8e"
             },
             "homepage": "https://github.com/JuliaSIMD/Polyester.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -1736,6 +1775,7 @@
                 "packageVerificationCodeValue": "c94dcf3d3942a779bcf955529bd9dae2857cc289"
             },
             "homepage": "https://github.com/JuliaCollections/PropertyDicts.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -1764,6 +1804,7 @@
                 "packageVerificationCodeValue": "bcad5b09e24d216c8018ed0f8b9ef4c37fc53839"
             },
             "homepage": "https://github.com/JuliaLogging/LoggingExtras.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -1792,6 +1833,7 @@
                 "packageVerificationCodeValue": "2e01583dc74ef5d6c19fde5ea01430a2104e1359"
             },
             "homepage": "https://github.com/JuliaCollections/AbstractTrees.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -1820,6 +1862,7 @@
                 "packageVerificationCodeValue": "efa5ce0a56986018b9084bcc5d398571eb74ae13"
             },
             "homepage": "https://github.com/JuliaCollections/LeftChildRightSiblingTrees.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -1848,6 +1891,7 @@
                 "packageVerificationCodeValue": "bb05ec07eeb5cab560956757b792bfbf9678bab6"
             },
             "homepage": "https://github.com/JuliaLogging/TerminalLoggers.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -1876,6 +1920,7 @@
                 "packageVerificationCodeValue": "b71d0a68c1a1f710147fc0c892bd60af520a21c1"
             },
             "homepage": "https://github.com/JuliaGeo/CFTime.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -1904,6 +1949,7 @@
                 "packageVerificationCodeValue": "ef92dcf40b55e464547fdbaf928f7f6e80ae445e"
             },
             "homepage": "https://github.com/vtjnash/Glob.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -1926,7 +1972,7 @@
             "versionInfo": "1.3.0",
             "supplier": "Organization:  JuliaLang  ()",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.6#stdlib/NetworkOptions",
+            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.7#stdlib/NetworkOptions",
             "filesAnalyzed": true,
             "packageVerificationCode": {
                 "packageVerificationCodeValue": "9794cfded94b432e3afead3df7051730514c3a1c"
@@ -1961,6 +2007,7 @@
                 "packageVerificationCodeValue": "4466161c151a6592b174394c06acd67ae3286db1"
             },
             "homepage": "https://github.com/JuliaArrays/OffsetArrays.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -1989,6 +2036,7 @@
                 "packageVerificationCodeValue": "cdfbd54d4b6e6d14495869048fed1f12f30e0e2c"
             },
             "homepage": "https://github.com/JuliaCollections/LRUCache.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -2008,15 +2056,16 @@
         {
             "name": "DiskArrays",
             "SPDXID": "SPDXRef-DiskArrays-3c3547ce-8d99-4f5e-a174-61eb10b00ae3",
-            "versionInfo": "0.4.21",
+            "versionInfo": "0.4.22",
             "supplier": "NOASSERTION",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaIO/DiskArrays.jl.git@7821ce71d0b9c2948ab80f86237f1f4212dca861",
+            "downloadLocation": "git+https://github.com/JuliaIO/DiskArrays.jl.git@9903195c34a488c5265d9a105f39718b7a2b3568",
             "filesAnalyzed": true,
             "packageVerificationCode": {
-                "packageVerificationCodeValue": "80aea6e2d52516d15c85be70a28c4fd7c47235c0"
+                "packageVerificationCodeValue": "09d1a851d859bab320ac9716e4cd75d2e3abd584"
             },
             "homepage": "https://github.com/JuliaIO/DiskArrays.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -2029,7 +2078,7 @@
                 {
                     "referenceCategory": "PACKAGE-MANAGER",
                     "referenceType": "purl",
-                    "referenceLocator": "pkg:julia/DiskArrays@0.4.21?uuid=3c3547ce-8d99-4f5e-a174-61eb10b00ae3"
+                    "referenceLocator": "pkg:julia/DiskArrays@0.4.22?uuid=3c3547ce-8d99-4f5e-a174-61eb10b00ae3"
                 }
             ]
         },
@@ -2045,6 +2094,7 @@
                 "packageVerificationCodeValue": "df003eccff04817f1a748386f745dd33cb60f062"
             },
             "homepage": "https://github.com/JuliaGeo/CommonDataModel.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -2073,6 +2123,7 @@
                 "packageVerificationCodeValue": "6f8d83d7bb66e048cf164b43322f2abaaf473559"
             },
             "homepage": "https://github.com/JuliaParallel/MPI.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "Unlicense"
@@ -2101,6 +2152,7 @@
                 "packageVerificationCodeValue": "e195b7d0c0000b651d095edf6e581c9940b709d7"
             },
             "homepage": "https://github.com/JuliaPackaging/JLLWrappers.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -2120,13 +2172,13 @@
         {
             "name": "OpenSSL_jll",
             "SPDXID": "SPDXRef-OpenSSL-jll-458c3c95-2e84-50aa-8efc-19380b2a3a95",
-            "versionInfo": "3.5.4+0",
+            "versionInfo": "3.5.6+0",
             "supplier": "Organization:  JuliaLang  ()",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaBinaryWrappers/OpenSSL_jll.jl.git@f19301ae653233bc88b1810ae908194f07f8db9d",
+            "downloadLocation": "git+https://github.com/JuliaBinaryWrappers/OpenSSL_jll.jl.git@2ac022577e5eac7da040de17776d51bb770cd895",
             "filesAnalyzed": true,
             "packageVerificationCode": {
-                "packageVerificationCodeValue": "62b7183829976ae4d845df70c96b5b2cb533dad1"
+                "packageVerificationCodeValue": "2fa2fc6db2351f5484b89a81e9943a112091909f"
             },
             "homepage": "https://julialang.org",
             "sourceInfo": "This package is part of the Julia standard library.\nDownload Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
@@ -2139,7 +2191,7 @@
                 {
                     "referenceCategory": "PACKAGE-MANAGER",
                     "referenceType": "purl",
-                    "referenceLocator": "pkg:julia/OpenSSL_jll@3.5.4+0?uuid=458c3c95-2e84-50aa-8efc-19380b2a3a95"
+                    "referenceLocator": "pkg:julia/OpenSSL_jll@3.5.6+0?uuid=458c3c95-2e84-50aa-8efc-19380b2a3a95"
                 }
             ]
         },
@@ -2205,6 +2257,7 @@
                 "packageVerificationCodeValue": "5a081186140ca883aca458755202a0c8715e9c7b"
             },
             "homepage": "https://github.com/JuliaBinaryWrappers/Bzip2_jll.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -2479,6 +2532,7 @@
                 "packageVerificationCodeValue": "12a10477a86996106be3349ff9d6c541a49b12a8"
             },
             "homepage": "https://github.com/JuliaBinaryWrappers/XZ_jll.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -2560,6 +2614,7 @@
                 "packageVerificationCodeValue": "7e238f6810a10484646587404435a940af6e29b9"
             },
             "homepage": "https://github.com/JuliaBinaryWrappers/Zstd_jll.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -2633,6 +2688,7 @@
                 "packageVerificationCodeValue": "0bc2367837c5a4462d4a22a9e05e1c635c9dd4d4"
             },
             "homepage": "https://github.com/JuliaBinaryWrappers/libzip_jll.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -2708,6 +2764,7 @@
                 "packageVerificationCodeValue": "2b59c08b9f5f7dc2d0b9d1681593314c004d1034"
             },
             "homepage": "https://github.com/JuliaBinaryWrappers/libaec_jll.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -2787,6 +2844,7 @@
                 "packageVerificationCodeValue": "0459b1539d01148532bae3554d1cf2ddc7a5a10f"
             },
             "homepage": "https://github.com/JuliaBinaryWrappers/Lz4_jll.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -2863,6 +2921,7 @@
                 "packageVerificationCodeValue": "3e3f0a6c68d6b04db43cd6512a7af48a10b4ee06"
             },
             "homepage": "https://github.com/JuliaBinaryWrappers/Blosc_jll.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -2885,7 +2944,7 @@
             "versionInfo": "2025.11.4",
             "supplier": "Organization:  JuliaLang  ()",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.6#stdlib/MozillaCACerts_jll",
+            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.7#stdlib/MozillaCACerts_jll",
             "filesAnalyzed": true,
             "packageVerificationCode": {
                 "packageVerificationCodeValue": "8997078c70bf315e85662e3a4cca81b9e98625cb"
@@ -3018,7 +3077,7 @@
             "versionInfo": "1.11.0",
             "supplier": "Organization:  JuliaLang  ()",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.6#stdlib/FileWatching",
+            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.7#stdlib/FileWatching",
             "filesAnalyzed": true,
             "packageVerificationCode": {
                 "packageVerificationCodeValue": "aa0959051f9bae82bec09c681d1863c847351e4b"
@@ -3044,7 +3103,7 @@
             "versionInfo": "1.1.2",
             "supplier": "Organization:  JuliaLang  ()",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.6#stdlib/ArgTools",
+            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.7#stdlib/ArgTools",
             "filesAnalyzed": true,
             "packageVerificationCode": {
                 "packageVerificationCodeValue": "662b336a52abae0f2c017d4ee9c146913cd100b9"
@@ -3102,7 +3161,7 @@
             "versionInfo": "1.10.0",
             "supplier": "Organization:  JuliaLang  ()",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.6#stdlib/Tar",
+            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.7#stdlib/Tar",
             "filesAnalyzed": true,
             "packageVerificationCode": {
                 "packageVerificationCodeValue": "14e532447ffa5db7a55e1500d150b51dbb16f2e7"
@@ -3157,7 +3216,7 @@
             "versionInfo": "1.11.0",
             "supplier": "Organization:  JuliaLang  ()",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.6#stdlib/LibGit2",
+            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.7#stdlib/LibGit2",
             "filesAnalyzed": true,
             "packageVerificationCode": {
                 "packageVerificationCodeValue": "69abffd45e5f14959c7c3ecdd4def18e6f745be4"
@@ -3209,10 +3268,10 @@
             "versionInfo": "1.12.1",
             "supplier": "Organization:  JuliaLang  ()",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.6#stdlib/Pkg",
+            "downloadLocation": "git+https://github.com/JuliaLang/julia.git@v1.12.7#stdlib/Pkg",
             "filesAnalyzed": true,
             "packageVerificationCode": {
-                "packageVerificationCodeValue": "285b883f24e205db1fdc9c49ba1b601d1a7aaec9"
+                "packageVerificationCodeValue": "a1a99ece717662028d0ee1ae24c627234a92d93a"
             },
             "homepage": "https://julialang.org",
             "sourceInfo": "This package is part of the Julia standard library and is located in the Julia source code tree.",
@@ -3323,6 +3382,7 @@
                 "packageVerificationCodeValue": "6875b8567d35c67fa56627dde112284f735ac1b4"
             },
             "homepage": "https://github.com/JuliaBinaryWrappers/Libiconv_jll.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -3396,6 +3456,7 @@
                 "packageVerificationCodeValue": "f2f1f4e9dabd4534c9d0240b84a5d327bdc88fd6"
             },
             "homepage": "https://github.com/JuliaBinaryWrappers/XML2_jll.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -3470,6 +3531,7 @@
                 "packageVerificationCodeValue": "4ee52d882bd02f5c76cfc3154468f2b15f5f992c"
             },
             "homepage": "https://github.com/JuliaBinaryWrappers/Xorg_libpciaccess_jll.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -3547,6 +3609,7 @@
                 "packageVerificationCodeValue": "b2ebad870a9855ffd957de4988cbb505954eb3db"
             },
             "homepage": "https://github.com/JuliaBinaryWrappers/Hwloc_jll.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -3610,6 +3673,7 @@
                 "packageVerificationCodeValue": "68f8a3c31871d6053f630cc9d0520d8221f9b987"
             },
             "homepage": "https://github.com/JuliaBinaryWrappers/MPIABI_jll.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -3683,6 +3747,7 @@
                 "packageVerificationCodeValue": "ee2da2ba8fda1c1911ff8b007e88fd89528e2222"
             },
             "homepage": "https://github.com/JuliaBinaryWrappers/aws_c_common_jll.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -3755,6 +3820,7 @@
                 "packageVerificationCodeValue": "23a732aa6bbc57800fb1b6627663bd781b77971d"
             },
             "homepage": "https://github.com/JuliaBinaryWrappers/aws_c_compression_jll.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -3824,6 +3890,7 @@
                 "packageVerificationCodeValue": "61a1a4d10e650c244de8578d322125e356903693"
             },
             "homepage": "https://github.com/JuliaBinaryWrappers/aws_c_cal_jll.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -3897,6 +3964,7 @@
                 "packageVerificationCodeValue": "d35161b4927f91900ff4bb5db97ed93c782826fe"
             },
             "homepage": "https://github.com/JuliaBinaryWrappers/s2n_tls_jll.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -3969,6 +4037,7 @@
                 "packageVerificationCodeValue": "6817afe77a6d3ed24706bcb846057fa39bd93ea3"
             },
             "homepage": "https://github.com/JuliaBinaryWrappers/aws_c_io_jll.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -4041,6 +4110,7 @@
                 "packageVerificationCodeValue": "defd7caa29f1d673de1e0a016e9ad46c01d620a9"
             },
             "homepage": "https://github.com/JuliaBinaryWrappers/aws_c_http_jll.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -4113,6 +4183,7 @@
                 "packageVerificationCodeValue": "37588f25e0d759731b6bf1db502865ab0bbe6996"
             },
             "homepage": "https://github.com/JuliaBinaryWrappers/aws_checksums_jll.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -4185,6 +4256,7 @@
                 "packageVerificationCodeValue": "555f14921d79be6e7bff1a5b4ad54f00f33f3fa2"
             },
             "homepage": "https://github.com/JuliaBinaryWrappers/aws_c_sdkutils_jll.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -4257,6 +4329,7 @@
                 "packageVerificationCodeValue": "3ba2cd35e67f4b02a0b12b6675bbfd4d179d36f6"
             },
             "homepage": "https://github.com/JuliaBinaryWrappers/aws_c_auth_jll.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -4330,6 +4403,7 @@
                 "packageVerificationCodeValue": "05eff5fffc90334f456b6c846c47df8990468d60"
             },
             "homepage": "https://github.com/JuliaBinaryWrappers/aws_c_s3_jll.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -4415,6 +4489,7 @@
                 "packageVerificationCodeValue": "1689e9ae60574ddc19982bfe748276769b3b90f9"
             },
             "homepage": "https://github.com/JuliaBinaryWrappers/MPICH_jll.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -4478,6 +4553,7 @@
                 "packageVerificationCodeValue": "71d748cfadf80f7c034df8a5a26560df5ccc59b8"
             },
             "homepage": "https://github.com/JuliaBinaryWrappers/MPItrampoline_jll.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -4541,6 +4617,7 @@
                 "packageVerificationCodeValue": "a1996b5b883cbe5b8f825977b4782785b6f16a3b"
             },
             "homepage": "https://github.com/JuliaBinaryWrappers/OpenMPI_jll.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -4569,6 +4646,7 @@
                 "packageVerificationCodeValue": "f40d26891419638620873dcc9cb0b9240af5b650"
             },
             "homepage": "https://github.com/JuliaBinaryWrappers/MicrosoftMPI_jll.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -4632,6 +4710,7 @@
                 "packageVerificationCodeValue": "9032b5d5f3b3f16b697089ff050bd7a60cbf5d0d"
             },
             "homepage": "https://github.com/JuliaBinaryWrappers/mpif_jll.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -4660,6 +4739,7 @@
                 "packageVerificationCodeValue": "5fffdd20e6f30dddd3660beaa26f3f6d9b392a58"
             },
             "homepage": "https://github.com/JuliaBinaryWrappers/dlfcn_win32_jll.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -4723,6 +4803,7 @@
                 "packageVerificationCodeValue": "5357263c0b94a0da01b756fa7430dfdb00255e0c"
             },
             "homepage": "https://github.com/JuliaBinaryWrappers/HDF5_jll.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -4741,29 +4822,29 @@
         },
         {
             "name": "NetCDF_source",
-            "SPDXID": "SPDXRef-a936ccbd75d47e98942292f09c98bfdfb846c25e",
+            "SPDXID": "SPDXRef-ef97160d37c0df21788adc1b265a78405f7ebc2a",
             "supplier": "NOASSERTION",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaPackaging/Yggdrasil.git@a936ccbd75d47e98942292f09c98bfdfb846c25e#/N/NetCDF/",
+            "downloadLocation": "git+https://github.com/JuliaPackaging/Yggdrasil.git@ef97160d37c0df21788adc1b265a78405f7ebc2a#/N/NetCDF/",
             "filesAnalyzed": false,
-            "sourceInfo": "The location of this repository was extracted from the README.md file of SPDXRef-ecfd21b4fca4340051af20e69688661e3eff0484",
+            "sourceInfo": "The location of this repository was extracted from the README.md file of SPDXRef-1d908ca2b2217e5aea3dcec70c7febf2293f10dd",
             "licenseConcluded": "NOASSERTION",
             "licenseDeclared": "NOASSERTION",
             "copyrightText": "NOASSERTION",
-            "summary": "The binary artifact SPDXRef-ecfd21b4fca4340051af20e69688661e3eff0484 is built using the scripts and source files in this package.\nThe build system is called Yggdrasil, the Julia community build tree.",
+            "summary": "The binary artifact SPDXRef-1d908ca2b2217e5aea3dcec70c7febf2293f10dd is built using the scripts and source files in this package.\nThe build system is called Yggdrasil, the Julia community build tree.",
             "comment": "The SPDX ID field is derived from the Git hash in the DownloadLocation"
         },
         {
             "name": "NetCDF",
-            "SPDXID": "SPDXRef-ecfd21b4fca4340051af20e69688661e3eff0484",
+            "SPDXID": "SPDXRef-1d908ca2b2217e5aea3dcec70c7febf2293f10dd",
             "supplier": "NOASSERTION",
             "originator": "NOASSERTION",
-            "downloadLocation": "https://github.com/JuliaBinaryWrappers/NetCDF_jll.jl/releases/download/NetCDF-v401.1000.0+0/NetCDF.v401.1000.0.x86_64-linux-gnu-mpi+openmpi.tar.gz",
+            "downloadLocation": "https://github.com/JuliaBinaryWrappers/NetCDF_jll.jl/releases/download/NetCDF-v401.1000.100+0/NetCDF.v401.1000.100.x86_64-linux-gnu-mpi+openmpi.tar.gz",
             "filesAnalyzed": true,
             "checksums": [
                 {
                     "algorithm": "SHA256",
-                    "checksumValue": "f20bffd9d788525a6032b293ea4fb46cae7626f53d080f77348feba701c0a3df"
+                    "checksumValue": "1157c224ebd75654a5d2639c8d43570d009f80ca7485bb8ae0e8aad4de5af8c0"
                 }
             ],
             "homepage": "NOASSERTION",
@@ -4777,15 +4858,16 @@
         {
             "name": "NetCDF_jll",
             "SPDXID": "SPDXRef-NetCDF-jll-7243133f-43d8-5620-bbf4-c2c921802cf3",
-            "versionInfo": "401.1000.0+0",
+            "versionInfo": "401.1000.100+0",
             "supplier": "NOASSERTION",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaBinaryWrappers/NetCDF_jll.jl.git@8a36db9b934b0e72583e624abc8f3b3d60554f2c",
+            "downloadLocation": "git+https://github.com/JuliaBinaryWrappers/NetCDF_jll.jl.git@b9584045c11c1c89d24083bb654c37b73a447877",
             "filesAnalyzed": true,
             "packageVerificationCode": {
-                "packageVerificationCodeValue": "e0af405a0de5b66581e4eadb741e3a360b1cb7f7"
+                "packageVerificationCodeValue": "7736b088a345aa7629c4ea0b419baba40da42591"
             },
             "homepage": "https://github.com/JuliaBinaryWrappers/NetCDF_jll.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -4798,7 +4880,7 @@
                 {
                     "referenceCategory": "PACKAGE-MANAGER",
                     "referenceType": "purl",
-                    "referenceLocator": "pkg:julia/NetCDF_jll@401.1000.0+0?uuid=7243133f-43d8-5620-bbf4-c2c921802cf3"
+                    "referenceLocator": "pkg:julia/NetCDF_jll@401.1000.100+0?uuid=7243133f-43d8-5620-bbf4-c2c921802cf3"
                 }
             ]
         },
@@ -4814,6 +4896,7 @@
                 "packageVerificationCodeValue": "25473a32c313a3e89e5d02fccf710177d424b09d"
             },
             "homepage": "https://github.com/JuliaGeo/NCDatasets.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -4842,6 +4925,7 @@
                 "packageVerificationCodeValue": "c49b9ceab5b1e380e0284343698d40d0f5b40600"
             },
             "homepage": "https://github.com/mauro3/UnPack.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -4870,6 +4954,7 @@
                 "packageVerificationCodeValue": "1e99aa438cb98039329cdbbef4c963dd69b5911f"
             },
             "homepage": "https://github.com/mauro3/Parameters.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -4898,6 +4983,7 @@
                 "packageVerificationCodeValue": "c2048647d30bbc8db055f3a1486358be225ed243"
             },
             "homepage": "https://github.com/JuliaArrays/FillArrays.jl.git",
+            "sourceInfo": "Download Location is supplied by the General registry:\nhttps://github.com/JuliaRegistries/General.git\nThe hash supplied in Download Location is not the typical git commit hash. Instead it is a git tree hash. The easiest way to retrieve this version from the cloned repository is to use the command:\ngit archive --output=path/to/archive.tar <tree hash>",
             "licenseConcluded": "NOASSERTION",
             "licenseInfoFromFiles": [
                 "MIT"
@@ -7077,12 +7163,12 @@
             "relatedSpdxElement": "SPDXRef-NetCDF-jll-7243133f-43d8-5620-bbf4-c2c921802cf3"
         },
         {
-            "spdxElementId": "SPDXRef-ecfd21b4fca4340051af20e69688661e3eff0484",
+            "spdxElementId": "SPDXRef-1d908ca2b2217e5aea3dcec70c7febf2293f10dd",
             "relationshipType": "GENERATED_FROM",
-            "relatedSpdxElement": "SPDXRef-a936ccbd75d47e98942292f09c98bfdfb846c25e"
+            "relatedSpdxElement": "SPDXRef-ef97160d37c0df21788adc1b265a78405f7ebc2a"
         },
         {
-            "spdxElementId": "SPDXRef-ecfd21b4fca4340051af20e69688661e3eff0484",
+            "spdxElementId": "SPDXRef-1d908ca2b2217e5aea3dcec70c7febf2293f10dd",
             "relationshipType": "RUNTIME_DEPENDENCY_OF",
             "relatedSpdxElement": "SPDXRef-NetCDF-jll-7243133f-43d8-5620-bbf4-c2c921802cf3"
         },

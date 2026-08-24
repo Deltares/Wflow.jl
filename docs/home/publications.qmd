@@ -21,7 +21,7 @@ van Verseveld, Willem, Visser, Martijn, Buitink, Joost, Boisgontier, Hélène, B
 Laurène, Weerts, Albrecht, Bootsma, Huite,  Baptista, Carlos Fernando, de Koning, Bart,
 Hartgring, Sebastian, Shin, Peter, Pronk, Maarten, Dalmijn, Brendan, Eilander, Dirk, Hofer,
 Julian, Hegnauer, Mark, Mendoza, Raul, Nelemans, Peter, & Meshgi, Ali, (YEAR).
-Deltares/Wflow.jl: unstable-master. <https://github.com/Deltares/Wflow.jl>, obtained:
+Deltares/Wflow.jl: unstable-main. <https://github.com/Deltares/Wflow.jl>, obtained:
 DATE\_OF\_DOWNLOAD.
 
 ## Publications using wflow
@@ -143,6 +143,10 @@ Journal of Novel Carbon Resource Sciences & Green Asia Strategy, 11, 3, 2691-269
 Purnamasari, D., Teuling, A. J., and Weerts, A. H., 2025.  Identifying irrigated areas using
 land surface temperature and hydrological modelling: application to the Rhine basin. Hydrol.
 Earth Syst. Sci., 29, 1483–1503. <https://doi.org/10.5194/hess-29-1483-2025>
+
+Purnamasari, D., van Verseveld, W., Buitink, J., Weiland, F. S., Dalmijn, B., Teuling, A. J., & Weerts, A. H., 2026.
+Impacts of incorporating anthropogenic water use in a high-resolution spatially distributed hydrological model on
+simulated basin-scale discharges. Water Resources Research, 62, e2025WR041581.<https://doi.org/10.1029/2025WR041581>
 
 Rakovec, O., Weerts, A.H., Sumihar, J., Uijlenhoet, R., 2015. Operational aspects of
 asynchronous filtering for flood forecasting. Hydrol. Earth Syst. Sci., 19, 2911–2924,

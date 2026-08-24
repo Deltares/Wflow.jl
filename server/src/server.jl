@@ -49,18 +49,29 @@ function shutdown(s::ZMQ.Socket, ctx::ZMQ.Context)
     return ZMQ.close(ctx)
 end
 
+"""
+    serialize_response(ret)
+
+Serialize the return value `ret` of a Wflow BMI function to a JSON string. JSON has no
+representation for the non-finite floating point values `NaN`, `Inf` and `-Inf`, so these
+are encoded as `null`.
+"""
+function serialize_response(ret)
+    return JSON.json(ret; allownan = true, nan = "null", inf = "null", ninf = "null")
+end
+
 "Error response ZMQ server"
 function response(err::AbstractString, s::ZMQ.Socket)
     @info "Send error response"
     resp = Dict{String, String}("status" => "ERROR", "error" => err)
-    return ZMQ.send(s, JSON3.write(resp))
+    return ZMQ.send(s, JSON.json(resp))
 end
 
 "Status response ZMQ server"
 function response(s::ZMQ.Socket)
     @info "Send status response"
     resp = Dict{String, String}("status" => "OK")
-    return ZMQ.send(s, JSON3.write(resp))
+    return ZMQ.send(s, JSON.json(resp))
 end
 
 "Validate JSON request against mapped Struct"
@@ -89,7 +100,7 @@ function wflow_bmi(s::ZMQ.Socket, handler::ModelHandler, f)
             response(s)
         else
             @info "Send response including output from Wflow function `$(f.fn)`"
-            ZMQ.send(s, JSON3.write(ret; allow_inf = true))
+            ZMQ.send(s, serialize_response(ret))
         end
     catch e
         @error "Wflow function `$(f.fn)` failed" exception = (e, catch_backtrace())
@@ -151,13 +162,13 @@ function start(port::Int)
         while true
             # Wait for next request from client
             req = ZMQ.recv(socket)
-            json = JSON3.read(req; allow_inf = true)
+            json = JSON.parse(req; allownan = true)
             @info "Received request to run function `$(json.fn)`..."
 
             if haskey(MAP_STRUCTS, json.fn)
                 v = valid_request(json)
                 if isnothing(v)
-                    f = StructTypes.constructfrom(MAP_STRUCTS[json.fn], json)
+                    f = JSON.parse(req, MAP_STRUCTS[json.fn]; allownan = true)
                     wflow_bmi(socket, handler, f)
                 else
                     err = (
