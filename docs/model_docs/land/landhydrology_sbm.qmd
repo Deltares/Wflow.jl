@@ -970,15 +970,39 @@ following setting in the TOML file:
 land_surface_water_reinfiltration__flag = true
 ```
 
-This can be done with both `kinematic_wave` and `local_inertial` land routing settings. When
-enabling this process, the amount of overland flow is added as water that can potentially
-infiltrate. To keep some water in the overland flow (and avoid draining a cell completely in
-one timestep), only 95% of the available overland flow depth (scaled by the non-river cell
-fraction `1 - river_fraction`) is made available for reinfiltration. During infiltration,
-the amount of infiltrated water originating from overland flow is tracked using a simple
-ratio (`available_from_overland_flow/total_potential_infiltration`). After the infiltration
-process, the volume of water in the overland flow is corrected to remove this water from the
-overland flow.
+This can be done with both `kinematic_wave` and `local_inertial` land routing settings.
+When enabling this process, part of the overland flow depth is added to the water available
+for infiltration. To keep some water in the overland flow (and avoid draining a cell
+completely in one time step), the potential infiltration from surface water
+`potential_infiltration_surfacewater` $\SIb{}{mm\ t^{-1}}$ is computed from the overland
+flow depth `waterdepth_land` $\SIb{}{mm}$ as:
+
+$$
+    \subtext{i}{pot, sw} = \subtext{h}{land} (1 - \subtext{f}{river}) \subtext{f}{reinfilt, max},
+$$
+
+where $\SIb{\subtext{f}{river}}{-}$ is the river fraction of the cell and
+$\SIb{\subtext{f}{reinfilt, max}}{-}$ is the maximum reinfiltration fraction (fixed at
+$0.95$). This amount is added to the water flux at the soil surface `water_flux_surface`
+$\SIb{}{mm\ t^{-1}}$, so that the total water available for infiltration
+`potential_infiltration` $\SIb{}{mm\ t^{-1}}$ becomes:
+
+$$
+    \subtext{i}{pot} = \subtext{q}{surface} + \subtext{i}{pot, sw}.
+$$
+
+The regular infiltration routine then computes the actual infiltration `actinfilt`
+$\SIb{}{mm\ t^{-1}}$ and infiltration excess `infiltexcess` $\SIb{}{mm\ t^{-1}}$. After
+infiltration, the share originating from overland flow is tracked with the ratio
+`infilt_ratio` = `actinfilt` / `potential_infiltration`, giving the infiltration from
+surface water:
+
+$$
+    \subtext{i}{sw} = \subtext{i}{pot, sw} \cdot \frac{\subtext{i}{act}}{\subtext{i}{pot}}.
+$$
+
+Finally, `actinfilt`, `infiltexcess` and `water_flux_surface` are corrected by
+$\subtext{i}{pot, sw}$ to avoid double counting.
 
 ### Capillary rise
 
