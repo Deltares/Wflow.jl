@@ -840,9 +840,9 @@ end
 
         (; soil) = model.land
         # get total available infiltration
-        @test soil.variables.potential_infiltration[idxs] ≈
+        @test soil.boundary_conditions.potential_infiltration[idxs] ≈
               [0.07163384298140926, 12.55529617902951, 1.094994363241204]
-        @test soil.variables.potential_infiltration_surfacewater[idxs] ≈
+        @test soil.boundary_conditions.potential_infiltration_surfacewater[idxs] ≈
               [0.0, 12.485540999074937, 1.0244892972592872]
         # get actual infiltration
         @test soil.variables.actinfilt[idxs] ≈
@@ -881,9 +881,9 @@ end
 
         (; soil) = model.land
         # get total available infiltration
-        @test soil.variables.potential_infiltration[idxs] ≈
+        @test soil.boundary_conditions.potential_infiltration[idxs] ≈
               [0.16281059646400808, 1.9744062829658247, 0.16363083612044332]
-        @test soil.variables.potential_infiltration_surfacewater[idxs] ≈
+        @test soil.boundary_conditions.potential_infiltration_surfacewater[idxs] ≈
               [0.007480075393492462, 1.9744062829658247, 0.0]
         # get actual infiltration
         @test soil.variables.actinfilt[idxs] ≈

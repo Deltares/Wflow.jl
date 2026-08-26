@@ -45,10 +45,6 @@ abstract type AbstractSoilModel end
     infiltexcess::Vector{Float64} = fill(MISSING_VALUE, n)
     # Infiltration from surface water [mm Δt⁻¹]
     infilt_surfacewater::Vector{Float64} = fill(0.0, n)
-    # Potential infiltration originating from surface water [mm Δt⁻¹]
-    potential_infiltration_surfacewater::Vector{Float64} = fill(0.0, n)
-    # Total water available for infiltration [mm Δt⁻¹]
-    potential_infiltration::Vector{Float64} = fill(0.0, n)
     # Water that cannot infiltrate due to saturated soil (saturation excess) [mm Δt⁻¹]
     excesswater::Vector{Float64} = fill(MISSING_VALUE, n)
     # Water exfiltrating during saturation excess conditions [mm Δt⁻¹]
@@ -204,6 +200,10 @@ end
     potential_transpiration::Vector{Float64} = fill(MISSING_VALUE, n)
     # Potential soil evaporation rate [mm Δt⁻¹]
     potential_soilevaporation::Vector{Float64} = fill(MISSING_VALUE, n)
+    # Potential infiltration originating from surface water [mm Δt⁻¹]
+    potential_infiltration_surfacewater::Vector{Float64} = fill(0.0, n)
+    # Total water available for infiltration [mm Δt⁻¹]
+    potential_infiltration::Vector{Float64} = fill(0.0, n)
 end
 
 "Exponential depth profile of vertical hydraulic conductivity at the soil surface"
@@ -754,19 +754,20 @@ function update_available_for_infiltration!(
     do_surface_water_infiltration::Bool,
 )
     v = model.variables
-    (; water_flux_surface) = model.boundary_conditions
+    (; water_flux_surface, potential_infiltration_surfacewater, potential_infiltration) =
+        model.boundary_conditions
     (; waterdepth_land) = runoff.boundary_conditions
     (; river_fraction) = domain.land.parameters
 
-    n = length(v.potential_infiltration)
+    n = length(potential_infiltration)
     threaded_foreach(1:n; basesize = 1000) do i
-        v.potential_infiltration_surfacewater[i] = 0.0
+        potential_infiltration_surfacewater[i] = 0.0
         if do_surface_water_infiltration
-            v.potential_infiltration_surfacewater[i] =
+            potential_infiltration_surfacewater[i] =
                 waterdepth_land[i] * (1.0 - river_fraction[i]) * 0.95
-            water_flux_surface[i] += v.potential_infiltration_surfacewater[i]
+            water_flux_surface[i] += potential_infiltration_surfacewater[i]
         end
-        v.potential_infiltration[i] = water_flux_surface[i]
+        potential_infiltration[i] = water_flux_surface[i]
     end
 
     return nothing
@@ -778,10 +779,9 @@ function update_infiltration_fluxes!(soil_model::SbmSoilModel)
         actinfilt,
         infiltexcess,
         excesswater,
-        potential_infiltration,
-        potential_infiltration_surfacewater,
     ) = soil_model.variables
-    (; water_flux_surface) = soil_model.boundary_conditions
+    (; water_flux_surface, potential_infiltration, potential_infiltration_surfacewater) =
+        soil_model.boundary_conditions
 
     n = length(actinfilt)
     threaded_foreach(1:n; basesize = 1000) do i
