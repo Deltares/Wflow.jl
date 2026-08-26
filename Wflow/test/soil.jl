@@ -63,11 +63,42 @@
 
     external_models = (; interception, runoff, demand, allocation)
 
-    Wflow.update_bc_soil_model!(soil_model, atmospheric_forcing, external_models)
+    domain = Wflow.Domain(;
+        land = Wflow.DomainLand(;
+            parameters = Wflow.LandParameters(; river_fraction = [0.1]),
+        ),
+    )
+    config = Wflow.Config(;
+        model = Wflow.ModelSection(;
+            type = Wflow.ModelType.sbm,
+            land_surface_water_reinfiltration__flag = false,
+        ),
+        input = Wflow.InputSection(;
+            path_forcing = "",
+            path_static = "",
+            basin__local_drain_direction = "",
+            river_location__mask = "",
+            subbasin_location__count = "",
+            forcing = Wflow.InputEntries(),
+            static = Wflow.InputEntries(),
+            location_maps = Wflow.PropertyDict(Dict{String, Any}()),
+        ),
+        path = "",
+    )
+
+    Wflow.update_bc_soil_model!(
+        soil_model,
+        atmospheric_forcing,
+        external_models,
+        domain,
+        config,
+    )
 
     @test soil_model.boundary_conditions.potential_transpiration[1] ≈ 3.456247174877943
     @test soil_model.boundary_conditions.potential_soilevaporation[1] ≈ 1.472182114066203
     @test soil_model.boundary_conditions.water_flux_surface[1] ≈ 0.02411574274509466
+    @test soil_model.boundary_conditions.potential_infiltration[1] ≈ 0.02411574274509466
+    @test soil_model.boundary_conditions.potential_infiltration_surfacewater[1] == 0.0
 end
 
 @testitem "unit: unsaturated_zone_flow!" begin

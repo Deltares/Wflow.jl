@@ -681,6 +681,8 @@ function update_bc_soil_model!(
     soil_model::SbmSoilModel,
     atmospheric_forcing::AtmosphericForcing,
     external_models::NamedTuple,
+    domain::Domain,
+    config::Config,
 )
     (; interception, runoff, demand, allocation) = external_models
     (; potential_transpiration, water_flux_surface, potential_soilevaporation) =
@@ -698,6 +700,13 @@ function update_bc_soil_model!(
         get_irrigation_allocated(allocation) .- runoff.variables.runoff_river .-
         runoff.variables.runoff_land .+ get_water_depth(demand.paddy),
         0.0,
+    )
+    # update available for infiltration in case surface water infiltration is enabled
+    update_available_for_infiltration!(
+        soil_model,
+        domain,
+        runoff,
+        config.model.land_surface_water_reinfiltration__flag,
     )
     return nothing
 end
@@ -774,12 +783,7 @@ function update_available_for_infiltration!(
 end
 
 function update_infiltration_fluxes!(soil_model::SbmSoilModel)
-    (;
-        infilt_surfacewater,
-        actinfilt,
-        infiltexcess,
-        excesswater,
-    ) = soil_model.variables
+    (; infilt_surfacewater, actinfilt, infiltexcess, excesswater) = soil_model.variables
     (; water_flux_surface, potential_infiltration, potential_infiltration_surfacewater) =
         soil_model.boundary_conditions
 
@@ -1197,14 +1201,6 @@ function update_soil_water_flow!(
         modelsnow = config.model.snow__flag,
         soil_infiltration_reduction = config.model.soil_infiltration_reduction__flag,
     )
-    # update available for infiltration in case surface water infiltration is enabled
-    update_available_for_infiltration!(
-        soil_model,
-        domain,
-        runoff,
-        config.model.land_surface_water_reinfiltration__flag,
-    )
-
     infiltration!(soil_model)
     # unsaturated zone flow
     unsaturated_zone_flow!(soil_model)
