@@ -768,12 +768,15 @@ function update_available_for_infiltration!(
     (; waterdepth_land) = runoff.boundary_conditions
     (; river_fraction) = domain.land.parameters
 
+    # Fraction of overland flow that is made available for reinfiltration [-]
+    max_reinfiltration_fraction = 0.95
+
     n = length(potential_infiltration)
     threaded_foreach(1:n; basesize = 1000) do i
         potential_infiltration_surfacewater[i] = 0.0
         if do_surface_water_infiltration
             potential_infiltration_surfacewater[i] =
-                waterdepth_land[i] * (1.0 - river_fraction[i]) * 0.95
+                waterdepth_land[i] * (1.0 - river_fraction[i]) * max_reinfiltration_fraction
             water_flux_surface[i] += potential_infiltration_surfacewater[i]
         end
         potential_infiltration[i] = water_flux_surface[i]

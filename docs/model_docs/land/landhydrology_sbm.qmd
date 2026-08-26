@@ -972,9 +972,11 @@ land_surface_water_reinfiltration__flag = true
 
 This can be done with both `kinematic_wave` and `local_inertial` land routing settings. When
 enabling this process, the amount of overland flow is added as water that can potentially
-infiltrate. During infiltration, the amount of infiltrated water originating from overland
-flow is tracked using a simple ratio
-(`available_from_overland_flow/total_potential_infiltration`). After the infiltration
+infiltrate. To keep some water in the overland flow (and avoid draining a cell completely in
+one timestep), only 95% of the available overland flow depth (scaled by the non-river cell
+fraction `1 - river_fraction`) is made available for reinfiltration. During infiltration,
+the amount of infiltrated water originating from overland flow is tracked using a simple
+ratio (`available_from_overland_flow/total_potential_infiltration`). After the infiltration
 process, the volume of water in the overland flow is corrected to remove this water from the
 overland flow.
 
