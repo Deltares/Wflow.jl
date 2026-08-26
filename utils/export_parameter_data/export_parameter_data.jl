@@ -34,7 +34,7 @@ for (name, standard_name_map, _) in Wflow.STANDARD_NAME_MAPS
 
     path = normpath(@__DIR__, "$(name)_metadata.json")
     open(path, "w") do io
-        print(io, JSON.json(dict, 2))
+        print(io, JSON.json(dict; pretty = true, allownan = true, nan = "null"))
     end
     @info "Wrote $name parameter/variable metadata to $path."
 
