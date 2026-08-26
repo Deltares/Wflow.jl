@@ -1002,7 +1002,8 @@ $$
 $$
 
 Finally, `actinfilt`, `infiltexcess` and `water_flux_surface` are corrected by
-$\subtext{i}{pot, sw}$ to avoid double counting.
+$\subtext{i}{pot, sw}$ to avoid double counting of water already originating from surface
+water.
 
 ### Capillary rise
 
