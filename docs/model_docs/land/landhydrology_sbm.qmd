@@ -14,12 +14,13 @@ differences between the Land Hydrology `SBM` model and Topog_SBM are as follows:
 - the addition of glacier, snow build-up and melting processes;
 - the addition to divide the soil column into different layers to allow for transfer of
   water within the unsaturated zone;
-- the addition of water demand and allocation computations.
+- the addition of water demand and allocation computations;
+- the addition of land surface temperature (LST) computations.
 
 The Land Hydrology `SBM` model contains besides a `SBM` `soil` model (including
 evapotranspiration), models for `interception`, `snow`, `glacier` , water `demand` and
-`allocation`. The sections below describe the working of the Land Hydrology `SBM` model in
-more detail.
+`allocation` and land surface temperature (`land_surface_temperature`). The sections below
+describe the working of the Land Hydrology `SBM` model in more detail.
 
 ## Rainfall interception
 Two different interception models are available: the Gash model, and the modified Rutter
