@@ -33,13 +33,13 @@ current Git revision with:
 pixi run download-test-data
 ```
 
-Maintainers can update the data using the `wflow-testdata-rw` DVC remote. Configure MinIO
+Maintainers can update the data using the `write-testdata` DVC remote. Configure MinIO
 credentials locally or through the standard AWS environment variables; never commit credentials.
 After changing files under `Wflow/test/data/input`, update and publish the DVC state with:
 
 ```sh
 pixi run dvc add Wflow/test/data/input
-pixi run dvc push --remote wflow-testdata-rw
+pixi run dvc push --remote write-testdata
 ```
 
 `utils/example_models.toml` defines which Git-tracked configuration and which DVC-tracked input
@@ -54,7 +54,7 @@ pixi run dvc repro publish-example-models
 git add Wflow/test/data/input.dvc dvc.lock
 ```
 
-When creating the `release/v1.1` branch, replace `examples/dev` with `examples/v1.1` in the stage
+When creating the minor release branch `release/vX.Y` (for any X or Y), replace `examples/dev` with `examples/vX.Y` in the stage
 command and all outputs in `dvc.yaml`. Make the same replacement in the download links in
 `docs/getting_started/download_example_models.qmd`, then publish and commit the release-specific
 pipeline state:
