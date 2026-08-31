@@ -33,13 +33,6 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
         allow_dynamic_input = true,
         tags = [:atmospheric_forcing],
     ),
-    "land_surface_incoming_shortwave_radiation__energy_flux" => ParameterMetadata(;
-        lens = @optic(_.land.atmospheric_forcing.shortwave_radiation_in),
-        unit = Unit(; W = 1, m = -2),
-        description = "Downward shortwave radiation",
-        allow_dynamic_input = true,
-        tags = [:atmospheric_forcing],
-    ),
     "land_surface_total_net_radiation__energy_flux" => ParameterMetadata(;
         lens = @optic(_.land.atmospheric_forcing.net_radiation),
         unit = Unit(; W = 1, m = -2),

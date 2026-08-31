@@ -25,7 +25,6 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
     atmospheric_forcing = AtmosphericForcing(; n)
     do_land_surface_temperature = config.model.land_surface_temperature__flag
     if do_land_surface_temperature
-        @reset atmospheric_forcing.shortwave_radiation_in = fill(MISSING_VALUE, n)
         @reset atmospheric_forcing.wind_speed = fill(MISSING_VALUE, n)
         @reset atmospheric_forcing.net_radiation = fill(MISSING_VALUE, n)
     end

@@ -359,15 +359,6 @@
     "allow_missing": false,
     "allow_dynamic_input": false
   },
-  "land_surface_incoming_shortwave_radiation__energy_flux": {
-    "unit": "W m-2",
-    "default": null,
-    "fill": null,
-    "type": "Float64",
-    "description": "Downward shortwave radiation",
-    "allow_missing": false,
-    "allow_dynamic_input": true
-  },
   "land_surface_total_net_radiation__energy_flux": {
     "unit": "W m-2",
     "default": null,
