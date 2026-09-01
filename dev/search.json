@@ -911,7 +911,7 @@
     "href": "getting_started/download_example_models.html",
     "title": "Download example models",
     "section": "",
-    "text": "For each wflow Model a test model is available that can help to understand the data requirements and the usage of each Model. The TOML configuration file per available model are listed in the Table below:\nThe associated Model files (input static, forcing and state files) can easily be downloaded and for this we share the following Julia code (per Model) that downloads the required files to your current working directory. For running these test model see also Usage and Command Line Interface.",
+    "text": "For each wflow model a test model is available that can help to understand the data requirements and the usage of each model. The TOML configuration file per available model are listed in the Table below:\nEach archive contains the TOML configuration and its associated input static, forcing and state files. Download and extract an example model to run it. See also Usage and Command Line Interface.",
     "crumbs": [
       "Getting started",
       "Download example models"
@@ -922,7 +922,7 @@
     "href": "getting_started/download_example_models.html#wflow_sbm-kinematic-wave",
     "title": "Download example models",
     "section": "wflow_sbm + kinematic wave",
-    "text": "wflow_sbm + kinematic wave\n# urls to TOML and netCDF of the Moselle example model\ntoml_url = \"https://raw.githubusercontent.com/Deltares/Wflow.jl/main/Wflow/test/sbm_config.toml\"\nstaticmaps = \"https://github.com/visr/wflow-artifacts/releases/download/v1.0.0/staticmaps-moselle.nc\"\nforcing = \"https://github.com/visr/wflow-artifacts/releases/download/v1.0.0/forcing-moselle.nc\"\ninstates = \"https://github.com/visr/wflow-artifacts/releases/download/v1.0.0/instates-moselle.nc\"\n\n# create a \"data/input\" directory in the current directory\ntestdir = @__DIR__\ninputdir = joinpath(testdir, \"data/input\")\nisdir(inputdir) || mkpath(inputdir)\ntoml_path = joinpath(testdir, \"sbm_config.toml\")\n\n# download resources to current and input directories\ndownload(staticmaps, joinpath(inputdir, \"staticmaps-moselle.nc\"))\ndownload(forcing, joinpath(inputdir, \"forcing-moselle.nc\"))\ndownload(instates, joinpath(inputdir, \"instates-moselle.nc\"))\ndownload(toml_url, toml_path)",
+    "text": "wflow_sbm + kinematic wave\nDownload the wflow_sbm example model",
     "crumbs": [
       "Getting started",
       "Download example models"
@@ -933,7 +933,7 @@
     "href": "getting_started/download_example_models.html#wflow_sbm-groundwater-flow",
     "title": "Download example models",
     "section": "wflow_sbm + groundwater flow",
-    "text": "wflow_sbm + groundwater flow\n# urls to TOML and netCDF of the Piave example model\ntoml_url = \"https://raw.githubusercontent.com/Deltares/Wflow.jl/main/Wflow/test/sbm_gwf_piave_demand_config.toml\"\nstaticmaps = \"https://github.com/visr/wflow-artifacts/releases/download/v1.0.0/staticmaps-piave.nc\"\nforcing = \"https://github.com/visr/wflow-artifacts/releases/download/v1.0.0/forcing-piave.nc\"\ninstates = \"https://github.com/visr/wflow-artifacts/releases/download/v1.0.0/instates-piave-gwf.nc\"\n\n# create a \"data/input\" directory in the current directory\ntestdir = @__DIR__\ninputdir = joinpath(testdir, \"data/input\")\nisdir(inputdir) || mkpath(inputdir)\ntoml_path = joinpath(testdir, \"sbm_gwf_piave_demand_config.toml\")\n\n# download resources to current and data dirs\ndownload(staticmaps, joinpath(inputdir, \"staticmaps-piave.nc\"))\ndownload(forcing, joinpath(inputdir, \"forcing-piave.nc\"))\ndownload(instates, joinpath(inputdir, \"instates-piave-gwf.nc\"))\ndownload(toml_url, toml_path)",
+    "text": "wflow_sbm + groundwater flow\nDownload the wflow_sbm groundwater flow example model",
     "crumbs": [
       "Getting started",
       "Download example models"
@@ -944,7 +944,7 @@
     "href": "getting_started/download_example_models.html#wflow_sediment",
     "title": "Download example models",
     "section": "wflow_sediment",
-    "text": "wflow_sediment\n# urls to TOML and netCDF of the Moselle example model\ntoml_url = \"https://raw.githubusercontent.com/Deltares/Wflow.jl/main/Wflow/test/sediment_config.toml\"\nstaticmaps = \"https://github.com/visr/wflow-artifacts/releases/download/v1.0.0/staticmaps-moselle-sed.nc\"\nforcing = \"https://github.com/visr/wflow-artifacts/releases/download/v1.0.0/forcing-moselle-sed.nc\"\ninstates = \"https://github.com/visr/wflow-artifacts/releases/download/v1.0.0/instates-moselle-sed.nc\"\n\n# create a \"data/input\" directory in the current directory\ntestdir = @__DIR__\ninputdir = joinpath(testdir, \"data/input\")\nisdir(inputdir) || mkpath(inputdir)\ntoml_path = joinpath(@__DIR__, \"sediment_config.toml\")\n\n# download resources to current and data dirs\ndownload(staticmaps, joinpath(inputdir, \"staticmaps-moselle-sed.nc\"))\ndownload(forcing, joinpath(inputdir, \"forcing-moselle-sed.nc\"))\ndownload(instates, joinpath(inputdir, \"instates-moselle-sed.nc\"))\ndownload(toml_url, toml_path)",
+    "text": "wflow_sediment\nDownload the wflow_sediment example model",
     "crumbs": [
       "Getting started",
       "Download example models"
@@ -978,6 +978,17 @@
     "title": "Developers guide",
     "section": "",
     "text": "We welcome reporting of issues on our GitHub page. Please provide a minimum working example so we are able to reproduce the issue. Furthermore, we welcome contributions. We follow the ColPrac guide for collaborative practices. New contributors should make sure to read that guide.\nTo get started with local development, install Julia and prek (a fast, Rust-based Git hooks manager and drop-in replacement for pre-commit) by running the command below.\npixi run install",
+    "crumbs": [
+      "Developments",
+      "Developers guide"
+    ]
+  },
+  {
+    "objectID": "developments/guide.html#test-and-example-data",
+    "href": "developments/guide.html#test-and-example-data",
+    "title": "Developers guide",
+    "section": "Test and example data",
+    "text": "Test and example data\nWflow test model configurations (.toml files under Wflow/test) are tracked directly in Git. Their input data under Wflow/test/data/input is versioned with DVC: Git tracks the directory through Wflow/test/data/input.dvc, while the files themselves are stored in the public wflow/testdata folder on the Deltares MinIO server. Download the input data matching the current Git revision with:\npixi run download-test-data\nMaintainers can update the data using the write-testdata DVC remote. Configure MinIO credentials locally or through the standard AWS environment variables; never commit credentials. After changing files under Wflow/test/data/input, update and publish the DVC state with:\npixi run dvc add Wflow/test/data/input\npixi run dvc push --remote write-testdata\nutils/example_models.toml defines which Git-tracked configuration and which DVC-tracked input files together constitute each example model used by the documentation. A DVC pipeline packages these selections into three public archives as non-cached, persistent outputs. On main these are published under wflow/examples/dev; release branches use their corresponding wflow/examples/vX.Y folder. After updating test data, example configurations, the selection, or the publishing utility, publish the archives and commit the updated lockfile:\npixi run dvc repro publish-example-models\ngit add Wflow/test/data/input.dvc dvc.lock\nWhen creating the minor release branch release/vX.Y (for any X or Y), replace examples/dev with examples/vX.Y in the stage command and all outputs in dvc.yaml. Make the same replacement in the download links in docs/getting_started/download_example_models.qmd, then publish and commit the release-specific pipeline state:\npixi run dvc repro publish-example-models\ngit add dvc.yaml dvc.lock docs/getting_started/download_example_models.qmd\nCI only downloads the DVC data and checks dvc status; it never uploads data. A consistency failure means that a maintainer must reproduce the stage and commit dvc.lock before merging.",
     "crumbs": [
       "Developments",
       "Developers guide"
