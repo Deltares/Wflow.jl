@@ -1223,10 +1223,17 @@ abstracted $\SIb{}{m^3\ s^{-1}}$ from the reservoir storage $\SIb{}{m^3}$, with 
 update of the reservoir water level $\SIb{}{m}$.
 
 ## Land surface temperature
-This module estimates the land surface temperature (LST) $\SIb{T_\mathrm{s}}{\degree C}$
-based on evapotranspiration $\SIb{ET}{mm\ t^{-1}}$ simulated by the Land Hydrology `SBM`
-model and net radiation as input. The approach used to estimate $T_\mathrm{s}$ is based on
-work by Zink et al. (2018) and Purnamasari et al. (2025).
+This optional module estimates the land surface temperature (LST)
+$\SIb{T_\mathrm{s}}{\degree C}$ based on evapotranspiration $\SIb{ET}{mm\ t^{-1}}$ simulated
+by the Land Hydrology `SBM` model and net radiation as input. The approach used to estimate
+$T_\mathrm{s}$ is based on work by Zink et al. (2018) and Purnamasari et al. (2025).
+
+This module can be enabled by specifying the following in the TOML file:
+
+```toml
+[model]
+land_surface_temperature__flag = true
+```
 
 The energy balance of the land surface is computed as follows:
 
@@ -1271,9 +1278,31 @@ $\SIb{z_\mathrm{0m}}{m}$ is the roughness length for momentum transfer,
 $\SIb{z_\mathrm{0h}}{m}$ is the roughness length for heat transfer, $\SIb{u_\mathrm{z}}{m\
 s^{-1}}$ is the wind speed at the wind speed measurement height $z_\mathrm{m}$ and $k$ is
 the von Kármán constant ($k = 0.41$). It is assumed that the heights of measurements for
-wind and humidity are equal.
+wind and humidity are equal. The wind speed is constrained to a minimum value of
+$\SI{0.5}{m\ s^{-1}}$ to account for vapour exchange on the surface induced by air buoyancy
+and boundary layer instability effects during low wind conditions (Allen et al., 1998).
+
+It is assumed that the input wind speed is consistent with $z_\mathrm{0m}$ and $d$ of the
+surface terrain (and not based on "open-terrain" (short grass) as observed typically by
+meteorological stations). The input wind speed reference height
+`land_surface_wind__speed_reference_height` should be set in the TOML file as follows:
+
+```toml
+[model]
+land_surface_wind__speed_reference_height = 10.0
+```
+
+This reference height should be greater than the sum of $d$ and $z_\mathrm{0m}$ to convert
+the wind speed (assuming a logarithmic profile) properly to the reference height $z$ ($z =
+z_\mathrm{m} = z_\mathrm{h}$) used for the computation of $r_\mathrm{air}$. The reference
+height $z$ is set to 2.0 m above the input parameter
+`atmosphere_bottom_air__above_ground_height` (land surface "skin" layer height above the
+ground).
 
 ## References
++ Allen, R. G., Pereira, L. S., Raes, D., an Smith, M., 1998, Crop evapotranspiration -
+  Guidelines for computing crop water requirements - FAO Irrigation and drainage paper 56,
+  FAO, Rome, 300, D05109.
 + Bergström, S., 1992, The HBV model – its structure and applications, SMHI Reports
   Hydrology, Norrköping, Sweden, RH 4.
 + Brooks, R. H., and Corey, A. T., 1964, Hydraulic properties of porous media, Hydrology Papers
