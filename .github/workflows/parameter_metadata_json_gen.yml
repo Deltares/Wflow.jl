@@ -18,6 +18,7 @@ jobs:
       - name: Test parameter metadata JSON generation
         run: |
           pixi run parameter_metadata_json_gen
+          pixi run install-prek
           pixi run fix-check
       - name: Ensure that there was no change in the metadata
         run: git diff --exit-code
