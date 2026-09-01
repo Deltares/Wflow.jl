@@ -1226,7 +1226,7 @@ update of the reservoir water level $\SIb{}{m}$.
 This module estimates the land surface temperature (LST) $\SIb{T_\mathrm{s}}{\degree C}$
 based on evapotranspiration $\SIb{ET}{mm\ t^{-1}}$ simulated by the Land Hydrology `SBM`
 model and net radiation as input. The approach used to estimate $T_\mathrm{s}$ is based on
-work by Zinc et al. (2018) and Purnamasari et al. (2025).
+work by Zink et al. (2018) and Purnamasari et al. (2025).
 
 The energy balance of the land surface is computed as follows:
 
@@ -1317,6 +1317,6 @@ wind and humidity are equal.
   https://doi.org/10.1007/s12665-011-1038-4.
 + Zammouri, M., 2001: Case study of water table evaporation at Ichkeul Marshes (Tunisia), J.
   Irrig. Drain. Eng. 127, 265–271.
-+ Zinc, M., Mai, J., Cuntz, M., and Samaniego, L., 2018, Conditioning a hydrologic model using
++ Zink, M., Mai, J., Cuntz, M., and Samaniego, L., 2018, Conditioning a hydrologic model using
   patterns of remotely sensed land surface temperature. Water Resources Research, 54,
   2976–2998. https://doi.org/10.1002/2017WR021346.
