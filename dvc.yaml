@@ -1,0 +1,20 @@
+stages:
+  publish-example-models:
+    cmd: python utils/publish_example_models.py examples/dev
+    deps:
+      - Wflow/test/data/input
+      - Wflow/test/sbm_config.toml
+      - Wflow/test/sbm_gwf_piave_demand_config.toml
+      - Wflow/test/sediment_config.toml
+      - utils/example_models.toml
+      - utils/publish_example_models.py
+    outs:
+      - https://s3.deltares.nl/wflow/examples/dev/wflow-sbm-example.zip:
+          cache: false
+          persist: true
+      - https://s3.deltares.nl/wflow/examples/dev/wflow-sbm-gwf-example.zip:
+          cache: false
+          persist: true
+      - https://s3.deltares.nl/wflow/examples/dev/wflow-sediment-example.zip:
+          cache: false
+          persist: true
