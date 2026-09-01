@@ -85,12 +85,12 @@ end
 
 "Initialize lateral subsurface flow model parameters"
 function LateralSsfParameters(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}},
-    soil::SbmSoilParameters,
-    area::Vector{Float64},
-)
+        dataset::NCDataset,
+        config::Config,
+        indices::Vector{CartesianIndex{2}},
+        soil::SbmSoilParameters,
+        area::Vector{Float64},
+    )
     elevation = ncread(dataset, config, "land_surface__elevation", Routing; sel = indices)
     horizontal_to_vertical_hydraulic_conductivity_ratio = ncread(
         dataset,
@@ -115,7 +115,7 @@ function LateralSsfParameters(
         exp_profile = KhExponential(kh_0, hydraulic_conductivity_scale_parameter)
         kh_profile = KhExponentialConstant(exp_profile, z_exp)
     elseif kh_profile_type == VerticalConductivityProfile.layered ||
-           kh_profile_type == VerticalConductivityProfile.layered_exponential
+            kh_profile_type == VerticalConductivityProfile.layered_exponential
         n_cells = length(horizontal_to_vertical_hydraulic_conductivity_ratio)
         kh_profile = KhLayered(fill(MISSING_VALUE, n_cells))
     end
@@ -142,11 +142,11 @@ end
 
 "Initialize lateral subsurface flow model"
 function LateralSSFModel(
-    dataset::NCDataset,
-    config::Config,
-    domain::Domain,
-    soil::SbmSoilModel,
-)
+        dataset::NCDataset,
+        config::Config,
+        domain::Domain,
+        soil::SbmSoilModel,
+    )
     (; land, river, drain) = domain
     (; indices) = land.network
     (; area) = domain.land.parameters
@@ -180,10 +180,10 @@ function update_fluxes!(subsurface_flow_model::LateralSSFModel, domain::Domain, 
 end
 
 function flux_to_river!(
-    subsurface_flow_model::LateralSSFModel,
-    domain::NetworkRiver,
-    dt::Float64,
-)
+        subsurface_flow_model::LateralSSFModel,
+        domain::NetworkRiver,
+        dt::Float64,
+    )
     (; to_river_average, to_river_cumulative) = subsurface_flow_model.variables
     (; river) = subsurface_flow_model.boundary_conditions
     if isnothing(river)
@@ -196,11 +196,11 @@ function flux_to_river!(
 end
 
 function kinwave_subsurface_update!(
-    subsurface_flow_model::LateralSSFModel,
-    soil_model::SbmSoilModel,
-    domain::Domain,
-    dt::Float64,
-)
+        subsurface_flow_model::LateralSSFModel,
+        soil_model::SbmSoilModel,
+        domain::Domain,
+        dt::Float64,
+    )
     (; order_of_subdomains, order_subdomain, subdomain_indices, upstream_nodes) =
         domain.land.network
     (; flow_length, flow_width, area, flow_fraction_to_river, slope) =
@@ -270,6 +270,7 @@ function kinwave_subsurface_update!(
             end
         end
     end
+    return
 end
 
 """
@@ -277,11 +278,11 @@ Update lateral subsurface model for a single timestep `dt`. Timestepping within 
 either with a fixed timestep `dt_fixed` or adaptive.
 """
 function update_subsurface_flow_model!(
-    subsurface_flow_model::LateralSSFModel,
-    soil_model::SbmSoilModel,
-    domain::Domain,
-    dt::Float64,
-)
+        subsurface_flow_model::LateralSSFModel,
+        soil_model::SbmSoilModel,
+        domain::Domain,
+        dt::Float64,
+    )
     (; to_river_cumulative) = subsurface_flow_model.variables
     (; adaptive) = subsurface_flow_model.timestepping
 

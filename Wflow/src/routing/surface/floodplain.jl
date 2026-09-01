@@ -17,10 +17,10 @@ routing is solved by using Manning's equation, as solving kinematic wave routing
 zero flows is computationally expensive.
 """
 @with_kw struct FloodPlainModel{
-    T <: AbstractRoutingMethod,
-    P <: AbstractFloodPlainParameters,
-    V <: AbstractFloodPlainVariables,
-} <: AbstractFloodPlainModel
+        T <: AbstractRoutingMethod,
+        P <: AbstractFloodPlainParameters,
+        V <: AbstractFloodPlainVariables,
+    } <: AbstractFloodPlainModel
     routing_method::T
     parameters::P
     variables::V
@@ -48,11 +48,11 @@ end
 
 "Initialize floodplain profile `FloodPlainProfile`"
 function FloodPlainProfile(
-    dataset::NCDataset,
-    config::Config,
-    domain::DomainRiver;
-    index_pit::Vector{Int} = Int[],
-)
+        dataset::NCDataset,
+        config::Config,
+        domain::DomainRiver;
+        index_pit::Vector{Int} = Int[],
+    )
     (; indices) = domain.network
     (; flow_width, flow_length) = domain.parameters
     storage = ncread(
@@ -164,12 +164,12 @@ end
 
 "Initialize floodplain flow model parameters on a staggered grid"
 function FloodPlainStaggeredParameters(
-    dataset::NCDataset,
-    config::Config,
-    domain::DomainRiver,
-    zb_floodplain::Vector{Float64},
-    index_pit::Vector{Int},
-)
+        dataset::NCDataset,
+        config::Config,
+        domain::DomainRiver,
+        zb_floodplain::Vector{Float64},
+        index_pit::Vector{Int},
+    )
     (; indices, nodes_at_edge, graph) = domain.network
     (; flow_length) = domain.parameters
     (; river_routing) = config.model
@@ -304,12 +304,12 @@ Compute flood flow area (including area above channel) based on flow depth `h` a
 floodplain `depth`, `flow_area` and `width` of a floodplain profile.
 """
 function compute_flood_flow_area(
-    profile::FloodPlainProfile,
-    h::Float64,
-    idx::Int,
-    i1::Int,
-    i2::Int,
-)
+        profile::FloodPlainProfile,
+        h::Float64,
+        idx::Int,
+        i1::Int,
+        i2::Int,
+    )
     delta_h = h - profile.depth[i1]  # depth at i1
     flow_area = profile.flow_area[i1, idx] + (profile.width[i2, idx] * delta_h) # area at i1, width at i2
     return flow_area
@@ -327,11 +327,11 @@ end
 
 "Compute flood depth by interpolating flood storage `flood_storage` using flood depth intervals."
 function compute_flood_depth(
-    profile::FloodPlainProfile,
-    flood_storage::Float64,
-    flow_length::Float64,
-    i::Int,
-)
+        profile::FloodPlainProfile,
+        flood_storage::Float64,
+        flow_length::Float64,
+        i::Int,
+    )
     i1, i2 = interpolation_indices(flood_storage, @view profile.storage[:, i])
     delta_A = (flood_storage - profile.storage[i1, i]) / flow_length
     delta_h = delta_A / profile.width[i2, i]
@@ -341,12 +341,12 @@ end
 
 "Compute floodplain flow area (excluding river channel area)"
 function compute_floodplain_flow_area(
-    profile::FloodPlainProfile,
-    h::Float64,
-    idx::Int,
-    i1::Int,
-    i2::Int,
-)
+        profile::FloodPlainProfile,
+        h::Float64,
+        idx::Int,
+        i1::Int,
+        i2::Int,
+    )
     channel_area = profile.width[1, idx] * h
     floodplain_flow_area = compute_flood_flow_area(profile, h, idx, i1, i2)
     floodplain_flow_area = max(floodplain_flow_area - channel_area, 0.0)
@@ -355,11 +355,11 @@ end
 
 "Initialize floodplain geometry, model variables and parameters on staggered grid"
 function FloodPlainModel(
-    dataset::NCDataset,
-    config::Config,
-    domain::DomainRiver,
-    zb_floodplain::Vector{Float64},
-)
+        dataset::NCDataset,
+        config::Config,
+        domain::DomainRiver,
+        zb_floodplain::Vector{Float64},
+    )
     (; indices, local_drain_direction, graph) = domain.network
     (; river_routing) = config.model
     n = length(indices)

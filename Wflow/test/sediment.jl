@@ -78,7 +78,7 @@ end
     waterlevel = 0.57
     res_trapping_efficiency = 0.75
     dm = 2.9999999999999997e-5
-    slope = 2e-4
+    slope = 2.0e-4
 
     # Case: limited deposition, dm < dsuspf
     res_area = 1.48e4
@@ -311,7 +311,7 @@ end
             median_diameter_gravel = [0.002], # dbedf < dm
         ),
     )
-    parameters = Wflow.RiverParameters(; slope = [1e-3])
+    parameters = Wflow.RiverParameters(; slope = [1.0e-3])
 
     Wflow.update_river_sediment_concentration_model!(
         sediment_concentrations_model,
@@ -361,7 +361,7 @@ end
                 median_diameter_large_aggregates = fill(0.0005, n),
                 median_diameter_gravel = fill(0.002, n),
                 reservoir_outlet = [true, false, false, false],
-                reservoir_area = fill(6e5, n),
+                reservoir_area = fill(6.0e5, n),
                 reservoir_trapping_efficiency = fill(0.5, n),
             ),
             variables = Wflow.SedimentRiverTransportVariables(;
@@ -376,7 +376,7 @@ end
         domain = Wflow.DomainRiver(;
             network = Wflow.NetworkRiver(; order, graph),
             parameters = Wflow.RiverParameters(;
-                slope = fill(1e-3, n),
+                slope = fill(1.0e-3, n),
                 flow_width = fill(4.2, n),
                 flow_length = [785.0, 785.0, 785.0, 7850.0],
                 reservoir_coverage = [false, true, false, false],
@@ -387,19 +387,19 @@ end
 
     function perform_tests(variables)
         @test variables.sediment_rate ≈
-              [0.0, 3.96412037037037e-10, 8.238374498676117e-11, 1.3287692996519204e-10]
+            [0.0, 3.96412037037037e-10, 8.238374498676117e-11, 1.3287692996519204e-10]
         @test variables.clay_rate ≈
-              [0.0, 1.3020833333333334e-10, 8.238374462152822e-11, 6.499415052645262e-11]
+            [0.0, 1.3020833333333334e-10, 8.238374462152822e-11, 6.499415052645262e-11]
         @test variables.silt_rate ≈
-              [0.0, 6.655092592592592e-11, 3.6523294471267653e-19, 3.3219232491298004e-11]
+            [0.0, 6.655092592592592e-11, 3.6523294471267653e-19, 3.3219232491298004e-11]
         @test variables.sand_rate ≈
-              [0.0, 6.655092592592592e-11, 0.0, 1.4443144561433946e-12]
+            [0.0, 6.655092592592592e-11, 0.0, 1.4443144561433946e-12]
         @test variables.small_aggregates_rate ≈
-              [0.0, 6.655092592592592e-11, 0.0, 3.3219232491298004e-11]
+            [0.0, 6.655092592592592e-11, 0.0, 3.3219232491298004e-11]
         @test variables.large_aggregates_rate ≈ [0.0, 6.655092592592592e-11, 0.0, 0.0]
         @test variables.gravel_rate ≈ [0.0, 0.0, 0.0, 0.0]
         @test variables.deposition ≈
-              [8.744212962962962e-10, 0.0, 7.920375513095351e-10, 1.3020833333333334e-10]
+            [8.744212962962962e-10, 0.0, 7.920375513095351e-10, 1.3020833333333334e-10]
         @test variables.erosion ≈ [4.780092592592592e-10, 0.0, 4.780092592592592e-10, 0.0]
         @test variables.leftover_clay ≈ [0.0, 0.0, 0.0, 5.634505394514494e-6]
         @test variables.leftover_silt ≈ [0.0, 0.0, 0.0, 2.8798583127518524e-6]
@@ -431,7 +431,7 @@ end
 
     sediment_need = max.(
         sediment_flux.boundary_conditions.transport_capacity .-
-        sum(input_particles_expected),
+            sum(input_particles_expected),
         0.0,
     )
     sediment_need[2] = 0.0
@@ -439,7 +439,7 @@ end
 
     store_sediment = sum(
         getfield(sediment_flux.variables, name) for
-        name in propertynames(sediment_flux.variables) if startswith(string(name), "store")
+            name in propertynames(sediment_flux.variables) if startswith(string(name), "store")
     )
     @test all(≈(5.3e-6), store_sediment)
 
@@ -459,7 +459,7 @@ end
         1.5625e-10,
     ]
     @test collect.(erosion_particles) ≈
-          [erosion_particles_expected, zeros(6), erosion_particles_expected, zeros(6)]
+        [erosion_particles_expected, zeros(6), erosion_particles_expected, zeros(6)]
 
     store_erosion = Wflow.compute_store_erosion!.(
         Ref(sediment_flux.variables),
@@ -469,7 +469,7 @@ end
     )
     store_erosion_expected = [0.0, 0.0, 0.0, 0.0, 0.0, 6.134259259259259e-11]
     @test collect.(store_erosion) ≈
-          [store_erosion_expected, zeros(6), store_erosion_expected, zeros(6)]
+        [store_erosion_expected, zeros(6), store_erosion_expected, zeros(6)]
 
     erosion_particles = [erosion_particles[i] .+ store_erosion[i] for i in 1:n]
     @. sediment_flux.variables.erosion = sum(erosion_particles)

@@ -33,14 +33,14 @@
         @test land.overland_flow_erosion.parameters.usle_k[1] ≈ 0.026510488241910934
         @test land.overland_flow_erosion.parameters.usle_c[1] ≈ 0.014194443821907043
         @test land.overland_flow_erosion.parameters.answers_overland_flow_factor[1] ≈
-              0.8999999761581421
+            0.8999999761581421
         @test land.overland_flow_erosion.variables.soil_erosion_rate[1] ≈ 0.0
         @test land.rainfall_erosion.variables.soil_erosion_rate[1] ≈ 3.1534233707052943e-6
         @test model.clock.iteration == 1
         @test mean(land.overland_flow_erosion.variables.soil_erosion_rate) ≈
-              9.966193017240613e-5
+            9.966193017240613e-5
         @test mean(land.rainfall_erosion.variables.soil_erosion_rate) ≈
-              1.8896068520394022e-6
+            1.8896068520394022e-6
         @test mean(land.soil_erosion.variables.soil_erosion_rate) ≈ 0.0001015515370244455
     end
 
@@ -62,18 +62,18 @@
         (; overland_flow, river_flow) = model.routing
 
         @test overland_flow.transport_capacity.parameters.median_diameter_sand[1] ==
-              0.00019999999999999998
+            0.00019999999999999998
         @test overland_flow.transport_capacity.parameters.median_diameter_large_aggregates[1] ==
-              0.0005
+            0.0005
 
         @test mean(overland_flow.transport_capacity.boundary_conditions.q) ≈
-              0.006879398771052133
+            0.006879398771052133
         @test mean(overland_flow.transport_capacity.variables.silt) ≈
-              Float32(12717.775884668434)
+            Float32(12717.775884668434)
         @test mean(overland_flow.transport_capacity.variables.sand) ≈
-              Float32(12716.54007278791)
+            Float32(12716.54007278791)
         @test mean(overland_flow.transport_capacity.variables.clay) ≈
-              Float32(12722.980552102701)
+            Float32(12722.980552102701)
 
         @test mean(overland_flow.to_river.variables.sediment_rate) ≈ 0.0008823895749099599
         @test sum(overland_flow.to_river.variables.clay_rate) ≈ 1.324387075174311
@@ -82,20 +82,20 @@
 
         @test mean(river_flow.hydrological_forcing.q_river) ≈ 0.6975180562953642
         @test river_flow.hydrological_forcing.waterlevel_river[domain.river.network.order[end]] ≈
-              0.006103649735450745
+            0.006103649735450745
         @test mean(domain.river.parameters.flow_width) ≈ 22.628250814095523
 
         @test mean(river_flow.transport_capacity.boundary_conditions.q) ≈ 0.6975180562953642
         @test mean(river_flow.transport_capacity.variables.sediment_transport_capacity) ≈
-              0.0051597450614474325
+            0.0051597450614474325
         @test mean(river_flow.potential_erosion.variables.bed) ≈ 3.5573602675175193
 
         @test sum(river_flow.sediment_flux.boundary_conditions.erosion_land_clay) ≈
-              1.324387075174311
+            1.324387075174311
         @test sum(river_flow.sediment_flux.boundary_conditions.erosion_land_sand) ≈
-              14.9237485460772
+            14.9237485460772
         @test mean(river_flow.sediment_flux.boundary_conditions.transport_capacity) ≈
-              0.0051597450614474325
+            0.0051597450614474325
         @test mean(river_flow.sediment_flux.variables.sediment_rate) ≈ 0.005015140116935809
         @test mean(river_flow.sediment_flux.variables.erosion) ≈ 0.00021926989781640333
         @test mean(river_flow.sediment_flux.variables.deposition) ≈ 0.008032049003401103
@@ -502,7 +502,7 @@ end
         @test river_flow.transport_capacity.parameters.d50[1] == 5.0000000745058064e-5
         @test mean(river_flow.transport_capacity.boundary_conditions.q) ≈ 0.6975180562953642
         @test mean(river_flow.transport_capacity.variables.sediment_transport_capacity) ≈
-              0.001642046490684183
+            0.001642046490684183
 
         @test mean(river_flow.concentrations.variables.suspended) ≈ 0.000276598816325157
     end
@@ -533,9 +533,9 @@ end
 
         @test mean(land.soil_erosion.variables.soil_erosion_rate) ≈ 0.0013652659345724893
         @test mean(overland_flow.transport_capacity.parameters.c_govers) ≈
-              0.16393911236592437
+            0.16393911236592437
         @test mean(overland_flow.transport_capacity.variables.sediment_transport_capacity) ≈
-              12720.908224939538
+            12720.908224939538
         @test mean(overland_flow.to_river.variables.sediment_rate) ≈ 0.0009306672286819593
     end
 
@@ -568,7 +568,7 @@ end
         @test mean(land.soil_erosion.variables.soil_erosion_rate) ≈ 0.0013652659345724893
         @test mean(overland_flow.transport_capacity.parameters.d50) ≈ 1.534350291334408e-6
         @test mean(overland_flow.transport_capacity.variables.sediment_transport_capacity) ≈
-              Float32(12717.775884668434)
+            Float32(12717.775884668434)
         @test mean(overland_flow.to_river.variables.sediment_rate) ≈ 0.0009377521191159138
     end
 
@@ -597,7 +597,7 @@ end
         @test river.transport_capacity.parameters.d50[1] == 5.0000000745058064e-5
         @test mean(river.transport_capacity.boundary_conditions.q) ≈ 0.6975180562953642
         @test mean(river.transport_capacity.variables.sediment_transport_capacity) ≈
-              0.46244641188775404
+            0.46244641188775404
         @test mean(river.concentrations.variables.suspended) ≈ 0.0037597697024228617
     end
 
@@ -626,7 +626,7 @@ end
         @test river.transport_capacity.parameters.b_kodatie[1] == 3.646
         @test mean(river.transport_capacity.boundary_conditions.q) ≈ 0.6975180562953642
         @test mean(river.transport_capacity.variables.sediment_transport_capacity) ≈
-              0.35107162814004217
+            0.35107162814004217
 
         @test mean(river.concentrations.variables.suspended) ≈ 0.054748501397664226
     end
@@ -655,7 +655,7 @@ end
         @test river.transport_capacity.parameters.d50[1] == 5.0000000745058064e-5
         @test mean(river.transport_capacity.boundary_conditions.q) ≈ 0.6975180562953642
         @test mean(river.transport_capacity.variables.sediment_transport_capacity) ≈
-              4.059651115936618
+            4.059651115936618
 
         @test mean(river.concentrations.variables.suspended) ≈ 0.871274558152215
     end

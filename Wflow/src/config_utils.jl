@@ -43,12 +43,13 @@ function Base.show(io::IO, config_section::AbstractConfigSection)
             println(io, "\t\t$field_name\t= $value")
         end
     end
+    return
 end
 
 # Specialized printing for InputEntry
 function Base.show(io::IO, input_entry::InputEntry)
     (; netcdf_variable_name, scale, offset, value, external_name) = input_entry
-    if !isnothing(netcdf_variable_name)
+    return if !isnothing(netcdf_variable_name)
         if scale == [1.0] && offset == [0.0]
             print(io, netcdf_variable_name)
         else
@@ -94,6 +95,7 @@ function Base.show(io::IO, c::Config)
         f = getfield(c, field)
         f === nothing || println(io, "\t$field\t= $f")
     end
+    return
 end
 
 "Construct a path relative to both the TOML directory and the optional `dir_input`"
@@ -114,4 +116,5 @@ function variable_info(var::InputEntry)
             @info "$msg."
         end
     end
+    return
 end

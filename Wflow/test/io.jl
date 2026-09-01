@@ -32,9 +32,9 @@
     @test config.dir_input != "."
     @test config.dir_output != "."
     @test Wflow.input_path(config, config.state.path_input) ==
-          joinpath(@__DIR__, "data", "input", "instates-moselle.nc")
+        joinpath(@__DIR__, "data", "input", "instates-moselle.nc")
     @test Wflow.output_path(config, config.state.path_output) ==
-          joinpath(@__DIR__, "data", "output", "outstates-moselle.nc")
+        joinpath(@__DIR__, "data", "output", "outstates-moselle.nc")
 
     # test error is thrown for wrong non-optional model parameter
     @test_throws ErrorException Wflow.get_var(config, "not_set_in_TOML"; optional = false)
@@ -164,7 +164,7 @@ end
     @test eltype(reader.dataset_times) == DateTimeNoLeap
     @test ismissing(reader.dataset_times) == false # missing in time dimension is not allowed
     @test reader.dataset_times ==
-          collect(DateTimeNoLeap(2000, 1, 2):Day(1):DateTimeNoLeap(2000, 1, 6))
+        collect(DateTimeNoLeap(2000, 1, 2):Day(1):DateTimeNoLeap(2000, 1, 6))
 
     # test Clock{DateTimeNoLeap}
     clock = Wflow.Clock(config, reader)
@@ -182,13 +182,13 @@ end
     using CFTime: DateTimeStandard, DateTimeProlepticGregorian, DateTime360Day
     using Dates: DateTime, Date
     @test Wflow.cftime("2006-01-02T15:04:05", "standard") ==
-          DateTimeStandard(2006, 1, 2, 15, 4, 5)
+        DateTimeStandard(2006, 1, 2, 15, 4, 5)
     @test Wflow.cftime("2006-01-02", "proleptic_gregorian") ==
-          DateTimeProlepticGregorian(2006, 1, 2)
+        DateTimeProlepticGregorian(2006, 1, 2)
     @test Wflow.cftime("2006-01-02T15:04:05", "360_day") ==
-          DateTime360Day(2006, 1, 2, 15, 4, 5)
+        DateTime360Day(2006, 1, 2, 15, 4, 5)
     @test Wflow.cftime(DateTime("2006-01-02T15:04:05"), "360_day") ==
-          DateTime360Day(2006, 1, 2, 15, 4, 5)
+        DateTime360Day(2006, 1, 2, 15, 4, 5)
     @test Wflow.cftime(Date("2006-01-02"), "360_day") == DateTime360Day(2006, 1, 2)
 end
 
@@ -199,7 +199,7 @@ end
     @test_throws ErrorException Wflow.timecycles(collect(1:400))
     @test Wflow.timecycles(collect(1:12)) == collect(zip(1:12, fill(1, 12)))
     @test Wflow.timecycles(collect(1:366)) ==
-          monthday.(Date(2000, 1, 1):Day(1):Date(2000, 12, 31))
+        monthday.(Date(2000, 1, 1):Day(1):Date(2000, 12, 31))
 
     @test Wflow.monthday_passed((1, 1), (1, 1))  # same day
     @test Wflow.monthday_passed((1, 2), (1, 1))  # day later
@@ -376,7 +376,7 @@ end
             "atmosphere_water__precipitation_volume_flux",
             49951,
             2.5578704145219592e-8;
-            rtol = 1e-7,
+            rtol = 1.0e-7,
         )
         test_initial_parameter_value(
             "soil_layer_water__brooks_corey_exponent",
@@ -414,7 +414,7 @@ end
         @test isapprox(
             land.atmospheric_forcing.precipitation[49951],
             3.8368056217829386e-8,
-            rtol = 1e-7,
+            rtol = 1.0e-7,
         )
         @test land.soil.parameters.brooks_corey_exponent[1] ≈ [
             2.0 * 9.152995289601465,
@@ -466,7 +466,7 @@ end
 
             @test Wflow.dim_directions(ds, (:x, :y)) === (x = true, y = false)
             @test Wflow.dim_directions(ds, (:y, :x, :layer)) ===
-                  (y = false, x = true, layer = true)
+                (y = false, x = true, layer = true)
 
             data, dims = Wflow.permute_data(zeros(1, 2, 3), (:layer, :y, :x))
             @test size(data) == (3, 2, 1)

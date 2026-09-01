@@ -11,14 +11,14 @@
     max_evaporation = 4.6296296296296295e-8
     throughfall, interception, stem_flow, canopy_storage_out =
         Wflow.rainfall_interception_gash(
-            maximum_canopy_storage,
-            evaporation_to_precipitation_ratio,
-            canopy_gap_fraction,
-            precipitation,
-            canopy_storage_in,
-            max_evaporation,
-            dt,
-        )
+        maximum_canopy_storage,
+        evaporation_to_precipitation_ratio,
+        canopy_gap_fraction,
+        precipitation,
+        canopy_storage_in,
+        max_evaporation,
+        dt,
+    )
     @test throughfall == precipitation
     @test interception == 0.0
     @test stem_flow == 0.0
@@ -28,14 +28,14 @@
     maximum_canopy_storage = 0.003
     throughfall, interception, stem_flow, canopy_storage_out =
         Wflow.rainfall_interception_gash(
-            maximum_canopy_storage,
-            evaporation_to_precipitation_ratio,
-            canopy_gap_fraction,
-            precipitation,
-            canopy_storage_in,
-            max_evaporation,
-            dt,
-        )
+        maximum_canopy_storage,
+        evaporation_to_precipitation_ratio,
+        canopy_gap_fraction,
+        precipitation,
+        canopy_storage_in,
+        max_evaporation,
+        dt,
+    )
     @test throughfall ≈ 1.5703703703703703e-7
     @test interception ≈ 4.6296296296296295e-8
     @test stem_flow ≈ 5.0e-9
@@ -45,14 +45,14 @@
     precipitation = 1.1574074074074074e-8
     throughfall, interception, stem_flow, canopy_storage_out =
         Wflow.rainfall_interception_gash(
-            maximum_canopy_storage,
-            evaporation_to_precipitation_ratio,
-            canopy_gap_fraction,
-            precipitation,
-            canopy_storage_in,
-            max_evaporation,
-            dt,
-        )
+        maximum_canopy_storage,
+        evaporation_to_precipitation_ratio,
+        canopy_gap_fraction,
+        precipitation,
+        canopy_storage_in,
+        max_evaporation,
+        dt,
+    )
     @test throughfall ≈ 2.7777777777777776e-9
     @test interception ≈ 8.518518518518518e-9
     @test stem_flow ≈ 2.7777777777777777e-10
@@ -149,20 +149,20 @@ end
     temperature = 273.69
     temperature_threshold_melt = 273.15
     degree_day_factor = 2.8935185185185185e-8
-    water_holding_capacity = 0.10
+    water_holding_capacity = 0.1
     # Case temperature > temperature_threshold_melt
     snow_storage_new, snow_water, snow_water_equivalent, snow_melt, runoff =
         Wflow.snowpack_hbv(
-            snow_storage,
-            snow_water,
-            snow_precip,
-            liquid_precip,
-            temperature,
-            temperature_threshold_melt,
-            degree_day_factor,
-            water_holding_capacity,
-            dt,
-        )
+        snow_storage,
+        snow_water,
+        snow_precip,
+        liquid_precip,
+        temperature,
+        temperature_threshold_melt,
+        degree_day_factor,
+        water_holding_capacity,
+        dt,
+    )
     @test snow_storage_new ≈ 0.207073
     @test snow_water ≈ 0.0207073
     @test snow_water_equivalent ≈ 0.22778030000000002
@@ -173,16 +173,16 @@ end
     temperature = 272.65
     snow_storage_new, snow_water, snow_water_equivalent, snow_melt, runoff =
         Wflow.snowpack_hbv(
-            snow_storage,
-            snow_water,
-            snow_precip,
-            liquid_precip,
-            temperature,
-            temperature_threshold_melt,
-            degree_day_factor,
-            water_holding_capacity,
-            dt,
-        )
+        snow_storage,
+        snow_water,
+        snow_precip,
+        liquid_precip,
+        temperature,
+        temperature_threshold_melt,
+        degree_day_factor,
+        water_holding_capacity,
+        dt,
+    )
     @test snow_storage_new ≈ 0.20848550000000002
     @test snow_water ≈ 0.02084855
     @test snow_water_equivalent ≈ 0.22933404999999998
@@ -277,7 +277,7 @@ end
     )
     @test h ≈ -0.9062998208338441
     @test Wflow.vwc_brooks_corey(h, air_entry_pressure, theta_s, theta_r, c) ≈
-          volumetric_water_content + theta_r
+        volumetric_water_content + theta_r
 
     # Case par_lambda < 0
     c = 2.0
@@ -475,13 +475,13 @@ end
     actual_infiltration = 1.883101851851852e-8
     actual_infiltration_soil, actual_infiltration_compacted_soil =
         Wflow.actual_infiltration_soil_path(
-            potential_infiltration,
-            actual_infiltration,
-            compacted_soil_area_fraction,
-            infiltration_capacity_soil,
-            infiltration_capacity_compacted_soil,
-            f_infiltration_reduction,
-        )
+        potential_infiltration,
+        actual_infiltration,
+        compacted_soil_area_fraction,
+        infiltration_capacity_soil,
+        infiltration_capacity_compacted_soil,
+        f_infiltration_reduction,
+    )
     @test actual_infiltration_soil ≈ 1.6947916666666665e-8
     @test actual_infiltration_compacted_soil ≈ 1.883101851851852e-9
 
@@ -489,13 +489,13 @@ end
     actual_infiltration = 0
     actual_infiltration_soil, actual_infiltration_compacted_soil =
         Wflow.actual_infiltration_soil_path(
-            potential_infiltration,
-            actual_infiltration,
-            compacted_soil_area_fraction,
-            infiltration_capacity_soil,
-            infiltration_capacity_compacted_soil,
-            f_infiltration_reduction,
-        )
+        potential_infiltration,
+        actual_infiltration,
+        compacted_soil_area_fraction,
+        infiltration_capacity_soil,
+        infiltration_capacity_compacted_soil,
+        f_infiltration_reduction,
+    )
     @test actual_infiltration_soil == 0.0
     @test actual_infiltration_compacted_soil == 0.0
 end

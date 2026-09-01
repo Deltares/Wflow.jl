@@ -58,10 +58,10 @@ end
 
 "Initialize snow HBV model parameters"
 function SnowHbvParameters(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}},
-)
+        dataset::NCDataset,
+        config::Config,
+        indices::Vector{CartesianIndex{2}},
+    )
     degree_day_factor = ncread(
         dataset,
         config,
@@ -109,10 +109,10 @@ end
 
 "Initialize snow HBV model"
 function SnowHbvModel(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}},
-)
+        dataset::NCDataset,
+        config::Config,
+        indices::Vector{CartesianIndex{2}},
+    )
     n = length(indices)
     parameters = SnowHbvParameters(dataset, config, indices)
     snow_model = SnowHbvModel(; n, parameters)
@@ -134,10 +134,10 @@ end
 
 "Update snow HBV model for a single timestep"
 function update_snow_model!(
-    snow_model::SnowHbvModel,
-    atmospheric_forcing::AtmosphericForcing,
-    dt::Float64,
-)
+        snow_model::SnowHbvModel,
+        atmospheric_forcing::AtmosphericForcing,
+        dt::Float64,
+    )
     (; temperature) = atmospheric_forcing
     (; snow_storage, snow_water, snow_water_equivalent, snow_melt, runoff) =
         snow_model.variables
@@ -162,25 +162,25 @@ function update_snow_model!(
     threaded_foreach(1:n; basesize = 1000) do i
         snow_storage[i], snow_water[i], snow_water_equivalent[i], snow_melt[i], runoff[i] =
             snowpack_hbv(
-                snow_storage[i],
-                snow_water[i],
-                snow_precip[i],
-                liquid_precip[i],
-                temperature[i],
-                temperature_threshold_melt[i],
-                degree_day_factor[i],
-                water_holding_capacity[i],
-                dt,
-            )
+            snow_storage[i],
+            snow_water[i],
+            snow_precip[i],
+            liquid_precip[i],
+            temperature[i],
+            temperature_threshold_melt[i],
+            degree_day_factor[i],
+            water_holding_capacity[i],
+            dt,
+        )
     end
     return nothing
 end
 
 function update_snow_model!(
-    model::NoSnowModel,
-    atmospheric_forcing::AtmosphericForcing,
-    dt::Float64,
-)
+        model::NoSnowModel,
+        atmospheric_forcing::AtmosphericForcing,
+        dt::Float64,
+    )
     return nothing
 end
 

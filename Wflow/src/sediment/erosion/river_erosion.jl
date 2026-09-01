@@ -32,10 +32,10 @@ end
 
 "Initialize Julian and Torres river erosion parameters"
 function RiverErosionParameters(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}},
-)
+        dataset::NCDataset,
+        config::Config,
+        indices::Vector{CartesianIndex{2}},
+    )
     d50 = ncread(
         dataset,
         config,
@@ -50,10 +50,10 @@ end
 
 "Initialize Julian and Torres river erosion model"
 function RiverErosionJulianTorresModel(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}},
-)
+        dataset::NCDataset,
+        config::Config,
+        indices::Vector{CartesianIndex{2}},
+    )
     n = length(indices)
     parameters = RiverErosionParameters(dataset, config, indices)
     river_erosion_model = RiverErosionJulianTorresModel(; n, parameters)
@@ -62,26 +62,26 @@ end
 
 "Update river erosion model boundary conditions"
 function update_bc_river_erosion_model!(
-    river_erosion_model::RiverErosionJulianTorresModel,
-    hydrological_forcing::HydrologicalForcing,
-)
+        river_erosion_model::RiverErosionJulianTorresModel,
+        hydrological_forcing::HydrologicalForcing,
+    )
     (; waterlevel) = river_erosion_model.boundary_conditions
     (; waterlevel_river) = hydrological_forcing
-    @. waterlevel = waterlevel_river
+    return @. waterlevel = waterlevel_river
 end
 
 "Update Julian and Torres river erosion model for a single timestep"
 function update_river_erosion_model!(
-    river_erosion_model::RiverErosionJulianTorresModel,
-    parameters_river::RiverParameters,
-    dt::Float64,
-)
+        river_erosion_model::RiverErosionJulianTorresModel,
+        parameters_river::RiverParameters,
+        dt::Float64,
+    )
     (; boundary_conditions, parameters, variables) = river_erosion_model
     (; waterlevel) = boundary_conditions
     (; d50) = parameters
     (; bed, bank) = variables
 
-    threaded_foreach(eachindex(waterlevel); basesize = 1000) do i
+    return threaded_foreach(eachindex(waterlevel); basesize = 1000) do i
         bed[i], bank[i] = river_erosion_julian_torres(
             waterlevel[i],
             d50[i],

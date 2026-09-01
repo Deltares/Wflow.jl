@@ -71,7 +71,7 @@
         @test ds["temp_index"][:] ≈ [2.39]
         @test ds["temp_coord"][:] ≈ [2.39]
         @test keys(ds.dim) ==
-              ["time", "layer", "river_gauge__count", "temp_bycoord", "temp_byindex"]
+            ["time", "layer", "river_gauge__count", "temp_bycoord", "temp_byindex"]
     end
 
     @testset "NetCDF grid output" begin
@@ -200,19 +200,23 @@
                 :soil_thickness => 1.837833713668117,
                 :h1 => 0.0,
                 :cap_n => 2.0,
-                :cumulative_layer_depth => SVector((
-                    0.0,
-                    0.1,
-                    0.39997241953958815,
-                    1.1566640303676966,
-                    1.9842496012545644,
-                )),
-                :brooks_corey_exponent => SVector((
-                    9.428788533549843,
-                    9.821687673542042,
-                    10.240060684266773,
-                    10.24248827673959,
-                )),
+                :cumulative_layer_depth => SVector(
+                    (
+                        0.0,
+                        0.1,
+                        0.39997241953958815,
+                        1.1566640303676966,
+                        1.9842496012545644,
+                    )
+                ),
+                :brooks_corey_exponent => SVector(
+                    (
+                        9.428788533549843,
+                        9.821687673542042,
+                        10.240060684266773,
+                        10.24248827673959,
+                    )
+                ),
                 :h4 => -160,
                 :w_soil => 0.11249999999999985,
                 :air_entry_pressure => -0.10000000000000001,
@@ -220,12 +224,14 @@
                 :h3_low => -10,
                 :soil_fraction => 0.49508064804427593,
                 :cap_hmax => 2.0,
-                :actual_layer_thickness => SVector((
-                    0.1,
-                    0.29997241953958815,
-                    0.7566640303676965,
-                    0.7842496012545644,
-                )),
+                :actual_layer_thickness => SVector(
+                    (
+                        0.1,
+                        0.29997241953958815,
+                        0.7566640303676965,
+                        0.7842496012545644,
+                    )
+                ),
                 :compacted_soil_area_fraction => 0.0129736199199603,
                 :h3_high => -4,
                 :infiltration_capacity_compacted_soil => 5.7870370370370404e-8,
@@ -237,12 +243,14 @@
                 :wet_root_distribution_parameter => -500000.0,
                 :alpha_h1 => 1.0,
                 :soil_water_capacity => 0.5057182462428663,
-                :rootfraction => SVector((
-                    0.2769545250424278,
-                    0.7118645592933596,
-                    0.011101016337365556,
-                    0.0,
-                )),
+                :rootfraction => SVector(
+                    (
+                        0.2769545250424278,
+                        0.7118645592933596,
+                        0.011101016337365556,
+                        0.0,
+                    )
+                ),
                 :theta_r => 0.16574578136033039,
             ),
         )
@@ -253,20 +261,24 @@
                 :drainable_water_depth => 0.21027893230146349,
                 :infiltration_excess => 0.0,
                 :actual_infiltration => 1.9033304037551905e-8,
-                :unsaturated_layer_depth => SVector((
-                    0.0016280832346593193,
-                    0.0006460862670135344,
-                    0.00023103976228101625,
-                    0.0,
-                )),
+                :unsaturated_layer_depth => SVector(
+                    (
+                        0.0016280832346593193,
+                        0.0006460862670135344,
+                        0.00023103976228101625,
+                        0.0,
+                    )
+                ),
                 :h3 => -10,
                 :recharge => -2.6124780468763912e-11,
-                :unsaturated_layer_thickness => SVector((
-                    0.0993509423527741,
-                    0.19022782953886028,
-                    0.0898015331913427,
-                    0.0,
-                )),
+                :unsaturated_layer_thickness => SVector(
+                    (
+                        0.0993509423527741,
+                        0.19022782953886028,
+                        0.0898015331913427,
+                        0.0,
+                    )
+                ),
                 :soil_evaporation => 2.4568273505664539e-10,
                 :net_runoff => 4.6686362399155382e-10,
                 :actual_infiltration_compacted_soil => 2.4817112828889956e-10,
@@ -474,20 +486,24 @@
                 :drainable_water_depth => 0.20950390590615132,
                 :infiltration_excess => 0.0,
                 :actual_infiltration => 1.0256861822245556e-9,
-                :unsaturated_layer_depth => SVector((
-                    0.0017064168532989077,
-                    0.0010896449436965638,
-                    0.0006820793025801899,
-                    1.0165257547301471e-7,
-                )),
+                :unsaturated_layer_depth => SVector(
+                    (
+                        0.0017064168532989077,
+                        0.0010896449436965638,
+                        0.0006820793025801899,
+                        1.0165257547301471e-7,
+                    )
+                ),
                 :h3 => -10,
                 :recharge => -1.9009727917816603e-9,
-                :unsaturated_layer_thickness => SVector((
-                    0.099409226268861529,
-                    0.19270470155860653,
-                    0.17182135284713667,
-                    0.030507142365925574,
-                )),
+                :unsaturated_layer_thickness => SVector(
+                    (
+                        0.099409226268861529,
+                        0.19270470155860653,
+                        0.17182135284713667,
+                        0.030507142365925574,
+                    )
+                ),
                 :soil_evaporation => 2.1687761811933483e-10,
                 :net_runoff => 2.5569736341548426e-9,
                 :actual_infiltration_compacted_soil => 1.6788849455513738e-11,
@@ -675,7 +691,7 @@ end
     config.input.forcing["atmosphere_water__precipitation_volume_flux"] =
         Dict("scale" => 2.0, "netcdf_variable_name" => "precip")
     config.input.forcing["land_surface_water__potential_evaporation_volume_flux"] =
-        Dict("scale" => 3.0, "offset" => 1.50, "netcdf_variable_name" => "pet")
+        Dict("scale" => 3.0, "offset" => 1.5, "netcdf_variable_name" => "pet")
     config.input.cyclic["vegetation__leaf_area_index"] =
         Dict("scale" => 1.6, "netcdf_variable_name" => "LAI")
     model = Wflow.Model(config)
@@ -687,10 +703,10 @@ end
         (; land) = model
         @test land.atmospheric_forcing.precipitation[2] / precipitation[2] ≈ 2.0f0
         @test (land.atmospheric_forcing.potential_evaporation[100] - 1.736111111111111e-8) /
-              potential_evaporation[100] ≈ 3.0f0
+            potential_evaporation[100] ≈ 3.0f0
         @test land.vegetation_parameters.leaf_area_index[100] / leaf_area_index[100] ≈ 1.6f0
         @test (reservoir.boundary_conditions.evaporation[2] - 1.736111111111111e-8) /
-              evaporation[2] ≈ 3.0f0
+            evaporation[2] ≈ 3.0f0
     end
 end
 
@@ -710,7 +726,7 @@ end
         (; reservoir) = model.routing.river_flow.boundary_conditions
         @test model.routing.river_flow.boundary_conditions.external_inflow[44] ≈ 0.75
         @test model.routing.river_flow.boundary_conditions.actual_external_abstraction_average[44] ==
-              0.0
+            0.0
         @test model.routing.river_flow.variables.q_average[44] ≈ 10.368564006862416
         @test reservoir.boundary_conditions.external_inflow[2] == -1.0
         @test reservoir.boundary_conditions.actual_external_abstraction_average[2] == 1.0
@@ -735,7 +751,7 @@ end
         (; reservoir) = model.routing.river_flow.boundary_conditions
         @test model.routing.river_flow.boundary_conditions.external_inflow[44] ≈ 0.75
         @test model.routing.river_flow.boundary_conditions.actual_external_abstraction_average[44] ==
-              0.0
+            0.0
         @test model.routing.river_flow.variables.q_average[44] ≈ 10.329420603096422
         @test reservoir.boundary_conditions.external_inflow[2] == -1.0
         @test reservoir.boundary_conditions.actual_external_abstraction_average[2] == 1.0
@@ -933,8 +949,8 @@ end
         flood_depth = Wflow.compute_flood_depth(profile, flood_vol, flow_length[idx], idx)
         @test flood_depth ≈ 0.46290938548779076
         @test (flood_depth - profile.depth[i1]) *
-              profile.width[i2, idx] *
-              flow_length[idx] + profile.storage[i1, idx] ≈ flood_vol
+            profile.width[i2, idx] *
+            flow_length[idx] + profile.storage[i1, idx] ≈ flood_vol
         # flood depth from flood storage (12000.0)
         flood_vol = 12000.0
         river_flow.variables.storage[idx] =
@@ -944,8 +960,8 @@ end
         flood_depth = Wflow.compute_flood_depth(profile, flood_vol, flow_length[idx], idx)
         @test flood_depth ≈ 0.6619575699132112
         @test (flood_depth - profile.depth[i1]) *
-              profile.width[i2, idx] *
-              flow_length[idx] + profile.storage[i1, idx] ≈ flood_vol
+            profile.width[i2, idx] *
+            flow_length[idx] + profile.storage[i1, idx] ≈ flood_vol
         # test extrapolation of segment
         flood_vol = 95000.0
         river_flow.variables.storage[idx] =
@@ -955,8 +971,8 @@ end
         flood_depth = Wflow.compute_flood_depth(profile, flood_vol, flow_length[idx], idx)
         @test flood_depth ≈ 2.749036625585836
         @test (flood_depth - profile.depth[i1]) *
-              profile.width[i2, idx] *
-              flow_length[idx] + profile.storage[i1, idx] ≈ flood_vol
+            profile.width[i2, idx] *
+            flow_length[idx] + profile.storage[i1, idx] ≈ flood_vol
         river_flow.variables.storage[idx] = 0.0 # reset storage
         # flow area and wetted perimeter based on hf
         h = 0.5
@@ -1055,9 +1071,9 @@ end
                 2,
             )
             @test kv_z ≈
-                  vertical_hydraulic_conductivity_factor[i][2] *
-                  kv_profile.kv_0[i] *
-                  exp(-kv_profile.hydraulic_conductivity_scale_parameter[i] * z)
+                vertical_hydraulic_conductivity_factor[i][2] *
+                kv_profile.kv_0[i] *
+                exp(-kv_profile.hydraulic_conductivity_scale_parameter[i] * z)
             @test subsurface_flow.variables.q_max[i] ≈ 0.00032786118096951182
             @test subsurface_flow.variables.q[i] ≈ 0.13522373477495839
         end
@@ -1080,9 +1096,9 @@ end
                 2,
             )
             @test kv_z ≈
-                  vertical_hydraulic_conductivity_factor[i][2] *
-                  kv_profile.exponential.kv_0[i] *
-                  exp(-kv_profile.exponential.hydraulic_conductivity_scale_parameter[i] * z)
+                vertical_hydraulic_conductivity_factor[i][2] *
+                kv_profile.exponential.kv_0[i] *
+                exp(-kv_profile.exponential.hydraulic_conductivity_scale_parameter[i] * z)
             kv_400 = Wflow.hydraulic_conductivity_at_depth(
                 kv_profile,
                 vertical_hydraulic_conductivity_factor,
@@ -1236,31 +1252,31 @@ end
     (; overland_water_balance, river_water_balance, subsurface_water_balance) = routing
     Wflow.run_timestep!(model)
     @testset "water balance first timestep" begin
-        @test all(e -> abs(e) < 1e-9, land_water_balance.error)
-        @test all(re -> abs(re) < 1e-9, land_water_balance.relative_error)
-        @test all(e -> abs(e) < 1e-9, overland_water_balance.error)
+        @test all(e -> abs(e) < 1.0e-9, land_water_balance.error)
+        @test all(re -> abs(re) < 1.0e-9, land_water_balance.relative_error)
+        @test all(e -> abs(e) < 1.0e-9, overland_water_balance.error)
         @test all(re -> abs(re) < 6.6e11, overland_water_balance.relative_error)
-        inds = findall(x -> x > 1e-3, model.routing.overland_flow.variables.q_average)
-        @test all(re -> abs(re) < 1e-9, routing.overland_water_balance.relative_error[inds])
-        @test all(e -> abs(e) < 1.e-9, river_water_balance.error)
-        @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
-        @test all(e -> abs(e) < 1e-9, subsurface_water_balance.error)
-        @test all(re -> abs(re) < 1e-9, subsurface_water_balance.relative_error)
+        inds = findall(x -> x > 1.0e-3, model.routing.overland_flow.variables.q_average)
+        @test all(re -> abs(re) < 1.0e-9, routing.overland_water_balance.relative_error[inds])
+        @test all(e -> abs(e) < 1.0e-9, river_water_balance.error)
+        @test all(re -> abs(re) < 1.0e-9, river_water_balance.relative_error)
+        @test all(e -> abs(e) < 1.0e-9, subsurface_water_balance.error)
+        @test all(re -> abs(re) < 1.0e-9, subsurface_water_balance.relative_error)
     end
     Wflow.run_timestep!(model)
     @testset "water balance second timestep" begin
-        @test all(e -> abs(e) < 1e-9, land_water_balance.error)
-        @test all(re -> abs(re) < 1e-9, land_water_balance.relative_error)
-        @test all(e -> abs(e) < 1.e-9, routing.overland_water_balance.error)
+        @test all(e -> abs(e) < 1.0e-9, land_water_balance.error)
+        @test all(re -> abs(re) < 1.0e-9, land_water_balance.relative_error)
+        @test all(e -> abs(e) < 1.0e-9, routing.overland_water_balance.error)
         @test all(re -> abs(re) < 5.4e11, routing.overland_water_balance.relative_error)
-        inds = findall(x -> x > 1e-3, model.routing.overland_flow.variables.q_average)
-        @test all(re -> abs(re) < 1e-9, routing.overland_water_balance.relative_error[inds])
-        @test all(e -> abs(e) < 2e-4, river_water_balance.error)
+        inds = findall(x -> x > 1.0e-3, model.routing.overland_flow.variables.q_average)
+        @test all(re -> abs(re) < 1.0e-9, routing.overland_water_balance.relative_error[inds])
+        @test all(e -> abs(e) < 2.0e-4, river_water_balance.error)
         @test all(re -> abs(re) < 24.0, river_water_balance.relative_error)
-        inds = findall(x -> x > 1e-3, model.routing.river_flow.variables.q_average)
-        @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error[inds])
-        @test all(e -> abs(e) < 1e-9, subsurface_water_balance.error)
-        @test all(re -> abs(re) < 1e-9, subsurface_water_balance.relative_error)
+        inds = findall(x -> x > 1.0e-3, model.routing.river_flow.variables.q_average)
+        @test all(re -> abs(re) < 1.0e-9, river_water_balance.relative_error[inds])
+        @test all(e -> abs(e) < 1.0e-9, subsurface_water_balance.error)
+        @test all(re -> abs(re) < 1.0e-9, subsurface_water_balance.relative_error)
     end
     Wflow.close_files(model; delete_output = false)
 end
@@ -1275,18 +1291,18 @@ end
     Wflow.run_timestep!(model)
     @testset "water balance first timestep" begin
         @test all(
-            rating_curve_exponent -> abs(rating_curve_exponent) < 1e-9,
+            rating_curve_exponent -> abs(rating_curve_exponent) < 1.0e-9,
             river_water_balance.error,
         )
-        @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
+        @test all(re -> abs(re) < 1.0e-9, river_water_balance.relative_error)
     end
     Wflow.run_timestep!(model)
     @testset "water balance second timestep" begin
         @test all(
-            rating_curve_exponent -> abs(rating_curve_exponent) < 1e-9,
+            rating_curve_exponent -> abs(rating_curve_exponent) < 1.0e-9,
             river_water_balance.error,
         )
-        @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
+        @test all(re -> abs(re) < 1.0e-9, river_water_balance.relative_error)
     end
     Wflow.close_files(model; delete_output = false)
 end
@@ -1301,18 +1317,18 @@ end
     Wflow.run_timestep!(model)
     @testset "water balance first timestep" begin
         @test all(
-            rating_curve_exponent -> abs(rating_curve_exponent) < 1e-9,
+            rating_curve_exponent -> abs(rating_curve_exponent) < 1.0e-9,
             river_water_balance.error,
         )
-        @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
+        @test all(re -> abs(re) < 1.0e-9, river_water_balance.relative_error)
     end
     Wflow.run_timestep!(model)
     @testset "water balance second timestep" begin
         @test all(
-            rating_curve_exponent -> abs(rating_curve_exponent) < 1e-9,
+            rating_curve_exponent -> abs(rating_curve_exponent) < 1.0e-9,
             river_water_balance.error,
         )
-        @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
+        @test all(re -> abs(re) < 1.0e-9, river_water_balance.relative_error)
     end
     Wflow.close_files(model; delete_output = false)
 end
@@ -1327,16 +1343,16 @@ end
     (; river_water_balance) = model.mass_balance.routing
     Wflow.run_timestep!(model)
     @testset "water balance first timestep" begin
-        @test all(e -> abs(e) < 1e-9, river_water_balance.error)
-        @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
+        @test all(e -> abs(e) < 1.0e-9, river_water_balance.error)
+        @test all(re -> abs(re) < 1.0e-9, river_water_balance.relative_error)
     end
     Wflow.run_timestep!(model)
     @testset "water balance second timestep" begin
         @test all(e -> abs(e) < 0.00012, river_water_balance.error)
         @test all(re -> abs(re) < 0.33, river_water_balance.relative_error)
         inds = findall(x -> x > 2.0e-3, model.routing.river_flow.variables.q_average)
-        @test all(e -> abs(e) < 1e-9, river_water_balance.error[inds])
-        @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error[inds])
+        @test all(e -> abs(e) < 1.0e-9, river_water_balance.error[inds])
+        @test all(re -> abs(re) < 1.0e-9, river_water_balance.relative_error[inds])
     end
     Wflow.close_files(model; delete_output = false)
 end
@@ -1350,16 +1366,16 @@ end
     (; river_water_balance) = model.mass_balance.routing
     Wflow.run_timestep!(model)
     @testset "water balance first timestep" begin
-        @test all(e -> abs(e) < 1e-9, river_water_balance.error)
-        @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
+        @test all(e -> abs(e) < 1.0e-9, river_water_balance.error)
+        @test all(re -> abs(re) < 1.0e-9, river_water_balance.relative_error)
     end
     Wflow.run_timestep!(model)
     @testset "water balance second timestep" begin
-        @test all(e -> abs(e) < 3e-5, river_water_balance.error)
+        @test all(e -> abs(e) < 3.0e-5, river_water_balance.error)
         @test all(re -> abs(re) < 12.2, river_water_balance.relative_error)
-        inds = findall(x -> x > 1e-3, model.routing.river_flow.variables.q_average)
-        @test all(re -> abs(re) < 1e-9, river_water_balance.error[inds])
-        @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error[inds])
+        inds = findall(x -> x > 1.0e-3, model.routing.river_flow.variables.q_average)
+        @test all(re -> abs(re) < 1.0e-9, river_water_balance.error[inds])
+        @test all(re -> abs(re) < 1.0e-9, river_water_balance.relative_error[inds])
     end
     Wflow.close_files(model; delete_output = false)
 end
@@ -1374,18 +1390,18 @@ end
     Wflow.run_timestep!(model)
     @testset "water balance first timestep" begin
         @test all(
-            rating_curve_exponent -> abs(rating_curve_exponent) < 1e-9,
+            rating_curve_exponent -> abs(rating_curve_exponent) < 1.0e-9,
             overland_water_balance.error,
         )
-        @test all(re -> abs(re) < 1e-9, overland_water_balance.relative_error)
+        @test all(re -> abs(re) < 1.0e-9, overland_water_balance.relative_error)
     end
     Wflow.run_timestep!(model)
     @testset "water balance second timestep" begin
         @test all(
-            rating_curve_exponent -> abs(rating_curve_exponent) < 1e-9,
+            rating_curve_exponent -> abs(rating_curve_exponent) < 1.0e-9,
             overland_water_balance.error,
         )
-        @test all(re -> abs(re) < 1e-9, overland_water_balance.relative_error)
+        @test all(re -> abs(re) < 1.0e-9, overland_water_balance.relative_error)
     end
     Wflow.close_files(model; delete_output = false)
 end

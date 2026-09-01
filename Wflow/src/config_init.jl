@@ -35,9 +35,9 @@ end
 
 # Automatically convert strings into enumerator instances
 function convert_value(
-    ::Type{T},
-    option_string::String,
-) where {T <: Union{Nothing, EnumX.Enum}}
+        ::Type{T},
+        option_string::String,
+    ) where {T <: Union{Nothing, EnumX.Enum}}
     option = Symbol(add_leading_underscore(option_string))
     for instance in instances(get_something_type(T))
         if option == Symbol(instance)
@@ -56,9 +56,9 @@ Initialize the configuration section of type T<:AbstractConfigSection. If T itse
 type <:AbstractConfigSection, this function works recursively.
 """
 function init_config_section(
-    ::Type{T},
-    dict::AbstractDict{String};
-)::T where {T <: AbstractConfigSection}
+        ::Type{T},
+        dict::AbstractDict{String}
+    )::T where {T <: AbstractConfigSection}
     args = Dict{Symbol, Any}()
     all_target_fields = fieldnames(T)
 
@@ -75,13 +75,13 @@ function init_config_section(
                 catch
                     argument_error(
                         "Couldn't convert the value $option_string = $value in the TOML section $(section_name(T)) " *
-                        "to the target type $target_arg_type.",
+                            "to the target type $target_arg_type.",
                     )
                 end
             end
         else
             @warn "'$option_string' is not recognized as a valid field of the $(section_name(T)) section in the TOML, " *
-                  "this will be ignored."
+                "this will be ignored."
         end
     end
 
@@ -96,7 +96,7 @@ end
 
 init_config_section_default(
     type::Type{<:AbstractConfigSection},
-    dict::AbstractDict{String};
+    dict::AbstractDict{String}
 ) = invoke(
     init_config_section,
     Tuple{Type{<:AbstractConfigSection}, AbstractDict{String}},
@@ -106,8 +106,8 @@ init_config_section_default(
 
 init_config_section(::Type{T}, data::Any) where {T <: AbstractConfigSection} =
     argument_error(
-        "Couldn't parse the $(section_name(T)) section in the TOML with data $data, must be a section.",
-    )
+    "Couldn't parse the $(section_name(T)) section in the TOML with data $data, must be a section.",
+)
 
 # Option 1 and 2 (see struct InputEntry)
 function init_config_section(::Type{InputEntry}, dict::AbstractDict{String})
@@ -128,7 +128,7 @@ function init_config_section(::Type{InputEntry}, dict::AbstractDict{String})
                     throw(
                         ArgumentError(
                             "In the TOML [input] section with netcdf variable name $netcdf_variable_name," *
-                            "the 'scale' 'offset' and 'layer' values must all have the same length if provided.",
+                                "the 'scale' 'offset' and 'layer' values must all have the same length if provided.",
                         ),
                     )
                 else
@@ -165,7 +165,7 @@ convert_value(::Type{IndexSection}, dict::AbstractDict{String}) =
 init_config_section(::Type{IndexSection}, i::Int) = IndexSection(; i)
 
 function init_config_section(::Type{InputEntries}, dict::AbstractDict{String})
-    InputEntries(
+    return InputEntries(
         Dict(key => init_config_section(InputEntry, value) for (key, value) in dict),
     )
 end
@@ -187,7 +187,7 @@ function init_config_section(::Type{InputSection}, dict::AbstractDict{String})
     if !isempty(overlap)
         argument_error(
             "These parameters were specified in more than one of the static, forcing and cyclic" *
-            "sections of the [input] in the TOML: $overlap.",
+                "sections of the [input] in the TOML: $overlap.",
         )
     end
 
@@ -211,7 +211,7 @@ function init_config_section(::Type{NetCDFScalarVariable}, dict::AbstractDict{St
         throw(
             ArgumentError(
                 "The variable in the [[output.netcdf_scalar.variable]] section with name = '$name'" *
-                " is missing either a 'location' or a 'map' field.",
+                    " is missing either a 'location' or a 'map' field.",
             ),
         )
     end
@@ -229,7 +229,7 @@ an underscore should not be specified in the TOML.
 """
 function Config(path::AbstractString)
     dict = TOML.parsefile(path)
-    Config(dict; path)
+    return Config(dict; path)
 end
 
 function Config(dict::AbstractDict; path::AbstractString)
@@ -241,9 +241,9 @@ end
 
 ## Convert Config back to dict
 function to_dict(
-    config_section::T;
-    dict = Dict{String, Any}(),
-) where {T <: AbstractConfigSection}
+        config_section::T;
+        dict = Dict{String, Any}(),
+    ) where {T <: AbstractConfigSection}
     for field_name in fieldnames(T)
         value = getfield(config_section, field_name)
         # Skip internals and unspecified fields
@@ -252,8 +252,8 @@ function to_dict(
         end
         # Skip subsections that were not specified in the original TOML
         if value isa AbstractConfigSection &&
-           hasproperty(value, :_was_specified) &&
-           !getfield(value, :_was_specified)
+                hasproperty(value, :_was_specified) &&
+                !getfield(value, :_was_specified)
             continue
         end
         if value isa VersionNumber

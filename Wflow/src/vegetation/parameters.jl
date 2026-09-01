@@ -20,10 +20,10 @@ end
 
 "Initialize (shared) vegetation parameters"
 function VegetationParameters(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}},
-)
+        dataset::NCDataset,
+        config::Config,
+        indices::Vector{CartesianIndex{2}},
+    )
     n = length(indices)
     rooting_depth =
         ncread(dataset, config, "vegetation_root__depth", LandHydrologySBM; sel = indices)

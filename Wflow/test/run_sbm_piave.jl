@@ -116,31 +116,31 @@ end
         @test sum(surfacewater_allocation) ≈ 1.974661630400081e-5
         @test sum(actual_groundwater_abstraction) ≈ 4.49176358799072e-6
         @test paddy.variables.h[[25, 42, 45]] ≈
-              [0.043181590971577366, 0.05120409409088053, 0.03447351368321183]
+            [0.043181590971577366, 0.05120409409088053, 0.03447351368321183]
         @test paddy.parameters.irrigation_trigger[[25, 42, 45]] == [1, 1, 1]
         @test paddy.variables.demand_gross[[25, 42, 45]] ≈ [0.0, 0.0, 0.0]
         @test nonpaddy.parameters.irrigation_trigger[[32, 38, 41]] == [1, 1, 1]
         @test nonpaddy.variables.demand_gross[[32, 38, 41]] ≈
-              [4.9019047699368696e-8, 8.49714835745173e-9, 5.429767820153539e-8]
+            [4.9019047699368696e-8, 8.49714835745173e-9, 5.429767820153539e-8]
         @test industry.demand.demand_gross[[1, end]] ≈
-              [2.4369881591863102e-9, 5.615634533266227e-10]
+            [2.4369881591863102e-9, 5.615634533266227e-10]
         @test industry.demand.demand_net[[1, end]] ≈
-              [6.09386393248483e-10, 1.4042299611631919e-10]
+            [6.09386393248483e-10, 1.4042299611631919e-10]
         @test industry.variables.returnflow[[1, end]] ≈
-              [1.8276017659378273e-9, 4.2114045721030344e-10]
+            [1.8276017659378273e-9, 4.2114045721030344e-10]
         @test livestock.demand.demand_gross[[1, end]] ≈
-              [1.1454581336120437e-12, 7.352427591858604e-13]
+            [1.1454581336120437e-12, 7.352427591858604e-13]
         @test livestock.demand.demand_net[[1, end]] ≈
-              [1.1454581336120437e-12, 7.352427591858604e-13]
+            [1.1454581336120437e-12, 7.352427591858604e-13]
         @test livestock.variables.returnflow[[1, end]] ≈ [0.0, 0.0]
         @test domestic.demand.demand_gross[[1, end]] ≈ [6.9591127060077805e-9, 0.0]
         @test domestic.demand.demand_net[[1, end]] ≈ [4.401560182924624e-9, 0.0]
         @test domestic.variables.returnflow[[1, end]] ≈ [2.557552523083157e-9, 0.0]
         @test reservoir.variables.waterlevel ≈
-              [29.259144530899885, 32.68607771649562, 39.970184252221905]
+            [29.259144530899885, 32.68607771649562, 39.970184252221905]
         @test reservoir.variables.storage ≈ [1.8959925656023118e8, 4.28e7, 7.16e7]
         @test reservoir.variables.outflow_average ≈
-              [4.839249448770597, 9.70890592273304, 57.64196655435958]
+            [4.839249448770597, 9.70890592273304, 57.64196655435958]
         @test soil.variables.exfiltration_saturated_water[[937, 939, 979, 1020, 1158]] ≈ [
             3.402935369080744e-8,
             6.417375832730821e-8,
@@ -161,17 +161,17 @@ end
         @test sum(surfacewater_allocation) ≈ 1.8419166222885175e-5
         @test sum(actual_groundwater_abstraction) ≈ 3.908367102567774e-6
         @test paddy.variables.h[[25, 42, 45]] ≈
-              [0.03922741049173483, 0.04804241913069636, 0.028969573189189683]
+            [0.03922741049173483, 0.04804241913069636, 0.028969573189189683]
         @test paddy.parameters.irrigation_trigger[[25, 42, 45]] == [1, 1, 1]
         @test paddy.variables.demand_gross[[25, 42, 45]] ≈ [0.0, 0.0, 0.0]
         @test nonpaddy.parameters.irrigation_trigger[[32, 38, 41]] == [1, 1, 1]
         @test nonpaddy.variables.demand_gross[[32, 38, 41]] ≈
-              [5.1420085331820535e-8, 8.497148357451728e-9, 5.8134781953158e-8]
+            [5.1420085331820535e-8, 8.497148357451728e-9, 5.8134781953158e-8]
         @test reservoir.variables.waterlevel ≈
-              [29.25110298462435, 32.686077716495625, 39.970184252221905]
+            [29.25110298462435, 32.686077716495625, 39.970184252221905]
         @test reservoir.variables.storage ≈ [1.8954714734036595e8, 4.28e7, 7.16e7]
         @test reservoir.variables.outflow_average ≈
-              [4.841325917420907, 9.278008188175482, 53.34402066559018]
+            [4.841325917420907, 9.278008188175482, 53.34402066559018]
         @test soil.variables.exfiltration_saturated_water[[937, 939, 979, 1020, 1158]] ≈ [
             3.609545735297789e-8,
             7.030072486327537e-8,
@@ -209,11 +209,11 @@ end
     @test sum(surfacewater_allocation) ≈ 9.547423772484596e-6
     @test sum(actual_groundwater_abstraction) ≈ 1.342245942924911e-6
     @test industry.demand.demand_gross[[1, end]] ≈
-          [2.4369881591863102e-9, 5.615634533266227e-10]
+        [2.4369881591863102e-9, 5.615634533266227e-10]
     @test industry.demand.demand_net[[1, end]] ≈
-          [6.09386393248483e-10, 1.4042299611631919e-10]
+        [6.09386393248483e-10, 1.4042299611631919e-10]
     @test industry.variables.returnflow[[1, end]] ≈
-          [1.8276017659378273e-9, 4.2114045721030344e-10]
+        [1.8276017659378273e-9, 4.2114045721030344e-10]
     @test domestic.demand.demand_gross[[1, end]] ≈ [6.9591127060077805e-9, 0.0]
     @test domestic.demand.demand_net[[1, end]] ≈ [4.401560182924624e-9, 0.0]
     @test domestic.variables.returnflow[[1, end]] ≈ [2.557552523083157e-9, 0.0]
@@ -241,14 +241,14 @@ end
         @test mean(subsurface_flow.variables.head) ≈ 1106.4948788348809
         @test subsurface_flow.variables.water_table_depth[1] ≈ 0.05409810125066005
         @test subsurface_flow.parameters.top[1] -
-              subsurface_flow.variables.water_table_depth[1] ==
-              subsurface_flow.variables.head[1]
+            subsurface_flow.variables.water_table_depth[1] ==
+            subsurface_flow.variables.head[1]
         @test river.variables.flux_average[1] ≈ 0.4383366618485954
         @test subsurface_flow.variables.to_river_average[idx] ==
-              -river.variables.flux_average[1]
+            -river.variables.flux_average[1]
         @test mean(river.variables.flux_average) ≈ -0.45854595082723604
         @test mean(subsurface_flow.variables.to_river_average[land_indices]) ≈
-              0.4585459508272361
+            0.4585459508272361
         @test recharge.variables.rate[1] ≈ -3.382991970737765e-9
         @test mean(recharge.variables.rate) ≈ 1.0731121562868422e-8
     end
@@ -260,15 +260,15 @@ end
         @test mean(subsurface_flow.variables.head) ≈ 1106.4867249666993
         @test subsurface_flow.variables.water_table_depth[1] ≈ 0.05585260657136559
         @test subsurface_flow.parameters.top[1] -
-              subsurface_flow.variables.water_table_depth[1] ==
-              subsurface_flow.variables.head[1]
+            subsurface_flow.variables.water_table_depth[1] ==
+            subsurface_flow.variables.head[1]
         @test river.variables.flux_average[1] ≈ 0.5235153424133221
         @test river.variables.flux[1] == river.variables.flux_average[1]
         @test subsurface_flow.variables.to_river_average[idx] ==
-              -river.variables.flux_average[1]
+            -river.variables.flux_average[1]
         @test mean(river.variables.flux_average) ≈ 0.0014930635482410474
         @test mean(subsurface_flow.variables.to_river_average[land_indices]) ≈
-              -0.001493063548241109
+            -0.001493063548241109
         @test recharge.variables.rate[1] ≈ -2.507372990682725e-9
         @test mean(recharge.variables.rate) ≈ 1.2443344650184156e-8
     end
@@ -363,50 +363,50 @@ end
     Wflow.run_timestep!(model)
     @testset "water balance first timestep" begin
         @test all(
-            rating_curve_exponent -> abs(rating_curve_exponent) < 1e-9,
+            rating_curve_exponent -> abs(rating_curve_exponent) < 1.0e-9,
             land_water_balance.error,
         )
-        @test all(re -> abs(re) < 1e-9, land_water_balance.relative_error)
+        @test all(re -> abs(re) < 1.0e-9, land_water_balance.relative_error)
         @test all(
-            rating_curve_exponent -> abs(rating_curve_exponent) < 1e-9,
+            rating_curve_exponent -> abs(rating_curve_exponent) < 1.0e-9,
             overland_water_balance.error,
         )
         @test all(re -> abs(re) < 1.1e-9, overland_water_balance.relative_error)
         @test all(
-            rating_curve_exponent -> abs(rating_curve_exponent) < 1e-9,
+            rating_curve_exponent -> abs(rating_curve_exponent) < 1.0e-9,
             river_water_balance.error,
         )
-        @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
+        @test all(re -> abs(re) < 1.0e-9, river_water_balance.relative_error)
         @test all(
-            rating_curve_exponent -> abs(rating_curve_exponent) < 1e-9,
+            rating_curve_exponent -> abs(rating_curve_exponent) < 1.0e-9,
             subsurface_water_balance.error,
         )
-        @test all(re -> abs(re) < 1e-9, subsurface_water_balance.relative_error)
+        @test all(re -> abs(re) < 1.0e-9, subsurface_water_balance.relative_error)
     end
     Wflow.run_timestep!(model)
     @testset "water balance second timestep" begin
         @test all(
-            rating_curve_exponent -> abs(rating_curve_exponent) < 1e-9,
+            rating_curve_exponent -> abs(rating_curve_exponent) < 1.0e-9,
             land_water_balance.error,
         )
-        @test all(re -> abs(re) < 1e-9, land_water_balance.relative_error)
+        @test all(re -> abs(re) < 1.0e-9, land_water_balance.relative_error)
         @test all(
-            rating_curve_exponent -> abs(rating_curve_exponent) < 1e-9,
+            rating_curve_exponent -> abs(rating_curve_exponent) < 1.0e-9,
             routing.overland_water_balance.error,
         )
-        @test all(re -> abs(re) < 1e-9, routing.overland_water_balance.relative_error)
-        @test all(re -> abs(re) < 1e-9, routing.overland_water_balance.relative_error)
+        @test all(re -> abs(re) < 1.0e-9, routing.overland_water_balance.relative_error)
+        @test all(re -> abs(re) < 1.0e-9, routing.overland_water_balance.relative_error)
         @test all(
-            rating_curve_exponent -> abs(rating_curve_exponent) < 1e-9,
+            rating_curve_exponent -> abs(rating_curve_exponent) < 1.0e-9,
             river_water_balance.error,
         )
-        @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
-        @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
+        @test all(re -> abs(re) < 1.0e-9, river_water_balance.relative_error)
+        @test all(re -> abs(re) < 1.0e-9, river_water_balance.relative_error)
         @test all(
-            rating_curve_exponent -> abs(rating_curve_exponent) < 1e-9,
+            rating_curve_exponent -> abs(rating_curve_exponent) < 1.0e-9,
             subsurface_water_balance.error,
         )
-        @test all(re -> abs(re) < 1e-9, subsurface_water_balance.relative_error)
+        @test all(re -> abs(re) < 1.0e-9, subsurface_water_balance.relative_error)
     end
     Wflow.close_files(model; delete_output = false)
 end
