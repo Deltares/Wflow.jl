@@ -20,41 +20,6 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-/* CSS for syntax highlighting */
-html { -webkit-text-size-adjust: 100%; }
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
-}
 </style>
 
 
@@ -446,89 +411,41 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>For each wflow Model a test model is available that can help to understand the data requirements and the usage of each Model. The TOML configuration file per available model are listed in the Table below:</p>
+<p>For each wflow model a test model is available that can help to understand the data requirements and the usage of each model. The TOML configuration file per available model are listed in the Table below:</p>
 <table class="caption-top table">
 <thead>
 <tr class="header">
 <th style="text-align: left;">model</th>
-<th>TOML configuration file</th>
+<th style="text-align: left;">TOML configuration file</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">wflow_sbm + kinematic wave</td>
-<td><a href="https://raw.githubusercontent.com/Deltares/Wflow.jl/main/Wflow/test/sbm_config.toml">sbm_config.toml</a></td>
+<td style="text-align: left;"><code>sbm_config.toml</code></td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">wflow_sbm + groundwater flow</td>
-<td><a href="https://raw.githubusercontent.com/Deltares/Wflow.jl/main/Wflow/test/sbm_gwf_piave_demand_config.toml">sbm_gwf_piave_demand_config.toml</a></td>
+<td style="text-align: left;"><code>sbm_gwf_piave_demand_config.toml</code></td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">wflow_sediment</td>
-<td><a href="https://raw.githubusercontent.com/Deltares/Wflow.jl/main/Wflow/test/sediment_config.toml">sediment_config.toml</a></td>
+<td style="text-align: left;"><code>sediment_config.toml</code></td>
 </tr>
 </tbody>
 </table>
-<p>The associated Model files (input static, forcing and state files) can easily be downloaded and for this we share the following Julia code (per Model) that downloads the required files to your current working directory. For running these test model see also <a href="../getting_started/running_wflow.html#running-a-simulation">Usage</a> and <a href="../getting_started/running_wflow.html#using-the-command-line-interface">Command Line Interface</a>.</p>
+<p>Each archive contains the TOML configuration and its associated input static, forcing and state files. Download and extract an example model to run it. See also <a href="../getting_started/running_wflow.html#running-a-simulation">Usage</a> and <a href="../getting_started/running_wflow.html#using-the-command-line-interface">Command Line Interface</a>.</p>
 <section id="wflow_sbm-kinematic-wave" class="level2">
 <h2 class="anchored" data-anchor-id="wflow_sbm-kinematic-wave">wflow_sbm + kinematic wave</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># urls to TOML and netCDF of the Moselle example model</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>toml_url <span class="op">=</span> <span class="st">"https://raw.githubusercontent.com/Deltares/Wflow.jl/main/Wflow/test/sbm_config.toml"</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>staticmaps <span class="op">=</span> <span class="st">"https://github.com/visr/wflow-artifacts/releases/download/v1.0.0/staticmaps-moselle.nc"</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>forcing <span class="op">=</span> <span class="st">"https://github.com/visr/wflow-artifacts/releases/download/v1.0.0/forcing-moselle.nc"</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>instates <span class="op">=</span> <span class="st">"https://github.com/visr/wflow-artifacts/releases/download/v1.0.0/instates-moselle.nc"</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co"># create a "data/input" directory in the current directory</span></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>testdir <span class="op">=</span> <span class="pp">@__DIR__</span></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>inputdir <span class="op">=</span> <span class="fu">joinpath</span>(testdir, <span class="st">"data/input"</span>)</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="fu">isdir</span>(inputdir) <span class="op">||</span> <span class="fu">mkpath</span>(inputdir)</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>toml_path <span class="op">=</span> <span class="fu">joinpath</span>(testdir, <span class="st">"sbm_config.toml"</span>)</span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="co"># download resources to current and input directories</span></span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="fu">download</span>(staticmaps, <span class="fu">joinpath</span>(inputdir, <span class="st">"staticmaps-moselle.nc"</span>))</span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="fu">download</span>(forcing, <span class="fu">joinpath</span>(inputdir, <span class="st">"forcing-moselle.nc"</span>))</span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="fu">download</span>(instates, <span class="fu">joinpath</span>(inputdir, <span class="st">"instates-moselle.nc"</span>))</span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="fu">download</span>(toml_url, toml_path)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><a href="https://s3.deltares.nl/wflow/examples/dev/wflow-sbm-example.zip">Download the wflow_sbm example model</a></p>
 </section>
 <section id="wflow_sbm-groundwater-flow" class="level2">
 <h2 class="anchored" data-anchor-id="wflow_sbm-groundwater-flow">wflow_sbm + groundwater flow</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># urls to TOML and netCDF of the Piave example model</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>toml_url <span class="op">=</span> <span class="st">"https://raw.githubusercontent.com/Deltares/Wflow.jl/main/Wflow/test/sbm_gwf_piave_demand_config.toml"</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>staticmaps <span class="op">=</span> <span class="st">"https://github.com/visr/wflow-artifacts/releases/download/v1.0.0/staticmaps-piave.nc"</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>forcing <span class="op">=</span> <span class="st">"https://github.com/visr/wflow-artifacts/releases/download/v1.0.0/forcing-piave.nc"</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>instates <span class="op">=</span> <span class="st">"https://github.com/visr/wflow-artifacts/releases/download/v1.0.0/instates-piave-gwf.nc"</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co"># create a "data/input" directory in the current directory</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>testdir <span class="op">=</span> <span class="pp">@__DIR__</span></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>inputdir <span class="op">=</span> <span class="fu">joinpath</span>(testdir, <span class="st">"data/input"</span>)</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="fu">isdir</span>(inputdir) <span class="op">||</span> <span class="fu">mkpath</span>(inputdir)</span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>toml_path <span class="op">=</span> <span class="fu">joinpath</span>(testdir, <span class="st">"sbm_gwf_piave_demand_config.toml"</span>)</span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="co"># download resources to current and data dirs</span></span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="fu">download</span>(staticmaps, <span class="fu">joinpath</span>(inputdir, <span class="st">"staticmaps-piave.nc"</span>))</span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="fu">download</span>(forcing, <span class="fu">joinpath</span>(inputdir, <span class="st">"forcing-piave.nc"</span>))</span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="fu">download</span>(instates, <span class="fu">joinpath</span>(inputdir, <span class="st">"instates-piave-gwf.nc"</span>))</span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="fu">download</span>(toml_url, toml_path)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><a href="https://s3.deltares.nl/wflow/examples/dev/wflow-sbm-gwf-example.zip">Download the wflow_sbm groundwater flow example model</a></p>
 </section>
 <section id="wflow_sediment" class="level2">
 <h2 class="anchored" data-anchor-id="wflow_sediment">wflow_sediment</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># urls to TOML and netCDF of the Moselle example model</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>toml_url <span class="op">=</span> <span class="st">"https://raw.githubusercontent.com/Deltares/Wflow.jl/main/Wflow/test/sediment_config.toml"</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>staticmaps <span class="op">=</span> <span class="st">"https://github.com/visr/wflow-artifacts/releases/download/v1.0.0/staticmaps-moselle-sed.nc"</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>forcing <span class="op">=</span> <span class="st">"https://github.com/visr/wflow-artifacts/releases/download/v1.0.0/forcing-moselle-sed.nc"</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>instates <span class="op">=</span> <span class="st">"https://github.com/visr/wflow-artifacts/releases/download/v1.0.0/instates-moselle-sed.nc"</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co"># create a "data/input" directory in the current directory</span></span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>testdir <span class="op">=</span> <span class="pp">@__DIR__</span></span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>inputdir <span class="op">=</span> <span class="fu">joinpath</span>(testdir, <span class="st">"data/input"</span>)</span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="fu">isdir</span>(inputdir) <span class="op">||</span> <span class="fu">mkpath</span>(inputdir)</span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>toml_path <span class="op">=</span> <span class="fu">joinpath</span>(<span class="pp">@__DIR__</span>, <span class="st">"sediment_config.toml"</span>)</span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="co"># download resources to current and data dirs</span></span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="fu">download</span>(staticmaps, <span class="fu">joinpath</span>(inputdir, <span class="st">"staticmaps-moselle-sed.nc"</span>))</span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="fu">download</span>(forcing, <span class="fu">joinpath</span>(inputdir, <span class="st">"forcing-moselle-sed.nc"</span>))</span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="fu">download</span>(instates, <span class="fu">joinpath</span>(inputdir, <span class="st">"instates-moselle-sed.nc"</span>))</span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="fu">download</span>(toml_url, toml_path)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><a href="https://s3.deltares.nl/wflow/examples/dev/wflow-sediment-example.zip">Download the wflow_sediment example model</a></p>
 
 
 </section>

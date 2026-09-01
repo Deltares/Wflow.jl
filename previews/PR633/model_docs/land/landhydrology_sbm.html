@@ -1468,7 +1468,10 @@ maxdepth}}{mm}\)</span> is the critical water depth beyond which capillary rise 
 </section>
 <section id="land-surface-temperature" class="level2">
 <h2 class="anchored" data-anchor-id="land-surface-temperature">Land surface temperature</h2>
-<p>This module estimates the land surface temperature (LST) <span class="math inline">\(\SIb{T_\mathrm{s}}{\degree C}\)</span> based on evapotranspiration <span class="math inline">\(\SIb{ET}{mm\ t^{-1}}\)</span> simulated by the Land Hydrology <code>SBM</code> model and net radiation as input. The approach used to estimate <span class="math inline">\(T_\mathrm{s}\)</span> is based on work by Zink et al.&nbsp;(2018) and Purnamasari et al.&nbsp;(2025).</p>
+<p>This optional module estimates the land surface temperature (LST) <span class="math inline">\(\SIb{T_\mathrm{s}}{\degree C}\)</span> based on evapotranspiration <span class="math inline">\(\SIb{ET}{mm\ t^{-1}}\)</span> simulated by the Land Hydrology <code>SBM</code> model and net radiation as input. The approach used to estimate <span class="math inline">\(T_\mathrm{s}\)</span> is based on work by Zink et al.&nbsp;(2018) and Purnamasari et al.&nbsp;(2025).</p>
+<p>This module can be enabled by specifying the following in the TOML file:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_temperature__flag</span> <span class="op">=</span> <span class="cn">true</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>The energy balance of the land surface is computed as follows:</p>
 <p><span class="math display">\[
     R_\mathrm{n} =  LE + H + G
@@ -1489,11 +1492,17 @@ kg^{-1}\ K^{-1}}\)</span> is the specific heat of air (<span class="math inline"
     r_\mathrm{air} = \frac{\ln(\frac{z_\mathrm{m} - d}{z_\mathrm{0m}}) \ln(\frac{z_\mathrm{h} - d}{z_\mathrm{0h}})}{k^2 u_\mathrm{z}}
 \]</span></p>
 <p>where <span class="math inline">\(\SIb{d}{m}\)</span> is the zero plane displacement height, <span class="math inline">\(\SIb{z_\mathrm{m}}{m}\)</span> is the height of wind measurement, <span class="math inline">\(\SIb{z_\mathrm{h}}{m}\)</span> is the height of humidity measurement, <span class="math inline">\(\SIb{z_\mathrm{0m}}{m}\)</span> is the roughness length for momentum transfer, <span class="math inline">\(\SIb{z_\mathrm{0h}}{m}\)</span> is the roughness length for heat transfer, <span class="math inline">\(\SIb{u_\mathrm{z}}{m\
-s^{-1}}\)</span> is the wind speed at the wind speed measurement height <span class="math inline">\(z_\mathrm{m}\)</span> and <span class="math inline">\(k\)</span> is the von Kármán constant (<span class="math inline">\(k = 0.41\)</span>). It is assumed that the heights of measurements for wind and humidity are equal.</p>
+s^{-1}}\)</span> is the wind speed at the wind speed measurement height <span class="math inline">\(z_\mathrm{m}\)</span> and <span class="math inline">\(k\)</span> is the von Kármán constant (<span class="math inline">\(k = 0.41\)</span>). It is assumed that the heights of measurements for wind and humidity are equal. The wind speed is constrained to a minimum value of <span class="math inline">\(\SI{0.5}{m\ s^{-1}}\)</span> to account for vapour exchange on the surface induced by air buoyancy and boundary layer instability effects during low wind conditions (Allen et al., 1998).</p>
+<p>It is assumed that the input wind speed is consistent with <span class="math inline">\(z_\mathrm{0m}\)</span> and <span class="math inline">\(d\)</span> of the surface terrain (and not based on “open-terrain” (short grass) as observed typically by meteorological stations). The input wind speed reference height <code>land_surface_wind__speed_reference_height</code> should be set in the TOML file as follows:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_wind__speed_reference_height</span> <span class="op">=</span> <span class="fl">10.0</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>This reference height should be greater than the sum of <span class="math inline">\(d\)</span> and <span class="math inline">\(z_\mathrm{0m}\)</span> to convert the wind speed (assuming a logarithmic profile) properly to the reference height <span class="math inline">\(z\)</span> (<span class="math inline">\(z =
+z_\mathrm{m} = z_\mathrm{h}\)</span>) used for the computation of <span class="math inline">\(r_\mathrm{air}\)</span>. The reference height <span class="math inline">\(z\)</span> is set to 2.0 m above the input parameter <code>atmosphere_bottom_air__above_ground_height</code> (land surface “skin” layer height above the ground).</p>
 </section>
 <section id="references" class="level2">
 <h2 class="anchored" data-anchor-id="references">References</h2>
 <ul>
+<li>Allen, R. G., Pereira, L. S., Raes, D., an Smith, M., 1998, Crop evapotranspiration - Guidelines for computing crop water requirements - FAO Irrigation and drainage paper 56, FAO, Rome, 300, D05109.</li>
 <li>Bergström, S., 1992, The HBV model – its structure and applications, SMHI Reports Hydrology, Norrköping, Sweden, RH 4.</li>
 <li>Brooks, R. H., and Corey, A. T., 1964, Hydraulic properties of porous media, Hydrology Papers 3, Colorado State University, Fort Collins, 27 p.</li>
 <li>Feddes, R.A., Kowalik, P.J. and Zaradny, H., 1978, Simulation of field water use and crop yield, Pudoc, Wageningen, Simulation Monographs.</li>
