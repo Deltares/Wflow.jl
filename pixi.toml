@@ -22,6 +22,9 @@ install-prek = { depends-on = [
     "_prek-install",
     "instantiate-formatting",
 ] }
+check = "prek run --all-files"
+# First one can fix issues, second one is to check if all are fixed
+fix-check = "prek run --all-files || prek run --all-files"
 update-manifest-julia = "julia --project utils/update-manifest.jl"
 install = { depends-on = ["install-prek"] }
 # Test data
