@@ -552,6 +552,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#paddy-irrigation" id="toc-paddy-irrigation" class="nav-link" data-scroll-target="#paddy-irrigation">Paddy irrigation</a></li>
   <li><a href="#allocation" id="toc-allocation" class="nav-link" data-scroll-target="#allocation">Allocation</a></li>
   </ul></li>
+  <li><a href="#land-surface-temperature" id="toc-land-surface-temperature" class="nav-link" data-scroll-target="#land-surface-temperature">Land surface temperature</a>
+  <ul class="collapse">
+  <li><a href="#static-or-cyclicforcing-input-3" id="toc-static-or-cyclicforcing-input-3" class="nav-link" data-scroll-target="#static-or-cyclicforcing-input-3">Static or cyclic/forcing input</a></li>
+  <li><a href="#output-7" id="toc-output-7" class="nav-link" data-scroll-target="#output-7">Output</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -1532,30 +1537,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="dataRow odd">
-<td style="text-align: left;"><code>land_surface__temperature</code></td>
-<td style="text-align: left;">Land surface temperature</td>
-<td style="text-align: left;">°C</td>
-<td style="text-align: left;">K</td>
-</tr>
-<tr class="dataRow even">
-<td style="text-align: left;"><code>land_surface_air_latent_heat_of_evaporation__energy_flux</code></td>
-<td style="text-align: left;">Latent heat flux</td>
-<td style="text-align: left;">W m⁻²</td>
-<td style="text-align: left;">m² kg s⁻³ m⁻²</td>
-</tr>
-<tr class="dataRow odd">
-<td style="text-align: left;"><code>land_surface_air_net_sensible_heat__energy_flux</code></td>
-<td style="text-align: left;">Sensible heat flux</td>
-<td style="text-align: left;">W m⁻²</td>
-<td style="text-align: left;">m² kg s⁻³ m⁻²</td>
-</tr>
-<tr class="dataRow even">
-<td style="text-align: left;"><code>atmosphere_bottom_air__bulk_momentum_aerodynamic_resistance</code></td>
-<td style="text-align: left;">Aerodynamic resistance</td>
-<td style="text-align: left;">s m⁻¹</td>
-<td style="text-align: left;">s m⁻¹</td>
-</tr>
-<tr class="dataRow odd">
 <td style="text-align: left;"><code>compacted_soil_surface_water__excess_volume_flux</code></td>
 <td style="text-align: left;">Excess water for compacted soil fraction</td>
 <td style="text-align: left;">mm Δt⁻¹</td>
@@ -2225,9 +2206,124 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </table>
 </div>
 </div>
-
-
 </section>
+</section>
+</section>
+<section id="land-surface-temperature" class="level2">
+<h2 class="anchored" data-anchor-id="land-surface-temperature">Land surface temperature</h2>
+<section id="static-or-cyclicforcing-input-3" class="level3">
+<h3 class="anchored" data-anchor-id="static-or-cyclicforcing-input-3">Static or cyclic/forcing input</h3>
+<div id="50" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Domain, <span class="op">:</span>lst_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
+<colgroup>
+<col style="width: 37%">
+<col style="width: 25%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+</colgroup>
+<thead>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Possible output</th>
+</tr>
+</thead>
+<tbody>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>atmosphere_bottom_air_flow__roughness_length</code></td>
+<td style="text-align: left;">Land surface aerodynamic roughness length for momentum transfer</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">✓</td>
+</tr>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>atmosphere_bottom_air_heat_flow__roughness_length</code></td>
+<td style="text-align: left;">Land surface aerodynamic roughness length for heat transfer</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">✓</td>
+</tr>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>atmosphere_bottom_air_flow__zero_plane_displacement_length</code></td>
+<td style="text-align: left;">Zero-place displacement height</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">✓</td>
+</tr>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>atmosphere_bottom_air__above_ground_height</code></td>
+<td style="text-align: left;">Land surface "skin" layer height above the ground</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">✓</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="output-7" class="level3">
+<h3 class="anchored" data-anchor-id="output-7">Output</h3>
+<div id="52" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>lst_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
+<colgroup>
+<col style="width: 37%">
+<col style="width: 37%">
+<col style="width: 12%">
+<col style="width: 12%">
+</colgroup>
+<thead>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
+</tr>
+</thead>
+<tbody>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>land_surface__temperature</code></td>
+<td style="text-align: left;">Land surface temperature</td>
+<td style="text-align: left;">°C</td>
+<td style="text-align: left;">K</td>
+</tr>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>land_surface_air_latent_heat_of_evaporation__energy_flux</code></td>
+<td style="text-align: left;">Latent heat flux</td>
+<td style="text-align: left;">W m⁻²</td>
+<td style="text-align: left;">m² kg s⁻³ m⁻²</td>
+</tr>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>land_surface_air_net_sensible_heat__energy_flux</code></td>
+<td style="text-align: left;">Sensible heat flux</td>
+<td style="text-align: left;">W m⁻²</td>
+<td style="text-align: left;">m² kg s⁻³ m⁻²</td>
+</tr>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>atmosphere_bottom_air__bulk_momentum_aerodynamic_resistance</code></td>
+<td style="text-align: left;">Aerodynamic resistance</td>
+<td style="text-align: left;">s m⁻¹</td>
+<td style="text-align: left;">s m⁻¹</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
 </section>
 </section>
 
