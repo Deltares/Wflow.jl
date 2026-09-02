@@ -149,6 +149,8 @@ function update_land_hydrology_model!(
 
     update_soil_water_flow!(soil, atmospheric_forcing, (; snow, runoff, demand), config, dt)
 
+    @. soil.variables.actual_evapotranspiration += interception.variables.interception_rate
+
     # Update land surface temperature if enabled
     if config.model.land_surface_temperature__flag
         wind_measurement_height = config.model.land_surface_wind__speed_reference_height
@@ -161,8 +163,6 @@ function update_land_hydrology_model!(
             dt,
         )
     end
-
-    @. soil.variables.actual_evapotranspiration += interception.variables.interception_rate
     return nothing
 end
 
