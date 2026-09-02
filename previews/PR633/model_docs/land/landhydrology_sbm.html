@@ -782,19 +782,19 @@ window.Quarto = {
 <div class="cell-output cell-output-stdout">
 <div class="ansi-escaped-output">
 <pre><span class="ansi-green-fg ansi-bold">Precompiling</span> packages...
-   2033.4 ms<span class="ansi-green-fg">  ✓ </span>QuartoNotebookWorkerLaTeXStringsExt<span class="ansi-bright-black-fg"> (serial)</span>
+   1797.8 ms<span class="ansi-green-fg">  ✓ </span>QuartoNotebookWorkerLaTeXStringsExt<span class="ansi-bright-black-fg"> (serial)</span>
   1 dependency successfully precompiled in 2 seconds
 <span class="ansi-green-fg ansi-bold">Precompiling</span> packages...
-   1148.6 ms<span class="ansi-green-fg">  ✓ </span>QuartoNotebookWorkerJSONExt<span class="ansi-bright-black-fg"> (serial)</span>
+   1027.7 ms<span class="ansi-green-fg">  ✓ </span>QuartoNotebookWorkerJSONExt<span class="ansi-bright-black-fg"> (serial)</span>
   1 dependency successfully precompiled in 1 seconds
 <span class="ansi-green-fg ansi-bold">Precompiling</span> packages...
-   1067.4 ms<span class="ansi-green-fg">  ✓ </span>QuartoNotebookWorkerTablesExt<span class="ansi-bright-black-fg"> (serial)</span>
+   1024.6 ms<span class="ansi-green-fg">  ✓ </span>QuartoNotebookWorkerTablesExt<span class="ansi-bright-black-fg"> (serial)</span>
   1 dependency successfully precompiled in 1 seconds
 <span class="ansi-green-fg ansi-bold">Precompiling</span> packages...
-   6301.5 ms<span class="ansi-green-fg">  ✓ </span>QuartoNotebookWorkerMakieExt<span class="ansi-bright-black-fg"> (serial)</span>
+   5882.1 ms<span class="ansi-green-fg">  ✓ </span>QuartoNotebookWorkerMakieExt<span class="ansi-bright-black-fg"> (serial)</span>
   1 dependency successfully precompiled in 6 seconds
 <span class="ansi-green-fg ansi-bold">Precompiling</span> packages...
-   5100.6 ms<span class="ansi-green-fg">  ✓ </span>QuartoNotebookWorkerCairoMakieExt<span class="ansi-bright-black-fg"> (serial)</span>
+   5000.7 ms<span class="ansi-green-fg">  ✓ </span>QuartoNotebookWorkerCairoMakieExt<span class="ansi-bright-black-fg"> (serial)</span>
   1 dependency successfully precompiled in 5 seconds
 </pre>
 </div>
@@ -1518,6 +1518,7 @@ s^{-1}}\)</span> is the wind speed at the wind speed measurement height <span cl
 <span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_wind__speed_reference_height</span> <span class="op">=</span> <span class="fl">10.0</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>This reference height should be greater than the sum of <span class="math inline">\(d\)</span> and <span class="math inline">\(z_\mathrm{0m}\)</span> to convert the wind speed (assuming a logarithmic profile) properly to the reference height <span class="math inline">\(z\)</span> (<span class="math inline">\(z =
 z_\mathrm{m} = z_\mathrm{h}\)</span>) used for the computation of <span class="math inline">\(r_\mathrm{air}\)</span>. The reference height <span class="math inline">\(z\)</span> is set to 2.0 m above the input parameter <code>atmosphere_bottom_air__above_ground_height</code> (land surface “skin” layer height above the ground).</p>
+<p>The list of input parameters for LST that can be provided through the TOML file can be found <a href="../../model_docs/parameters_landhydrology_sbm.html#land-surface-temperature">here</a>. The required wind speed and net radiation forcing input are listed <a href="../../model_docs/parameters_landhydrology_sbm.html#atmospheric-forcing">here</a>.</p>
 </section>
 <section id="references" class="level2">
 <h2 class="anchored" data-anchor-id="references">References</h2>
