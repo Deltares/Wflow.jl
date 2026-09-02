@@ -1299,6 +1299,11 @@ height $z$ is set to 2.0 m above the input parameter
 `atmosphere_bottom_air__above_ground_height` (land surface "skin" layer height above the
 ground).
 
+The list of input parameters for LST that can be provided through the TOML file can be found
+[here](../parameters_landhydrology_sbm.qmd#land-surface-temperature). The required wind
+speed and net radiation forcing input are listed
+[here](../parameters_landhydrology_sbm.qmd#atmospheric-forcing).
+
 ## References
 + Allen, R. G., Pereira, L. S., Raes, D., an Smith, M., 1998, Crop evapotranspiration -
   Guidelines for computing crop water requirements - FAO Irrigation and drainage paper 56,
