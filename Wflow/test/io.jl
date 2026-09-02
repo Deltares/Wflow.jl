@@ -54,7 +54,7 @@ end
     # mock a NCReader object
     ncpath = Wflow.input_path(config, config.input.path_forcing)
     ds = NCDataset(ncpath)
-    reader = (; dataset = ds)
+    reader = (; dataset_times = ds["time"][:])
 
     clock = Wflow.Clock(config, reader)
 
