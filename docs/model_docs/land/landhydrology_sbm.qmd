@@ -1225,8 +1225,9 @@ update of the reservoir water level $\SIb{}{m}$.
 ## Land surface temperature
 This optional module estimates the land surface temperature (LST)
 $\SIb{T_\mathrm{s}}{\degree C}$ based on evapotranspiration $\SIb{ET}{mm\ t^{-1}}$ simulated
-by the Land Hydrology `SBM` model and net radiation as input. The approach used to estimate
-$T_\mathrm{s}$ is based on work by Zink et al. (2018) and Purnamasari et al. (2025).
+by the Land Hydrology `SBM` model and wind speed, air temperature and net radiation as
+input. The approach used to estimate $T_\mathrm{s}$ is based on work by Zink et al. (2018)
+and Purnamasari et al. (2025).
 
 This module can be enabled by specifying the following in the TOML file:
 
@@ -1301,7 +1302,7 @@ ground).
 
 The list of input parameters for LST that can be provided through the TOML file can be found
 [here](../parameters_landhydrology_sbm.qmd#land-surface-temperature). The required wind
-speed and net radiation forcing input are listed
+speed, air temperature and net radiation forcing inputs are listed
 [here](../parameters_landhydrology_sbm.qmd#atmospheric-forcing).
 
 ## References
