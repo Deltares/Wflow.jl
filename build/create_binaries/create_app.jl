@@ -16,10 +16,10 @@ sbom_file = "../../Wflow.spdx.json"
 
 rm(output_dir; force = true, recursive = true)
 
+# JuliaC links the executable directly instead of loading a relocatable sysimage.
 image_recipe = ImageRecipe(;
     output_type = "--output-exe",
-    file = joinpath(project_dir, "src", "wflow_cli.jl"),
-    project = project_dir,
+    file = project_dir,
     cpu_target = default_app_cpu_target(),
     verbose = true,
 )
@@ -30,10 +30,7 @@ link_recipe = LinkRecipe(;
 )
 bundle_recipe = BundleRecipe(; link_recipe, output_dir)
 
-precompile_config_dir = abspath("../../Wflow/test")
-withenv("WFLOW_PRECOMPILE_CONFIG_DIR" => precompile_config_dir) do
-    compile_products(image_recipe)
-end
+compile_products(image_recipe)
 link_products(link_recipe)
 bundle_products(bundle_recipe)
 
