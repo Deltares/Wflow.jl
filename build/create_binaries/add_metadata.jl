@@ -3,11 +3,11 @@ Recursively copy the license of `package_uuid` and all of its transitive depende
 found in `ctx`'s manifest) into `license_dir`, skipping uuids already in `visited_uuids`.
 """
 function collect_dependency_license(
-    ctx::Pkg.Types.Context,
-    license_dir::AbstractString,
-    visited_uuids::Set{Base.UUID},
-    package_uuid::Base.UUID,
-)::Nothing
+        ctx::Pkg.Types.Context,
+        license_dir::AbstractString,
+        visited_uuids::Set{Base.UUID},
+        package_uuid::Base.UUID,
+    )::Nothing
     package_uuid in visited_uuids && return nothing
     push!(visited_uuids, package_uuid)
 
@@ -36,9 +36,9 @@ Collect the licenses of all (transitive) dependencies of the project at `project
 copying each into `license_dir`.
 """
 function collect_dependency_licenses(
-    project_dir::AbstractString,
-    license_dir::AbstractString,
-)::Nothing
+        project_dir::AbstractString,
+        license_dir::AbstractString,
+    )::Nothing
     ctx = PackageCompiler.create_pkg_context(project_dir)
     visited_uuids = Set{Base.UUID}()
     for package_uuid in values(ctx.env.project.deps)
@@ -60,12 +60,12 @@ within the `git_repo` checkout:
 - dep_licenses/
 """
 function add_metadata(
-    project_dir::AbstractString,
-    license_file::AbstractString,
-    output_dir::AbstractString,
-    git_repo::AbstractString,
-    sbom_file::AbstractString,
-)::Nothing
+        project_dir::AbstractString,
+        license_file::AbstractString,
+        output_dir::AbstractString,
+        git_repo::AbstractString,
+        sbom_file::AbstractString,
+    )::Nothing
     # save some environment variables in a Build.toml file for debugging purposes
     vars = ["BUILD_NUMBER", "BUILD_VCS_NUMBER"]
     dict = Dict(var => ENV[var] for var in vars if haskey(ENV, var))

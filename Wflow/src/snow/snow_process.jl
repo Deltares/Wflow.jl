@@ -1,4 +1,3 @@
-
 """
     snowpack_hbv(snow_storage, snow_water, snow_precip, liquid_precip, temperature, temperature_threshold_melt, degree_day_factor, water_holding_capacity, dt; cfr = 0.05)
 
@@ -24,17 +23,17 @@ The refreezing efficiency factor `cfr` is set to 0.05.
 - `runoff`
 """
 function snowpack_hbv(
-    snow_storage,
-    snow_water,
-    snow_precip,
-    liquid_precip,
-    temperature,
-    temperature_threshold_melt,
-    degree_day_factor,
-    water_holding_capacity,
-    dt;
-    cfr = 0.05,
-)
+        snow_storage,
+        snow_water,
+        snow_precip,
+        liquid_precip,
+        temperature,
+        temperature_threshold_melt,
+        degree_day_factor,
+        water_holding_capacity,
+        dt;
+        cfr = 0.05,
+    )
     if temperature > temperature_threshold_melt
         potential_snow_melt = degree_day_factor * (temperature - temperature_threshold_melt)
         snow_melt = min(potential_snow_melt, snow_storage / dt)
@@ -88,22 +87,22 @@ All correction factors (RFCF and SFCF) are set to 1.
 - `liquid_precip`
 """
 function precipitation_hbv(
-    precipitation,
-    temperature,
-    temperature_interval_snowfall,
-    temperature_threshold_snowfall;
-    rfcf = 1.0,
-    sfcf = 1.0,
-)
+        precipitation,
+        temperature,
+        temperature_interval_snowfall,
+        temperature_threshold_snowfall;
+        rfcf = 1.0,
+        sfcf = 1.0,
+    )
     # fraction of precipitation which falls as rain
     rainfrac = if iszero(temperature_interval_snowfall)
         Float64(temperature > temperature_threshold_snowfall)
     else
         frac =
             (
-                temperature -
+            temperature -
                 (temperature_threshold_snowfall - temperature_interval_snowfall / 2.0)
-            ) / temperature_interval_snowfall
+        ) / temperature_interval_snowfall
         clamp(frac, 0.0, 1.0)
     end
 

@@ -101,7 +101,7 @@ end
                 actual_surfacewater_abstraction_volume = zeros(n),
                 actual_surfacewater_abstraction = zeros(n),
                 available_surfacewater = zeros(n),
-            )
+            ),
         ),
         boundary_conditions = (; external_inflow = [5.0]),
         variables = (; storage = [375.0]),
@@ -123,13 +123,13 @@ end
     )
 
     @test river.allocation.variables.actual_surfacewater_abstraction_volume |> only ≈
-          0.0001388888888888889
+        0.0001388888888888889
     @test river.allocation.variables.available_surfacewater |> only ≈ 288.0
     @test demand_variables.surfacewater_demand |> only ≈ 0.0
     @test river.allocation.variables.actual_surfacewater_abstraction |> only ≈
-          2.3148148148148147e-10
+        2.3148148148148147e-10
     @test allocation_model.variables.surfacewater_allocation |> only ≈
-          2.3148148148148147e-10
+        2.3148148148148147e-10
 end
 
 @testitem "unit: surface_water_allocation_area!" begin
@@ -160,13 +160,13 @@ end
                 actual_surfacewater_abstraction_volume = zeros(n),
                 actual_surfacewater_abstraction = zeros(n),
                 available_surfacewater = zeros(n),
-            )
+            ),
         ),
         boundary_conditions = (;
             reservoir = (;
                 boundary_conditions = (; external_inflow = [2.0, 3.0, 4.0]),
                 variables = (; storage = [1.5531612276024342e8, 4.28e7, 7.16e7]),
-            )
+            ),
         ),
     )
 
@@ -205,13 +205,13 @@ end
     )
 
     @test river_flow_model.allocation.variables.available_surfacewater ≈
-          [1.5220980030503854e8, 4.1944e7, 7.0168e7]
+        [1.5220980030503854e8, 4.1944e7, 7.0168e7]
     @test river_flow_model.allocation.variables.actual_surfacewater_abstraction_volume ≈
-          [0.007038611432396478, 0.0019396091271966873, 0.0032447666707309066]
+        [0.007038611432396478, 0.0019396091271966873, 0.0032447666707309066]
     @test river_flow_model.allocation.variables.actual_surfacewater_abstraction ≈
-          [1.1673711636200856e-8, 3.2173602728152876e-9, 5.382312979756414e-9]
+        [1.1673711636200856e-8, 3.2173602728152876e-9, 5.382312979756414e-9]
     @test allocation_model.variables.surfacewater_allocation ≈
-          [7.523148148148148e-9, 8.912037037037038e-9, 3.831018518518519e-9]
+        [7.523148148148148e-9, 8.912037037037038e-9, 3.831018518518519e-9]
 end
 
 @testitem "unit: groundwater_allocation_local!" begin
@@ -243,11 +243,11 @@ end
     )
 
     @test allocation_model.variables.actual_groundwater_abstraction_volume |> only ≈
-          0.6843592592592592
+        0.6843592592592592
     @test allocation_model.variables.available_groundwater |> only ≈ 177832.06
     @test demand_variables.groundwater_demand |> only == 0.0
     @test allocation_model.variables.actual_groundwater_abstraction |> only ≈
-          1.1574074074074074e-6
+        1.1574074074074074e-6
     @test allocation_model.variables.groundwater_allocation |> only ≈ 1.1574074074074074e-6
 end
 
@@ -290,9 +290,9 @@ end
     Wflow.groundwater_allocation_area!(allocation_model, demand_variables, domain, dt)
 
     @test allocation_model.variables.actual_groundwater_abstraction_volume ≈
-          [1.6375439409819674, 1.6635833767220893, 1.653787429697564]
+        [1.6375439409819674, 1.6635833767220893, 1.653787429697564]
     @test allocation_model.variables.actual_groundwater_abstraction ≈
-          [2.715116769241939e-6, 2.7582912495537205e-6, 2.742049157130268e-6]
+        [2.715116769241939e-6, 2.7582912495537205e-6, 2.742049157130268e-6]
     @test allocation_model.variables.groundwater_allocation ≈
-          [2.689178240740741e-7, 1.4190972222222222e-7, 7.80462962962963e-6]
+        [2.689178240740741e-7, 1.4190972222222222e-7, 7.80462962962963e-6]
 end

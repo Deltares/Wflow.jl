@@ -34,10 +34,10 @@ end
 
 "Initialize EUROSEM rainfall erosion model parameters"
 function RainfallErosionEurosemParameters(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}},
-)
+        dataset::NCDataset,
+        config::Config,
+        indices::Vector{CartesianIndex{2}},
+    )
     soil_detachability = ncread(
         dataset,
         config,
@@ -89,10 +89,10 @@ end
 
 "Initialize EUROSEM rainfall erosion model"
 function RainfallErosionEurosemModel(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}},
-)
+        dataset::NCDataset,
+        config::Config,
+        indices::Vector{CartesianIndex{2}},
+    )
     n = length(indices)
     parameters = RainfallErosionEurosemParameters(dataset, config, indices)
     rainfall_erosion_model = RainfallErosionEurosemModel(; n, parameters)
@@ -101,22 +101,23 @@ end
 
 "Update EUROSEM rainfall erosion model boundary conditions for a single timestep"
 function update_bc_rainfall_erosion_model!(
-    rainfall_erosion_model::RainfallErosionEurosemModel,
-    atmospheric_forcing::AtmosphericForcing,
-    hydrological_forcing::HydrologicalForcing,
-)
+        rainfall_erosion_model::RainfallErosionEurosemModel,
+        atmospheric_forcing::AtmosphericForcing,
+        hydrological_forcing::HydrologicalForcing,
+    )
     (; precipitation, interception, waterlevel) = rainfall_erosion_model.boundary_conditions
     @. precipitation = atmospheric_forcing.precipitation
     @. waterlevel = hydrological_forcing.waterlevel_land
     @. interception = hydrological_forcing.interception
+    return nothing
 end
 
 "Update EUROSEM rainfall erosion model for a single timestep"
 function update_rainfall_erosion_model!(
-    rainfall_erosion_model::RainfallErosionEurosemModel,
-    parameters::LandParameters,
-    dt::Float64,
-)
+        rainfall_erosion_model::RainfallErosionEurosemModel,
+        parameters::LandParameters,
+        dt::Float64,
+    )
     (; precipitation, interception, waterlevel) = rainfall_erosion_model.boundary_conditions
     (;
         soil_detachability,
@@ -142,6 +143,7 @@ function update_rainfall_erosion_model!(
             dt,
         )
     end
+    return nothing
 end
 
 "Struct for storing ANSWERS rainfall erosion model boundary conditions"
@@ -163,10 +165,10 @@ end
 
 "Initialize ANSWERS rainfall erosion model parameters"
 function RainfallErosionAnswersParameters(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}},
-)
+        dataset::NCDataset,
+        config::Config,
+        indices::Vector{CartesianIndex{2}},
+    )
     usle_k =
         ncread(dataset, config, "soil_erosion__usle_k_factor", SoilLossModel; sel = indices)
     usle_c =
@@ -194,10 +196,10 @@ end
 
 "Initialize ANSWERS rainfall erosion model"
 function RainfallErosionAnswersModel(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}},
-)
+        dataset::NCDataset,
+        config::Config,
+        indices::Vector{CartesianIndex{2}},
+    )
     n = length(indices)
     parameters = RainfallErosionAnswersParameters(dataset, config, indices)
     rainfall_erosion_model = RainfallErosionAnswersModel(; n, parameters)
@@ -206,20 +208,21 @@ end
 
 "Update ANSWERS rainfall erosion model boundary conditions for a single timestep"
 function update_bc_rainfall_erosion_model!(
-    rainfall_erosion_model::RainfallErosionAnswersModel,
-    atmospheric_forcing::AtmosphericForcing,
-    ::HydrologicalForcing,
-)
+        rainfall_erosion_model::RainfallErosionAnswersModel,
+        atmospheric_forcing::AtmosphericForcing,
+        ::HydrologicalForcing,
+    )
     (; precipitation) = rainfall_erosion_model.boundary_conditions
     @. precipitation = atmospheric_forcing.precipitation
+    return nothing
 end
 
 "Update ANSWERS rainfall erosion model for a single timestep"
 function update_rainfall_erosion_model!(
-    rainfall_erosion_model::RainfallErosionAnswersModel,
-    parameters::LandParameters,
-    dt::Float64,
-)
+        rainfall_erosion_model::RainfallErosionAnswersModel,
+        parameters::LandParameters,
+        dt::Float64,
+    )
     (; precipitation) = rainfall_erosion_model.boundary_conditions
     (; usle_k, usle_c, answers_rainfall_factor) = rainfall_erosion_model.parameters
     (; soil_erosion_rate) = rainfall_erosion_model.variables
@@ -234,4 +237,5 @@ function update_rainfall_erosion_model!(
             parameters.area[i],
         )
     end
+    return nothing
 end

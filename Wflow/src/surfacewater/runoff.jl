@@ -35,11 +35,11 @@ end
 
 "Return the water flux at the surface (boundary condition) when snow is not modelled"
 function get_water_flux_surface!(
-    water_flux_surface::Vector{Float64},
-    snow::NoSnowModel,
-    glacier::AbstractGlacierModel,
-    interception::AbstractInterceptionModel,
-)
+        water_flux_surface::Vector{Float64},
+        snow::NoSnowModel,
+        glacier::AbstractGlacierModel,
+        interception::AbstractInterceptionModel,
+    )
     (; throughfall, stemflow) = interception.variables
     @. water_flux_surface = throughfall + stemflow
     return nothing
@@ -47,11 +47,11 @@ end
 
 "Return the water flux at the surface (boundary condition) when snow is modelled"
 function get_water_flux_surface!(
-    water_flux_surface::Vector{Float64},
-    snow::AbstractSnowModel,
-    glacier::AbstractGlacierModel,
-    interception::AbstractInterceptionModel,
-)
+        water_flux_surface::Vector{Float64},
+        snow::AbstractSnowModel,
+        glacier::AbstractGlacierModel,
+        interception::AbstractInterceptionModel,
+    )
     water_flux_surface .=
         get_runoff(snow) .+ get_glacier_melt(glacier) .* get_glacier_fraction(glacier)
     return nothing
@@ -59,11 +59,11 @@ end
 
 "Update boundary conditions of the open water runoff model for a single timestep"
 function update_bc_open_water_runoff_model!(
-    open_water_runoff_model::OpenWaterRunoff,
-    external_models::NamedTuple,
-    routing::Routing,
-    network::NetworkRiver,
-)
+        open_water_runoff_model::OpenWaterRunoff,
+        external_models::NamedTuple,
+        routing::Routing,
+        network::NetworkRiver,
+    )
     (; water_flux_surface, waterdepth_river, waterdepth_land) =
         open_water_runoff_model.boundary_conditions
     (; land_indices) = network
@@ -82,11 +82,11 @@ end
 
 "Update the open water runoff model for a single timestep"
 function update_open_water_runoff_model!(
-    open_water_runoff_model::OpenWaterRunoff,
-    atmospheric_forcing::AtmosphericForcing,
-    parameters::LandParameters,
-    dt::Float64,
-)
+        open_water_runoff_model::OpenWaterRunoff,
+        atmospheric_forcing::AtmosphericForcing,
+        parameters::LandParameters,
+        dt::Float64,
+    )
     (; boundary_conditions, variables) = open_water_runoff_model
     (; water_flux_surface, waterdepth_river, waterdepth_land) = boundary_conditions
     (;

@@ -74,21 +74,23 @@ end
 end
 
 function Unit(; absolute_temperature = false, kwargs...)
-    powers = ntuple(i -> begin
-        unit = Units[i]
-        powers = return if unit in keys(kwargs)
-            val = kwargs[unit]
+    powers = ntuple(
+        i -> begin
+            unit = Units[i]
+            powers = return if unit in keys(kwargs)
+                val = kwargs[unit]
 
-            if val isa Number
-                val > 0 ? (0, val) : (-val, 0)
+                if val isa Number
+                    val > 0 ? (0, val) : (-val, 0)
+                else
+                    val
+                end
             else
-                val
+                (0 // 1, 0 // 1)
             end
-        else
-            (0 // 1, 0 // 1)
-        end
-        PowersType(powers)
-    end, N_UNITS)
+            PowersType(powers)
+        end, N_UNITS
+    )
     for unit in keys(kwargs)
         (unit ∉ Units) && argument_error("Unrecognized unit $unit.")
     end
@@ -99,22 +101,22 @@ const to_SI_data = @NamedTuple{factor::Float64, unit_SI::Unit}[
     (factor = 1.0, unit_SI = Unit(; K = 1)), # K
     (factor = 1.0, unit_SI = Unit(; K = 1)), # degC
     (factor = 1.0, unit_SI = Unit(; s = 1)), # s
-    (factor = 1e-3, unit_SI = Unit(; s = 1)), # ms
+    (factor = 1.0e-3, unit_SI = Unit(; s = 1)), # ms
     (factor = 60.0, unit_SI = Unit(; s = 1)), # min
     (factor = 3600, unit_SI = Unit(; s = 1)), # h
     (factor = 86400.0, unit_SI = Unit(; s = 1)), # d
     (factor = NaN, unit_SI = Unit(; s = 1)), # dt
     (factor = 1.0, unit_SI = Unit(; m = 1)), # m
-    (factor = 1e-2, unit_SI = Unit(; m = 1)), # cm
-    (factor = 1e-3, unit_SI = Unit(; m = 1)), # mm
-    (factor = 1e-6, unit_SI = Unit(; m = 1)), # μm
-    (factor = 1e-3, unit_SI = Unit(; m = 3)), # L
+    (factor = 1.0e-2, unit_SI = Unit(; m = 1)), # cm
+    (factor = 1.0e-3, unit_SI = Unit(; m = 1)), # mm
+    (factor = 1.0e-6, unit_SI = Unit(; m = 1)), # μm
+    (factor = 1.0e-3, unit_SI = Unit(; m = 3)), # L
     (factor = 1.0, unit_SI = Unit(; kg = 1)), # kg
-    (factor = 1e-3, unit_SI = Unit(; kg = 1)), # g
-    (factor = 1e3, unit_SI = Unit(; kg = 1)), # t
+    (factor = 1.0e-3, unit_SI = Unit(; kg = 1)), # g
+    (factor = 1.0e3, unit_SI = Unit(; kg = 1)), # t
     (factor = 1.0, unit_SI = Unit(; kg = 1, m = 2, s = -2)), # J
-    (factor = 1e-2, unit_SI = Unit()), # percentage
-    (factor = 1e-6, unit_SI = Unit()), # ppm
+    (factor = 1.0e-2, unit_SI = Unit()), # percentage
+    (factor = 1.0e-6, unit_SI = Unit()), # ppm
 ]
 
 # Predefined units used within the code
@@ -324,4 +326,5 @@ In-place conversion of values in SI unit to the given unit
 function from_SI!(x::AbstractArray, unit::Unit; dt_val::Union{Nothing, Number} = nothing)
     unit_ref = Ref(unit)
     @. x = from_SI(x, unit_ref; dt_val)
+    return nothing
 end

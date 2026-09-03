@@ -15,8 +15,11 @@ jobs:
       - uses: prefix-dev/setup-pixi@d3f436a425481402e6a95a1d1fc10331c708cd9e # v0.10.2
         with:
           pixi-version: "latest"
-      - name: Update Julia manifest
-        run: pixi run update-manifest-julia
+      - name: Update Julia manifest file
+        run: |
+          pixi run update-manifest-julia
+          pixi run install-prek
+          pixi run fix-check
         env:
           JULIA_PKG_PRECOMPILE_AUTO: "0"
       - uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1

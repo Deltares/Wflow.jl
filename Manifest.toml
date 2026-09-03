@@ -2,7 +2,7 @@
 
 julia_version = "1.12.7"
 manifest_format = "2.0"
-project_hash = "574610c5d6a18639f596ff8cdc87f0ebf5fb6a3f"
+project_hash = "097b2262a22859e336cb2ce77fc462c56b39994e"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -361,20 +361,6 @@ deps = ["CFTime", "DataStructures", "Dates", "DiskArrays", "Preferences", "Print
 git-tree-sha1 = "54d50f8a0a68ff4160564dfa09fc5de32465cfca"
 uuid = "1fbeeb36-5f17-413c-809b-666fb144f157"
 version = "0.4.4"
-
-[[deps.CommonMark]]
-deps = ["PrecompileTools"]
-git-tree-sha1 = "7e0e715804be2cfdc251d9a4bd10ace7a1b791e5"
-uuid = "a80b9123-70ca-4bc0-993e-6e3bcb318db6"
-version = "1.0.3"
-
-    [deps.CommonMark.extensions]
-    CommonMarkMarkdownASTExt = "MarkdownAST"
-    CommonMarkMarkdownExt = "Markdown"
-
-    [deps.CommonMark.weakdeps]
-    Markdown = "d6f4376e-aef5-505a-96c1-9c027394607a"
-    MarkdownAST = "d0879d2d-cac2-40c8-9cee-1863dc0c7391"
 
 [[deps.CommonSolve]]
 git-tree-sha1 = "f54afab101687a7049833d07636418a83e9a250b"
@@ -1056,12 +1042,6 @@ deps = ["Artifacts", "JLLWrappers", "Libdl"]
 git-tree-sha1 = "1dae3057da6f2b9c857afef03177bbdc7c4afe92"
 uuid = "aacddb02-875f-59d6-b918-886e6ef4fbf8"
 version = "3.2.0+0"
-
-[[deps.JuliaFormatter]]
-deps = ["CommonMark", "Glob", "JuliaSyntax", "PrecompileTools", "TOML", "Test"]
-git-tree-sha1 = "f1b4a405806b687587b0ee0c26e6820a0f93f815"
-uuid = "98e50ef6-434e-11e9-1051-2b60c6c9e899"
-version = "2.6.10"
 
 [[deps.JuliaInterpreter]]
 deps = ["CodeTracking", "InteractiveUtils", "Random", "UUIDs"]
@@ -1814,6 +1794,12 @@ version = "3.0.6"
 git-tree-sha1 = "40b9edad2e5287e05bd413a38f61a8ff55b9557b"
 uuid = "5eaf0fd0-dfba-4ccb-bf02-d820a40db705"
 version = "0.2.1"
+
+[[deps.Runic]]
+deps = ["JuliaSyntax", "Preferences"]
+git-tree-sha1 = "4bb4f4bbff3fe1c1f9b55ed2c1d08082a63a2d6b"
+uuid = "62bfec6d-59d7-401d-8490-b29ee721c001"
+version = "1.10.0"
 
 [[deps.SHA]]
 uuid = "ea8e919c-243c-51af-8825-aaa63cd721ce"
