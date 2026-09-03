@@ -19,20 +19,17 @@ hooks = [
 repo = "local"
 
 [[repos.hooks]]
-id = "instantiate-formatting"
-name = "instantiate julia formatting environment"
-entry = "pixi run instantiate-formatting"
-language = "system"
-pass_filenames = false
-always_run = true
-
-[[repos.hooks]]
-id = "format-code"
-name = "format julia code"
-entry = "pixi run format-code"
+id = "runic"
+name = "runic"
+description = "Format Julia code"
+entry = "pixi run julia --project=utils/formatting --startup-file=no --module Runic"
+args = [
+  "--docstrings",
+  "--diff",
+  "--inplace"
+]
 language = "system"
 types = ["julia"]
-pass_filenames = true
 
 [[repos.hooks]]
 id = "typos"

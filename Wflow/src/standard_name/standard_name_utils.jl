@@ -25,12 +25,12 @@ Metadata associated with parameters and variables.
 - `tags`: Identifiers to filter parameters/variables for specific tables in the docs
 """
 @kwdef struct ParameterMetadata{
-    L,
-    D <: PARAMETER_TYPES,
-    F <: PARAMETER_TYPES,
-    T <: PARAMETER_TYPES,
-    N <: Union{Symbol, Nothing},
-}
+        L,
+        D <: PARAMETER_TYPES,
+        F <: PARAMETER_TYPES,
+        T <: PARAMETER_TYPES,
+        N <: Union{Symbol, Nothing},
+    }
     lens::L = nothing
     unit::Unit = EMPTY_UNIT
     default::D = nothing
@@ -42,17 +42,17 @@ Metadata associated with parameters and variables.
     dimname::N = nothing
     tags::Vector{Symbol} = []
     function ParameterMetadata(
-        lens::L,
-        unit,
-        default::D,
-        fill::F,
-        type,
-        description,
-        allow_missing,
-        allow_dynamic_input,
-        dimname::N,
-        flags,
-    ) where {L, D, F, N}
+            lens::L,
+            unit,
+            default::D,
+            fill::F,
+            type,
+            description,
+            allow_missing,
+            allow_dynamic_input,
+            dimname::N,
+            flags,
+        ) where {L, D, F, N}
         if isnothing(type)
             type = if !isnothing(default)
                 D
@@ -80,13 +80,13 @@ Metadata associated with parameters and variables.
 end
 
 function Base.:(==)(a::ParameterMetadata, b::ParameterMetadata)
-    all(getfield(a, f) == getfield(b, f) for f in fieldnames(ParameterMetadata))
+    return all(getfield(a, f) == getfield(b, f) for f in fieldnames(ParameterMetadata))
 end
 
 function metadata_from_lens_string(
-    lens_string::AbstractString,
-    standard_name_map::OrderedDict{String, ParameterMetadata},
-)::Union{ParameterMetadata, Nothing}
+        lens_string::AbstractString,
+        standard_name_map::OrderedDict{String, ParameterMetadata},
+    )::Union{ParameterMetadata, Nothing}
     for metadata_candidate in values(standard_name_map)
         if string(metadata_candidate.lens)[7:(end - 1)] == lens_string
             return metadata_candidate
@@ -96,10 +96,10 @@ function metadata_from_lens_string(
 end
 
 function get_metadata(
-    name::AbstractString,
-    types::Vararg{Type};
-    model = nothing,
-)::Union{ParameterMetadata, Nothing}
+        name::AbstractString,
+        types::Vararg{Type};
+        model = nothing,
+    )::Union{ParameterMetadata, Nothing}
     metadata = nothing
     for type in types
         standard_name_map = get_standard_name_map(type)
@@ -144,10 +144,10 @@ get_metadata(name::AbstractString, land::L; kwargs...) where {L <: AbstractLandM
     get_metadata(name, L; kwargs...)
 
 function get_metadata(
-    name::AbstractString,
-    land_type::Type{<:AbstractLandModel};
-    kwargs...,
-)::Union{ParameterMetadata, Nothing}
+        name::AbstractString,
+        land_type::Type{<:AbstractLandModel};
+        kwargs...,
+    )::Union{ParameterMetadata, Nothing}
     # Check whether it is a land variable first
     metadata = get(get_standard_name_map(land_type), name, nothing)
 
@@ -201,10 +201,10 @@ to_proper_number_type(::Bool, ::Type{T}) where {T <: Number} = nothing
 NOTE: This function is only in-place if A already has the correct type
 """
 function apply_unit_and_type_transform!(
-    A::AbstractArray,
-    metadata::ParameterMetadata;
-    dt_val = nothing,
-)
+        A::AbstractArray,
+        metadata::ParameterMetadata;
+        dt_val = nothing,
+    )
     (; type, unit) = metadata
     if eltype(A) != type
         A = to_proper_number_type.(A, type)

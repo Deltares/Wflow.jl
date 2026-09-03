@@ -8,9 +8,9 @@
     @test Wflow.tosecond(Hour(2)) == 3600 * 2
     @test Wflow.tosecond(Minute(2)) == 60 * 2
     @test Wflow.tosecond(Second(2)) == 2
-    @test Wflow.tosecond(Millisecond(2)) == 2e-3
-    @test Wflow.tosecond(Microsecond(2)) == 2e-6
-    @test Wflow.tosecond(Nanosecond(2)) == 2e-9
+    @test Wflow.tosecond(Millisecond(2)) == 2.0e-3
+    @test Wflow.tosecond(Microsecond(2)) == 2.0e-6
+    @test Wflow.tosecond(Nanosecond(2)) == 2.0e-9
 end
 
 @testitem "unit: julian_day (leap days are not counted)" begin
@@ -136,13 +136,13 @@ end
     configs = Wflow.Config[]
 
     for file_name in [
-        "sbm_gwf_config.toml",
-        "sbm_river-floodplain-staggered-scheme_config.toml",
-        "sbm_river-land-local-inertial_config.toml",
-        "sbm_gwf_piave_demand_config.toml",
-        "sediment_config.toml",
-        "sediment_eurosem_engelund_config.toml",
-    ]
+            "sbm_gwf_config.toml",
+            "sbm_river-floodplain-staggered-scheme_config.toml",
+            "sbm_river-land-local-inertial_config.toml",
+            "sbm_gwf_piave_demand_config.toml",
+            "sediment_config.toml",
+            "sediment_eurosem_engelund_config.toml",
+        ]
         config = Wflow.Config(normpath(@__DIR__, file_name))
         config.dir_output = mktempdir()
         config.model.water_mass_balance__flag = true
@@ -185,10 +185,12 @@ end
             expected_invalids = if map_name == "sbm"
                 # The lenses associated with these standard names aren't actually invalid,
                 # these parameters are just not used in any test model
-                Set([
-                    "soil_exponential_vertical_saturated_hydraulic_conductivity_profile_below_surface__depth",
-                    "soil_layer_water__vertical_saturated_hydraulic_conductivity",
-                ])
+                Set(
+                    [
+                        "soil_exponential_vertical_saturated_hydraulic_conductivity_profile_below_surface__depth",
+                        "soil_layer_water__vertical_saturated_hydraulic_conductivity",
+                    ]
+                )
             elseif map_name == "routing"
                 # The lens of this standard name is valid but not part of any test model.
                 Set(["floodplain__slope"])
@@ -203,7 +205,7 @@ end
     lenses = vcat(
         [
             getfield.(values(standard_name_map), :lens) for
-            (_, standard_name_map) in Wflow.STANDARD_NAME_MAPS
+                (_, standard_name_map) in Wflow.STANDARD_NAME_MAPS
         ]...,
     )
     filter!(!isnothing, lenses)

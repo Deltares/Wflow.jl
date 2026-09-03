@@ -118,7 +118,7 @@ end
         @test Wflow.harmonicmean_conductance(10.0 * 5.0, 10.0 * 0.0, 0.5, 0.5, 1.0) == 0.0
         # kD of 10 and 20 -> harmonicmean = 1/(1/10 + 1/20)
         @test Wflow.harmonicmean_conductance(10.0 * 1.0, 10.0 * 2.0, 1.0, 1.0, 1.0) ≈
-              (6.0 + 2.0 / 3.0)
+            (6.0 + 2.0 / 3.0)
     end
 
     nrow = 1
@@ -155,7 +155,7 @@ end
         conductivity_profile = Wflow.GwfConductivityProfileType.uniform
         alpha_coefficient = 0.25
         @test Wflow.stable_timestep(gwf_model, conductivity_profile, alpha_coefficient) ==
-              0.0375 * 86400.0
+            0.0375 * 86400.0
     end
 
     # Parametrization in setup is as follows:
@@ -229,7 +229,7 @@ end
     @testset "recharge" begin
         n = 3
 
-        variables = Wflow.RechargeVariables(; n, rate = fill(1e-3 / 86400.0, n))
+        variables = Wflow.RechargeVariables(; n, rate = fill(1.0e-3 / 86400.0, n))
         recharge_model = Wflow.RechargeModel(; n, variables)
         gwf_model.variables.q_net_bnds .= 0.0
         index = [1, 2, 3]

@@ -47,8 +47,8 @@ on the left edge, and a Neumann Boundary Condition (dh/dx = 0) on the right.
 """
 function transient_aquifer_1d(x, time, conductivity, specific_yield, aquifer_length, beta)
     return initial_head(x) / 1.0 +
-           (beta * conductivity * initial_head(aquifer_length) * time) /
-           (specific_yield * aquifer_length * aquifer_length)
+        (beta * conductivity * initial_head(aquifer_length) * time) /
+        (specific_yield * aquifer_length * aquifer_length)
 end
 
 function homogenous_aquifer(nrow, ncol)
@@ -120,16 +120,16 @@ function init_sbm_soil_model(n, N; kwargs...)
 
     # Vectors of SVectors
     for field_name in [
-        :unsaturated_layer_depth,
-        :unsaturated_layer_thickness,
-        :volumetric_water_content,
-        :relative_volumetric_water_content,
-        :actual_layer_thickness,
-        :rootfraction,
-        :vertical_hydraulic_conductivity_factor,
-        :brooks_corey_exponent,
-        :cumulative_layer_depth,
-    ]
+            :unsaturated_layer_depth,
+            :unsaturated_layer_thickness,
+            :volumetric_water_content,
+            :relative_volumetric_water_content,
+            :actual_layer_thickness,
+            :rootfraction,
+            :vertical_hydraulic_conductivity_factor,
+            :brooks_corey_exponent,
+            :cumulative_layer_depth,
+        ]
         if !haskey(kwargs, field_name)
             kwargs[field_name] = SVector{N, Float64}[]
         end
@@ -137,38 +137,38 @@ function init_sbm_soil_model(n, N; kwargs...)
 
     # Vectors of other types
     for field_name in [
-        # Variables
-        :unsaturated_store_capacity,
-        :saturated_water_depth,
-        :drainable_water_depth,
-        :water_table_depth,
-        :n_unsatlayers,
-        :total_soil_water_storage,
-        # Parameters
-        :number_of_layers,
-        :theta_s,
-        :theta_r,
-        :theta_fc,
-        :soil_water_capacity,
-        :air_entry_pressure,
-        :soil_thickness,
-        :infiltration_capacity_compacted_soil,
-        :infiltration_capacity_soil,
-        :maximum_leakage,
-        :cap_hmax,
-        :cap_n,
-        :w_soil,
-        :cf_soil,
-        :compacted_soil_area_fraction,
-        :wet_root_distribution_parameter,
-        :h1,
-        :h2,
-        :h3_high,
-        :h3_low,
-        :h4,
-        :alpha_h1,
-        :soil_fraction,
-    ]
+            # Variables
+            :unsaturated_store_capacity,
+            :saturated_water_depth,
+            :drainable_water_depth,
+            :water_table_depth,
+            :n_unsatlayers,
+            :total_soil_water_storage,
+            # Parameters
+            :number_of_layers,
+            :theta_s,
+            :theta_r,
+            :theta_fc,
+            :soil_water_capacity,
+            :air_entry_pressure,
+            :soil_thickness,
+            :infiltration_capacity_compacted_soil,
+            :infiltration_capacity_soil,
+            :maximum_leakage,
+            :cap_hmax,
+            :cap_n,
+            :w_soil,
+            :cf_soil,
+            :compacted_soil_area_fraction,
+            :wet_root_distribution_parameter,
+            :h1,
+            :h2,
+            :h3_high,
+            :h3_low,
+            :h4,
+            :alpha_h1,
+            :soil_fraction,
+        ]
         if !haskey(kwargs, field_name)
             kwargs[field_name] = []
         end
@@ -205,7 +205,7 @@ get_mean(f::Vector{SVector{N, Float64}}) where {N} = no_nan.(
 )
 
 function get_means(obj)
-    d = Dict{Symbol, Union{Float64, SVector{N, Float64} where N}}()
+    d = Dict{Symbol, Union{Float64, SVector{N, Float64} where {N}}}()
     for s in propertynames(obj)
         f = getfield(obj, s)
         if f isa Union{Vector{Float64}, Vector{SVector{N, Float64}} where {N}}

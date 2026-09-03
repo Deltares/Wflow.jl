@@ -30,25 +30,27 @@ end
 
 "Update total sediment reaching the river model boundary conditions"
 function update_bc_sediment_to_river_model!(
-    sediment_to_river_model::SedimentToRiverModel,
-    sediment_transport_model::SedimentLandTransportModel,
-)
+        sediment_to_river_model::SedimentToRiverModel,
+        sediment_transport_model::SedimentLandTransportModel,
+    )
     (; deposition) = sediment_to_river_model.boundary_conditions
     @. deposition = sediment_transport_model.variables.deposition
+    return nothing
 end
 
 "Update total sediment reaching the river model for a single timestep"
 function update_sediment_to_river_model!(
-    sediment_to_river_model::SedimentToRiverModel,
-    rivers::Vector{Bool},
-    dt::Float64,
-)
+        sediment_to_river_model::SedimentToRiverModel,
+        rivers::Vector{Bool},
+        dt::Float64,
+    )
     (; deposition) = sediment_to_river_model.boundary_conditions
     (; sediment_rate) = sediment_to_river_model.variables
 
     for (i, river) in enumerate(rivers)
         sediment_rate[i] = river ? deposition[i] : 0.0
     end
+    return nothing
 end
 
 "Struct to store differentiated sediment reaching the river model variables"
@@ -101,9 +103,9 @@ end
 
 "Update differentiated sediment reaching the river model boundary conditions"
 function update_bc_sediment_to_river_model!(
-    sediment_to_river_model::SedimentToRiverDifferentiationModel,
-    sediment_transport_model::SedimentLandTransportDifferentiationModel,
-)
+        sediment_to_river_model::SedimentToRiverDifferentiationModel,
+        sediment_transport_model::SedimentLandTransportDifferentiationModel,
+    )
     (;
         deposition_clay,
         deposition_silt,
@@ -118,14 +120,15 @@ function update_bc_sediment_to_river_model!(
         sediment_transport_model.variables.deposition_small_aggregates
     @. deposition_large_aggregates =
         sediment_transport_model.variables.deposition_large_aggregates
+    return nothing
 end
 
 "Update differentiated sediment reaching the river model for a single timestep"
 function update_sediment_to_river_model!(
-    sediment_to_river_model::SedimentToRiverDifferentiationModel,
-    rivers::Vector{Bool},
-    dt::Float64,
-)
+        sediment_to_river_model::SedimentToRiverDifferentiationModel,
+        rivers::Vector{Bool},
+        dt::Float64,
+    )
     (;
         deposition_clay,
         deposition_silt,
@@ -159,4 +162,5 @@ function update_sediment_to_river_model!(
     end
     @. sediment_rate =
         clay_rate + silt_rate + sand_rate + small_aggregates_rate + large_aggregates_rate
+    return nothing
 end

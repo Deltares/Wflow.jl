@@ -155,12 +155,12 @@ end
 
 "Return local drain direction `ldd` and directed `graph` based on `ldd`"
 function get_drainage_network(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}};
-    do_pits::Bool = false,
-    logging::Bool = true,
-)
+        dataset::NCDataset,
+        config::Config,
+        indices::Vector{CartesianIndex{2}};
+        do_pits::Bool = false,
+        logging::Bool = true,
+    )
     ldd_2d = ncread(dataset, config, "basin__local_drain_direction", Domain; logging)
     ldd = convert(Array{UInt8}, ldd_2d[indices])
     if do_pits
@@ -212,11 +212,11 @@ Initialize `NetworkRiver` fields related to river location (active indices model
 river drainage network.
 """
 function NetworkRiver(
-    dataset::NCDataset,
-    config::Config,
-    network::NetworkLand;
-    do_pits = false,
-)
+        dataset::NCDataset,
+        config::Config,
+        network::NetworkLand;
+        do_pits = false,
+    )
     # read river mask only at land-domain cells; same order as network.indices
     river_location = ncread(
         dataset,
@@ -372,12 +372,12 @@ end
 
 "Initialize `NetworkDrain`"
 function NetworkDrain(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}},
-    surface_flow_width::Vector{Float64},
-    modelsize::Tuple{Int, Int},
-)
+        dataset::NCDataset,
+        config::Config,
+        indices::Vector{CartesianIndex{2}},
+        surface_flow_width::Vector{Float64},
+        modelsize::Tuple{Int, Int},
+    )
     n_cells = length(indices)
     # read drain mask only at land-domain cells; same order as `indices`
     drain = ncread(dataset, config, "land_drain_location__mask", Routing; sel = indices)

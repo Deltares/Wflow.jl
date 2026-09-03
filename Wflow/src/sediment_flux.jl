@@ -1,9 +1,9 @@
 "Sediment transport in overland flow model"
 @with_kw struct OverlandFlowSedimentModel{
-    TT <: AbstractTransportCapacityModel,
-    SF <: AbstractSedimentLandTransportModel,
-    TR <: AbstractSedimentToRiverModel,
-} <: AbstractOverlandFlowModel
+        TT <: AbstractTransportCapacityModel,
+        SF <: AbstractSedimentLandTransportModel,
+        TR <: AbstractSedimentToRiverModel,
+    } <: AbstractOverlandFlowModel
     hydrological_forcing::HydrologicalForcing
     transport_capacity::TT
     sediment_flux::SF
@@ -11,31 +11,32 @@
 end
 
 function get_transport_capacity(
-    transport_methods::Dict{<:EnumX.Enum, Type{<:AbstractTransportCapacityModel}},
-    transport_method::Union{LandTransportType.T, RiverTransportType.T},
-    dataset::NCDataset,
-    config::Config,
-    indices,
-)::AbstractTransportCapacityModel
+        transport_methods::Dict{<:EnumX.Enum, Type{<:AbstractTransportCapacityModel}},
+        transport_method::Union{LandTransportType.T, RiverTransportType.T},
+        dataset::NCDataset,
+        config::Config,
+        indices,
+    )::AbstractTransportCapacityModel
     transport_capacity_constr = get(transport_methods, transport_method, nothing)
     @assert !isnothing(transport_capacity_constr)
-    return transport_capacity_constr(dataset, config, indices)
+    transport_capacity = transport_capacity_constr(dataset, config, indices)
+    return transport_capacity
 end
 
 const land_transport_method =
     Dict{LandTransportType.T, Type{<:AbstractTransportCapacityModel}}(
-        LandTransportType.yalinpart => TransportCapacityYalinDifferentiationModel,
-        LandTransportType.govers => TransportCapacityGoversModel,
-        LandTransportType.yalin => TransportCapacityYalinModel,
-    )
+    LandTransportType.yalinpart => TransportCapacityYalinDifferentiationModel,
+    LandTransportType.govers => TransportCapacityGoversModel,
+    LandTransportType.yalin => TransportCapacityYalinModel,
+)
 
 "Initialize the overland flow sediment transport model"
 function OverlandFlowSedimentModel(
-    dataset::NCDataset,
-    config::Config,
-    domain::DomainLand,
-    soilloss::SoilLossModel,
-)
+        dataset::NCDataset,
+        config::Config,
+        domain::DomainLand,
+        soilloss::SoilLossModel,
+    )
     (; indices) = domain.network
     (; hydrological_forcing) = soilloss
 
@@ -74,11 +75,11 @@ end
 
 "Update the overland flow sediment transport model for a single timestep"
 function update_overland_flow_model!(
-    overland_flow_model::OverlandFlowSedimentModel,
-    erosion_model::SoilErosionModel,
-    domain::DomainLand,
-    dt::Float64,
-)
+        overland_flow_model::OverlandFlowSedimentModel,
+        erosion_model::SoilErosionModel,
+        domain::DomainLand,
+        dt::Float64,
+    )
     # Transport capacity
     update_bc_transport_capacity_model!(
         overland_flow_model.transport_capacity,
@@ -111,16 +112,17 @@ function update_overland_flow_model!(
         domain.parameters.river_location,
         dt,
     )
+    return nothing
 end
 
 ### River ###
 "Sediment transport in river model"
 @with_kw struct RiverSedimentModel{
-    TTR <: AbstractTransportCapacityModel,
-    ER <: AbstractRiverErosionModel,
-    SFR <: AbstractSedimentRiverTransportModel,
-    CR <: AbstractSedimentConcentrationsRiverModel,
-} <: AbstractRiverFlowModel
+        TTR <: AbstractTransportCapacityModel,
+        ER <: AbstractRiverErosionModel,
+        SFR <: AbstractSedimentRiverTransportModel,
+        CR <: AbstractSedimentConcentrationsRiverModel,
+    } <: AbstractRiverFlowModel
     hydrological_forcing::HydrologicalForcing
     transport_capacity::TTR
     potential_erosion::ER
@@ -130,12 +132,12 @@ end
 
 const river_transport_method =
     Dict{RiverTransportType.T, Type{<:AbstractTransportCapacityModel}}(
-        RiverTransportType.bagnold => TransportCapacityBagnoldModel,
-        RiverTransportType.engelund => TransportCapacityEngelundModel,
-        RiverTransportType.yang => TransportCapacityYangModel,
-        RiverTransportType.kodatie => TransportCapacityKodatieModel,
-        RiverTransportType.molinas => TransportCapacityMolinasModel,
-    )
+    RiverTransportType.bagnold => TransportCapacityBagnoldModel,
+    RiverTransportType.engelund => TransportCapacityEngelundModel,
+    RiverTransportType.yang => TransportCapacityYangModel,
+    RiverTransportType.kodatie => TransportCapacityKodatieModel,
+    RiverTransportType.molinas => TransportCapacityMolinasModel,
+)
 
 "Initialize the river sediment transport model"
 function RiverSedimentModel(dataset::NCDataset, config::Config, domain::DomainRiver)
@@ -175,11 +177,11 @@ end
 
 "Update the river sediment transport model for a single timestep"
 function update_river_sediment_model!(
-    river_flow_model::RiverSedimentModel,
-    sediment_to_river_model::SedimentToRiverDifferentiationModel,
-    domain::DomainRiver,
-    dt::Float64,
-)
+        river_flow_model::RiverSedimentModel,
+        sediment_to_river_model::SedimentToRiverDifferentiationModel,
+        domain::DomainRiver,
+        dt::Float64,
+    )
     # Transport capacity
     update_bc_transport_capacity_model!(
         river_flow_model.transport_capacity,
@@ -221,4 +223,5 @@ function update_river_sediment_model!(
         domain.parameters,
         dt,
     )
+    return nothing
 end

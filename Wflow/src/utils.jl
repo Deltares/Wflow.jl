@@ -1,4 +1,3 @@
-
 "Map from PCRaster LDD value to a CartesianIndex"
 const PCR_DIR = [
     CartesianIndex(-1, -1),  # 1
@@ -46,11 +45,11 @@ end
 
 "Set at indices pit values (default = 5) in a gridded local drainage direction vector"
 function set_pit_ldd(
-    pits_2d::AbstractMatrix{Bool},
-    ldd::Vector{UInt8},
-    indices::Vector{CartesianIndex{2}};
-    pit::Integer = 5,
-)::Vector{UInt8}
+        pits_2d::AbstractMatrix{Bool},
+        ldd::Vector{UInt8},
+        indices::Vector{CartesianIndex{2}};
+        pit::Integer = 5,
+    )::Vector{UInt8}
     pits = pits_2d[indices]
     index = filter(i -> isequal(pits[i], true), 1:length(indices))
     ldd[index] .= UInt8(pit)
@@ -59,9 +58,9 @@ end
 
 "Filter upstream neighbors of graph based on logical vector"
 function filter_upstream_nodes(
-    graph::SimpleDiGraph{Int},
-    vec_logical::Vector{Bool},
-)::Vector{Vector{Int}}
+        graph::SimpleDiGraph{Int},
+        vec_logical::Vector{Bool},
+    )::Vector{Vector{Int}}
     upstream_nodes = Vector{Int}[]
     for v in topological_sort_by_dfs(graph)
         ups_nodes = inneighbors(graph, v)
@@ -83,9 +82,9 @@ the 1D internal domain, providing an Int which can be used as a linear index. Va
 represent inactive cells.
 """
 function active_indices(
-    subcatch_2d::AbstractMatrix,
-    nodata,
-)::Tuple{Vector{CartesianIndex{2}}, Matrix{Int}}
+        subcatch_2d::AbstractMatrix,
+        nodata,
+    )::Tuple{Vector{CartesianIndex{2}}, Matrix{Int}}
     A = subcatch_2d
     all_inds = CartesianIndices(size(A))
     indices = filter(i -> !isequal(A[i], nodata), all_inds)
@@ -128,10 +127,10 @@ function lattometres(lat::Real)::Tuple{Float64, Float64}
 end
 
 function cell_lengths(
-    y::AbstractVector{<:Real},
-    celllength::Real,
-    cell_length_in_meter::Bool,
-)::Tuple{Vector{Float64}, Vector{Float64}}
+        y::AbstractVector{<:Real},
+        celllength::Real,
+        cell_length_in_meter::Bool,
+    )::Tuple{Vector{Float64}, Vector{Float64}}
     n = length(y)
     xl = fill(MISSING_VALUE, n)
     yl = fill(MISSING_VALUE, n)
@@ -272,14 +271,14 @@ values.
 - `metadata`: The metadata of the read parameter or state, obtained from the parameter name by default.
 """
 function ncread(
-    nc,
-    config::Config,
-    parameter::AbstractString,
-    model_type;
-    sel = nothing,
-    logging = true,
-    metadata = get_metadata(parameter, model_type),
-)
+        nc,
+        config::Config,
+        parameter::AbstractString,
+        model_type;
+        sel = nothing,
+        logging = true,
+        metadata = get_metadata(parameter, model_type),
+    )
     (; default, fill, type, allow_missing, dimname) = metadata
     var = get_var(config, parameter; optional = !isnothing(default))
     dt_val = config.time.timestepsecs
@@ -388,10 +387,10 @@ water table depth) `reference_depth`, a SVector `cum_depth` with cumulative soil
 at soil surface (0), and a SVector `thickness` with thickness per soil layer.
 """
 function set_layerthickness(
-    reference_depth::Real,
-    cum_depth::SVector,
-    thickness::SVector{N, Float64},
-)::SVector{N, Float64} where {N}
+        reference_depth::Real,
+        cum_depth::SVector,
+        thickness::SVector{N, Float64},
+    )::SVector{N, Float64} where {N}
     thicknesslayers = thickness .* MISSING_VALUE
     for i in 1:length(thicknesslayers)
         if reference_depth > cum_depth[i + 1]
@@ -420,11 +419,11 @@ function get_flow_length(ldd::UInt8, x_length::Real, y_length::Real)::Real
     # if ldd is 8 or 2 use y_length
     # if ldd is 4 or 6 use x_length
     if ldd == 2 || ldd == 8
-        y_length
+        return y_length
     elseif ldd == 4 || ldd == 6
-        x_length
+        return x_length
     else
-        hypot(x_length, y_length)
+        return hypot(x_length, y_length)
     end
 end
 
@@ -440,11 +439,11 @@ function get_flow_width(ldd::UInt8, x_length::Real, y_length::Real)::Real
     # if ldd is 8 or 2 use x_length
     # if ldd is 4 or 6 use y_length
     if ldd == 2 || ldd == 8
-        x_length
+        return x_length
     elseif ldd == 4 || ldd == 6
-        y_length
+        return y_length
     else
-        (x_length * y_length) / hypot(x_length, y_length)
+        return (x_length * y_length) / hypot(x_length, y_length)
     end
 end
 
@@ -456,11 +455,11 @@ Return the surface flow width. Input `flow_width` (flow width), `flow_length` (f
 cell, boolean). Output is surface flow width `surface_width`.
 """
 function get_surface_width(
-    flow_width::Real,
-    flow_length::Real,
-    land_area::Real,
-    river_location::Bool,
-)::Real
+        flow_width::Real,
+        flow_length::Real,
+        land_area::Real,
+        river_location::Bool,
+    )::Real
     surface_width = river_location ? land_area / flow_length : flow_width
     return surface_width
 end
@@ -470,7 +469,7 @@ end
 pow(x::Real, y::Real)::Real = exp(y * log(x))
 
 function sum_at(A::AbstractVector{T}, inds::AbstractVector{Int})::T where {T}
-    mapreduce(i -> A[i], +, inds; init = zero(T))
+    return mapreduce(i -> A[i], +, inds; init = zero(T))
 end
 
 sum_at(f::Function, inds::AbstractVector{Int}; T::Type{<:Number} = Float64) =
@@ -491,11 +490,11 @@ Return flow `fraction` to a river cell (at index `j`) based on the ratio of the 
 index `i`.
 """
 function get_flow_fraction_to_river(
-    graph::SimpleDiGraph{Int},
-    ldd::Vector{UInt8},
-    inds_river::Vector{Int},
-    slope::Vector{<:Real},
-)::Vector{Float64}
+        graph::SimpleDiGraph{Int},
+        ldd::Vector{UInt8},
+        inds_river::Vector{Int},
+        slope::Vector{<:Real},
+    )::Vector{Float64}
     n = length(slope)
     fraction = zeros(n)
     for i in inds_river
@@ -555,8 +554,8 @@ tosecond(x::T) where {T <: TimePeriod} = x / convert(T, Second(1))
 Return the source node `src` and destination node `dst` of each edge of a directed `graph`.
 """
 function adjacent_nodes_at_edge(
-    graph::SimpleDiGraph{Int},
-)::NamedTuple{(:src, :dst), Tuple{Vector{Int}, Vector{Int}}}
+        graph::SimpleDiGraph{Int},
+    )::NamedTuple{(:src, :dst), Tuple{Vector{Int}, Vector{Int}}}
     _edges = collect(edges(graph))
     return (src = src.(_edges), dst = dst.(_edges))
 end
@@ -567,9 +566,9 @@ end
 Return the source edge `src` and destination edge `dst` of each node of a directed `graph`.
 """
 function adjacent_edges_at_node(
-    graph::SimpleDiGraph{Int},
-    nodes_at_edge,
-)::NamedTuple{(:src, :dst), Tuple{Vector{Vector{Int}}, Vector{Vector{Int}}}}
+        graph::SimpleDiGraph{Int},
+        nodes_at_edge,
+    )::NamedTuple{(:src, :dst), Tuple{Vector{Vector{Int}}, Vector{Vector{Int}}}}
     nodes = vertices(graph)
     src_edge = Vector{Int}[]
     dst_edge = copy(src_edge)
@@ -602,10 +601,10 @@ x and (+ CartesianIndex(0, 1)) for y. For cells that contain a `reservoir_outlet
 (reservoir), the effective flow width is set to zero.
 """
 function set_effective_flowwidth!(
-    we_x::Vector{Float64},
-    we_y::Vector{Float64},
-    domain::Domain,
-)::Nothing
+        we_x::Vector{Float64},
+        we_y::Vector{Float64},
+        domain::Domain,
+    )::Nothing
     (; local_drain_direction, indices) = domain.river.network
     (; edge_indices, reverse_indices) = domain.land.network
     (; flow_width, reservoir_outlet) = domain.river.parameters
@@ -725,12 +724,12 @@ Return vertical hydraulic conductivity `kv_z` at depth `z` for index `i` using m
 factor `kv_frac` at soil layer `n` and vertical hydraulic conductivity profile `p`.
 """
 function hydraulic_conductivity_at_depth(
-    p::KvExponential,
-    vertical_hydraulic_conductivity_factor,
-    z,
-    i,
-    n,
-)
+        p::KvExponential,
+        vertical_hydraulic_conductivity_factor,
+        z,
+        i,
+        n,
+    )
     kv_z =
         vertical_hydraulic_conductivity_factor[i][n] *
         p.kv_0[i] *
@@ -739,12 +738,12 @@ function hydraulic_conductivity_at_depth(
 end
 
 function hydraulic_conductivity_at_depth(
-    p::KvExponentialConstant,
-    vertical_hydraulic_conductivity_factor,
-    z,
-    i,
-    n,
-)
+        p::KvExponentialConstant,
+        vertical_hydraulic_conductivity_factor,
+        z,
+        i,
+        n,
+    )
     (; kv_0, hydraulic_conductivity_scale_parameter) = p.exponential
     if z < p.z_exp[i]
         kv_z =
@@ -761,31 +760,32 @@ function hydraulic_conductivity_at_depth(
 end
 
 function hydraulic_conductivity_at_depth(
-    p::KvLayered,
-    vertical_hydraulic_conductivity_factor,
-    z,
-    i,
-    n,
-)
+        p::KvLayered,
+        vertical_hydraulic_conductivity_factor,
+        z,
+        i,
+        n,
+    )
     kv_z = vertical_hydraulic_conductivity_factor[i][n] * p.kv[i][n]
     return kv_z
 end
 
 function hydraulic_conductivity_at_depth(
-    p::KvLayeredExponential,
-    vertical_hydraulic_conductivity_factor,
-    z,
-    i,
-    n,
-)
-    return if z < p.z_layered[i]
+        p::KvLayeredExponential,
+        vertical_hydraulic_conductivity_factor,
+        z,
+        i,
+        n,
+    )
+    kv_z = if z < p.z_layered[i]
         vertical_hydraulic_conductivity_factor[i][n] * p.kv[i][n]
     else
         n = p.nlayers_kv[i]
         vertical_hydraulic_conductivity_factor[i][n] *
-        p.kv[i][n] *
-        exp(-p.hydraulic_conductivity_scale_parameter[i] * (z - p.z_layered[i]))
+            p.kv[i][n] *
+            exp(-p.hydraulic_conductivity_scale_parameter[i] * (z - p.z_layered[i]))
     end
+    return kv_z
 end
 
 """
@@ -796,10 +796,10 @@ Compute equivalent horizontal hydraulic conductivity `kh` [m d⁻¹] using verti
 conductivity profile `kv_profile`.
 """
 function kh_layered_profile!(
-    soil_model::SbmSoilModel,
-    subsurface_flow_model::LateralSSFModel,
-    kv_profile::KvLayered,
-)
+        soil_model::SbmSoilModel,
+        subsurface_flow_model::LateralSSFModel,
+        kv_profile::KvLayered,
+    )
     (; number_of_layers, cumulative_layer_depth, actual_layer_thickness, soil_thickness) =
         soil_model.parameters
     (; n_unsatlayers, water_table_depth) = soil_model.variables
@@ -832,10 +832,10 @@ function kh_layered_profile!(
 end
 
 function kh_layered_profile!(
-    soil_model::SbmSoilModel,
-    subsurface_flow_model::LateralSSFModel,
-    kv_profile::KvLayeredExponential,
-)
+        soil_model::SbmSoilModel,
+        subsurface_flow_model::LateralSSFModel,
+        kv_profile::KvLayeredExponential,
+    )
     (; number_of_layers, cumulative_layer_depth, actual_layer_thickness, soil_thickness) =
         soil_model.parameters
     (; nlayers_kv, z_layered, kv, hydraulic_conductivity_scale_parameter) = kv_profile
@@ -855,11 +855,11 @@ function kh_layered_profile!(
                 j = nlayers_kv[i]
                 transmissivity +=
                     kv[i][j] / hydraulic_conductivity_scale_parameter[i] * (
-                        exp(
-                            -hydraulic_conductivity_scale_parameter[i] *
+                    exp(
+                        -hydraulic_conductivity_scale_parameter[i] *
                             (water_table_depth[i] - z_layered[i]),
-                        ) - exp(-hydraulic_conductivity_scale_parameter[i] * zt)
-                    )
+                    ) - exp(-hydraulic_conductivity_scale_parameter[i] * zt)
+                )
                 n = m
             else
                 _sumlayers = @view cumulative_layer_depth[i][2:end]
@@ -888,9 +888,9 @@ function kh_layered_profile!(
                 kh[i] =
                     kv[i][j] *
                     exp(
-                        -hydraulic_conductivity_scale_parameter[i] *
+                    -hydraulic_conductivity_scale_parameter[i] *
                         (water_table_depth[i] - z_layered[i]),
-                    ) *
+                ) *
                     horizontal_to_vertical_hydraulic_conductivity_ratio[i]
             else
                 kh[i] = kv[i][m] * horizontal_to_vertical_hydraulic_conductivity_ratio[i]
@@ -914,10 +914,10 @@ Initialize lateral subsurface variables `q` and `q_max` using horizontal hydraul
 conductivity profile `kh_profile`.
 """
 function initialize_lateral_ssf_model!(
-    subsurface_flow_model::LateralSSFModel,
-    parameters::LandParameters,
-    kh_profile::KhExponential,
-)
+        subsurface_flow_model::LateralSSFModel,
+        parameters::LandParameters,
+        kh_profile::KhExponential,
+    )
     (; kh_0, hydraulic_conductivity_scale_parameter) = kh_profile
     (; q, q_max, water_table_depth) = subsurface_flow_model.variables
     (; soil_thickness) = subsurface_flow_model.parameters
@@ -929,18 +929,18 @@ function initialize_lateral_ssf_model!(
     @. q =
         ((kh_0 * slope) / hydraulic_conductivity_scale_parameter) *
         (
-            exp(-hydraulic_conductivity_scale_parameter * water_table_depth) -
+        exp(-hydraulic_conductivity_scale_parameter * water_table_depth) -
             exp(-hydraulic_conductivity_scale_parameter * soil_thickness)
-        ) *
+    ) *
         flow_width
     return nothing
 end
 
 function initialize_lateral_ssf_model!(
-    subsurface_flow_model::LateralSSFModel,
-    parameters::LandParameters,
-    kh_profile::KhExponentialConstant,
-)
+        subsurface_flow_model::LateralSSFModel,
+        parameters::LandParameters,
+        kh_profile::KhExponentialConstant,
+    )
     (; kh_0, hydraulic_conductivity_scale_parameter) = kh_profile.exponential
     (; z_exp) = kh_profile
     (; q, q_max, water_table_depth) = subsurface_flow_model.variables
@@ -948,9 +948,9 @@ function initialize_lateral_ssf_model!(
     (; slope, flow_width) = parameters
 
     q_constant = @. kh_0 *
-       exp(-hydraulic_conductivity_scale_parameter * z_exp) *
-       slope *
-       (soil_thickness - z_exp)
+        exp(-hydraulic_conductivity_scale_parameter * z_exp) *
+        slope *
+        (soil_thickness - z_exp)
     for i in eachindex(q)
         q_max[i] =
             ((kh_0[i] * slope[i]) / hydraulic_conductivity_scale_parameter[i]) *
@@ -959,13 +959,13 @@ function initialize_lateral_ssf_model!(
         if water_table_depth[i] < z_exp[i]
             q[i] =
                 (
-                    ((kh_0[i] * slope[i]) / hydraulic_conductivity_scale_parameter[i]) * (
-                        exp(
-                            -hydraulic_conductivity_scale_parameter[i] *
+                ((kh_0[i] * slope[i]) / hydraulic_conductivity_scale_parameter[i]) * (
+                    exp(
+                        -hydraulic_conductivity_scale_parameter[i] *
                             water_table_depth[i],
-                        ) - exp(-hydraulic_conductivity_scale_parameter[i] * z_exp[i])
-                    ) + q_constant[i]
-                ) * flow_width[i]
+                    ) - exp(-hydraulic_conductivity_scale_parameter[i] * z_exp[i])
+                ) + q_constant[i]
+            ) * flow_width[i]
         else
             q[i] =
                 kh_0[i] *
@@ -986,12 +986,12 @@ Initialize lateral subsurface variables `q` and `q_max` using  vertical hydrauli
 conductivity profile `kv_profile`.
 """
 function initialize_lateral_ssf_model!(
-    subsurface_flow_model::LateralSSFModel,
-    soil_model::SbmSoilModel,
-    parameters::LandParameters,
-    kv_profile::KvLayered,
-    dt,
-)
+        subsurface_flow_model::LateralSSFModel,
+        soil_model::SbmSoilModel,
+        parameters::LandParameters,
+        kv_profile::KvLayered,
+        dt,
+    )
     (; kh) = subsurface_flow_model.parameters.kh_profile
     (; number_of_layers, actual_layer_thickness) = soil_model.parameters
     (; q, q_max, water_table_depth) = subsurface_flow_model.variables
@@ -1013,12 +1013,12 @@ function initialize_lateral_ssf_model!(
 end
 
 function initialize_lateral_ssf_model!(
-    subsurface_flow_model::LateralSSFModel,
-    soil_model::SbmSoilModel,
-    parameters::LandParameters,
-    kv_profile::KvLayeredExponential,
-    dt,
-)
+        subsurface_flow_model::LateralSSFModel,
+        soil_model::SbmSoilModel,
+        parameters::LandParameters,
+        kv_profile::KvLayeredExponential,
+        dt,
+    )
     (; q, q_max, water_table_depth) = subsurface_flow_model.variables
     (; horizontal_to_vertical_hydraulic_conductivity_ratio, soil_thickness) =
         subsurface_flow_model.parameters
@@ -1068,10 +1068,10 @@ if the result is known to be larger than 1.
 Assumes base, power > 0
 """
 function bounded_power(base::T, power) where {T}
-    return if base > 1
-        one(T)
+    if base > 1
+        return one(T)
     else
-        pow(base, power)
+        return pow(base, power)
     end
 end
 
@@ -1088,12 +1088,12 @@ rising water table `dh` is based on `net_flux` and the unsaturated store capacit
 layer). For a rising water table a dynamic specific yield is computed.
 """
 function water_table_change(
-    soil_model::SbmSoilModel,
-    net_flux::Float64,
-    specific_yield::Float64,
-    i::Int,
-    dt::Float64,
-)
+        soil_model::SbmSoilModel,
+        net_flux::Float64,
+        specific_yield::Float64,
+        i::Int,
+        dt::Float64,
+    )
     (; n_unsatlayers, unsaturated_layer_thickness, unsaturated_layer_depth) =
         soil_model.variables
     (; theta_s, theta_r) = soil_model.parameters
@@ -1108,10 +1108,10 @@ function water_table_change(
         for k in n_unsatlayers[i]:-1:1
             capacity =
                 max(
-                    unsaturated_layer_thickness[i][k] * theta_e -
+                unsaturated_layer_thickness[i][k] * theta_e -
                     unsaturated_layer_depth[i][k],
-                    0.0,
-                ) / dt
+                0.0,
+            ) / dt
             flux_layer = min(net_flux, capacity)
             if capacity <= net_flux
                 # if unsaturated layer is fully saturated dh equals layer thickness
