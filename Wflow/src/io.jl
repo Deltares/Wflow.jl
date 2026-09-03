@@ -466,7 +466,7 @@ end
     # Mapping of CSV variable names to model parameters
     output_map::Dict{String, OutputData} = Dict()
     # The reducer associated with the output variables
-    reducer::OrderedDict{CSVColumn, Function} = Dict()
+    reducer::OrderedDict{CSVColumn, Function} = OrderedDict{CSVColumn, Function}()
 end
 
 @with_kw struct Writer{DG, DS, DE, R}
@@ -1169,7 +1169,7 @@ function nc_dim_name(dims::Vector{Symbol}, name::Symbol)
     # direct naming
     name in dims && return name
     # list of common alternative names
-    if name == :x
+    return if name == :x
         for candidate in (:lon, :longitude)
             candidate in dims && return candidate
         end

@@ -2,7 +2,7 @@
 
 julia_version = "1.12.7"
 manifest_format = "2.0"
-project_hash = "097b2262a22859e336cb2ce77fc462c56b39994e"
+project_hash = "526308e6f4748811dac42f8b8a483008699c8507"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -1748,9 +1748,9 @@ version = "1.3.1"
 
 [[deps.Revise]]
 deps = ["CRC32c", "CodeTracking", "FileWatching", "JuliaInterpreter", "LibGit2", "LoweredCodeUtils", "OrderedCollections", "Preferences", "REPL", "UUIDs"]
-git-tree-sha1 = "6098400ed73008c45f5f47b35ae114475436ad37"
+git-tree-sha1 = "ab0f5630e37968bc49b8c4cedd3279a7d30b9486"
 uuid = "295af30f-e4ad-537b-8983-00126c2a3abe"
-version = "3.16.2"
+version = "3.17.0"
 weakdeps = ["Distributed"]
 
     [deps.Revise.extensions]
