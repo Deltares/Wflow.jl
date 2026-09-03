@@ -52,7 +52,7 @@ end
 
 "Overload `getproperty` for river flow model parameters"
 function Base.getproperty(v::RiverFlowParameters, s::Symbol)
-    return if s === :bankfull_depth
+    field = if s === :bankfull_depth
         getfield(v, s)
     elseif s === :bankfull_storage
         getfield(v, s)
@@ -61,6 +61,7 @@ function Base.getproperty(v::RiverFlowParameters, s::Symbol)
     else
         getfield(getfield(v, :flow), s)
     end
+    return field
 end
 
 "Initialize river flow model parameters"
@@ -338,7 +339,7 @@ function kinwave_land_update!(
             end
         end
     end
-    return
+    return nothing
 end
 
 """
@@ -429,7 +430,8 @@ function update_floodplain_model!(
 
     flux_in!(qin, q, domain.network)
 
-    return @. qin_cumulative += qin * dt
+    @. qin_cumulative += qin * dt
+    return nothing
 end
 
 update_floodplain_model!(
@@ -564,7 +566,7 @@ function kinwave_river_update!(
             end
         end
     end
-    return
+    return nothing
 end
 
 """
@@ -600,7 +602,7 @@ function river_channel_floodplain_exchange!(
         end
         floodplain_water_exchange[i] = delta_river_storage / dt
     end
-    return
+    return nothing
 end
 
 river_channel_floodplain_exchange!(

@@ -108,7 +108,8 @@ function update_bc_rainfall_erosion_model!(
     (; precipitation, interception, waterlevel) = rainfall_erosion_model.boundary_conditions
     @. precipitation = atmospheric_forcing.precipitation
     @. waterlevel = hydrological_forcing.waterlevel_land
-    return @. interception = hydrological_forcing.interception
+    @. interception = hydrological_forcing.interception
+    return nothing
 end
 
 "Update EUROSEM rainfall erosion model for a single timestep"
@@ -128,7 +129,7 @@ function update_rainfall_erosion_model!(
     (; soil_erosion_rate) = rainfall_erosion_model.variables
 
     n = length(precipitation)
-    return threaded_foreach(1:n; basesize = 1000) do i
+    threaded_foreach(1:n; basesize = 1000) do i
         soil_erosion_rate[i] = rainfall_erosion_eurosem(
             precipitation[i],
             interception[i],
@@ -142,6 +143,7 @@ function update_rainfall_erosion_model!(
             dt,
         )
     end
+    return nothing
 end
 
 "Struct for storing ANSWERS rainfall erosion model boundary conditions"
@@ -211,7 +213,8 @@ function update_bc_rainfall_erosion_model!(
         ::HydrologicalForcing,
     )
     (; precipitation) = rainfall_erosion_model.boundary_conditions
-    return @. precipitation = atmospheric_forcing.precipitation
+    @. precipitation = atmospheric_forcing.precipitation
+    return nothing
 end
 
 "Update ANSWERS rainfall erosion model for a single timestep"
@@ -225,7 +228,7 @@ function update_rainfall_erosion_model!(
     (; soil_erosion_rate) = rainfall_erosion_model.variables
 
     n = length(precipitation)
-    return threaded_foreach(1:n; basesize = 1000) do i
+    threaded_foreach(1:n; basesize = 1000) do i
         soil_erosion_rate[i] = rainfall_erosion_answers(
             precipitation[i],
             usle_k[i],
@@ -234,4 +237,5 @@ function update_rainfall_erosion_model!(
             parameters.area[i],
         )
     end
+    return nothing
 end

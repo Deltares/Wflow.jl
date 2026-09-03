@@ -693,6 +693,7 @@ function get_reducer_func(col, domain, args...)
     else
         reducer_func = reducer(col, domain.land.network.reverse_indices, indices, args...)
     end
+    return reducer_func
 end
 
 function Writer(
@@ -914,11 +915,13 @@ function timecycles(times)
         year1 = year(first(times))
         if !all(==(year1), year.(times))
             error("unsupported cyclic timeseries")
+            return nothing
         end
         # sub-daily time steps are not allowed
         min_tstep = Second(minimum(diff(times)))
         if min_tstep < Second(Day(1))
             error("unsupported cyclic timeseries")
+            return nothing
         else
             # returns a (month, day) tuple for each date
             return monthday.(times)
@@ -1085,7 +1088,7 @@ function write_csv_row(model::AbstractModel, csv_writer::CSVWriter)
         v = if v isa Number
             from_SI(v, unit; dt_val)
         else
-            from_SI!(collect(v), unit; dt_val)
+            from_SI(collect(v), unit; dt_val)
         end
         # numbers are also iterable
         for el in v
@@ -1297,7 +1300,7 @@ function permute_data(data, dim_names)
         desired_order = (:x, :y)
     end
     @assert dim_names ⊆ desired_order
-    return if length(dim_names) == 2
+    if length(dim_names) == 2
         if first(dim_names) == :x
             return data, dim_names
         else
@@ -1312,6 +1315,7 @@ function permute_data(data, dim_names)
         end
     else
         error("Unsupported number of dimensions")
+        return nothing
     end
 end
 

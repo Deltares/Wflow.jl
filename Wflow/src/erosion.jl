@@ -75,5 +75,6 @@ function update_soil_loss_model!(
     update_overland_flow_erosion_model!(overland_flow_erosion, parameters, dt)
     # Total soil erosion and particle differentiation
     update_bc_soil_erosion_model!(soil_erosion, rainfall_erosion, overland_flow_erosion)
-    return update_soil_erosion_model!(soil_erosion)
+    update_soil_erosion_model!(soil_erosion)
+    return nothing
 end

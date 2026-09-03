@@ -74,7 +74,8 @@ function update_bc_overland_flow_erosion_model!(
     )
     (; q) = overland_flow_erosion_model.boundary_conditions
     (; q_land) = hydrological_forcing
-    return @. q = q_land
+    @. q = q_land
+    return nothing
 end
 
 "Update ANSWERS overland flow erosion model for a single timestep"
@@ -89,7 +90,7 @@ function update_overland_flow_erosion_model!(
     (; soil_erosion_rate) = overland_flow_erosion_model.variables
 
     n = length(q)
-    return threaded_foreach(1:n; basesize = 1000) do i
+    threaded_foreach(1:n; basesize = 1000) do i
         soil_erosion_rate[i] = overland_flow_erosion_answers(
             q[i],
             usle_k[i],
@@ -99,4 +100,5 @@ function update_overland_flow_erosion_model!(
             geometry.area[i],
         )
     end
+    return nothing
 end

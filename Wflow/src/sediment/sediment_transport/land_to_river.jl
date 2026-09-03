@@ -34,7 +34,8 @@ function update_bc_sediment_to_river_model!(
         sediment_transport_model::SedimentLandTransportModel,
     )
     (; deposition) = sediment_to_river_model.boundary_conditions
-    return @. deposition = sediment_transport_model.variables.deposition
+    @. deposition = sediment_transport_model.variables.deposition
+    return nothing
 end
 
 "Update total sediment reaching the river model for a single timestep"
@@ -49,7 +50,7 @@ function update_sediment_to_river_model!(
     for (i, river) in enumerate(rivers)
         sediment_rate[i] = river ? deposition[i] : 0.0
     end
-    return
+    return nothing
 end
 
 "Struct to store differentiated sediment reaching the river model variables"
@@ -117,8 +118,9 @@ function update_bc_sediment_to_river_model!(
     @. deposition_sand = sediment_transport_model.variables.deposition_sand
     @. deposition_small_aggregates =
         sediment_transport_model.variables.deposition_small_aggregates
-    return @. deposition_large_aggregates =
+    @. deposition_large_aggregates =
         sediment_transport_model.variables.deposition_large_aggregates
+    return nothing
 end
 
 "Update differentiated sediment reaching the river model for a single timestep"
@@ -158,6 +160,7 @@ function update_sediment_to_river_model!(
             large_aggregates_rate[i] = 0.0
         end
     end
-    return @. sediment_rate =
+    @. sediment_rate =
         clay_rate + silt_rate + sand_rate + small_aggregates_rate + large_aggregates_rate
+    return nothing
 end

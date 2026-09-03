@@ -43,7 +43,7 @@ function Base.show(io::IO, config_section::AbstractConfigSection)
             println(io, "\t\t$field_name\t= $value")
         end
     end
-    return
+    return nothing
 end
 
 # Specialized printing for InputEntry
@@ -95,7 +95,7 @@ function Base.show(io::IO, c::Config)
         f = getfield(c, field)
         f === nothing || println(io, "\t$field\t= $f")
     end
-    return
+    return nothing
 end
 
 "Construct a path relative to both the TOML directory and the optional `dir_input`"
@@ -116,5 +116,5 @@ function variable_info(var::InputEntry)
             @info "$msg."
         end
     end
-    return
+    return nothing
 end

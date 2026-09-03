@@ -398,7 +398,7 @@ function update_runoff!(paddy_model::PaddyModel, runoff, dt::Float64)
         paddy_model.variables.h[i] = (runoff[i] - paddy_runoff) * dt
         runoff[i] = paddy_runoff
     end
-    return
+    return nothing
 end
 
 update_runoff!(paddy_model::NoIrrigationPaddyModel, runoff, dt::Float64) = nothing
@@ -434,7 +434,7 @@ function update_demand_gross!(paddy_model::PaddyModel, dt::Float64)
             demand_gross[i] = 0.0
         end
     end
-    return
+    return nothing
 end
 
 function compute_irrigation_depth(paddy_model::PaddyModel, i::Int)
@@ -1070,7 +1070,7 @@ function update_water_allocation_model!(
             non_irrigation_returnflow[i] = 0.0
         end
     end
-    return
+    return nothing
 end
 
 update_water_allocation_model!(

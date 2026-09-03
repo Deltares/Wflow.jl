@@ -1255,7 +1255,8 @@ function update_ustorelayerdepth!(soil, zi_prev, water_table_depth, i)
     v.n_unsatlayers[i] = n_unsatlayers
     v.unsaturated_layer_depth[i] = unsaturated_layer_depth
     v.unsaturated_layer_thickness[i] = unsaturated_layer_thickness
-    return v.water_table_depth[i] = water_table_depth
+    v.water_table_depth[i] = water_table_depth
+    return nothing
 end
 
 """
@@ -1273,10 +1274,11 @@ function update_ustorelayerdepth!(soil_model::SbmSoilModel, subsurface_flow)
     water_table_depth = get_water_depth(subsurface_flow)
 
     n = length(v.water_table_depth)
-    return threaded_foreach(1:n; basesize = 1000) do i
+    threaded_foreach(1:n; basesize = 1000) do i
         zi_prev = v.water_table_depth[i]
         update_ustorelayerdepth!(soil_model, zi_prev, water_table_depth[i], i)
     end
+    return nothing
 end
 
 """
@@ -1432,7 +1434,8 @@ function update_diagnostic_vars!(soil_model::SbmSoilModel)
         actual_layer_thickness,
     )
     @. n_unsatlayers = number_of_active_layers(unsaturated_layer_thickness)
-    return @. total_soil_water_storage = saturated_water_depth + unsaturated_store_depth
+    @. total_soil_water_storage = saturated_water_depth + unsaturated_store_depth
+    return nothing
 end
 
 # wrapper method

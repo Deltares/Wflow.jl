@@ -426,7 +426,7 @@ function initialize_conductance!(
                 horizontal_conductance(i, j, nzi, parameters, connectivity)
         end
     end
-    return
+    return nothing
 end
 
 """
@@ -626,7 +626,7 @@ function average_flux_vars_bc!(gwf::AbstractSubsurfaceFlowModel, dt::Float64)
             @. bc.variables.flux_average = bc.variables.flux_cumulative / dt
         end
     end
-    return
+    return nothing
 end
 
 function average_flux_vars!(gwf::AbstractSubsurfaceFlowModel, dt::Float64)

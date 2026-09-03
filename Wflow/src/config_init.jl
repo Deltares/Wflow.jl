@@ -7,19 +7,19 @@ convert_value(::Type{Vector{T}}, v::Vector) where {T <: AbstractConfigSection} =
     init_config_section.(T, v)
 
 function convert_value(::Type{T}, value::Any) where {T}
-    return if value isa T
-        value
+    if value isa T
+        return value
     elseif T isa Union
         T_ = get_something_type(T)
         if T_ <: AbstractConfigSection
-            init_config_section(T_, value)
+            return init_config_section(T_, value)
         elseif T_ == VersionNumber
-            VersionNumber(value)
+            return VersionNumber(value)
         else
-            convert(T_, value)
+            return convert(T_, value)
         end
     else
-        convert(T, value)
+        return convert(T, value)
     end
 end
 
@@ -165,9 +165,10 @@ convert_value(::Type{IndexSection}, dict::AbstractDict{String}) =
 init_config_section(::Type{IndexSection}, i::Int) = IndexSection(; i)
 
 function init_config_section(::Type{InputEntries}, dict::AbstractDict{String})
-    return InputEntries(
+    input_entries = InputEntries(
         Dict(key => init_config_section(InputEntry, value) for (key, value) in dict),
     )
+    return input_entries
 end
 
 function init_config_section(::Type{InputSection}, dict::AbstractDict{String})
@@ -229,7 +230,8 @@ an underscore should not be specified in the TOML.
 """
 function Config(path::AbstractString)
     dict = TOML.parsefile(path)
-    return Config(dict; path)
+    config = Config(dict; path)
+    return config
 end
 
 function Config(dict::AbstractDict; path::AbstractString)

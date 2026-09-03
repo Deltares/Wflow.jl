@@ -325,5 +325,6 @@ In-place conversion of values in SI unit to the given unit
 """
 function from_SI!(x::AbstractArray, unit::Unit; dt_val::Union{Nothing, Number} = nothing)
     unit_ref = Ref(unit)
-    return @. x = from_SI(x, unit_ref; dt_val)
+    @. x = from_SI(x, unit_ref; dt_val)
+    return nothing
 end

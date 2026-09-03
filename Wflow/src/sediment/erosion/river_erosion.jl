@@ -67,7 +67,8 @@ function update_bc_river_erosion_model!(
     )
     (; waterlevel) = river_erosion_model.boundary_conditions
     (; waterlevel_river) = hydrological_forcing
-    return @. waterlevel = waterlevel_river
+    @. waterlevel = waterlevel_river
+    return nothing
 end
 
 "Update Julian and Torres river erosion model for a single timestep"
@@ -81,7 +82,7 @@ function update_river_erosion_model!(
     (; d50) = parameters
     (; bed, bank) = variables
 
-    return threaded_foreach(eachindex(waterlevel); basesize = 1000) do i
+    threaded_foreach(eachindex(waterlevel); basesize = 1000) do i
         bed[i], bank[i] = river_erosion_julian_torres(
             waterlevel[i],
             d50[i],
@@ -91,4 +92,5 @@ function update_river_erosion_model!(
             dt,
         )
     end
+    return nothing
 end

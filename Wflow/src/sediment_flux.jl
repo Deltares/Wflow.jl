@@ -19,7 +19,8 @@ function get_transport_capacity(
     )::AbstractTransportCapacityModel
     transport_capacity_constr = get(transport_methods, transport_method, nothing)
     @assert !isnothing(transport_capacity_constr)
-    return transport_capacity_constr(dataset, config, indices)
+    transport_capacity = transport_capacity_constr(dataset, config, indices)
+    return transport_capacity
 end
 
 const land_transport_method =
@@ -106,11 +107,12 @@ function update_overland_flow_model!(
         overland_flow_model.sediment_flux,
     )
     # Compute sediment reaching the river
-    return update_sediment_to_river_model!(
+    update_sediment_to_river_model!(
         overland_flow_model.to_river,
         domain.parameters.river_location,
         dt,
     )
+    return nothing
 end
 
 ### River ###
@@ -216,9 +218,10 @@ function update_river_sediment_model!(
         river_flow_model.hydrological_forcing,
         river_flow_model.sediment_flux,
     )
-    return update_river_sediment_concentration_model!(
+    update_river_sediment_concentration_model!(
         river_flow_model.concentrations,
         domain.parameters,
         dt,
     )
+    return nothing
 end

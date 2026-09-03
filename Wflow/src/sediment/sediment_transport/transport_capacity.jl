@@ -25,13 +25,14 @@ function update_bc_transport_capacity_model!(
     (; q, waterlevel) = transport_capacity_model.boundary_conditions
     (; q_land, waterlevel_land, q_river, waterlevel_river) = hydrological_forcing
 
-    return if model_type == :land
+    if model_type == :land
         @. q = q_land
         @. waterlevel = waterlevel_land
     elseif model_type == :river
         @. q = q_river
         @. waterlevel = waterlevel_river
     end
+    return nothing
 end
 
 ##################### Overland Flow #####################
@@ -106,7 +107,7 @@ function update_transport_capacity_model!(
     (; slope, flow_width, reservoir_coverage, river_location) = parameters
 
     n = length(q)
-    return threaded_foreach(1:n; basesize = 1000) do i
+    threaded_foreach(1:n; basesize = 1000) do i
         sediment_transport_capacity[i] = transport_capacity_govers(
             q[i],
             waterlevel[i],
@@ -120,6 +121,7 @@ function update_transport_capacity_model!(
             dt,
         )
     end
+    return nothing
 end
 
 "Struct to store Yalin overland flow transport capacity model parameters"
@@ -184,7 +186,7 @@ function update_transport_capacity_model!(
     (; slope, flow_width, reservoir_coverage, river_location) = parameters
 
     n = length(q)
-    return threaded_foreach(1:n; basesize = 1000) do i
+    threaded_foreach(1:n; basesize = 1000) do i
         sediment_transport_capacity[i] = transport_capacity_yalin(
             q[i],
             waterlevel[i],
@@ -197,6 +199,7 @@ function update_transport_capacity_model!(
             dt,
         )
     end
+    return nothing
 end
 
 "Struct to store Yalin differentiated overland flow transport capacity model variables"
@@ -315,7 +318,7 @@ function update_transport_capacity_model!(
     (; slope, flow_width, river_location, reservoir_coverage) = parameters
 
     n = length(q)
-    return threaded_foreach(1:n; basesize = 1000) do i
+    threaded_foreach(1:n; basesize = 1000) do i
         dtot = transportability_yalin_differentiation(
             waterlevel[i],
             density[i],
@@ -389,6 +392,7 @@ function update_transport_capacity_model!(
         sediment_transport_capacity[i] =
             clay[i] + silt[i] + sand[i] + small_aggregates[i] + large_aggregates[i]
     end
+    return nothing
 end
 
 "Struct to store common river transport capacity model parameters"
@@ -487,7 +491,7 @@ function update_transport_capacity_model!(
     n = length(q)
     # Note: slope is not used here but this allows for a consistent interface of update! functions
     # Only Bagnold does not use it
-    return threaded_foreach(1:n; basesize = 1000) do i
+    threaded_foreach(1:n; basesize = 1000) do i
         sediment_transport_capacity[i] = transport_capacity_bagnold(
             q[i],
             waterlevel[i],
@@ -498,6 +502,7 @@ function update_transport_capacity_model!(
             dt,
         )
     end
+    return nothing
 end
 
 "Engelund and Hansen river transport capacity model parameters"
@@ -531,7 +536,7 @@ function update_transport_capacity_model!(
     (; sediment_transport_capacity) = transport_capacity_model.variables
 
     n = length(q)
-    return threaded_foreach(1:n; basesize = 1000) do i
+    threaded_foreach(1:n; basesize = 1000) do i
         sediment_transport_capacity[i] = transport_capacity_engelund(
             q[i],
             waterlevel[i],
@@ -543,6 +548,7 @@ function update_transport_capacity_model!(
             dt,
         )
     end
+    return nothing
 end
 
 "Struct to store Kodatie river transport capacity model parameters"
@@ -629,7 +635,7 @@ function update_transport_capacity_model!(
     (; sediment_transport_capacity) = transport_capacity_model.variables
 
     n = length(q)
-    return threaded_foreach(1:n; basesize = 1000) do i
+    threaded_foreach(1:n; basesize = 1000) do i
         sediment_transport_capacity[i] = transport_capacity_kodatie(
             q[i],
             waterlevel[i],
@@ -643,6 +649,7 @@ function update_transport_capacity_model!(
             dt,
         )
     end
+    return nothing
 end
 
 "Yang river transport capacity model"
@@ -676,7 +683,7 @@ function update_transport_capacity_model!(
     (; sediment_transport_capacity) = transport_capacity_model.variables
 
     n = length(q)
-    return threaded_foreach(1:n; basesize = 1000) do i
+    threaded_foreach(1:n; basesize = 1000) do i
         sediment_transport_capacity[i] = transport_capacity_yang(
             q[i],
             waterlevel[i],
@@ -688,6 +695,7 @@ function update_transport_capacity_model!(
             dt,
         )
     end
+    return nothing
 end
 
 "Molinas and Wu river transport capacity model"
@@ -721,7 +729,7 @@ function update_transport_capacity_model!(
     (; sediment_transport_capacity) = transport_capacity_model.variables
 
     n = length(q)
-    return threaded_foreach(1:n; basesize = 1000) do i
+    threaded_foreach(1:n; basesize = 1000) do i
         sediment_transport_capacity[i] = transport_capacity_molinas(
             q[i],
             waterlevel[i],
@@ -733,4 +741,5 @@ function update_transport_capacity_model!(
             dt,
         )
     end
+    return nothing
 end

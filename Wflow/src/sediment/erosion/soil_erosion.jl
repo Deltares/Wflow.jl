@@ -121,7 +121,8 @@ function update_bc_soil_erosion_model!(
     ole = overland_flow_erosion.variables.soil_erosion_rate
     (; rainfall_erosion, overland_flow_erosion) = soil_erosion_model.boundary_conditions
     @. rainfall_erosion = re
-    return @. overland_flow_erosion = ole
+    @. overland_flow_erosion = ole
+    return nothing
 end
 
 "Update soil erosion model for a single timestep"
@@ -144,7 +145,7 @@ function update_soil_erosion_model!(soil_erosion_model::SoilErosionModel)
     ) = soil_erosion_model.variables
 
     n = length(rainfall_erosion)
-    return threaded_foreach(1:n; basesize = 1000) do i
+    threaded_foreach(1:n; basesize = 1000) do i
         soil_erosion_rate[i],
             clay_erosion_rate[i],
             silt_erosion_rate[i],
@@ -160,4 +161,5 @@ function update_soil_erosion_model!(soil_erosion_model::SoilErosionModel)
             large_aggregates_fraction[i],
         )
     end
+    return nothing
 end

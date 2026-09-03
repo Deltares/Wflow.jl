@@ -262,18 +262,18 @@ function BMI.set_value_at_indices(
 end
 
 function BMI.get_grid_type(model::Model, grid::Int)
-    return if grid in 0:2
-        "points"
+    if grid in 0:2
+        return "points"
     elseif grid in 3:6
-        "unstructured"
+        return "unstructured"
     else
         error("unknown grid type $grid")
     end
 end
 
 function BMI.get_grid_rank(model::Model, grid::Int)
-    return if grid in 0:6
-        2
+    if grid in 0:6
+        return 2
     else
         error("unknown grid type $grid")
     end

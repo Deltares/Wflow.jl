@@ -15,7 +15,8 @@ function lateral_snow_transport!(snow::AbstractSnowModel, domain::DomainLand, dt
     snow_out .= accucapacityflux(snow_storage, domain.network, maxflux, dt)
     snow_out .+=
         accucapacityflux(snow_water, domain.network, snow_water .* snowflux_frac / dt, dt)
-    return flux_in!(snow_in, snow_out, domain.network)
+    flux_in!(snow_in, snow_out, domain.network)
+    return nothing
 end
 
 lateral_snow_transport!(snow::NoSnowModel, domain::DomainLand, dt::Float64) = nothing

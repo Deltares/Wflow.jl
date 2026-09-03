@@ -155,7 +155,8 @@ end
 Save reservoir storage at previous time step as `storage_prev` of reservoir `water_balance`.
 """
 function storage_prev!(reservoir_model::ReservoirModel, water_balance::MassBalance)
-    return water_balance.storage_prev .= reservoir_model.variables.storage
+    water_balance.storage_prev .= reservoir_model.variables.storage
+    return nothing
 end
 
 """
@@ -450,7 +451,7 @@ function compute_flow_balance!(
         error[i], relative_error[i] =
             compute_mass_balance_error(total_in, total_out, storage_rate)
     end
-    return
+    return nothing
 end
 function constant_head_boundary_error!(
         model::GroundwaterFlowModel,
@@ -507,7 +508,8 @@ function compute_flow_routing_balance!(model)
     compute_flow_balance!(river_flow, river_water_balance, model.domain.river.network, dt)
     compute_flow_balance!(reservoir, reservoir_water_balance, dt)
     compute_flow_balance!(overland_flow, overland_water_balance, dt)
-    return compute_flow_balance!(subsurface_flow, subsurface_water_balance, model.domain, dt)
+    compute_flow_balance!(subsurface_flow, subsurface_water_balance, model.domain, dt)
+    return nothing
 end
 
 function compute_flow_routing_balance!(
@@ -529,7 +531,8 @@ function compute_flow_routing_balance!(
         dt,
     )
     compute_flow_balance!(reservoir, reservoir_water_balance, dt)
-    return compute_flow_balance!(subsurface_flow, subsurface_water_balance, model.domain, dt)
+    compute_flow_balance!(subsurface_flow, subsurface_water_balance, model.domain, dt)
+    return nothing
 end
 
 """

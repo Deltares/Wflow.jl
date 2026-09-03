@@ -418,12 +418,12 @@ function get_flow_length(ldd::UInt8, x_length::Real, y_length::Real)::Real
     # take into account non-square cells
     # if ldd is 8 or 2 use y_length
     # if ldd is 4 or 6 use x_length
-    return if ldd == 2 || ldd == 8
-        y_length
+    if ldd == 2 || ldd == 8
+        return y_length
     elseif ldd == 4 || ldd == 6
-        x_length
+        return x_length
     else
-        hypot(x_length, y_length)
+        return hypot(x_length, y_length)
     end
 end
 
@@ -438,12 +438,12 @@ function get_flow_width(ldd::UInt8, x_length::Real, y_length::Real)::Real
     # take into account non-square cells
     # if ldd is 8 or 2 use x_length
     # if ldd is 4 or 6 use y_length
-    return if ldd == 2 || ldd == 8
-        x_length
+    if ldd == 2 || ldd == 8
+        return x_length
     elseif ldd == 4 || ldd == 6
-        y_length
+        return y_length
     else
-        (x_length * y_length) / hypot(x_length, y_length)
+        return (x_length * y_length) / hypot(x_length, y_length)
     end
 end
 
@@ -777,7 +777,7 @@ function hydraulic_conductivity_at_depth(
         i,
         n,
     )
-    return if z < p.z_layered[i]
+    kv_z = if z < p.z_layered[i]
         vertical_hydraulic_conductivity_factor[i][n] * p.kv[i][n]
     else
         n = p.nlayers_kv[i]
@@ -785,6 +785,7 @@ function hydraulic_conductivity_at_depth(
             p.kv[i][n] *
             exp(-p.hydraulic_conductivity_scale_parameter[i] * (z - p.z_layered[i]))
     end
+    return kv_z
 end
 
 """
@@ -1067,10 +1068,10 @@ if the result is known to be larger than 1.
 Assumes base, power > 0
 """
 function bounded_power(base::T, power) where {T}
-    return if base > 1
-        one(T)
+    if base > 1
+        return one(T)
     else
-        pow(base, power)
+        return pow(base, power)
     end
 end
 

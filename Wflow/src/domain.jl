@@ -190,7 +190,8 @@ function Domain(dataset::NCDataset, config::Config, ::SedimentModel)
 
     land_params, river_params = initialize_shared_parameters(dataset, config, domain)
     @reset domain.land.parameters = land_params
-    return @reset domain.river.parameters = river_params
+    @reset domain.river.parameters = river_params
+    return domain
 end
 
 "Initialize (shared) land parameters for model type `sediment`"

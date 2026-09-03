@@ -246,7 +246,8 @@ function update_bc_river_sediment_transport_model!(
     map!(i -> large_aggregates_rate[i], erosion_land_large_aggregates, indices_riv)
     # Maximum direct river bed/bank erosion
     @. potential_erosion_river_bed = potential_erosion_model.variables.bed
-    return @. potential_erosion_river_bank = potential_erosion_model.variables.bank
+    @. potential_erosion_river_bank = potential_erosion_model.variables.bank
+    return nothing
 end
 
 """
@@ -588,11 +589,12 @@ function compute_natural_deposition(
 end
 
 function water_outflow_fraction(waterlevel, q, flow_width, flow_length, dt)
-    return if waterlevel > 0.0
+    fraction = if waterlevel > 0.0
         min(q * dt / (waterlevel * flow_width * flow_length), 1.0)
     else
         1.0
     end
+    return fraction
 end
 
 function update_variables!(
@@ -940,17 +942,19 @@ function update_bc_river_sediment_concentration_model!(
     @. sand = sediment_transport_model.variables.sand_rate
     @. small_aggregates = sediment_transport_model.variables.small_aggregates_rate
     @. large_aggregates = sediment_transport_model.variables.large_aggregates_rate
-    return @. gravel = sediment_transport_model.variables.gravel_rate
+    @. gravel = sediment_transport_model.variables.gravel_rate
+    return nothing
 end
 
 function suspended_solid(dm, dsuspf, dbedf, substance)
-    return if dm <= dsuspf
+    susp_solid = if dm <= dsuspf
         substance
     elseif dm <= dbedf
         substance / 2
     else
         0.0
     end
+    return susp_solid
 end
 
 "Update river sediment concentrations model for a single timestep"
@@ -1020,5 +1024,5 @@ function update_river_sediment_concentration_model!(
             total[i] = 0.0
         end
     end
-    return
+    return nothing
 end

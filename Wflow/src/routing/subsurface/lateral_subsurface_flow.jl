@@ -270,7 +270,7 @@ function kinwave_subsurface_update!(
             end
         end
     end
-    return
+    return nothing
 end
 
 """

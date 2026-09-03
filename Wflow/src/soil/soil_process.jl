@@ -97,12 +97,13 @@ end
 Return volumetric water content based on the Brooks-Corey soil hydraulic model.
 """
 function vwc_brooks_corey(h, air_entry_pressure, theta_s, theta_r, brooks_corey_exponent)
-    return if h < air_entry_pressure
+    vwc = if h < air_entry_pressure
         par_lambda = 2.0 / (brooks_corey_exponent - 3.0)
         (theta_s - theta_r) * pow(air_entry_pressure / h, par_lambda) + theta_r
     else
         theta_s
     end
+    return vwc
 end
 
 """
@@ -166,13 +167,14 @@ Return soil water pressure head `h3` of Feddes root water uptake reduction funct
 function feddes_h3(h3_high, h3_low, tpot_SI)
     # value of h3 is a function of potential transpiration [mm d⁻¹]
     tpot_daily = from_SI(tpot_SI, MM_PER_DAY)
-    return if tpot_daily <= 1.0
+    h3 = if tpot_daily <= 1.0
         h3_low
     elseif tpot_daily < 5.0
         h3_low + (h3_high - h3_low) * (tpot_daily - 1.0) / (5.0 - 1.0)
     else
         h3_high
     end
+    return h3
 end
 
 """
@@ -182,7 +184,7 @@ Root water uptake reduction factor based on Feddes.
 """
 function rwu_reduction_feddes(h, h1, h2, h3, h4, alpha_h1)
     # root water uptake reduction coefficient alpha (see also Feddes et al., 1978)
-    return if h < h4
+    alpha = if h < h4
         0.0
     elseif h < h3
         (h - h4) / (h3 - h4)
@@ -197,6 +199,7 @@ function rwu_reduction_feddes(h, h1, h2, h3, h4, alpha_h1)
     else
         1.0
     end
+    return alpha
 end
 
 """
