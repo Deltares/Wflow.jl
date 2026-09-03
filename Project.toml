@@ -10,3 +10,6 @@ Wflow = "d48b7d99-76e7-47ae-b1d5-ff0c1cf9a818"
 
 [compat]
 Revise = "3.17"
+
+[preferences.Wflow]
+precompile_workload = false
