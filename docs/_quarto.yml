@@ -4,6 +4,8 @@ project:
   render:
     - "*.qmd"
 
+engines: ['julia']
+
 # filters:
 #    - include-code-files
 #    - interlinks
