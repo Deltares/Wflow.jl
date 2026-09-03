@@ -15,7 +15,7 @@ using Pkg
 
 # avoid precompilation output; https://github.com/PumasAI/QuartoNotebookRunner.jl/issues/371
 for (name, uuid) in Pkg.project().dependencies
-  Base.require(Base.PkgId(uuid, name))
+    Base.require(Base.PkgId(uuid, name))
 end
 ```
 
