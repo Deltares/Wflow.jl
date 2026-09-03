@@ -7,7 +7,7 @@ authors = [
 	"Bart de Koning <bart.dekoning@deltares.nl>",
 ]
 channels = ["conda-forge", "https://prefix.dev/julia-forge"]
-platforms = ["win-64", "linux-64"]
+platforms = ["win-64", "linux-64", "osx-arm64"]
 
 [tasks]
 # Installation
