@@ -44,6 +44,7 @@
             leaf_area_index = nothing,
             canopy_gap_fraction = [0.1],
             maximum_canopy_storage = [0.2],
+            canopy_height = [0.12],
         ),
     )
 

@@ -33,6 +33,8 @@ The Tables in this subsection show the available models settings for the model t
 | `soil_infiltration_reduction__flag` | Enable reduction factor applied to the soil infiltration capacity | - | `false` |
 | `soil_layer__thickness` | Thickness of soil layers | mm | [100, 300, 800] |
 | `saturated_hydraulic_conductivity_profile` | Saturated hydraulic conductivity depth profile for `SBM` `soil` model (also used for kinematic wave lateral subsurface flow) | - | "exponential" |
+| `land_surface_temperature__flag` | Include land surface temperature modelling | - | `false` |
+| `land_surface_wind__speed_reference_height` | Wind speed (forcing) reference height | m | - |
 : {.striped .hover}
 
 ### Routing method

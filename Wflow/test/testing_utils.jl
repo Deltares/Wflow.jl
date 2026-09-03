@@ -111,6 +111,7 @@ function init_sbm_soil_model(n, N; kwargs...)
             canopy_gap_fraction = [],
             maximum_canopy_storage = [],
             crop_coefficient = [],
+            canopy_height = [],
         )
     end
 
