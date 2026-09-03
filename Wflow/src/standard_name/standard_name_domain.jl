@@ -48,7 +48,7 @@ const domain_standard_name_map = OrderedDict{String, ParameterMetadata}(
     "atmosphere_bottom_air_flow__zero_plane_displacement_length" => ParameterMetadata(;
         lens = @optic(_.domain.land.parameters.d0),
         unit = Unit(; m = 1),
-        description = "Zero-place displacement height",
+        description = "Zero plane displacement height",
         allow_dynamic_input = true,
         tags = [:lst_input],
     ),

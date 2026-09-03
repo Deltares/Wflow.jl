@@ -22,7 +22,7 @@
     "default": null,
     "fill": null,
     "type": "Float64",
-    "description": "Zero-place displacement height",
+    "description": "Zero plane displacement height",
     "allow_missing": false,
     "allow_dynamic_input": true
   },
