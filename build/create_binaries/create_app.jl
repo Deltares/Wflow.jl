@@ -18,7 +18,7 @@ rm(output_dir; force = true, recursive = true)
 
 image_recipe = ImageRecipe(;
     output_type = "--output-exe",
-    file = "wflow_cli.jl",
+    file = joinpath(project_dir, "src", "wflow_cli.jl"),
     project = project_dir,
     cpu_target = default_app_cpu_target(),
     verbose = true,

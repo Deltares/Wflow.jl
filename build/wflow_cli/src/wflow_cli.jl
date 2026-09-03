@@ -8,7 +8,7 @@ function help(x)::Cint
     return 1
 end
 
-function julia_main()::Cint
+function (@main)(_)::Cint
     n = length(ARGS)
     if n != 1
         return help("Only 1 argument expected, got $n")
@@ -26,10 +26,6 @@ function julia_main()::Cint
     end
 
     return 0
-end
-
-if abspath(PROGRAM_FILE) == @__FILE__
-    Wflow.run()
 end
 
 end # module
