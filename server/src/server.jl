@@ -110,8 +110,8 @@ function wflow_bmi(s::ZMQ.Socket, handler::ModelHandler, f)
             sprint(showerror, e, catch_backtrace()),
         )
         response(err, s)
-        return nothing
     end
+    return nothing
 end
 
 main() = main(ARGS)
@@ -192,8 +192,8 @@ function start(port::Int)
         err = "Wflow ZMQ Server: exception in process"
         @error err
         response(err, socket)
-        return nothing
     finally
         shutdown(socket, context)
     end
+    return nothing
 end
