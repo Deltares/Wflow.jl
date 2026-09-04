@@ -384,6 +384,4 @@ function run()
     return run(toml_path)
 end
 
-include("precompile.jl")
-
 end # module

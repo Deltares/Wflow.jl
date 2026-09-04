@@ -2261,7 +2261,7 @@ uuid = "e3aaa7dc-3e4b-44e0-be63-ffb868ccd7c1"
 version = "0.1.3"
 
 [[deps.Wflow]]
-deps = ["Accessors", "BasicModelInterface", "CFTime", "CompositionsBase", "Dates", "DelimitedFiles", "EnumX", "FillArrays", "Glob", "Graphs", "LoggingExtras", "NCDatasets", "OrderedCollections", "Parameters", "Polyester", "PrecompileTools", "ProgressLogging", "PropertyDicts", "StaticArrays", "Statistics", "TOML", "TerminalLoggers"]
+deps = ["Accessors", "BasicModelInterface", "CFTime", "CompositionsBase", "Dates", "DelimitedFiles", "EnumX", "FillArrays", "Glob", "Graphs", "LoggingExtras", "NCDatasets", "OrderedCollections", "Parameters", "Polyester", "ProgressLogging", "PropertyDicts", "StaticArrays", "Statistics", "TOML", "TerminalLoggers"]
 path = "Wflow"
 uuid = "d48b7d99-76e7-47ae-b1d5-ff0c1cf9a818"
 version = "1.1.0-dev"
@@ -2539,7 +2539,7 @@ uuid = "cddc5d3d-934d-5d3a-9747-62fc12ea3f48"
 version = "1.7.8+0"
 
 [[deps.wflow_cli]]
-deps = ["Test", "TestItemRunner", "Wflow"]
+deps = ["PrecompileTools", "Test", "TestItemRunner", "Wflow"]
 path = "build/wflow_cli"
 uuid = "a79039df-c2cc-429a-a63c-52bf37dce6b3"
 version = "0.1.0"
