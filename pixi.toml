@@ -58,7 +58,7 @@ test-wflow-server = { cmd = "julia --project=server --eval 'using Pkg; Pkg.test(
 ] }
 # Docs
 quarto-check = { cmd = "quarto check all" }
-quarto-render = { cmd = "julia --project=docs --eval 'using Pkg; Pkg.build(\"IJulia\")' && quarto render docs --to html --execute" }
+quarto-render = { cmd = "quarto render docs --to html --execute" }
 quarto-preview = { cmd = "quarto preview docs" }
 # Parameter metadata JSON generation
 parameter_metadata_json_gen = { cmd = "julia --project=utils/export_parameter_data utils/export_parameter_data/export_parameter_data.jl" }
@@ -79,7 +79,6 @@ dvc = "*"
 dvc-s3 = "*"
 julia = { version = "==1.12.7", channel = "https://prefix.dev/julia-forge" }
 python = ">=3.10"
-jupyter = ">=1.1.1,<2"
 quarto = ">=1.8.26,<2"
 prek = "*"
 typos = "*"
