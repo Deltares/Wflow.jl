@@ -37,9 +37,9 @@ build-wflow-cli = { cmd = "julia --project create_app.jl", cwd = "build/create_b
 	"download-test-data",
 ] }
 # Test
-test-wflow-cli = { cmd = "julia --project --eval 'using Pkg; Pkg.test(allow_reresolve=false)'", cwd = "build/wflow_cli", depends-on = [
+test-wflow-cli = { cmd = "julia --project --eval 'include(\"runtests.jl\")'", cwd = "build/wflow_cli/test", depends-on = [
 	{ "task" = "instantiate-julia", "args" = [
-		"build/wflow_cli",
+		"build/wflow_cli/test",
 	] },
 	"download-test-data",
 ] }

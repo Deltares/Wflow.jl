@@ -2539,7 +2539,7 @@ uuid = "cddc5d3d-934d-5d3a-9747-62fc12ea3f48"
 version = "1.7.8+0"
 
 [[deps.wflow_cli]]
-deps = ["PrecompileTools", "Test", "TestItemRunner", "Wflow"]
+deps = ["PrecompileTools", "Wflow"]
 path = "build/wflow_cli"
 uuid = "a79039df-c2cc-429a-a63c-52bf37dce6b3"
 version = "0.1.0"
