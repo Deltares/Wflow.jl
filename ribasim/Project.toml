@@ -1,0 +1,8 @@
+[deps]
+BasicModelInterface = "59605e27-edc0-445a-b93d-c09a3a50b330"
+Ribasim = "aac5e3d9-0b8f-4d4f-8241-b1a7a9632635"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+Wflow = "d48b7d99-76e7-47ae-b1d5-ff0c1cf9a818"
+
+[sources]
+Ribasim = {rev = "online", subdir = "core", url = "https://github.com/Deltares/Ribasim"}
