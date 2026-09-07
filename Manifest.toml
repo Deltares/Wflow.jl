@@ -2,7 +2,7 @@
 
 julia_version = "1.12.7"
 manifest_format = "2.0"
-project_hash = "4890d8360b5cf628143cd50d85738fb7bfbf6911"
+project_hash = "df6db675996276263e591ab1198eefb6fb8d21c8"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -1046,6 +1046,12 @@ git-tree-sha1 = "037babc10853eeb8e585418922246cb97b8e5b74"
 uuid = "aacddb02-875f-59d6-b918-886e6ef4fbf8"
 version = "3.2.0+1"
 
+[[deps.JuliaC]]
+deps = ["LazyArtifacts", "Libdl", "Mmap", "ObjectFile", "PackageCompiler", "Patchelf_jll", "Pkg", "Preferences", "RelocatableFolders", "SHA", "StructIO", "TOML"]
+git-tree-sha1 = "208ca15edc8e69ffc94398c2b47f5273f911cf53"
+uuid = "acedd4c2-ced6-4a15-accc-2607eb759ba2"
+version = "0.3.9"
+
 [[deps.JuliaInterpreter]]
 deps = ["CodeTracking", "InteractiveUtils", "Random", "UUIDs"]
 git-tree-sha1 = "c3d401f110454b4ea24a76be33f6ee0d7d385103"
@@ -1407,6 +1413,12 @@ git-tree-sha1 = "cdc11138e74a0dd0b82e7d64eb1350fdf049d3b1"
 uuid = "b7351bd1-99d9-5c5d-8786-f205a815c4d7"
 version = "0.4.1"
 
+[[deps.ObjectFile]]
+deps = ["Reexport", "StructIO"]
+git-tree-sha1 = "23c4d109603f7a7bfe888c1f63c5ab7be6183d0b"
+uuid = "d8793406-e978-5875-9003-1fc021f44a92"
+version = "0.5.1"
+
 [[deps.Observables]]
 git-tree-sha1 = "7438a59546cf62428fc9d1bc94729146d37a7225"
 uuid = "510215fc-4207-5dde-b226-833fc4488ee2"
@@ -1539,6 +1551,12 @@ deps = ["Dates", "PrecompileTools", "UUIDs"]
 git-tree-sha1 = "3de8f5e6e90ebfa8d6d1f86997d6cdcd6a912ff3"
 uuid = "69de0a69-1ddd-5017-9359-2bf0b02dc9f0"
 version = "2.8.7"
+
+[[deps.Patchelf_jll]]
+deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "Libdl"]
+git-tree-sha1 = "b93c657d971cbb68228594129b3c390a9136541b"
+uuid = "f2cf89d6-2bfd-5c44-bd2c-068eea195c0c"
+version = "0.18.1+0"
 
 [[deps.Pixman_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "LLVMOpenMP_jll", "Libdl"]
@@ -2039,6 +2057,11 @@ git-tree-sha1 = "c25735d6db95bb307b6b69ee66dc808be114924c"
 uuid = "4093c41a-2008-41fd-82b8-e3f9d02b504f"
 version = "1.6.0"
 
+[[deps.StructIO]]
+git-tree-sha1 = "c581be48ae1cbf83e899b14c07a807e1787512cc"
+uuid = "53d494c1-5632-5724-8f4c-31dff12d585f"
+version = "0.3.1"
+
 [[deps.StructUtils]]
 deps = ["Dates", "UUIDs"]
 git-tree-sha1 = "2d0fc55c61321ba245c47be599570d11bac50303"
@@ -2491,7 +2514,7 @@ uuid = "cddc5d3d-934d-5d3a-9747-62fc12ea3f48"
 version = "1.7.8+0"
 
 [[deps.wflow_cli]]
-deps = ["Test", "TestItemRunner", "Wflow"]
+deps = ["PrecompileTools", "Wflow"]
 path = "build/wflow_cli"
 uuid = "a79039df-c2cc-429a-a63c-52bf37dce6b3"
 version = "0.1.0"

@@ -2,7 +2,9 @@
 
 ## Directory tree
 - `create_binaries`: folder containing code to compile the Wflow code
-  - `create_binaries/create_app.jl`: run PackageCompiler
-  - `create_binaries/precompile.jl`: run models to compile code, making wflow_cli startup faster
-  - `create_binaries/Project.toml`: project used to build wflow_cli
-- `wflow_cli`: folder containing the code for the wflow_cli
+  - `create_binaries/create_app.jl`: compiles and bundles wflow_cli with JuliaC
+- `wflow_cli`: project containing the wflow_cli source and native executable entrypoint
+
+The wflow_cli package runs representative models during package precompilation to reduce startup
+latency. The workload is build-specific because it uses downloaded test data; installing or
+developing Wflow does not run it.
