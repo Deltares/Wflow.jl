@@ -189,10 +189,8 @@ end
 
 "Overload `getproperty` for overland flow model variables"
 function Base.getproperty(v::OverLandFlowVariables, s::Symbol)
-    if s === :to_river || s === :ponding_storage
+    if hasfield(OverLandFlowVariables, s)
         getfield(v, s)
-    elseif s === :flow
-        getfield(v, :flow)
     else
         getfield(getfield(v, :flow), s)
     end
@@ -206,10 +204,8 @@ end
 
 "Overload `getproperty` for overland flow model parameters"
 function Base.getproperty(v::OverlandFlowParameters, s::Symbol)
-    if s === :ponding_depth
+    if hasfield(OverlandFlowParameters, s)
         getfield(v, s)
-    elseif s === :flow
-        getfield(v, :flow)
     else
         getfield(getfield(v, :flow), s)
     end
