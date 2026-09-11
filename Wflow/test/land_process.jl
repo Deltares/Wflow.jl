@@ -51,3 +51,137 @@
         ),
     )
 end
+
+@testitem "unit: update_infiltration_fluxes" begin
+    # Test with infiltration from surface water and precipitation
+    potential_infiltration = 10.0
+    potential_infiltration_surfacewater = 2.0
+    water_flux_surface_input = 10.0
+    actual_infiltration_input = 6.0 # this includes the infiltration from surface water
+    infiltexcess_input = 1.0
+
+    infilt_surfacewater,
+    actual_infiltration,
+    infiltexcess,
+    excesswater,
+    water_flux_surface = Wflow.update_infiltration_fluxes(
+        potential_infiltration,
+        potential_infiltration_surfacewater,
+        water_flux_surface_input,
+        actual_infiltration_input,
+        infiltexcess_input,
+    )
+
+    @test infilt_surfacewater == 1.2 # this is the infiltration from surface water
+    @test actual_infiltration ≈ 4.8 # this excludes the infiltration from surface water
+    @test infilt_surfacewater + actual_infiltration ≈ actual_infiltration_input
+    @test infiltexcess == 0.8
+    @test water_flux_surface == 8.0
+    @test excesswater ≈ 2.4
+
+    # Test with infiltration from only precipitation, no infiltration from surface water
+    potential_infiltration = 10.0
+    potential_infiltration_surfacewater = 0.0
+    water_flux_surface_input = 10.0
+    actual_infiltration_input = 6.0
+    infiltexcess_input = 1.0
+
+    infilt_surfacewater,
+    actual_infiltration,
+    infiltexcess,
+    excesswater,
+    water_flux_surface = Wflow.update_infiltration_fluxes(
+        potential_infiltration,
+        potential_infiltration_surfacewater,
+        water_flux_surface_input,
+        actual_infiltration_input,
+        infiltexcess_input,
+    )
+
+    @test infilt_surfacewater == 0.0
+    @test actual_infiltration == actual_infiltration_input
+    @test infilt_surfacewater + actual_infiltration == actual_infiltration_input
+    @test infiltexcess == infiltexcess_input
+    @test water_flux_surface == water_flux_surface_input
+    @test excesswater == 3.0
+
+    # Test with infiltration from only surface water, no infiltration from precipitation
+    potential_infiltration = 10.0
+    potential_infiltration_surfacewater = 10.0
+    water_flux_surface_input = 10.0
+    actual_infiltration_input = 6.0
+    infiltexcess_input = 1.0
+
+    infilt_surfacewater,
+    actual_infiltration,
+    infiltexcess,
+    excesswater,
+    water_flux_surface = Wflow.update_infiltration_fluxes(
+        potential_infiltration,
+        potential_infiltration_surfacewater,
+        water_flux_surface_input,
+        actual_infiltration_input,
+        infiltexcess_input,
+    )
+
+    @test infilt_surfacewater == 6.0
+    @test actual_infiltration == 0.0
+    @test infilt_surfacewater + actual_infiltration == 6.0
+    @test infiltexcess == 0.0
+    @test water_flux_surface == 0.0
+    @test excesswater == 0.0
+end
+
+@testitem "unit: update_overland_flow_and_depth!" begin
+    using Wflow:
+        KinWaveOverlandFlow,
+        ManningFlowParameters,
+        OverLandFlowVariables,
+        FlowVariables,
+        LandFlowBC,
+        TimeStepping
+
+    n = 1
+    infiltration_amount = 5.0 # mm
+    original_depth = 0.02 # m
+    river_fraction = 0.2
+    expected_water_depth =
+        original_depth - ((infiltration_amount * 1e-3) / (1 - river_fraction))
+
+    flow_vars = FlowVariables(n)
+    flow_vars.q[1] = 0.0
+    variables = OverLandFlowVariables(; flow = flow_vars, to_river = zeros(Float64, n))
+    variables.h[1] = original_depth
+
+    mannings_n = [0.072]
+    slope = [0.01]
+    parameters = ManningFlowParameters(mannings_n, slope)
+    parameters.alpha[1] = 2.0
+
+    boundary_conditions = LandFlowBC(; inwater = zeros(Float64, n))
+    timestepping =
+        TimeStepping(; adaptive = false, dt_fixed = 900.0, stable_timesteps = zeros(n))
+
+    overland_flow_model =
+        KinWaveOverlandFlow(; timestepping, boundary_conditions, parameters, variables)
+
+    land_parameters = (; river_fraction = [river_fraction], surface_flow_width = [10.0])
+
+    # Test with positive infiltration
+    Wflow.update_overland_flow_and_depth!(
+        overland_flow_model,
+        infiltration_amount,
+        land_parameters,
+        1,
+    )
+    @test overland_flow_model.variables.h[1] ≈ expected_water_depth
+    @test overland_flow_model.variables.h[1] ≈ 0.01375
+    @test overland_flow_model.variables.flow.q[1] ≈ 0.011537751232883156
+
+    # Test with zero infiltration (no update should occur)
+    overland_flow_model.variables.h[1] = original_depth
+    overland_flow_model.variables.flow.q[1] = 0.1
+    Wflow.update_overland_flow_and_depth!(overland_flow_model, 0.0, land_parameters, 1)
+    @test overland_flow_model.variables.flow.q[1] == 0.1
+    @test overland_flow_model.variables.h[1] == original_depth
+end

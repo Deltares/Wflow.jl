@@ -61,6 +61,7 @@ function update!(model::AbstractModel{<:SbmModel})
     (; routing, land, domain, clock, config) = model
     (; soil, runoff, demand) = land
     (; kv_profile) = land.soil.parameters
+    (; subsurface_flow, overland_flow) = routing
     dt = tosecond(clock.dt)
 
     update!(land, routing, domain, config, dt)
@@ -78,7 +79,12 @@ function update!(model::AbstractModel{<:SbmModel})
     kh_layered_profile!(land.soil, routing.subsurface_flow, kv_profile, dt)
     update!(routing.subsurface_flow, domain.land, clock.dt / BASETIMESTEP)
     # update SBM soil model (runoff, ustorelayerdepth and satwaterdepth)
-    update!(soil, (; runoff, demand, routing.subsurface_flow))
+    update!(
+        soil,
+        (; runoff, demand, subsurface_flow, overland_flow),
+        domain,
+        config,
+    )
 
     surface_routing!(model)
 

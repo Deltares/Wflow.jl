@@ -639,11 +639,12 @@ end
 "Struct to store local inertial overland flow model boundary conditions"
 @with_kw struct LocalInertialOverlandFlowBC
     runoff::Vector{Float64}           # runoff from hydrological model [m³ s⁻¹]
+    infiltration_volume::Vector{Float64} = zeros(n) # amount of infiltration from surface water [m³]
 end
 
 "Struct to store shallow water overland flow model boundary conditions"
 function LocalInertialOverlandFlowBC(n::Int)
-    bc = LocalInertialOverlandFlowBC(; runoff = zeros(n))
+    bc = LocalInertialOverlandFlowBC(; runoff = zeros(n), infiltration_volume = zeros(n))
     return bc
 end
 
@@ -734,6 +735,10 @@ function update_boundary_conditions!(
         net_runoff / 1000.0 * area / dt + net_runoff_river * area * 0.001 / dt
     model.boundary_conditions.runoff[river_indices] .+=
         get_flux_to_river(subsurface_flow, river_indices)
+
+    # infiltration volume [m³] from surface water, applied in `local_inertial_update_water_depth!`
+    @. model.boundary_conditions.infiltration_volume =
+        soil.variables.infilt_surfacewater * area * 0.001
     return nothing
 end
 
@@ -990,7 +995,7 @@ function local_inertial_update_water_depth!(
                     sum_at(river_v.q, edges_at_node.dst[inds_river[i]]) + land_v.qx[xd] -
                     land_v.qx[i] + land_v.qy[yd] - land_v.qy[i] + land_bc.runoff[i] -
                     river_bc.abstraction[inds_river[i]]
-                ) * dt
+                ) * dt - land_bc.infiltration_volume[i]
             if land_v.storage[i] < 0.0
                 land_v.error[i] = land_v.error[i] + abs(land_v.storage[i])
                 land_v.storage[i] = 0.0 # set storage to zero
@@ -1036,7 +1041,7 @@ function local_inertial_update_water_depth!(
                 (
                     land_v.qx[xd] - land_v.qx[i] + land_v.qy[yd] - land_v.qy[i] +
                     land_bc.runoff[i]
-                ) * dt
+                ) * dt - land_bc.infiltration_volume[i]
             if land_v.storage[i] < 0.0
                 land_v.error[i] = land_v.error[i] + abs(land_v.storage[i])
                 land_v.storage[i] = 0.0 # set storage to zero
@@ -1327,3 +1332,11 @@ function FloodPlain(
     floodplain = FloodPlain(; parameters, variables)
     return floodplain
 end
+
+"""
+No-op for the `LocalInertialOverlandFlow`. Surface water infiltration is applied via
+the `infiltration_volume` boundary condition set in `update_bc_overland_flow_model!` and
+subtracted from land storage in `local_inertial_update_water_depth!`.
+"""
+update_overland_flow_and_depth!(::LocalInertialOverlandFlow, ::SbmSoilModel, ::Domain) =
+    nothing

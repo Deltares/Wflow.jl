@@ -118,9 +118,11 @@ function update!(
         soil,
         atmospheric_forcing,
         (; interception, runoff, demand, allocation),
+        domain,
+        config,
     )
 
-    update!(soil, atmospheric_forcing, (; snow, runoff, demand), config, dt)
+    update!(soil, domain, atmospheric_forcing, (; snow, runoff, demand), config, dt)
     @. soil.variables.actevap += interception.variables.interception_rate
     return nothing
 end

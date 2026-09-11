@@ -790,3 +790,87 @@ end
     end
     Wflow.close_files(model; delete_output = false)
 end
+
+@testitem "reinfiltration" begin
+    @testset "Kinematic wave overland flow" begin
+        tomlpath = joinpath(@__DIR__, "sbm_config.toml")
+        config = Wflow.Config(tomlpath)
+        config.dir_output = mktempdir()
+        config.model.land_surface_water_reinfiltration__flag = true
+
+        idxs = [53, 54, 55]
+
+        model = Wflow.Model(config)
+        Wflow.run_timestep!(model)
+        # old_h = copy(model.routing.overland_flow.variables.h)
+        Wflow.run_timestep!(model)
+
+        (; soil) = model.land
+        # get total available infiltration
+        @test soil.boundary_conditions.potential_infiltration[idxs] ≈
+              [0.07163384298140925, 14.072736660561423, 1.5171507829519923]
+        @test soil.boundary_conditions.potential_infiltration_surfacewater[idxs] ≈
+              [0.0, 14.00298148060685, 1.4466457169700755]
+        # get actual infiltration
+        @test soil.variables.actinfilt[idxs] ≈
+              [0.07163384298140925, 0.06975517995457299, 0.07050506598191687]
+        # there is a lot of infiltration coming from surface water in cell 54
+        @test soil.variables.infilt_surfacewater[idxs] ≈
+              [0.0, 14.00298148060685, 1.4466457169700755]
+
+        # (; h) = model.routing.overland_flow.variables
+        # @test h[idxs] ≈ [0.0, 0.039396885875137864, 0.02395111033358323]
+        # @test h[idxs] - old_h[idxs] ≈ [0.0, -0.039396885875137864, -0.02395111033358323]
+        # # test that h decreased in the first two cells, but not in the third cell (had no
+        # # surface water infiltration)
+        # decreased_h = h[idxs] .< old_h[idxs]
+        # equal_h = h[idxs] .== old_h[idxs]
+        # increased_h = h[idxs] .> old_h[idxs]
+        # @test decreased_h == [false, true, true]
+        # @test equal_h == [true, false, false]
+        # @test increased_h == [false, false, false]
+
+        Wflow.close_files(model; delete_output = false)
+    end
+
+    @testset "Local inertial overland flow" begin
+        tomlpath = joinpath(@__DIR__, "sbm_river-land-local-inertial_config.toml")
+        config = Wflow.Config(tomlpath)
+        config.dir_output = mktempdir()
+        config.model.land_surface_water_reinfiltration__flag = true
+
+        idxs = [13929, 13930, 13931]
+
+        model = Wflow.Model(config)
+        Wflow.run_timestep!(model)
+        # old_h = copy(model.routing.overland_flow.variables.h)
+        Wflow.run_timestep!(model)
+
+        (; soil) = model.land
+        # get total available infiltration
+        @test soil.boundary_conditions.potential_infiltration[idxs] ≈
+              [0.16281278262768825, 1.974404096802152, 0.16363083612044332]
+        @test soil.boundary_conditions.potential_infiltration_surfacewater[idxs] ≈
+              [0.007482261557172627, 1.974404096802152, 0.0]
+        # get actual infiltration
+        @test soil.variables.actinfilt[idxs] ≈
+              [0.15533052107051562, 0.0, 0.16363083612044332]
+        # there is a lot of infiltration coming from surface water in cell 54
+        @test soil.variables.infilt_surfacewater[idxs] ≈
+              [0.007482261557172627, 1.974404096802152, 0.0]
+
+        # (; h) = model.routing.overland_flow.variables
+        # # all available surface water was infiltrated
+        # @test h[idxs] ≈ [0.0, 0.0, 0.0]
+        # decreased_h = h[idxs] .< old_h[idxs]
+        # equal_h = h[idxs] .== old_h[idxs]
+        # increased_h = h[idxs] .> old_h[idxs]
+        # # test that h decreased in the first two cells, but not in the third cell (had no
+        # # surface water infiltration)
+        # @test decreased_h == [true, true, false]
+        # @test equal_h == [false, false, true]
+        # @test increased_h == [false, false, false]
+
+        Wflow.close_files(model; delete_output = false)
+    end
+end
