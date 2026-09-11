@@ -1,4 +1,4 @@
-FROM julia:1.12.7
+FROM julia:1.13.0
 LABEL maintainer="Maarten Pronk <maarten.pronk@deltares.nl>"
 
 RUN apt-get update && apt-get install -y \

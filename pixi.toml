@@ -14,7 +14,7 @@ platforms = ["win-64", "linux-64", "osx-arm64"]
 # Julia
 # Note: this is for developers to have their global julia use the right version.
 # Use `pixi run julia` for the package used by CI.
-install-julia = "juliaup add 1.12.7 && juliaup override set 1.12.7"
+install-julia = "juliaup add 1.13.0 && juliaup override set 1.13.0"
 # Prek
 _prek-install = "prek install --overwrite"
 instantiate-formatting = { cmd = "julia --project=utils/formatting --eval 'using Pkg; Pkg.instantiate()'" }
@@ -77,7 +77,7 @@ outputs = ["Wflow.spdx.json"]
 boto3 = "*"
 dvc = "*"
 dvc-s3 = "*"
-julia = { version = "==1.12.7", channel = "https://prefix.dev/julia-forge" }
+julia = { version = "==1.13.0", channel = "https://prefix.dev/julia-forge" }
 python = ">=3.10"
 quarto = ">=1.8.26,<2"
 prek = "*"
