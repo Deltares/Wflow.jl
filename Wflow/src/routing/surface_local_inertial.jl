@@ -559,6 +559,7 @@ end
     g::Float64                          # acceleration due to gravity [m s⁻²]
     theta::Float64                      # weighting factor (de Almeida et al., 2012) [-]
     h_thresh::Float64                   # depth threshold for calculating flow [m]
+    ponding_depth::Vector{Float64}      # water depth [m] below which no overland flow occurs (ponding)
     zx_max::Vector{Float64}             # maximum cell elevation at edge [m] (x direction)
     zy_max::Vector{Float64}             # maximum cell elevation at edge [m] (y direction)
     mannings_n_sq::Vector{Float64}      # Manning's roughness squared at edge [(s m-1/3)2]
@@ -588,6 +589,14 @@ function LocalInertialOverlandFlowParameters(
         "land_surface_water_flow__manning_n_parameter";
         sel = indices,
         defaults = 0.072,
+        type = Float64,
+    )
+    ponding_depth = ncread(
+        dataset,
+        config,
+        "land_surface_water__ponding_depth";
+        sel = indices,
+        defaults = 0.0,
         type = Float64,
     )
     elevation_2d = ncread(
@@ -627,6 +636,7 @@ function LocalInertialOverlandFlowParameters(
         g = 9.80665,
         theta,
         h_thresh = waterdepth_threshold,
+        ponding_depth,
         zx_max,
         zy_max,
         mannings_n_sq = mannings_n .* mannings_n,
@@ -850,11 +860,16 @@ function local_inertial_update_fluxes!(
         xu = indices.xu[i]
         xd = indices.xd[i]
 
+        # effective water depth: water below `ponding_depth` is retained in the cell and does
+        # not drive overland flow.
+        h_eff_i = max(0.0, land_v.h[i] - land_p.ponding_depth[i])
+
         # the effective flow width is zero when the river width exceeds the cell width (dy
         # for flow in x dir) and floodplain flow is not calculated.
         if xu <= land_p.n && land_p.ywidth[i] != 0.0
-            zs_x = land_p.z[i] + land_v.h[i]
-            zs_xu = land_p.z[xu] + land_v.h[xu]
+            h_eff_xu = max(0.0, land_v.h[xu] - land_p.ponding_depth[xu])
+            zs_x = land_p.z[i] + h_eff_i
+            zs_xu = land_p.z[xu] + h_eff_xu
             zs_max = max(zs_x, zs_xu)
             hf = (zs_max - land_p.zx_max[i])
 
@@ -875,11 +890,12 @@ function local_inertial_update_fluxes!(
                     land_p.froude_limit,
                     dt,
                 )
-                # limit qx in case water is not available
-                if land_v.h[i] <= 0.0
+                # limit qx in case water is not available (above the ponding depth, if
+                # applicable)
+                if h_eff_i <= 0.0
                     land_v.qx[i] = min(land_v.qx[i], 0.0)
                 end
-                if land_v.h[xu] <= 0.0
+                if h_eff_xu <= 0.0
                     land_v.qx[i] = max(land_v.qx[i], 0.0)
                 end
             else
@@ -893,8 +909,9 @@ function local_inertial_update_fluxes!(
         # the effective flow width is zero when the river width exceeds the cell width (dx
         # for flow in y dir) and floodplain flow is not calculated.
         if yu <= land_p.n && land_p.xwidth[i] != 0.0
-            zs_y = land_p.z[i] + land_v.h[i]
-            zs_yu = land_p.z[yu] + land_v.h[yu]
+            h_eff_yu = max(0.0, land_v.h[yu] - land_p.ponding_depth[yu])
+            zs_y = land_p.z[i] + h_eff_i
+            zs_yu = land_p.z[yu] + h_eff_yu
             zs_max = max(zs_y, zs_yu)
             hf = (zs_max - land_p.zy_max[i])
 
@@ -915,11 +932,12 @@ function local_inertial_update_fluxes!(
                     land_p.froude_limit,
                     dt,
                 )
-                # limit qy in case water is not available
-                if land_v.h[i] <= 0.0
+                # limit qy in case water is not available (above the ponding depth, if
+                # applicable)
+                if h_eff_i <= 0.0
                     land_v.qy[i] = min(land_v.qy[i], 0.0)
                 end
-                if land_v.h[yu] <= 0.0
+                if h_eff_yu <= 0.0
                     land_v.qy[i] = max(land_v.qy[i], 0.0)
                 end
             else

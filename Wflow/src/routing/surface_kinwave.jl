@@ -183,12 +183,30 @@ end
 "Struct for storing overland flow model variables"
 @with_kw struct OverLandFlowVariables
     flow::FlowVariables
-    to_river::Vector{Float64} # Part of overland flow [m³ s⁻¹] that flows to the river
+    to_river::Vector{Float64}          # Part of overland flow [m³ s⁻¹] that flows to the river
+    ponding_storage::Vector{Float64} # Water stored on surface (due to ponding depth parameter) [m³]
 end
 
 "Overload `getproperty` for overland flow model variables"
 function Base.getproperty(v::OverLandFlowVariables, s::Symbol)
-    if s === :to_river
+    if s === :to_river || s === :ponding_storage
+        getfield(v, s)
+    elseif s === :flow
+        getfield(v, :flow)
+    else
+        getfield(getfield(v, :flow), s)
+    end
+end
+
+"Struct for storing overland flow model parameters"
+@with_kw struct OverlandFlowParameters
+    flow::ManningFlowParameters
+    ponding_depth::Vector{Float64} # Water depth [m] below which no overland flow occurs
+end
+
+"Overload `getproperty` for overland flow model parameters"
+function Base.getproperty(v::OverlandFlowParameters, s::Symbol)
+    if s === :ponding_depth
         getfield(v, s)
     elseif s === :flow
         getfield(v, :flow)
@@ -206,7 +224,7 @@ end
 @with_kw struct KinWaveOverlandFlow <: AbstractOverlandFlowModel
     timestepping::TimeStepping
     boundary_conditions::LandFlowBC
-    parameters::ManningFlowParameters
+    parameters::OverlandFlowParameters
     variables::OverLandFlowVariables
 end
 
@@ -222,13 +240,25 @@ function KinWaveOverlandFlow(dataset::NCDataset, config::Config, domain::DomainL
         defaults = 0.072,
         type = Float64,
     )
+    ponding_depth = ncread(
+        dataset,
+        config,
+        "land_surface_water__ponding_depth";
+        sel = indices,
+        defaults = 0.0,
+        type = Float64,
+    )
 
     n = length(indices)
     timestepping = init_kinematic_wave_timestepping(config, n; domain = "land")
 
-    variables =
-        OverLandFlowVariables(; flow = FlowVariables(n), to_river = zeros(Float64, n))
-    parameters = ManningFlowParameters(mannings_n, slope)
+    variables = OverLandFlowVariables(;
+        flow = FlowVariables(n),
+        to_river = zeros(Float64, n),
+        ponding_storage = zeros(Float64, n),
+    )
+    flow_params = ManningFlowParameters(mannings_n, slope)
+    parameters = OverlandFlowParameters(; flow = flow_params, ponding_depth)
     boundary_conditions = LandFlowBC(; inwater = zeros(Float64, n))
 
     overland_flow =
@@ -300,8 +330,8 @@ function kinwave_land_update!(model::KinWaveOverlandFlow, domain::DomainLand, dt
     (; order_of_subdomains, order_subdomain, subdomain_indices, upstream_nodes) =
         domain.network
 
-    (; beta, alpha) = model.parameters
-    (; h, q, q_av, storage, qin, qin_av, qlat, to_river) = model.variables
+    (; beta, alpha, ponding_depth) = model.parameters
+    (; h, q, q_av, storage, qin, qin_av, qlat, to_river, ponding_storage) = model.variables
     (; surface_flow_width, flow_length, flow_fraction_to_river) = domain.parameters
 
     ns = length(order_of_subdomains)
@@ -328,10 +358,30 @@ function kinwave_land_update!(model::KinWaveOverlandFlow, domain::DomainLand, dt
                     )
                 end
 
+                # ponding retention: incoming water fills pond up to `ponding_depth`
+                # (mass-conserving) before contributing to overland flow.
+                qin_eff = qin[v]
+                qlat_eff = qlat[v]
+                if ponding_depth[v] > 0.0 && surface_flow_width[v] > 0.0
+                    retention_capacity =
+                        ponding_depth[v] * flow_length[v] * surface_flow_width[v]
+                    deficit = retention_capacity - ponding_storage[v]
+                    if deficit > 0.0
+                        inflow_rate = qin[v] + qlat[v] * flow_length[v]
+                        if inflow_rate > 0.0
+                            absorbed_rate = min(inflow_rate, deficit / dt)
+                            ponding_storage[v] += absorbed_rate * dt
+                            factor = 1.0 - absorbed_rate / inflow_rate
+                            qin_eff = qin[v] * factor
+                            qlat_eff = qlat[v] * factor
+                        end
+                    end
+                end
+
                 q[v] = kinematic_wave(
-                    qin[v],
+                    qin_eff,
                     q[v],
-                    qlat[v],
+                    qlat_eff,
                     alpha[v],
                     beta,
                     dt,
@@ -343,7 +393,8 @@ function kinwave_land_update!(model::KinWaveOverlandFlow, domain::DomainLand, dt
                     crossarea = alpha[v] * pow(q[v], beta)
                     h[v] = crossarea / surface_flow_width[v]
                 end
-                storage[v] = flow_length[v] * surface_flow_width[v] * h[v]
+                storage[v] =
+                    flow_length[v] * surface_flow_width[v] * h[v] + ponding_storage[v]
 
                 # average flow (here accumulated for model timestep Δt)
                 q_av[v] += q[v] * dt

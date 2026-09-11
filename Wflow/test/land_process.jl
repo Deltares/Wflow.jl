@@ -136,6 +136,7 @@ end
     using Wflow:
         KinWaveOverlandFlow,
         ManningFlowParameters,
+        OverlandFlowParameters,
         OverLandFlowVariables,
         FlowVariables,
         LandFlowBC,
@@ -150,13 +151,19 @@ end
 
     flow_vars = FlowVariables(n)
     flow_vars.q[1] = 0.0
-    variables = OverLandFlowVariables(; flow = flow_vars, to_river = zeros(Float64, n))
+    variables = OverLandFlowVariables(;
+        flow = flow_vars,
+        to_river = zeros(Float64, n),
+        ponding_storage = zeros(Float64, n),
+    )
     variables.h[1] = original_depth
 
     mannings_n = [0.072]
     slope = [0.01]
-    parameters = ManningFlowParameters(mannings_n, slope)
-    parameters.alpha[1] = 2.0
+    flow_params = ManningFlowParameters(mannings_n, slope)
+    flow_params.alpha[1] = 2.0
+    parameters =
+        OverlandFlowParameters(; flow = flow_params, ponding_depth = zeros(Float64, n))
 
     boundary_conditions = LandFlowBC(; inwater = zeros(Float64, n))
     timestepping =
