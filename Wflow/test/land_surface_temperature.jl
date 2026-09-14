@@ -3,7 +3,7 @@
     wind_measurement_height = 2.0
     wind_speed = 2.0
     skin_layer_height = 0.12
-    actevap = 3.333333333333333e-8
+    actual_evapotranspiration = 3.333333333333333e-8
     net_radiation = 300.0
     dt = 3600.0
 
@@ -12,7 +12,7 @@
     z0h = 0.1 * z0m
 
     latent_heat_of_vaporization = Wflow.compute_latent_heat_of_vaporization(temperature)
-    latent_heat_flux = Wflow.compute_latent_heat_flux(temperature, actevap)
+    latent_heat_flux = Wflow.compute_latent_heat_flux(temperature, actual_evapotranspiration)
     sensible_heat_flux = Wflow.compute_sensible_heat_flux(net_radiation, latent_heat_flux)
     aerodynamic_resistance = Wflow.compute_aerodynamic_resistance(
         wind_speed,

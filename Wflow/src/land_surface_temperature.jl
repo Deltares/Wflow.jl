@@ -52,7 +52,7 @@ function update_land_surface_temperature!(
         land_surface_temperature_model.variables.latent_heat_flux[i] =
             compute_latent_heat_flux(
             atmospheric_forcing.temperature[i],
-            soil_model.variables.actevap[i],
+            soil_model.variables.actual_evapotranspiration[i],
         )
 
         # Calculate sensible heat flux
