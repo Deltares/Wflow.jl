@@ -62,7 +62,7 @@ function update_land_surface_temperature!(
             land_surface_temperature_model.variables.latent_heat_flux[i],
         )
 
-        # Calculate aerodynamic resistance using wind speed at canopy height
+        # Calculate aerodynamic resistance
         land_surface_temperature_model.variables.aerodynamic_resistance[i] =
             compute_aerodynamic_resistance(
             atmospheric_forcing.wind_speed[i],
