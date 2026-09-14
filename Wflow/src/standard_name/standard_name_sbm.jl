@@ -658,12 +658,6 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
         description = "Actual groundwater abstraction",
         tags = [:demand_allocation_output],
     ),
-    "vegetation_canopy__height" => ParameterMetadata(;
-        lens = @optic(_.land.vegetation_parameters.canopy_height),
-        default = 0.12,
-        description = "Canopy height",
-        tags = [:vegetation_input],
-    ),
     "vegetation__crop_factor" => ParameterMetadata(;
         lens = @optic(_.land.vegetation_parameters.crop_coefficient),
         default = 1.0,

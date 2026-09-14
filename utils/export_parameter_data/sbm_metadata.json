@@ -935,15 +935,6 @@
     "allow_missing": false,
     "allow_dynamic_input": false
   },
-  "vegetation_canopy__height": {
-    "unit": "-",
-    "default": 0.12,
-    "fill": null,
-    "type": "Float64",
-    "description": "Canopy height",
-    "allow_missing": false,
-    "allow_dynamic_input": false
-  },
   "vegetation_canopy__light_extinction_coefficient": {
     "unit": "-",
     "default": null,
