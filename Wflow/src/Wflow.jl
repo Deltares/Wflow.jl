@@ -75,7 +75,7 @@ const VERSION =
     VersionNumber(TOML.parsefile(joinpath(@__DIR__, "..", "Project.toml"))["version"])
 
 const GRAVITATIONAL_ACCELERATION = 9.80665 # m s⁻²
-const WATER_DENSITY = 1e3 # [kg m⁻³]
+const WATER_DENSITY = 1.0e3 # [kg m⁻³]
 const WATER_KINEMATIC_VISCOSITY = 1.16e-6 # [m² s⁻¹]
 # local drain direction pit [-]
 const LDD_PIT = 5
@@ -149,12 +149,12 @@ Composite type that represents all different aspects of a Wflow Model, such as t
 parameters, clock, configuration and input and output.
 """
 struct Model{
-    R <: Routing,
-    L <: AbstractLandModel,
-    M <: AbstractMassBalance,
-    W <: Writer,
-    T <: AbstractModelType,
-} <: AbstractModel{T}
+        R <: Routing,
+        L <: AbstractLandModel,
+        M <: AbstractMassBalance,
+        W <: Writer,
+        T <: AbstractModelType,
+    } <: AbstractModel{T}
     config::Config                  # all configuration options
     domain::Domain                  # domain connectivity (network) and shared parameters
     routing::R                      # routing model (horizontal fluxes), moves along network
@@ -259,7 +259,7 @@ include("states.jl")
 include("mass_balance.jl")
 
 """
-    run(tomlpath::AbstractString; silent=false)
+    run(tomlpath::AbstractString; silent = false)
     run(config::Config)
     run!(model::Model)
     run()

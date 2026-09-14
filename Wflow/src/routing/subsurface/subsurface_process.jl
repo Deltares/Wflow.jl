@@ -1,22 +1,21 @@
-
 """
 Return kinematic wave `celerity` of lateral subsurface flow based on hydraulic conductivity
 profile `KhExponential`
 """
 function ssf_celerity(
-    water_table_depth,
-    slope,
-    specific_yield,
-    kh_profile::KhExponential,
-    i,
-)
+        water_table_depth,
+        slope,
+        specific_yield,
+        kh_profile::KhExponential,
+        i,
+    )
     (; kh_0, hydraulic_conductivity_scale_parameter) = kh_profile
     celerity =
         (
-            kh_0[i] *
+        kh_0[i] *
             exp(-hydraulic_conductivity_scale_parameter[i] * water_table_depth) *
             slope
-        ) / specific_yield
+    ) / specific_yield
     return celerity
 end
 
@@ -25,12 +24,12 @@ Return kinematic wave `celerity` of lateral subsurface flow based on hydraulic c
 profile `KhExponentialConstant`
 """
 function ssf_celerity(
-    water_table_depth,
-    slope,
-    specific_yield,
-    kh_profile::KhExponentialConstant,
-    i,
-)
+        water_table_depth,
+        slope,
+        specific_yield,
+        kh_profile::KhExponentialConstant,
+        i,
+    )
     (; z_exp) = kh_profile
     (; kh_0, hydraulic_conductivity_scale_parameter) = kh_profile.exponential
     z = water_table_depth < z_exp[i] ? water_table_depth : z_exp[i]
@@ -87,21 +86,21 @@ Returns lateral subsurface flow `q`, water table depth `water_table_depth`, exfi
 net flux `net_flux`.
 """
 function kinematic_wave_ssf(
-    q_in,
-    q_prev,
-    zi_prev,
-    q_net_bnds,
-    slope,
-    sy,
-    d,
-    dt,
-    dx,
-    dw,
-    q_max,
-    kh_profile::Union{KhExponential, KhExponentialConstant},
-    soil::SbmSoilModel,
-    i,
-)
+        q_in,
+        q_prev,
+        zi_prev,
+        q_net_bnds,
+        slope,
+        sy,
+        d,
+        dt,
+        dx,
+        dw,
+        q_max,
+        kh_profile::Union{KhExponential, KhExponentialConstant},
+        soil::SbmSoilModel,
+        i,
+    )
     if q_in + q_prev ≈ 0.0 && q_net_bnds <= 0.0
         return 0.0, d, 0.0, 0.0
     else
@@ -181,21 +180,21 @@ Return lateral subsurface flow `q`, water table depth `water_table_depth`, exfil
 net flux `net_flux`.
 """
 function kinematic_wave_ssf(
-    q_in,
-    q_prev,
-    zi_prev,
-    q_net_bnds,
-    slope,
-    sy,
-    d,
-    dt,
-    dx,
-    dw,
-    q_max,
-    kh_profile::KhLayered,
-    soil::SbmSoilModel,
-    i,
-)
+        q_in,
+        q_prev,
+        zi_prev,
+        q_net_bnds,
+        slope,
+        sy,
+        d,
+        dt,
+        dx,
+        dw,
+        q_max,
+        kh_profile::KhLayered,
+        soil::SbmSoilModel,
+        i,
+    )
     if q_in + q_prev ≈ 0.0 && q_net_bnds <= 0.0
         return 0.0, d, 0.0, 0.0
     else

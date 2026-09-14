@@ -88,7 +88,7 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
         ReservoirParameters(; id = reslocs, area, outflow_curve_type, storage_curve_type)
 
     if ReservoirOutflowType.free_weir in outflow_curve_type ||
-       ReservoirOutflowType.modified_puls in outflow_curve_type
+            ReservoirOutflowType.modified_puls in outflow_curve_type
         threshold = ncread(
             dataset,
             config,
@@ -174,7 +174,7 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
             parameters.waterlevel_discharge_curve[i] = read_hq_csv(csv_path)
             parameters.maximum_storage[i] = get_maximum_storage(parameters, i)
         elseif outflow_curve_type[i] == ReservoirOutflowType.free_weir ||
-               outflow_curve_type[i] == ReservoirOutflowType.modified_puls
+                outflow_curve_type[i] == ReservoirOutflowType.modified_puls
             parameters.threshold[i] = threshold[i]
             parameters.rating_curve_coefficient[i] = rating_curve_coefficient[i]
             parameters.rating_curve_exponent[i] = rating_curve_exponent[i]
@@ -187,7 +187,7 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
         end
 
         if outflow_curve_type[i] == ReservoirOutflowType.modified_puls &&
-           storage_curve_type[i] != ReservoirProfileType.linear
+                storage_curve_type[i] != ReservoirProfileType.linear
             @warn(
                 "For the modified puls approach (outflow_curve_type = 3) the storage_curve_type should be 1"
             )
@@ -219,12 +219,12 @@ end
 
 "Initialize reservoir model variables"
 function ReservoirVariables(
-    dataset::NCDataset,
-    config::Config,
-    network::NetworkReservoir,
-    parameters::ReservoirParameters,
-    waterlevel::Vector{Float64},
-)
+        dataset::NCDataset,
+        config::Config,
+        network::NetworkReservoir,
+        parameters::ReservoirParameters,
+        waterlevel::Vector{Float64},
+    )
     (; storage_curve_type, area, storage_waterlevel_curve) = parameters
     (; indices_outlet) = network
     outflow_obs = ncread(
@@ -304,11 +304,11 @@ end
 
 "Determine the water level depending on the storage function"
 function waterlevel(
-    storage_curve_type::ReservoirProfileType.T,
-    area::Float64,
-    storage::Float64,
-    storage_waterlevel_curve::Union{SH, Missing},
-)
+        storage_curve_type::ReservoirProfileType.T,
+        area::Float64,
+        storage::Float64,
+        storage_waterlevel_curve::Union{SH, Missing},
+    )
     if storage_curve_type == ReservoirProfileType.linear
         waterlevel = storage / area
     else # storage_curve_type == ReservoirProfileType.interpolation
@@ -341,11 +341,11 @@ end
 
 "Determine the initial storage depending on the storage function"
 function initialize_storage(
-    storage_curve_type::Vector{ReservoirProfileType.T},
-    area::Vector{Float64},
-    waterlevel::Vector{Float64},
-    storage_waterlevel_curve::Vector{Union{SH, Missing}},
-)
+        storage_curve_type::Vector{ReservoirProfileType.T},
+        area::Vector{Float64},
+        waterlevel::Vector{Float64},
+        storage_waterlevel_curve::Vector{Union{SH, Missing}},
+    )
     storage = similar(area)
     for i in eachindex(storage)
         if storage_curve_type[i] == ReservoirProfileType.linear
@@ -371,7 +371,7 @@ function interpolate_linear(x, xp, fp)
         i1 = last(idx)
         i2 = i1 + 1
         return fp[i1] * (1.0 - (x - xp[i1]) / (xp[i2] - xp[i1])) +
-               fp[i2] * (x - xp[i1]) / (xp[i2] - xp[i1])
+            fp[i2] * (x - xp[i1]) / (xp[i2] - xp[i1])
     end
 end
 
@@ -387,11 +387,11 @@ update_index_hq!(reservoir_model::Any, clock::Clock) = nothing
 
 "Update reservoir with rating curve type (`ouflowfunc`) 4 for a single timestep"
 function update_reservoir_simple(
-    reservoir_model::ReservoirModel,
-    i::Int,
-    boundary_vars::NamedTuple,
-    dt::Float64,
-)
+        reservoir_model::ReservoirModel,
+        i::Int,
+        boundary_vars::NamedTuple,
+        dt::Float64,
+    )
     (;
         maximum_storage,
         target_minimum_fraction,
@@ -425,11 +425,11 @@ Update reservoir with rating curve type (`ouflowfunc`) 3 (Modified Puls approach
 single timestep.
 """
 function update_reservoir_modified_puls(
-    reservoir_model::ReservoirModel,
-    i::Int,
-    boundary_vars::NamedTuple,
-    dt::Float64,
-)
+        reservoir_model::ReservoirModel,
+        i::Int,
+        boundary_vars::NamedTuple,
+        dt::Float64,
+    )
     (; area, threshold, rating_curve_coefficient) = reservoir_model.parameters
     (; storage) = reservoir_model.variables
     (; precipitation, evaporation, inflow) = boundary_vars
@@ -456,11 +456,11 @@ end
 
 "Update reservoir with rating curve type (`ouflowfunc`) 1 (HQ data) for a single timestep."
 function update_reservoir_hq(
-    reservoir_model::ReservoirModel,
-    i::Int,
-    boundary_vars::NamedTuple,
-    dt::Float64,
-)
+        reservoir_model::ReservoirModel,
+        i::Int,
+        boundary_vars::NamedTuple,
+        dt::Float64,
+    )
     (; waterlevel_discharge_curve, col_index_hq, maximum_storage) =
         reservoir_model.parameters
     (; storage, waterlevel) = reservoir_model.variables
@@ -484,11 +484,11 @@ end
 
 "Update reservoir with rating curve type (`ouflowfunc`) 2 (free weir) for a single timestep."
 function update_reservoir_free_weir(
-    reservoir_model::ReservoirModel,
-    i::Int,
-    boundary_vars::NamedTuple,
-    dt::Float64,
-)
+        reservoir_model::ReservoirModel,
+        i::Int,
+        boundary_vars::NamedTuple,
+        dt::Float64,
+    )
     (;
         threshold,
         rating_curve_coefficient,
@@ -553,11 +553,11 @@ end
 
 "Update reservoir using observed outflow for a single timestep."
 function update_reservoir_outflow_obs(
-    reservoir_model::ReservoirModel,
-    i::Int,
-    boundary_vars::NamedTuple,
-    dt::Float64,
-)
+        reservoir_model::ReservoirModel,
+        i::Int,
+        boundary_vars::NamedTuple,
+        dt::Float64,
+    )
     (; storage, outflow_obs) = reservoir_model.variables
     (; maximum_storage) = reservoir_model.parameters
     (; precipitation, evaporation, inflow) = boundary_vars
@@ -581,11 +581,11 @@ This is called from within the river routing scheme, therefore updating only for
 element rather than all at once.
 """
 function update_reservoir_model!(
-    reservoir_model::ReservoirModel,
-    i::Int,
-    inflow::Float64,
-    dt::Float64,
-)
+        reservoir_model::ReservoirModel,
+        i::Int,
+        inflow::Float64,
+        dt::Float64,
+    )
     res_bc = reservoir_model.boundary_conditions
     res_p = reservoir_model.parameters
     res_v = reservoir_model.variables
@@ -647,9 +647,9 @@ end
 
 "Check if observed outflow is used for reservoirs"
 function using_observed_outflow(
-    reservoir_model::Union{ReservoirModel, Nothing},
-    config::Config,
-)
+        reservoir_model::Union{ReservoirModel, Nothing},
+        config::Config,
+    )
     par = "reservoir_water__outgoing_observed_volume_flow_rate"
     check =
         !isnothing(reservoir_model) &&

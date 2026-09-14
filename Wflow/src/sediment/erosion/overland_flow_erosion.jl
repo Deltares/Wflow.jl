@@ -26,10 +26,10 @@ end
 
 "Initialize ANSWERS overland flow erosion model parameters"
 function OverlandFlowErosionAnswersParameters(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}},
-)
+        dataset::NCDataset,
+        config::Config,
+        indices::Vector{CartesianIndex{2}},
+    )
     usle_k =
         ncread(dataset, config, "soil_erosion__usle_k_factor", SoilLossModel; sel = indices)
     usle_c =
@@ -57,10 +57,10 @@ end
 
 "Initialize ANSWERS overland flow erosion model"
 function OverlandFlowErosionAnswersModel(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}},
-)
+        dataset::NCDataset,
+        config::Config,
+        indices::Vector{CartesianIndex{2}},
+    )
     n = length(indices)
     parameters = OverlandFlowErosionAnswersParameters(dataset, config, indices)
     overland_flow_erosion_model = OverlandFlowErosionAnswersModel(; n, parameters)
@@ -69,20 +69,21 @@ end
 
 "Update boundary conditions for ANSWERS overland flow erosion model"
 function update_bc_overland_flow_erosion_model!(
-    overland_flow_erosion_model::AbstractOverlandFlowErosionModel,
-    hydrological_forcing::HydrologicalForcing,
-)
+        overland_flow_erosion_model::AbstractOverlandFlowErosionModel,
+        hydrological_forcing::HydrologicalForcing,
+    )
     (; q) = overland_flow_erosion_model.boundary_conditions
     (; q_land) = hydrological_forcing
     @. q = q_land
+    return nothing
 end
 
 "Update ANSWERS overland flow erosion model for a single timestep"
 function update_overland_flow_erosion_model!(
-    overland_flow_erosion_model::OverlandFlowErosionAnswersModel,
-    geometry::LandParameters,
-    dt::Float64,
-)
+        overland_flow_erosion_model::OverlandFlowErosionAnswersModel,
+        geometry::LandParameters,
+        dt::Float64,
+    )
     (; q) = overland_flow_erosion_model.boundary_conditions
     (; usle_k, usle_c, answers_overland_flow_factor) =
         overland_flow_erosion_model.parameters
@@ -99,4 +100,5 @@ function update_overland_flow_erosion_model!(
             geometry.area[i],
         )
     end
+    return nothing
 end

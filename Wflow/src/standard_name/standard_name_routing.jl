@@ -82,24 +82,24 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
     #### Static or cyclic/forcing input
     "reservoir_water_demand__required_downstream_volume_flow_rate" =>
         ParameterMetadata(;
-            lens = @optic(
-                _.routing.river_flow.boundary_conditions.reservoir.parameters.demand
-            ),
-            unit = Unit(; m = 3, s = -1),
-            description = "Minimum (environmental) flow released from reservoir",
-            allow_dynamic_input = true,
-            tags = [:reservoir_static_cyclic_forcing_input],
+        lens = @optic(
+            _.routing.river_flow.boundary_conditions.reservoir.parameters.demand
         ),
+        unit = Unit(; m = 3, s = -1),
+        description = "Minimum (environmental) flow released from reservoir",
+        allow_dynamic_input = true,
+        tags = [:reservoir_static_cyclic_forcing_input],
+    ),
     "reservoir_water_release_below_spillway__max_volume_flow_rate" =>
         ParameterMetadata(;
-            lens = @optic(
-                _.routing.river_flow.boundary_conditions.reservoir.parameters.maximum_release
-            ),
-            unit = Unit(; m = 3, s = -1),
-            description = "Maximum amount that can be released if below spillway",
-            allow_dynamic_input = true,
-            tags = [:reservoir_static_cyclic_forcing_input],
+        lens = @optic(
+            _.routing.river_flow.boundary_conditions.reservoir.parameters.maximum_release
         ),
+        unit = Unit(; m = 3, s = -1),
+        description = "Maximum amount that can be released if below spillway",
+        allow_dynamic_input = true,
+        tags = [:reservoir_static_cyclic_forcing_input],
+    ),
     "reservoir_water__target_full_volume_fraction" => ParameterMetadata(;
         lens = @optic(
             _.routing.river_flow.boundary_conditions.reservoir.parameters.target_full_fraction
@@ -343,12 +343,12 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
     #### Input
     "subsurface_water__horizontal_to_vertical_saturated_hydraulic_conductivity_ratio" =>
         ParameterMetadata(;
-            lens = @optic(
-                _.routing.subsurface_flow.parameters.horizontal_to_vertical_hydraulic_conductivity_ratio
-            ),
-            description = "A multiplication factor applied to vertical hydraulic conductivity",
-            tags = [:kinematic_lateral_subsurface_input],
+        lens = @optic(
+            _.routing.subsurface_flow.parameters.horizontal_to_vertical_hydraulic_conductivity_ratio
         ),
+        description = "A multiplication factor applied to vertical hydraulic conductivity",
+        tags = [:kinematic_lateral_subsurface_input],
+    ),
     #### States
     "subsurface_water__instantaneous_volume_flow_rate" => ParameterMetadata(;
         lens = @optic(_.routing.subsurface_flow.variables.q),
@@ -487,18 +487,18 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
     #### States
     "land_surface_water__x_component_of_instantaneous_volume_flow_rate" =>
         ParameterMetadata(;
-            lens = @optic(_.routing.overland_flow.variables.qx),
-            unit = Unit(; m = 3, s = -1),
-            description = "Flow in x direction",
-            tags = [:local_inertial_overland_state, :local_inertial_overland_output],
-        ),
+        lens = @optic(_.routing.overland_flow.variables.qx),
+        unit = Unit(; m = 3, s = -1),
+        description = "Flow in x direction",
+        tags = [:local_inertial_overland_state, :local_inertial_overland_output],
+    ),
     "land_surface_water__y_component_of_instantaneous_volume_flow_rate" =>
         ParameterMetadata(;
-            lens = @optic(_.routing.overland_flow.variables.qy),
-            unit = Unit(; m = 3, s = -1),
-            description = "Flow in y direction",
-            tags = [:local_inertial_overland_state, :local_inertial_overland_output],
-        ),
+        lens = @optic(_.routing.overland_flow.variables.qy),
+        unit = Unit(; m = 3, s = -1),
+        description = "Flow in y direction",
+        tags = [:local_inertial_overland_state, :local_inertial_overland_output],
+    ),
     ## Groundwater flow
     ### Unconfined aquifer
     #### Input
@@ -509,20 +509,20 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
     ),
     "subsurface_surface_water__horizontal_saturated_hydraulic_conductivity" =>
         ParameterMetadata(;
-            lens = @optic(_.routing.subsurface_flow.parameters.hydraulic_conductivity),
-            unit = Unit(; m = 1, d = -1),
-            description = "Horizontal conductivity",
-            tags = [:groundwater_unconfined_aquifer_input],
-        ),
+        lens = @optic(_.routing.subsurface_flow.parameters.hydraulic_conductivity),
+        unit = Unit(; m = 1, d = -1),
+        description = "Horizontal conductivity",
+        tags = [:groundwater_unconfined_aquifer_input],
+    ),
     "subsurface__horizontal_saturated_hydraulic_conductivity_scale_parameter" =>
         ParameterMetadata(;
-            lens = @optic(
-                _.routing.subsurface_flow.parameters.hydraulic_conductivity_scale_parameter
-            ),
-            unit = Unit(; m = -1),
-            description = "Factor controlling the reduction of horizontal conductivity with depth",
-            tags = [:groundwater_unconfined_aquifer_input],
+        lens = @optic(
+            _.routing.subsurface_flow.parameters.hydraulic_conductivity_scale_parameter
         ),
+        unit = Unit(; m = -1),
+        description = "Factor controlling the reduction of horizontal conductivity with depth",
+        tags = [:groundwater_unconfined_aquifer_input],
+    ),
     #### States
     "subsurface_water__hydraulic_head" => ParameterMetadata(;
         lens = @optic(_.routing.subsurface_flow.variables.head),
@@ -606,13 +606,13 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
     #### Output
     "subsurface_water_saturated_zone_top__net_recharge_volume_flow_rate" =>
         ParameterMetadata(;
-            lens = @optic(
-                _.routing.subsurface_flow.boundary_conditions.recharge.variables.flux_average
-            ),
-            unit = Unit(; m = 3, d = -1),
-            description = "Net recharge flux",
-            tags = [:groundwater_recharge_boundary_output],
+        lens = @optic(
+            _.routing.subsurface_flow.boundary_conditions.recharge.variables.flux_average
         ),
+        unit = Unit(; m = 3, d = -1),
+        description = "Net recharge flux",
+        tags = [:groundwater_recharge_boundary_output],
+    ),
     ### Constant head boundary
     #### Input
     "model_constant_boundary_condition__hydraulic_head" => ParameterMetadata(;

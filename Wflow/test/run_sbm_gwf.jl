@@ -1,4 +1,3 @@
-
 @testitem "Run model sbm_gwf (kinematic wave routing)" begin
     using Dates: DateTime
     include("testing_utils.jl")
@@ -18,13 +17,13 @@
         (; land_indices) = model.domain.river.network
         @test all(
             water_table_depth .==
-            subsurface_flow.parameters.top .-
-            min.(subsurface_flow.variables.head, subsurface_flow.parameters.top),
+                subsurface_flow.parameters.top .-
+                min.(subsurface_flow.variables.head, subsurface_flow.parameters.top),
         )
         @test all(unsaturated_store_capacity[land_indices] .== 0.0)
         @test all(
             subsurface_flow.variables.head[land_indices] .==
-            subsurface_flow.parameters.top[land_indices],
+                subsurface_flow.parameters.top[land_indices],
         )
     end
 
@@ -210,7 +209,7 @@ end
     @testset "groundwater warm start" begin
         (; subsurface_flow) = model.routing
         @test subsurface_flow.boundary_conditions.river.variables.stage[1] ≈
-              1.2030201719029363
+            1.2030201719029363
         @test subsurface_flow.variables.head[17:21] ≈ [
             1.226363413451762,
             1.2844302137711752,
@@ -219,10 +218,10 @@ end
             1.2068931431179248,
         ]
         @test subsurface_flow.boundary_conditions.river.variables.flux[1] ≈
-              -7.491067650398826e-5
+            -7.491067650398826e-5
         @test subsurface_flow.boundary_conditions.drain.variables.flux[1] ≈ 0.0
         @test subsurface_flow.boundary_conditions.recharge.variables.rate[19] ≈
-              -1.6482866380610536e-8
+            -1.6482866380610536e-8
     end
 
     Wflow.close_files(model; delete_output = false)
@@ -261,27 +260,27 @@ end
     (; overland_water_balance, river_water_balance, subsurface_water_balance) = routing
     Wflow.run_timestep!(model)
     @testset "water balance first timestep" begin
-        @test all(e -> abs(e) < 1e-9, land_water_balance.error)
-        @test all(re -> abs(re) < 1e-9, land_water_balance.relative_error)
-        @test all(e -> abs(e) < 1e-9, overland_water_balance.error)
-        @test all(re -> abs(re) < 1e-9, overland_water_balance.relative_error)
-        @test all(e -> abs(e) < 1.e-9, river_water_balance.error)
-        @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
-        @test all(e -> abs(e) < 1e-9, subsurface_water_balance.error)
-        @test all(re -> abs(re) < 1e-9, subsurface_water_balance.relative_error)
+        @test all(e -> abs(e) < 1.0e-9, land_water_balance.error)
+        @test all(re -> abs(re) < 1.0e-9, land_water_balance.relative_error)
+        @test all(e -> abs(e) < 1.0e-9, overland_water_balance.error)
+        @test all(re -> abs(re) < 1.0e-9, overland_water_balance.relative_error)
+        @test all(e -> abs(e) < 1.0e-9, river_water_balance.error)
+        @test all(re -> abs(re) < 1.0e-9, river_water_balance.relative_error)
+        @test all(e -> abs(e) < 1.0e-9, subsurface_water_balance.error)
+        @test all(re -> abs(re) < 1.0e-9, subsurface_water_balance.relative_error)
     end
     Wflow.run_timestep!(model)
     @testset "water balance second timestep" begin
-        @test all(e -> abs(e) < 1e-9, land_water_balance.error)
-        @test all(re -> abs(re) < 1e-9, land_water_balance.relative_error)
-        @test all(e -> abs(e) < 1.e-9, routing.overland_water_balance.error)
-        @test all(re -> abs(re) < 1.e-9, routing.overland_water_balance.relative_error)
-        @test all(re -> abs(re) < 1e-9, routing.overland_water_balance.relative_error)
-        @test all(e -> abs(e) < 1e-9, river_water_balance.error)
-        @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
-        @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
-        @test all(e -> abs(e) < 1e-9, subsurface_water_balance.error)
-        @test all(re -> abs(re) < 1e-9, subsurface_water_balance.relative_error)
+        @test all(e -> abs(e) < 1.0e-9, land_water_balance.error)
+        @test all(re -> abs(re) < 1.0e-9, land_water_balance.relative_error)
+        @test all(e -> abs(e) < 1.0e-9, routing.overland_water_balance.error)
+        @test all(re -> abs(re) < 1.0e-9, routing.overland_water_balance.relative_error)
+        @test all(re -> abs(re) < 1.0e-9, routing.overland_water_balance.relative_error)
+        @test all(e -> abs(e) < 1.0e-9, river_water_balance.error)
+        @test all(re -> abs(re) < 1.0e-9, river_water_balance.relative_error)
+        @test all(re -> abs(re) < 1.0e-9, river_water_balance.relative_error)
+        @test all(e -> abs(e) < 1.0e-9, subsurface_water_balance.error)
+        @test all(re -> abs(re) < 1.0e-9, subsurface_water_balance.relative_error)
     end
     Wflow.close_files(model; delete_output = false)
 end

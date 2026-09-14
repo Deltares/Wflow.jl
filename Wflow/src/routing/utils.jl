@@ -1,4 +1,4 @@
-const KIN_WAVE_MIN_FLOW = 1e-30 # [m³ s⁻¹]
+const KIN_WAVE_MIN_FLOW = 1.0e-30 # [m³ s⁻¹]
 const KIN_WAVE_MIN_FLOW_QROOT = KIN_WAVE_MIN_FLOW^0.2
 
 "Convert a gridded drainage direction to a directed graph. Also returns the possibly modified
@@ -24,10 +24,12 @@ function flowgraph(ldd::AbstractVector, indices::AbstractVector, PCR_DIR::Abstra
         add_edge!(graph, from_node, to_node)
     end
     if is_cyclic(graph)
-        error("""One or more cycles detected in flow graph.
+        error(
+            """One or more cycles detected in flow graph.
             The provided local drainage direction map may be unsound.
             Verify that each active flow cell flows towards a pit.
-            """)
+            """
+        )
     end
     return graph, ldd
 end
@@ -184,9 +186,9 @@ function compute_mannings_n_at_edge(mannings_n, flow_length, nodes_at_edge, n_ed
         dst_node = nodes_at_edge.dst[i]
         mannings_n_at_edge[i] =
             (
-                mannings_n[dst_node] * flow_length[dst_node] +
+            mannings_n[dst_node] * flow_length[dst_node] +
                 mannings_n[src_node] * flow_length[src_node]
-            ) / (flow_length[dst_node] + flow_length[src_node])
+        ) / (flow_length[dst_node] + flow_length[src_node])
     end
     return mannings_n_at_edge
 end

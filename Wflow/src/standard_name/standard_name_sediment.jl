@@ -246,18 +246,18 @@ const sediment_standard_name_map = OrderedDict{String, ParameterMetadata}(
     ),
     "land_surface_water_sediment__govers_transport_capacity_coefficient" =>
         ParameterMetadata(;
-            lens = @optic(_.routing.overland_flow.transport_capacity.parameters.c_govers),
-            default = 0.000505,
-            description = "Govers transport capacity coefficient",
-            tags = [:sediment_transport_cap_overland_input],
-        ),
+        lens = @optic(_.routing.overland_flow.transport_capacity.parameters.c_govers),
+        default = 0.000505,
+        description = "Govers transport capacity coefficient",
+        tags = [:sediment_transport_cap_overland_input],
+    ),
     "land_surface_water_sediment__govers_transport_capacity_exponent" =>
         ParameterMetadata(;
-            lens = @optic(_.routing.overland_flow.transport_capacity.parameters.n_govers),
-            default = 4.27,
-            description = "Govers transport capacity exponent",
-            tags = [:sediment_transport_cap_overland_input],
-        ),
+        lens = @optic(_.routing.overland_flow.transport_capacity.parameters.n_govers),
+        default = 4.27,
+        description = "Govers transport capacity exponent",
+        tags = [:sediment_transport_cap_overland_input],
+    ),
     ### Transport capacity river
     #### Input
     "river_sediment__median_diameter" => ParameterMetadata(;
@@ -269,10 +269,10 @@ const sediment_standard_name_map = OrderedDict{String, ParameterMetadata}(
     ),
     "river_water_sediment__bagnold_transport_capacity_coefficient" =>
         ParameterMetadata(;
-            lens = @optic(_.routing.river_flow.transport_capacity.parameters.c_bagnold),
-            description = "Bagnold transport capacity coefficient",
-            tags = [:sediment_transport_cap_river_input],
-        ),
+        lens = @optic(_.routing.river_flow.transport_capacity.parameters.c_bagnold),
+        description = "Bagnold transport capacity coefficient",
+        tags = [:sediment_transport_cap_river_input],
+    ),
     "river_water_sediment__bagnold_transport_capacity_exponent" => ParameterMetadata(;
         lens = @optic(_.routing.river_flow.transport_capacity.parameters.e_bagnold),
         description = "Bagnold transport capacity exponent",
@@ -280,39 +280,39 @@ const sediment_standard_name_map = OrderedDict{String, ParameterMetadata}(
     ),
     "river_water_sediment__kodatie_transport_capacity_a_coefficient" =>
         ParameterMetadata(;
-            lens = @optic(_.routing.river_flow.transport_capacity.parameters.a_kodatie),
-            description = "Kodatie transport capacity coefficient a",
-            tags = [:sediment_transport_cap_river_input],
-        ),
+        lens = @optic(_.routing.river_flow.transport_capacity.parameters.a_kodatie),
+        description = "Kodatie transport capacity coefficient a",
+        tags = [:sediment_transport_cap_river_input],
+    ),
     "river_water_sediment__kodatie_transport_capacity_b_coefficient" =>
         ParameterMetadata(;
-            lens = @optic(_.routing.river_flow.transport_capacity.parameters.b_kodatie),
-            description = "Kodatie transport capacity coefficient b",
-            tags = [:sediment_transport_cap_river_input],
-        ),
+        lens = @optic(_.routing.river_flow.transport_capacity.parameters.b_kodatie),
+        description = "Kodatie transport capacity coefficient b",
+        tags = [:sediment_transport_cap_river_input],
+    ),
     "river_water_sediment__kodatie_transport_capacity_c_coefficient" =>
         ParameterMetadata(;
-            lens = @optic(_.routing.river_flow.transport_capacity.parameters.c_kodatie),
-            description = "Kodatie transport capacity coefficient c",
-            tags = [:sediment_transport_cap_river_input],
-        ),
+        lens = @optic(_.routing.river_flow.transport_capacity.parameters.c_kodatie),
+        description = "Kodatie transport capacity coefficient c",
+        tags = [:sediment_transport_cap_river_input],
+    ),
     "river_water_sediment__kodatie_transport_capacity_d_coefficient" =>
         ParameterMetadata(;
-            lens = @optic(_.routing.river_flow.transport_capacity.parameters.d_kodatie),
-            description = "Kodatie transport capacity coefficient d",
-            tags = [:sediment_transport_cap_river_input],
-        ),
+        lens = @optic(_.routing.river_flow.transport_capacity.parameters.d_kodatie),
+        description = "Kodatie transport capacity coefficient d",
+        tags = [:sediment_transport_cap_river_input],
+    ),
     ### Overland flow transport
     #### Output
     "land_surface_water_sediment_transport_capacity__mass_flow_rate" =>
         ParameterMetadata(;
-            lens = @optic(
-                _.routing.overland_flow.transport_capacity.variables.sediment_transport_capacity
-            ),
-            unit = Unit(; t = 1, dt = -1),
-            description = "Total sediment transport capacity",
-            tags = [:sediment_transport_overland_output],
+        lens = @optic(
+            _.routing.overland_flow.transport_capacity.variables.sediment_transport_capacity
         ),
+        unit = Unit(; t = 1, dt = -1),
+        description = "Total sediment transport capacity",
+        tags = [:sediment_transport_overland_output],
+    ),
     "land_surface_water_sediment__to_river_mass_flow_rate" => ParameterMetadata(;
         lens = @optic(_.routing.overland_flow.to_river.variables.sediment_rate),
         unit = Unit(; t = 1, dt = -1),
@@ -339,18 +339,18 @@ const sediment_standard_name_map = OrderedDict{String, ParameterMetadata}(
     ),
     "land_surface_water_small_aggregates__to_river_mass_flow_rate" =>
         ParameterMetadata(;
-            lens = @optic(_.routing.overland_flow.to_river.variables.small_aggregates_rate),
-            unit = Unit(; t = 1, dt = -1),
-            description = "Small aggregates flux flowing into the river",
-            tags = [:sediment_transport_overland_output],
-        ),
+        lens = @optic(_.routing.overland_flow.to_river.variables.small_aggregates_rate),
+        unit = Unit(; t = 1, dt = -1),
+        description = "Small aggregates flux flowing into the river",
+        tags = [:sediment_transport_overland_output],
+    ),
     "land_surface_water_large_aggregates__to_river_mass_flow_rate" =>
         ParameterMetadata(;
-            lens = @optic(_.routing.overland_flow.to_river.variables.large_aggregates_rate),
-            unit = Unit(; t = 1, dt = -1),
-            description = "Large aggregates flux flowing into the river",
-            tags = [:sediment_transport_overland_output],
-        ),
+        lens = @optic(_.routing.overland_flow.to_river.variables.large_aggregates_rate),
+        unit = Unit(; t = 1, dt = -1),
+        description = "Large aggregates flux flowing into the river",
+        tags = [:sediment_transport_overland_output],
+    ),
     "land_surface_water_sediment__mass_flow_rate" => ParameterMetadata(;
         lens = @optic(_.routing.overland_flow.sediment_flux.variables.sediment_rate),
         unit = Unit(; t = 1, dt = -1),

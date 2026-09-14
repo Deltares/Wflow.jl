@@ -160,7 +160,7 @@ end
 
     Wflow.update_reservoir_model!(reservoir, river_flow_vars, network, v, dt)
     @test river_flow_vars.qin[2] ≈ 1.0
-    @test reservoir.boundary_conditions.actual_external_abstraction_cumulative[1] ≈ 1e3
+    @test reservoir.boundary_conditions.actual_external_abstraction_cumulative[1] ≈ 1.0e3
     @test reservoir.variables.storage[1] ≈ 4.4998100277777776e7
     @test reservoir.variables.waterlevel[1] ≈ 0.9683379629629354
     @test reservoir.variables.outflow[1] ≈ 1.0
@@ -214,7 +214,7 @@ end
     Wflow.update_reservoir_model!(reservoir_model, river_flow_vars, network, v, dt)
     @test river_flow_vars.qin[2] ≈ 0.21749985206208133
     @test reservoir_model.boundary_conditions.actual_external_abstraction_cumulative[1] ≈
-          1000.0
+        1000.0
     @test reservoir_model.variables.storage[1] ≈ 2.744976116863499e7
     @test reservoir_model.variables.waterlevel[1] ≈ 3.013219350720886
     @test reservoir_model.variables.outflow[1] ≈ 0.21749985206208133
@@ -226,18 +226,22 @@ end
     dt = 86400.0
     # Linked reservoirs with free weir (outflow_curve_type = 1)
     datadir = joinpath(@__DIR__, "data")
-    storage_waterlevel_curve = Vector{Union{Wflow.SH, Missing}}([
-        Wflow.read_sh_csv(joinpath(datadir, "input", "reservoir_sh_1.csv")),
-        Wflow.read_sh_csv(joinpath(datadir, "input", "reservoir_sh_2.csv")),
-    ])
-    waterlevel_discharge_curve = Vector{Union{Wflow.HQ, Missing}}([
-        missing,
-        Wflow.read_hq_csv(joinpath(datadir, "input", "reservoir_hq_2.csv")),
-    ])
+    storage_waterlevel_curve = Vector{Union{Wflow.SH, Missing}}(
+        [
+            Wflow.read_sh_csv(joinpath(datadir, "input", "reservoir_sh_1.csv")),
+            Wflow.read_sh_csv(joinpath(datadir, "input", "reservoir_sh_2.csv")),
+        ]
+    )
+    waterlevel_discharge_curve = Vector{Union{Wflow.HQ, Missing}}(
+        [
+            missing,
+            Wflow.read_hq_csv(joinpath(datadir, "input", "reservoir_hq_2.csv")),
+        ]
+    )
 
     @test keys(storage_waterlevel_curve[1]) == (:H, :S)
     @test typeof(values(storage_waterlevel_curve[1])) ==
-          Tuple{Vector{Float64}, Vector{Float64}}
+        Tuple{Vector{Float64}, Vector{Float64}}
 
     res_params = Wflow.ReservoirParameters(;
         id = [1, 2],
@@ -311,12 +315,16 @@ end
         precipitation = [1.1574074074074074e-7],
         evaporation = [2.3148148148148148e-8],
     )
-    storage_waterlevel_curve = Vector{Union{Wflow.SH, Missing}}([
-        Wflow.read_sh_csv(joinpath(datadir, "input", "reservoir_sh_2.csv")),
-    ])
-    waterlevel_discharge_curve = Vector{Union{Wflow.HQ, Missing}}([
-        Wflow.read_hq_csv(joinpath(datadir, "input", "reservoir_hq_2.csv")),
-    ])
+    storage_waterlevel_curve = Vector{Union{Wflow.SH, Missing}}(
+        [
+            Wflow.read_sh_csv(joinpath(datadir, "input", "reservoir_sh_2.csv")),
+        ]
+    )
+    waterlevel_discharge_curve = Vector{Union{Wflow.HQ, Missing}}(
+        [
+            Wflow.read_hq_csv(joinpath(datadir, "input", "reservoir_hq_2.csv")),
+        ]
+    )
     res_params = Wflow.ReservoirParameters(;
         id = [1],
         area = [200_000_000],
@@ -343,9 +351,9 @@ end
         res_p.area[1],
         res_v.storage[1],
         res_p.storage_waterlevel_curve[1],
-    ) ≈ 398.0 atol = 1e-2
+    ) ≈ 398.0 atol = 1.0e-2
     @test res_v.outflow ≈ [1303.67476852]
     @test res_v.outflow_average ≈ res_v.outflow
     @test res_v.storage ≈ [4.293225e8]
-    @test res_v.waterlevel ≈ [398.000000]
+    @test res_v.waterlevel ≈ [398.0]
 end

@@ -60,10 +60,10 @@ Run surface routing (land and river) for a model type that contains the routing 
 timestep.
 """
 function surface_routing!(
-    model::Model{R},
-) where {
-    R <: Routing{<:OverlandFlowModel{<:LocalInertial}, <:RiverFlowModel{<:LocalInertial}},
-}
+        model::Model{R},
+    ) where {
+        R <: Routing{<:OverlandFlowModel{<:LocalInertial}, <:RiverFlowModel{<:LocalInertial}},
+    }
     (; routing, land, domain, clock, config) = model
     (; soil, runoff) = land
     (; overland_flow, river_flow, subsurface_flow) = routing

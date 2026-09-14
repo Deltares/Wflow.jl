@@ -27,9 +27,9 @@ end
 
 # Generate table from parameter metadata
 function generate_table(
-    data::Vector{Tuple{String, Wflow.ParameterMetadata}};
-    relative_widths::Union{Vector{Int}, Nothing} = nothing,
-)
+        data::Vector{Tuple{String, Wflow.ParameterMetadata}};
+        relative_widths::Union{Vector{Int}, Nothing} = nothing,
+    )
     isempty(data) && error("No data for table.")
     data_pretty = Vector{String}[]
     for (standard_name, metadata) in data
@@ -91,5 +91,5 @@ function generate_table(
             table_html[1:(colgroup_loc - 1)] * colgroup * table_html[colgroup_loc:end]
     end
 
-    display(MIME("text/html"), HTML(table_html))
+    return display(MIME("text/html"), HTML(table_html))
 end

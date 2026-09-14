@@ -28,12 +28,12 @@ end
     # Case kh_profile::KhExponential
     kh_profile = Wflow.KhExponential([0.0002795374658372667], [1.8001038115471601])
     @test Wflow.ssf_celerity(water_table_depth, slope, theta_e, kh_profile, i) ≈
-          3.4838105601686665e-6
+        3.4838105601686665e-6
 
     # Case kh_profile::KhExponentialConstant
     kh_profile = Wflow.KhExponentialConstant(kh_profile, [0.2])
     @test Wflow.ssf_celerity(water_table_depth, slope, theta_e, kh_profile, i) ≈
-          4.170921791220723e-6
+        4.170921791220723e-6
 end
 
 @testitem "unit: kw_ssf_newton_raphson" begin
@@ -44,7 +44,7 @@ end
     dx = 1103.816
 
     @test Wflow.kw_ssf_newton_raphson(ssf, constant_term, celerity, dt, dx) ≈
-          0.01090947420564454
+        0.01090947420564454
 end
 
 @testitem "kinematic wave overland flow" begin
@@ -498,21 +498,21 @@ end
     # check river q and q_av has been set by reservoir model
     @test river_flow_model.variables.q[2] ≈ 3.0009999145276134
     @test river_flow_model.variables.q[2] ==
-          river_flow_model.boundary_conditions.reservoir.variables.outflow[1]
+        river_flow_model.boundary_conditions.reservoir.variables.outflow[1]
     @test river_flow_model.variables.q_cumulative[2] ≈ 2730.397988608082
     @test river_flow_model.variables.q_cumulative[2] ==
-          river_flow_model.boundary_conditions.reservoir.variables.outflow_cumulative[1]
+        river_flow_model.boundary_conditions.reservoir.variables.outflow_cumulative[1]
 
     @test river_flow_model.boundary_conditions.reservoir.variables.storage[1] ≈
-          4.443593370702217e7
+        4.443593370702217e7
     @test river_flow_model.boundary_conditions.reservoir.variables.waterlevel[1] ≈
-          29.654344093791327
+        29.654344093791327
     @test river_flow_model.boundary_conditions.reservoir.variables.outflow[1] ≈
-          3.0009999145276134
+        3.0009999145276134
     @test river_flow_model.boundary_conditions.reservoir.boundary_conditions.inflow_cumulative[1] ≈
-          525.2968994074305
+        525.2968994074305
     @test river_flow_model.boundary_conditions.reservoir.variables.actevap_cumulative[1] ≈
-          4.843999273837613e-6
+        4.843999273837613e-6
 
     Wflow.update_water_depth_and_storage!(river_flow_model, domain.river, dt)
 
@@ -646,18 +646,18 @@ end
     @test river_flow_model.variables.zs_dst ≈ [166.92754760786679, 166.86980277988906]
     @test river_flow_model.variables.zs_at_edge ≈ [166.98963199894177, 166.92754760786679]
     @test river_flow_model.variables.water_depth_at_edge ≈
-          [1.8817912224982933, 1.8197068314233036]
+        [1.8817912224982933, 1.8197068314233036]
     @test river_flow_model.variables.q ≈ [137.1827776559179, 133.7538757670657]
     @test river_flow_model.variables.q_cumulative ≈ [6778.106459961183, 6608.686781773178]
 
     Wflow.update_floodplain_flow!(river_flow_model, domain.river, dt)
 
     @test river_flow_model.floodplain.variables.water_depth_at_edge ≈
-          [0.2896350506995873, 0.22755065962459753]
+        [0.2896350506995873, 0.22755065962459753]
     @test river_flow_model.floodplain.variables.q ≈ [3.3074672215578524, 6.1421232455587536]
 
     @test river_flow_model.floodplain.variables.q_cumulative ≈
-          [163.41967500308917, 303.4780747261213]
+        [163.41967500308917, 303.4780747261213]
 
     Wflow.update_bc_reservoir_model!(
         river_flow_model.boundary_conditions.reservoir,
@@ -669,9 +669,9 @@ end
     Wflow.update_water_depth_and_storage!(river_flow_model, domain.river, dt)
 
     @test river_flow_model.variables.storage ≈
-          [120775.26544458869, 229087.6588271402, 83729.54137530623]
+        [120775.26544458869, 229087.6588271402, 83729.54137530623]
     @test river_flow_model.variables.h ≈
-          [1.7817948514048583, 1.8210563184054411, 1.9129493838748897]
+        [1.7817948514048583, 1.8210563184054411, 1.9129493838748897]
     Wflow.update_water_depth_and_storage!(
         river_flow_model.floodplain,
         river_flow_model,
@@ -680,13 +680,13 @@ end
     )
 
     @test river_flow_model.variables.storage ≈
-          [124521.73491986065, 228924.54042985922, 78479.82701991481]
+        [124521.73491986065, 228924.54042985922, 78479.82701991481]
     @test river_flow_model.variables.h ≈
-          [1.8370664336896243, 1.8197596628390198, 1.793010379352563]
+        [1.8370664336896243, 1.8197596628390198, 1.793010379352563]
     @test river_flow_model.floodplain.variables.storage ≈
-          [21410.318556337137, 99344.98021057082, 35924.006727001935]
+        [21410.318556337137, 99344.98021057082, 35924.006727001935]
     @test river_flow_model.floodplain.variables.h ≈
-          [0.2449102618909183, 0.22760349104031377, 0.20085420755385677]
+        [0.2449102618909183, 0.22760349104031377, 0.20085420755385677]
 end
 
 @testitem "unit: river flow on a staggered grid using Manning's equation with floodplain" begin
@@ -811,18 +811,18 @@ end
     @test river_flow_model.variables.zs_dst ≈ [418.03259945785163, 416.00221556263983]
     @test river_flow_model.variables.zs_at_edge ≈ [416.6029533901387, 418.03259945785163]
     @test river_flow_model.variables.water_depth_at_edge ≈
-          [1.0029472866230495, 2.432593354336019]
+        [1.0029472866230495, 2.432593354336019]
     @test river_flow_model.variables.q ≈ [3.0436243193280137, 12.587380945649572]
     @test river_flow_model.variables.q_cumulative ≈ [6917.404204207213, 28607.999128032432]
 
     Wflow.update_floodplain_flow!(river_flow_model, domain.river, dt)
 
     @test river_flow_model.floodplain.variables.water_depth_at_edge ≈
-          [0.0029472866230494782, 1.432593354336019]
+        [0.0029472866230494782, 1.432593354336019]
     @test river_flow_model.floodplain.variables.q ≈ [8.50693948416018e-5, 3.279243909752732]
 
     @test river_flow_model.floodplain.variables.q_cumulative ≈
-          [0.1933416636835727, 7452.909172756478]
+        [0.1933416636835727, 7452.909172756478]
 
     Wflow.update_bc_reservoir_model!(
         river_flow_model.boundary_conditions.reservoir,
@@ -834,9 +834,9 @@ end
     Wflow.update_water_depth_and_storage!(river_flow_model, domain.river, dt)
 
     @test river_flow_model.variables.storage ≈
-          [30640.414081003582, 54882.67899192734, 39343.459630853366]
+        [30640.414081003582, 54882.67899192734, 39343.459630853366]
     @test river_flow_model.variables.h ≈
-          [0.8462303441838974, 1.8123188736937599, 1.529832201063609]
+        [0.8462303441838974, 1.8123188736937599, 1.529832201063609]
 
     Wflow.update_water_depth_and_storage!(
         river_flow_model.floodplain,
@@ -846,13 +846,13 @@ end
     )
 
     @test river_flow_model.variables.storage ≈
-          [30753.95616171255, 63042.829748341144, 33570.77415623857]
+        [30753.95616171255, 63042.829748341144, 33570.77415623857]
     @test river_flow_model.variables.h ≈
-          [0.849366161923948, 2.0817808514920815, 1.3053669352090433]
+        [0.849366161923948, 2.0817808514920815, 1.3053669352090433]
     @test river_flow_model.floodplain.variables.storage ≈
-          [0.0, 46991.52157304865, 13225.594647371276]
+        [0.0, 46991.52157304865, 13225.594647371276]
     @test river_flow_model.floodplain.variables.h ≈
-          [0.0, 1.0817808514920815, 0.3053669352090434]
+        [0.0, 1.0817808514920815, 0.3053669352090434]
 end
 
 @testitem "unit: kinematic river flow including 1D floodplain schematization" begin
@@ -968,7 +968,7 @@ end
     @test river_flow_model.variables.storage ≈ [778645.3962305915, 682239.2566234164]
     @test river_flow_model.floodplain.variables.h ≈ [2.0642836103410205, 1.1737631111525133]
     @test river_flow_model.floodplain.variables.storage ≈
-          [58760.1445203583, 40074.01437791623]
+        [58760.1445203583, 40074.01437791623]
 
     Wflow.kinwave_river_update!(river_flow_model, domain, dt)
 
@@ -980,10 +980,10 @@ end
     Wflow.update_floodplain_model!(river_flow_model, domain, dt)
 
     @test river_flow_model.floodplain.variables.storage ≈
-          [52745.30941770246, 41649.967280840756]
+        [52745.30941770246, 41649.967280840756]
     @test river_flow_model.floodplain.variables.q ≈ [3.752513987924126, 2.7693140810933157]
     @test river_flow_model.floodplain.variables.q_cumulative ≈
-          [6014.835102655834, 4438.882199731312]
+        [6014.835102655834, 4438.882199731312]
 end
 
 @testitem "unit: update_directional_flow!" begin
@@ -1003,7 +1003,7 @@ end
             xwidth_at_edge = [],
             zx_max_at_edge = [257.3280029296875, 232.67100524902344, 232.67100524902344],
             theta = 1.0,
-            h_thresh = 1e-3,
+            h_thresh = 1.0e-3,
             zy_max_at_edge = [],
             mannings_n_sq_at_edge = [
                 0.24167056670421605,
@@ -1071,7 +1071,7 @@ end
             xwidth_at_edge = [],
             ywidth_at_edge = [],
             theta = 1.0,
-            h_thresh = 1e-3,
+            h_thresh = 1.0e-3,
             zx_max_at_edge = [],
             zy_max_at_edge = [],
             mannings_n_sq_at_edge = [],
@@ -1090,7 +1090,7 @@ end
             active_n = [1],
             active_e = [1, 2],
             froude_limit = true,
-            h_thresh = 1e-3,
+            h_thresh = 1.0e-3,
             zb = [],
             zb_at_edge = [],
             bankfull_storage = [171137.5821314017],
@@ -1151,14 +1151,14 @@ end
     )
     @test storage_change ≈ 19.782071832453088
     @test Wflow.compute_external_inflow(river_flow_model, overland_flow_model, 3, 1, dt) |>
-          collect ≈ [0.0, 0.0]
+        collect ≈ [0.0, 0.0]
 
     river_h_expected = 1.4857390315391559
     land_h_expected = 0.11738614152450744
     river_storage_expected = 185818.86835722585
     total_storage = overland_flow_model.variables.storage[3] + storage_change
     @test Wflow.compute_water_depths(total_storage, 1, 3, river_flow_model, domain) |>
-          collect ≈ [river_h_expected, land_h_expected, river_storage_expected]
+        collect ≈ [river_h_expected, land_h_expected, river_storage_expected]
 
     # Test update_river_and_land_storage_and_depth!
     Wflow.update_river_and_land_storage_and_depth!(
@@ -1213,7 +1213,7 @@ end
     h_a = h.([dx:dx:L;]) # water depth profile (analytical solution)
     # integrate slope to get elevation (bed level) z
     x = [dx:dx:L;]
-    zb = first.([quadgk(s, xi, L; rtol = 1e-12) for xi in x])
+    zb = first.([quadgk(s, xi, L; rtol = 1.0e-12) for xi in x])
 
     # initialize local inertial river flow model
     graph = DiGraph(n)
@@ -1241,9 +1241,9 @@ end
         flow_length_at_edge[i] = 0.5 * (dl[nodes_at_edge.dst[i]] + dl[nodes_at_edge.src[i]])
         mannings_n_at_edge =
             (
-                n_river[nodes_at_edge.dst[i]] * dl[nodes_at_edge.dst[i]] +
+            n_river[nodes_at_edge.dst[i]] * dl[nodes_at_edge.dst[i]] +
                 n_river[nodes_at_edge.src[i]] * dl[nodes_at_edge.src[i]]
-            ) / (dl[nodes_at_edge.dst[i]] + dl[nodes_at_edge.src[i]])
+        ) / (dl[nodes_at_edge.dst[i]] + dl[nodes_at_edge.src[i]])
         mannings_n_sq_at_edge[i] = mannings_n_at_edge * mannings_n_at_edge
     end
 
@@ -1300,7 +1300,7 @@ end
     )
 
     # run until steady state is reached
-    epsilon = 1e-12
+    epsilon = 1.0e-12
     (; flow_length) = domain_river.parameters
     while true
         sw_river.boundary_conditions.inwater[1] = 20.0

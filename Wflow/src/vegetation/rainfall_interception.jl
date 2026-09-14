@@ -1,4 +1,3 @@
-
 """
     rainfall_interception_gash(maximum_canopy_storage, evaporation_to_precipitation_ratio, canopy_gap_fraction, precipitation, canopy_storage, max_evaporation)
 
@@ -7,14 +6,14 @@ storage and `evaporation_to_precipitation_ratio` is the ratio of the average eva
 average precipitation intensity on a saturated canopy.
 """
 function rainfall_interception_gash(
-    maximum_canopy_storage,
-    evaporation_to_precipitation_ratio,
-    canopy_gap_fraction,
-    precipitation,
-    canopy_storage,
-    max_evaporation,
-    dt,
-)
+        maximum_canopy_storage,
+        evaporation_to_precipitation_ratio,
+        canopy_gap_fraction,
+        precipitation,
+        canopy_storage,
+        max_evaporation,
+        dt,
+    )
     # TODO: add other rainfall interception method (lui)
     # TODO: include subdaily Gash model
     # TODO: improve computation of stemflow partitioning coefficient pt (0.1 * canopy_gap_fraction)
@@ -24,12 +23,12 @@ function rainfall_interception_gash(
             fraction_interception = 1.0 - 1.1 * canopy_gap_fraction # > 0
 
             precipitation_saturation =
-                if evaporation_to_precipitation_ratio > fraction_interception
-                    0.0
-                else
-                    -maximum_canopy_storage / (evaporation_to_precipitation_ratio * dt) *
+            if evaporation_to_precipitation_ratio > fraction_interception
+                0.0
+            else
+                -maximum_canopy_storage / (evaporation_to_precipitation_ratio * dt) *
                     log(1.0 - evaporation_to_precipitation_ratio / fraction_interception)
-                end
+            end
         else
             fraction_stemflow = 1.0 - canopy_gap_fraction
             fraction_interception = 0
@@ -76,13 +75,13 @@ Interception according to a modified Rutter model. The model is solved explicitl
 is no drainage below `maximum_canopy_storage`.
 """
 function rainfall_interception_modrut(
-    precipitation,
-    potential_evaporation,
-    canopy_storage,
-    canopy_gap_fraction,
-    maximum_canopy_storage,
-    dt,
-)
+        precipitation,
+        potential_evaporation,
+        canopy_storage,
+        canopy_gap_fraction,
+        maximum_canopy_storage,
+        dt,
+    )
     # TODO: improve computation of stemflow partitioning coefficient pt (0.1 * canopy_gap_fraction)
     if canopy_gap_fraction < inv(1.1)
         fraction_stemflow = 0.1 * canopy_gap_fraction

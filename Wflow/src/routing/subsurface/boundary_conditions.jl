@@ -1,7 +1,7 @@
 function check_flux(flux::Float64, subsurface_flow_model::GroundwaterFlowModel, index::Int)
     # Check if cell is dry
     if subsurface_flow_model.variables.head[index] <=
-       subsurface_flow_model.parameters.bottom[index]
+            subsurface_flow_model.parameters.bottom[index]
         # If cell is dry, no negative flux is allowed
         return max(0, flux)
     else
@@ -12,7 +12,7 @@ end
 function check_flux(flux::Float64, subsurface_flow_model::LateralSSFModel, index::Int)
     # Check if cell is dry
     if subsurface_flow_model.variables.water_table_depth[index] >=
-       subsurface_flow_model.parameters.soil_thickness[index]
+            subsurface_flow_model.parameters.soil_thickness[index]
         # If cell is dry, no negative flux is allowed
         return max(0, flux)
     else
@@ -48,10 +48,10 @@ end
 end
 
 function GwfRiverModel(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}},
-)
+        dataset::NCDataset,
+        config::Config,
+        indices::Vector{CartesianIndex{2}},
+    )
     infiltration_conductance = ncread(
         dataset,
         config,
@@ -77,11 +77,11 @@ function GwfRiverModel(
 end
 
 function flux!(
-    gwf_river_model::GwfRiverModel,
-    subsurface_flow_model::AbstractSubsurfaceFlowModel,
-    indices::Vector{Int},
-    dt::Float64,
-)
+        gwf_river_model::GwfRiverModel,
+        subsurface_flow_model::AbstractSubsurfaceFlowModel,
+        indices::Vector{Int},
+        dt::Float64,
+    )
     for (i, index) in enumerate(indices)
         head = subsurface_flow_model.variables.head[index]
         stage = gwf_river_model.variables.stage[i]
@@ -126,10 +126,10 @@ end
 end
 
 function DrainageModel(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}},
-)
+        dataset::NCDataset,
+        config::Config,
+        indices::Vector{CartesianIndex{2}},
+    )
     elevation = ncread(dataset, config, "land_drain__elevation", Routing; sel = indices)
     conductance = ncread(dataset, config, "land_drain__conductance", Routing; sel = indices)
     parameters = DrainageParameters(; elevation, conductance)
@@ -141,17 +141,17 @@ function DrainageModel(
 end
 
 function flux!(
-    drainage_model::DrainageModel,
-    subsurface_flow_model::AbstractSubsurfaceFlowModel,
-    indices::Vector{Int},
-    dt::Float64,
-)
+        drainage_model::DrainageModel,
+        subsurface_flow_model::AbstractSubsurfaceFlowModel,
+        indices::Vector{Int},
+        dt::Float64,
+    )
     for (i, index) in enumerate(indices)
         cond = drainage_model.parameters.conductance[i]
         delta_head = min(
             0,
             drainage_model.parameters.elevation[i] -
-            subsurface_flow_model.variables.head[index],
+                subsurface_flow_model.variables.head[index],
         )
         flux = check_flux(cond * delta_head, subsurface_flow_model, index)
         drainage_model.variables.flux[i] = flux
@@ -183,11 +183,11 @@ end
 end
 
 function flux!(
-    headboundary::HeadBoundary,
-    subsurface_flow_model::GroundwaterFlowModel,
-    indices::Vector{Int},
-    dt::Float64,
-)
+        headboundary::HeadBoundary,
+        subsurface_flow_model::GroundwaterFlowModel,
+        indices::Vector{Int},
+        dt::Float64,
+    )
     for (i, index) in enumerate(indices)
         cond = headboundary.parameters.conductance[i]
         delta_head =
@@ -217,11 +217,11 @@ end
 end
 
 function flux!(
-    recharge_model::RechargeModel,
-    subsurface_flow_model::AbstractSubsurfaceFlowModel,
-    indices::Vector{Int},
-    dt::Float64,
-)
+        recharge_model::RechargeModel,
+        subsurface_flow_model::AbstractSubsurfaceFlowModel,
+        indices::Vector{Int},
+        dt::Float64,
+    )
     for (i, index) in enumerate(indices)
         flux = check_flux(
             recharge_model.variables.rate[i] * subsurface_flow_model.parameters.area[index],
@@ -251,11 +251,11 @@ end
 end
 
 function flux!(
-    well_model::WellModel,
-    subsurface_flow_model::GroundwaterFlowModel,
-    indices::Vector{Int},
-    dt::Float64,
-)
+        well_model::WellModel,
+        subsurface_flow_model::GroundwaterFlowModel,
+        indices::Vector{Int},
+        dt::Float64,
+    )
     for (i, index) in enumerate(indices)
         flux = check_flux(
             well_model.variables.volumetric_rate[i],
@@ -270,9 +270,9 @@ function flux!(
 end
 
 function update_river_storage_stage!(
-    gwf_river_model::GwfRiverModel,
-    river_flow_model::AbstractRiverFlowModel,
-)
+        gwf_river_model::GwfRiverModel,
+        river_flow_model::AbstractRiverFlowModel,
+    )
     for i in eachindex(gwf_river_model.variables.stage)
         gwf_river_model.variables.stage[i] =
             river_flow_model.variables.h[i] + gwf_river_model.parameters.bottom[i]

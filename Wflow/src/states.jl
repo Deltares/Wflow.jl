@@ -8,10 +8,10 @@ Extract required snow model states, given a certain `model_type`. Returns a tupl
 required states (standard name).
 """
 function get_snow_states(model_type::ModelType.T)
-    return if model_type == ModelType.sbm || model_type == ModelType.sbm_gwf
-        get_states_by_tag(LandHydrologySBM, :snow_state)
+    if model_type == ModelType.sbm || model_type == ModelType.sbm_gwf
+        return get_states_by_tag(LandHydrologySBM, :snow_state)
     elseif model_type == ModelType.sediment
-        String[]
+        return String[]
     end
 end
 
@@ -36,10 +36,10 @@ Extract required interception model states, given a certain `model_type`. Return
 with the required states (standard name).
 """
 function get_interception_states(model_type::ModelType.T)
-    return if model_type == ModelType.sbm || model_type == ModelType.sbm_gwf
-        get_states_by_tag(LandHydrologySBM, :vegetation_state)
+    if model_type == ModelType.sbm || model_type == ModelType.sbm_gwf
+        return get_states_by_tag(LandHydrologySBM, :vegetation_state)
     elseif model_type == ModelType.sediment
-        String[]
+        return String[]
     end
 end
 
@@ -50,11 +50,12 @@ Extract required soil model states, given a certain `model_type` and whether `sn
 modelled. Returns a tuple with the required states (internal names as symbols).
 """
 function get_soil_states(model_type::ModelType.T; snow::Bool = false)
-    return if model_type == ModelType.sbm || model_type == ModelType.sbm_gwf
+    if model_type == ModelType.sbm || model_type == ModelType.sbm_gwf
         states = get_states_by_tag(LandHydrologySBM, :soil_state)
-        snow ? states : filter(!=("soil_surface__temperature"), states)
+        states = snow ? states : filter(!=("soil_surface__temperature"), states)
+        return states
     elseif model_type == ModelType.sediment
-        String[]
+        return String[]
     end
 end
 
@@ -128,7 +129,7 @@ function extract_required_states(config::Config)
         String[]
     else
         if config.model.river_routing == RoutingType.local_inertial ||
-           config.model.river_routing == RoutingType.manning_staggered
+                config.model.river_routing == RoutingType.manning_staggered
             get_states_by_tag(Routing, :staggered_grid_floodplain_1D_flow_state)
         else
             get_states_by_tag(Routing, :kinematic_wave_floodplain_1D_flow_state)

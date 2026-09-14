@@ -1,0 +1,34 @@
+name: Update Pixi lockfile
+permissions:
+  contents: read
+on:
+  schedule:
+    # At 03:00 on day 3 of the month
+    - cron: "0 3 3 * *"
+  # on demand
+  workflow_dispatch:
+jobs:
+  pixi-update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up pixi
+        uses: prefix-dev/setup-pixi@d3f436a425481402e6a95a1d1fc10331c708cd9e # v0.10.2
+        with:
+          pixi-version: "latest"
+          run-install: false
+      - name: Update lockfile
+        run: |
+          set -o pipefail
+          pixi update --json | pixi exec pixi-diff-to-markdown >> diff.md
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
+        with:
+          token: ${{ secrets.CI_PR_PAT }}
+          commit-message: Update pixi lockfile
+          title: Update pixi lockfile
+          body-path: diff.md
+          branch: update/pixi-lock
+          base: main
+          delete-branch: true
+          add-paths: pixi.lock

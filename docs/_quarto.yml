@@ -2,7 +2,10 @@ project:
   type: website
   output-dir: "_site"
   render:
+    - index.qmd
     - "*.qmd"
+
+engines: ['julia']
 
 # filters:
 #    - include-code-files

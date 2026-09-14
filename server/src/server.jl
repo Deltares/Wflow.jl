@@ -82,6 +82,7 @@ function valid_request(json)
             break
         end
     end
+    return nothing
 end
 
 """
@@ -110,6 +111,7 @@ function wflow_bmi(s::ZMQ.Socket, handler::ModelHandler, f)
         )
         response(err, s)
     end
+    return nothing
 end
 
 main() = main(ARGS)
@@ -193,4 +195,5 @@ function start(port::Int)
     finally
         shutdown(socket, context)
     end
+    return nothing
 end

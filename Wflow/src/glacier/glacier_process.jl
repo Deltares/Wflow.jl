@@ -25,16 +25,16 @@ occurs if the snow storage < 10 mm.
 
 """
 function glacier_hbv(
-    glacier_fraction,
-    glacier_store,
-    snow_storage,
-    temperature,
-    temperature_threshold_melt,
-    degree_day_factor,
-    snow_to_ice_fraction,
-    maximum_snow_to_ice_rate,
-    dt,
-)
+        glacier_fraction,
+        glacier_store,
+        snow_storage,
+        temperature,
+        temperature_threshold_melt,
+        degree_day_factor,
+        snow_to_ice_fraction,
+        maximum_snow_to_ice_rate,
+        dt,
+    )
 
     # Fraction of the snow transformed into ice (HBV-light model)
     snow_to_glacier = if glacier_fraction > 0.0
@@ -55,7 +55,7 @@ function glacier_hbv(
         degree_day_factor * (temperature - temperature_threshold_melt) : 0.0
 
     # actual Glacier melt
-    glacier_melt = (snow_storage < 1e-2) ? min(potential_melt, glacier_store / dt) : 0.0
+    glacier_melt = (snow_storage < 1.0e-2) ? min(potential_melt, glacier_store / dt) : 0.0
     glacier_store -= glacier_melt * dt
 
     return snow_storage, snow_to_glacier, glacier_store, glacier_melt

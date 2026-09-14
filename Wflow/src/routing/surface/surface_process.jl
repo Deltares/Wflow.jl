@@ -16,6 +16,7 @@ function lateral_snow_transport!(snow::AbstractSnowModel, domain::DomainLand, dt
     snow_out .+=
         accucapacityflux(snow_water, domain.network, snow_water .* snowflux_frac / dt, dt)
     flux_in!(snow_in, snow_out, domain.network)
+    return nothing
 end
 
 lateral_snow_transport!(snow::NoSnowModel, domain::DomainLand, dt::Float64) = nothing
@@ -86,17 +87,17 @@ Local inertial approach for flow through area `A`. Returns the flow `q` between 
 river cells (nodes) for a single timestep.
 """
 function local_inertial_flow(
-    q0,
-    zs0,
-    zs1,
-    hf,
-    A,
-    R,
-    length,
-    mannings_n_sq,
-    froude_limit,
-    dt,
-)
+        q0,
+        zs0,
+        zs1,
+        hf,
+        A,
+        R,
+        length,
+        mannings_n_sq,
+        froude_limit,
+        dt,
+    )
     slope = (zs1 - zs0) / length
     pow_R = cbrt(R * R * R * R)
     unit = one(hf)
@@ -122,19 +123,19 @@ two adjacent cells (nodes) for a single timestep. Algorithm is based on de Almei
 (2012).
 """
 function local_inertial_flow(
-    theta,
-    q0,
-    qd,
-    qu,
-    zs0,
-    zs1,
-    hf,
-    width,
-    length,
-    mannings_n_sq,
-    froude_limit,
-    dt,
-)
+        theta,
+        q0,
+        qd,
+        qu,
+        zs0,
+        zs1,
+        hf,
+        width,
+        length,
+        mannings_n_sq,
+        froude_limit,
+        dt,
+    )
     slope = (zs1 - zs0) / length
     unit = one(theta)
     half = oftype(theta, 0.5)
@@ -143,10 +144,10 @@ function local_inertial_flow(
     q = (
         (
             (theta * q0 + half * (unit - theta) * (qu + qd)) -
-            GRAVITATIONAL_ACCELERATION * hf * width * dt * slope
+                GRAVITATIONAL_ACCELERATION * hf * width * dt * slope
         ) / (
             unit +
-            GRAVITATIONAL_ACCELERATION * dt * mannings_n_sq * abs(q0) / (pow_hf * width)
+                GRAVITATIONAL_ACCELERATION * dt * mannings_n_sq * abs(q0) / (pow_hf * width)
         )
     )
     # if froude number > 1.0, limit flow

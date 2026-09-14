@@ -11,10 +11,10 @@ end
 
 "Initialize glacier model variables"
 function GlacierVariables(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}},
-)
+        dataset::NCDataset,
+        config::Config,
+        indices::Vector{CartesianIndex{2}},
+    )
     glacier_store = ncread(
         dataset,
         config,
@@ -60,11 +60,11 @@ end
 
 "Initialize glacier HBV model parameters"
 function GlacierHbvParameters(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}},
-    dt::Second,
-)
+        dataset::NCDataset,
+        config::Config,
+        indices::Vector{CartesianIndex{2}},
+        dt::Second,
+    )
     temperature_threshold_melt = ncread(
         dataset,
         config,
@@ -106,12 +106,12 @@ end
 
 "Initialize glacier HBV model"
 function GlacierHbvModel(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}},
-    dt::Second,
-    boundary_conditions::SnowStateBC,
-)
+        dataset::NCDataset,
+        config::Config,
+        indices::Vector{CartesianIndex{2}},
+        dt::Second,
+        boundary_conditions::SnowStateBC,
+    )
     parameters = GlacierHbvParameters(dataset, config, indices, dt)
     variables = GlacierVariables(dataset, config, indices)
     glacier_model = GlacierHbvModel(; boundary_conditions, parameters, variables)
@@ -120,10 +120,10 @@ end
 
 "Update glacier HBV model for a single timestep"
 function update_glacier_model!(
-    glacier_model::GlacierHbvModel,
-    atmospheric_forcing::AtmosphericForcing,
-    dt::Float64,
-)
+        glacier_model::GlacierHbvModel,
+        atmospheric_forcing::AtmosphericForcing,
+        dt::Float64,
+    )
     (; temperature) = atmospheric_forcing
     (; glacier_store, glacier_melt) = glacier_model.variables
     (; snow_storage) = glacier_model.boundary_conditions
@@ -154,10 +154,10 @@ function update_glacier_model!(
 end
 
 function update_glacier_model!(
-    glacier_model::NoGlacierModel,
-    atmospheric_forcing::AtmosphericForcing,
-    dt::Float64,
-)
+        glacier_model::NoGlacierModel,
+        atmospheric_forcing::AtmosphericForcing,
+        dt::Float64,
+    )
     return nothing
 end
 

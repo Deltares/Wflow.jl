@@ -35,12 +35,12 @@ end
 
 "River flow model"
 @with_kw struct RiverFlowModel{
-    T <: AbstractRoutingMethod,
-    F <: Union{AbstractFloodPlainModel, Nothing},
-    P <: AbstractRiverFlowParameters,
-    V <: AbstractRiverFlowVariables,
-    A <: AbstractAllocationModel,
-} <: AbstractRiverFlowModel
+        T <: AbstractRoutingMethod,
+        F <: Union{AbstractFloodPlainModel, Nothing},
+        P <: AbstractRiverFlowParameters,
+        V <: AbstractRiverFlowVariables,
+        A <: AbstractAllocationModel,
+    } <: AbstractRiverFlowModel
     routing_method::T
     timestepping::TimeStepping
     boundary_conditions::RiverFlowBC
@@ -52,11 +52,11 @@ end
 
 "Overland flow model"
 @with_kw struct OverlandFlowModel{
-    T <: AbstractRoutingMethod,
-    B <: AbstractOverlandFlowBC,
-    P <: Union{ManningFlowParameters, AbstractOverlandFlowParameters},
-    V <: AbstractOverlandFlowVariables,
-} <: AbstractOverlandFlowModel
+        T <: AbstractRoutingMethod,
+        B <: AbstractOverlandFlowBC,
+        P <: Union{ManningFlowParameters, AbstractOverlandFlowParameters},
+        V <: AbstractOverlandFlowVariables,
+    } <: AbstractOverlandFlowModel
     routing_method::T
     timestepping::TimeStepping
     boundary_conditions::B
