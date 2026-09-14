@@ -34,13 +34,13 @@ end
 
 "Update land surface temperature model for a single timestep."
 function update_land_surface_temperature!(
-    land_surface_temperature_model::LandSurfaceTemperatureModel,
-    soil_model::SbmSoilModel,
-    atmospheric_forcing::AtmosphericForcing,
-    parameters::LandParameters,
-    wind_measurement_height::Float64,
-    dt::Float64,
-)
+        land_surface_temperature_model::LandSurfaceTemperatureModel,
+        soil_model::SbmSoilModel,
+        atmospheric_forcing::AtmosphericForcing,
+        parameters::LandParameters,
+        wind_measurement_height::Float64,
+        dt::Float64,
+    )
     (; d0, z0m, z0h, skin_layer_height) = parameters
     n = length(land_surface_temperature_model.variables.land_surface_temperature)
 
@@ -51,48 +51,48 @@ function update_land_surface_temperature!(
 
         land_surface_temperature_model.variables.latent_heat_flux[i] =
             compute_latent_heat_flux(
-                atmospheric_forcing.temperature[i],
-                soil_model.variables.actevap[i],
-            )
+            atmospheric_forcing.temperature[i],
+            soil_model.variables.actevap[i],
+        )
 
         # Calculate sensible heat flux
         land_surface_temperature_model.variables.sensible_heat_flux[i] =
             compute_sensible_heat_flux(
-                atmospheric_forcing.net_radiation[i],
-                land_surface_temperature_model.variables.latent_heat_flux[i],
-            )
+            atmospheric_forcing.net_radiation[i],
+            land_surface_temperature_model.variables.latent_heat_flux[i],
+        )
 
         # Calculate aerodynamic resistance using wind speed at canopy height
         land_surface_temperature_model.variables.aerodynamic_resistance[i] =
             compute_aerodynamic_resistance(
-                atmospheric_forcing.wind_speed[i],
-                wind_measurement_height,
-                skin_layer_height[i],
-                d0[i],
-                z0m[i],
-                z0h[i],
-            )
+            atmospheric_forcing.wind_speed[i],
+            wind_measurement_height,
+            skin_layer_height[i],
+            d0[i],
+            z0m[i],
+            z0h[i],
+        )
 
         # Calculate land surface temperature
         land_surface_temperature_model.variables.land_surface_temperature[i] =
             compute_land_surface_temperature(
-                land_surface_temperature_model.variables.sensible_heat_flux[i],
-                land_surface_temperature_model.variables.aerodynamic_resistance[i],
-                atmospheric_forcing.temperature[i],
-            )
+            land_surface_temperature_model.variables.sensible_heat_flux[i],
+            land_surface_temperature_model.variables.aerodynamic_resistance[i],
+            atmospheric_forcing.temperature[i],
+        )
     end
 
     return nothing
 end
 
 function update_land_surface_temperature!(
-    model::NoLandSurfaceTemperatureModel,
-    soil_model::SbmSoilModel,
-    atmospheric_forcing::AtmosphericForcing,
-    parameters::LandParameters,
-    wind_measurement_height::Float64,
-    dt::Float64,
-)
+        model::NoLandSurfaceTemperatureModel,
+        soil_model::SbmSoilModel,
+        atmospheric_forcing::AtmosphericForcing,
+        parameters::LandParameters,
+        wind_measurement_height::Float64,
+        dt::Float64,
+    )
     return nothing
 end
 
@@ -104,9 +104,9 @@ end
 
 "Compute latent heat flux"
 function compute_latent_heat_flux(
-    air_temperature::Float64,
-    actual_evapotranspiration::Float64,
-)
+        air_temperature::Float64,
+        actual_evapotranspiration::Float64,
+    )
     latent_heat_of_vaporization = compute_latent_heat_of_vaporization(air_temperature)
     latent_heat_flux =
         latent_heat_of_vaporization * WATER_DENSITY * actual_evapotranspiration
@@ -135,13 +135,13 @@ of wind and humidity are assumed to be equal, `z0h  is the aerodynamic roughness
 heat transfer.
 """
 function compute_aerodynamic_resistance(
-    wind_speed::Float64,
-    z_measured::Float64,
-    skin_layer_height::Float64,
-    d0::Float64,
-    z0m::Float64,
-    z0h::Float64,
-)
+        wind_speed::Float64,
+        z_measured::Float64,
+        skin_layer_height::Float64,
+        d0::Float64,
+        z0m::Float64,
+        z0h::Float64,
+    )
     # set reference height (~2.0 m above surface skin layer height).
     zm_ref = round(skin_layer_height + 2.0)
 
@@ -149,24 +149,24 @@ function compute_aerodynamic_resistance(
     # vapour exchange on the surface induced by air buoyancy and layer instability effects.
     min_wind_speed = 0.5
     wind_speed_ref = max(
-        wind_speed * (log((zm_ref-d0) / z0m) / log((z_measured-d0) / z0m)),
+        wind_speed * (log((zm_ref - d0) / z0m) / log((z_measured - d0) / z0m)),
         min_wind_speed,
     )
 
     # compute aerodynamic resistance based on Thom's equation.
-    ra = (log((zm_ref-d0)/z0m)*log((zm_ref-d0)/z0h)) / (VON_KARMAN^2 * wind_speed_ref)
+    ra = (log((zm_ref - d0) / z0m) * log((zm_ref - d0) / z0h)) / (VON_KARMAN^2 * wind_speed_ref)
 
     return ra
 end
 
 "Compute land surface temperature"
 function compute_land_surface_temperature(
-    sensible_heat_flux::Float64,
-    aerodynamic_resistance::Float64,
-    air_temperature::Float64;
-    density_air::Float64 = 1.225,
-    specific_heat_capacity_air::Float64 = 1005.0,
-)
+        sensible_heat_flux::Float64,
+        aerodynamic_resistance::Float64,
+        air_temperature::Float64;
+        density_air::Float64 = 1.225,
+        specific_heat_capacity_air::Float64 = 1005.0,
+    )
     land_surface_temperature =
         (sensible_heat_flux * aerodynamic_resistance) /
         (density_air * specific_heat_capacity_air) + air_temperature
