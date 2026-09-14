@@ -160,7 +160,6 @@ function update_land_hydrology_model!(
             atmospheric_forcing,
             parameters,
             wind_measurement_height,
-            dt,
         )
     end
     return nothing

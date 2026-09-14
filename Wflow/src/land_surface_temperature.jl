@@ -39,7 +39,6 @@ function update_land_surface_temperature!(
         atmospheric_forcing::AtmosphericForcing,
         parameters::LandParameters,
         wind_measurement_height::Float64,
-        dt::Float64,
     )
     (; d0, z0m, z0h, skin_layer_height) = parameters
     n = length(land_surface_temperature_model.variables.land_surface_temperature)
@@ -91,7 +90,6 @@ function update_land_surface_temperature!(
         atmospheric_forcing::AtmosphericForcing,
         parameters::LandParameters,
         wind_measurement_height::Float64,
-        dt::Float64,
     )
     return nothing
 end
