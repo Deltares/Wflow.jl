@@ -161,8 +161,8 @@ function compute_land_surface_temperature(
         sensible_heat_flux::Float64,
         aerodynamic_resistance::Float64,
         air_temperature::Float64;
-        density_air::Float64 = 1.225,
-        specific_heat_capacity_air::Float64 = 1005.0,
+        density_air::Float64 = AIR_DENSITY,
+        specific_heat_capacity_air::Float64 = AIR_SPECIFIC_HEAT_CAPACITY,
     )
     land_surface_temperature =
         (sensible_heat_flux * aerodynamic_resistance) /
