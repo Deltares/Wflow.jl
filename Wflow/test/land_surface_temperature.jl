@@ -5,7 +5,6 @@
     skin_layer_height = 0.12
     actual_evapotranspiration = 3.333333333333333e-8
     net_radiation = 300.0
-    dt = 3600.0
 
     d0 = 2.0 / 3.0 * skin_layer_height
     z0m = 0.123 * skin_layer_height

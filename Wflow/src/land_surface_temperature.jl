@@ -140,8 +140,8 @@ function compute_aerodynamic_resistance(
         z0m::Float64,
         z0h::Float64,
     )
-    # set reference height (~2.0 m above surface skin layer height).
-    zm_ref = round(skin_layer_height + 2.0)
+    # set reference height (minimal to FAO standard height of 2.0 m).
+    zm_ref = max(skin_layer_height, 2.0)
 
     # wind speed at reference height and constrained to be greater than 0.5 m/s to consider
     # vapour exchange on the surface induced by air buoyancy and layer instability effects.
