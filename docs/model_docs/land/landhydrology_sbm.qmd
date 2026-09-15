@@ -1296,9 +1296,9 @@ land_surface_wind__speed_reference_height = 10.0
 This reference height should be greater than the sum of $d$ and $z_\mathrm{0m}$ to convert
 the wind speed (assuming a logarithmic profile) properly to the reference height $z$ ($z =
 z_\mathrm{m} = z_\mathrm{h}$) used for the computation of $r_\mathrm{air}$. The reference
-height $z$ is set to 2.0 m above the input parameter
-`atmosphere_bottom_air__above_ground_height` (land surface "skin" layer height above the
-ground).
+height $z$ is set equal the input parameter `atmosphere_bottom_air__above_ground_height`
+(land surface "skin" layer height above the ground), with a minimum of 2 m, consistent with
+the FAO (Allen et al., 1998) standardized height for wind speed, temperature and humidity.
 
 The list of input parameters for LST that can be provided through the TOML file can be found
 [here](../parameters_landhydrology_sbm.qmd#land-surface-temperature). The required wind
