@@ -1262,7 +1262,7 @@ $$
     T_\mathrm{s} = \frac{H r_\mathrm{air}}{\rho_\mathrm{air} c_\mathrm{p}} + T_\mathrm{air}
 $$
 
-where $\SIb{r_\mathrm{air}}{s\ m^{-1}}$ is aerodynamic conductance, $\SIb{c_\mathrm{p}}{J\
+where $\SIb{r_\mathrm{air}}{s\ m^{-1}}$ is aerodynamic resistance, $\SIb{c_\mathrm{p}}{J\
 kg^{-1}\ K^{-1}}$ is the specific heat of air ($\SI{1005.0}{J\ kg^{-1}\ K^{-1}}$) and
 $\SIb{\rho_\mathrm{air}}{kg\ m^{-3}}$ is the density of air ($\SI{1.225}{kg\ m^{-3}}$).
 
