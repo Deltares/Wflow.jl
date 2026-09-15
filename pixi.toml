@@ -17,7 +17,7 @@ platforms = ["win-64", "linux-64", "osx-arm64"]
 install-julia = "juliaup add 1.13.0 && juliaup override set 1.13.0"
 # Prek
 _prek-install = "prek install --overwrite"
-instantiate-formatting = { cmd = "julia --project=utils/formatting --eval 'using Pkg; Pkg.instantiate()'" }
+instantiate-formatting = { cmd = "julia --startup-file=no --project=utils/formatting --eval 'using Pkg; Pkg.instantiate()'" }
 install-prek = { depends-on = [
     "_prek-install",
     "instantiate-formatting",
@@ -25,32 +25,32 @@ install-prek = { depends-on = [
 check = "prek run --all-files"
 # First one can fix issues, second one is to check if all are fixed
 fix-check = "prek run --all-files || prek run --all-files"
-update-manifest-julia = "julia --project utils/update-manifest.jl"
+update-manifest-julia = "julia --startup-file=no --project utils/update-manifest.jl"
 install = { depends-on = ["install-prek"] }
 # Test data
 download-test-data = { cmd = "dvc pull", cwd = ".", env = { CRYPTOGRAPHY_OPENSSL_NO_LEGACY = "1" } }
 # Build
-build-wflow-cli = { cmd = "julia --project create_app.jl", cwd = "build/create_binaries", depends-on = [
+build-wflow-cli = { cmd = "julia --startup-file=no --project create_app.jl", cwd = "build/create_binaries", depends-on = [
 	{ "task" = "instantiate-julia", "args" = [
 		"build/create_binaries",
 	] },
 	"download-test-data",
 ] }
 # Test
-test-wflow-cli = { cmd = "julia --project --eval 'include(\"runtests.jl\")'", cwd = "build/wflow_cli/test", depends-on = [
+test-wflow-cli = { cmd = "julia --startup-file=no --project --eval 'include(\"runtests.jl\")'", cwd = "build/wflow_cli/test", depends-on = [
 	{ "task" = "instantiate-julia", "args" = [
 		"build/wflow_cli/test",
 	] },
 	"download-test-data",
 ] }
-test-wflow-cov = { cmd = "julia --project --eval 'using Pkg; Pkg.test(allow_reresolve=false, coverage=true, julia_args=[\"--check-bounds=yes\"])'", cwd = "Wflow", depends-on = [
+test-wflow-cov = { cmd = "julia --startup-file=no --project --eval 'using Pkg; Pkg.test(allow_reresolve=false, coverage=true, julia_args=[\"--check-bounds=yes\"])'", cwd = "Wflow", depends-on = [
 	{ "task" = "instantiate-julia", "args" = [
 		"Wflow",
 	] },
 	"download-test-data",
 ] }
 # Server
-test-wflow-server = { cmd = "julia --project=server --eval 'using Pkg; Pkg.test(\"WflowServer\", allow_reresolve=false, coverage=true)'", depends-on = [
+test-wflow-server = { cmd = "julia --startup-file=no --project=server --eval 'using Pkg; Pkg.test(\"WflowServer\", allow_reresolve=false, coverage=true)'", depends-on = [
 	{ "task" = "instantiate-julia", "args" = [
 		"server",
 	] },
@@ -61,15 +61,15 @@ quarto-check = { cmd = "quarto check all" }
 quarto-render = { cmd = "quarto render docs --to html --execute" }
 quarto-preview = { cmd = "quarto preview docs" }
 # Parameter metadata JSON generation
-parameter_metadata_json_gen = { cmd = "julia --project=utils/export_parameter_data utils/export_parameter_data/export_parameter_data.jl" }
+parameter_metadata_json_gen = { cmd = "julia --startup-file=no --project=utils/export_parameter_data utils/export_parameter_data/export_parameter_data.jl" }
 
 [tasks.instantiate-julia]
 args = [{ "arg" = "cwd", "default" = "." }]
-cmd = "julia --project={{cwd}} --eval='using Pkg; Pkg.Registry.update(); Pkg.instantiate()'"
+cmd = "julia --startup-file=no --project={{cwd}} --eval='using Pkg; Pkg.Registry.update(); Pkg.instantiate()'"
 
 [tasks.generate-sbom]
 depends-on = ["instantiate-julia"]
-cmd = "julia --project utils/sbom-generation.jl"
+cmd = "julia --startup-file=no --project utils/sbom-generation.jl"
 inputs = ["Manifest.toml"]
 outputs = ["Wflow.spdx.json"]
 
