@@ -50,7 +50,7 @@ function update_land_surface_temperature!(
 
         land_surface_temperature_model.variables.latent_heat_flux[i] =
             compute_latent_heat_flux(
-            atmospheric_forcing.temperature[i],
+            land_surface_temperature_model.variables.latent_heat_of_vaporization[i],
             soil_model.variables.actual_evapotranspiration[i],
         )
 
@@ -102,10 +102,9 @@ end
 
 "Compute latent heat flux"
 function compute_latent_heat_flux(
-        air_temperature::Float64,
+        latent_heat_of_vaporization::Float64,
         actual_evapotranspiration::Float64,
     )
-    latent_heat_of_vaporization = compute_latent_heat_of_vaporization(air_temperature)
     latent_heat_flux =
         latent_heat_of_vaporization * WATER_DENSITY * actual_evapotranspiration
     return latent_heat_flux
