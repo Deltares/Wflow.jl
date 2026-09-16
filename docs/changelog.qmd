@@ -10,6 +10,7 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## Unreleased
 
 ### Fixed
+- BMI functions `get_var_units` and `get_var_location` for layered soil variables.
 
 ## v1.0.4 - 2026-07-24
 

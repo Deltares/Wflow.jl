@@ -38,11 +38,14 @@
         @test BMI.get_var_type(model, "reservoir_water__incoming_volume_flow_rate") ==
               "Float64"
         @test BMI.get_var_units(model, "river_water__volume_flow_rate") == "m3 s-1"
+        @test BMI.get_var_units(model, "soil_layer_1_water_unsaturated_zone__depth") == "mm"
         @test BMI.get_var_itemsize(model, "subsurface_water__volume_flow_rate") ==
               sizeof(Float64)
         @test BMI.get_var_nbytes(model, "river_water__instantaneous_volume_flow_rate") ==
               length(model.routing.river_flow.variables.q) * sizeof(Float64)
         @test BMI.get_var_location(model, "river_water__volume_flow_rate") == "node"
+        @test BMI.get_var_location(model, "soil_layer_1_water_unsaturated_zone__depth") ==
+              "node"
     end
 
     BMI.update(model)
