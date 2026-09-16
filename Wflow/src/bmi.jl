@@ -104,10 +104,7 @@ function BMI.get_input_var_names(model::Model)
         var_names = config.API.variables
         idx = []
         for (i, var) in enumerate(var_names)
-            if startswith(var, "soil_layer_") && occursin(r"soil_layer_\d+_", var)
-                # map to standard name for layered soil model variable (not available per layer)
-                var, _ = soil_layer_standard_name(var)
-            end
+            var = get_standard_name(var)
             if !haskey(standard_name_map(land), var)
                 push!(idx, i)
                 @warn(
@@ -152,6 +149,7 @@ end
 
 function BMI.get_var_units(model::Model, name::String)
     (; land) = model
+    name = get_standard_name(name)
     nt = standard_name_map(land)[name]
     return nt.unit
 end
@@ -167,6 +165,7 @@ end
 
 function BMI.get_var_location(model::Model, name::String)
     (; land) = model
+    name = get_standard_name(name)
     lens = standard_name_map(land)[name].lens
     element_type = grid_element_type(model, lens)
     return element_type
@@ -424,4 +423,12 @@ function grid_element_type(model::Model, lens::ComposedFunction)
         grid_element_type(model, var)
     end
     return element_type
+end
+
+function get_standard_name(name::String)
+    if startswith(name, "soil_layer_") && occursin(r"soil_layer_\d+_", name)
+        # map to standard name for layered soil model variable (not available per layer)
+        name, _ = soil_layer_standard_name(name)
+    end
+    return name
 end
