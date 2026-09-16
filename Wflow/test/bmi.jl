@@ -44,7 +44,8 @@
         @test BMI.get_var_nbytes(model, "river_water__instantaneous_volume_flow_rate") ==
               length(model.routing.river_flow.variables.q) * sizeof(Float64)
         @test BMI.get_var_location(model, "river_water__volume_flow_rate") == "node"
-        @test BMI.get_var_location(model, "soil_layer_1_water_unsaturated_zone__depth") == "node"
+        @test BMI.get_var_location(model, "soil_layer_1_water_unsaturated_zone__depth") ==
+              "node"
     end
 
     BMI.update(model)
