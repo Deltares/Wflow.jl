@@ -1,2 +1,2 @@
 exclude = ["/.pixi/", "/build/create_binaries/wflow_bundle/"]
-style = "runic"
+preset = "default"
