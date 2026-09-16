@@ -73,11 +73,7 @@ function SoilErosionParameters(
         sand_fraction +
         small_aggregates_fraction +
         large_aggregates_fraction
-    if !all(
-            hydraulic_conductivity_scale_parameter ->
-            isapprox(hydraulic_conductivity_scale_parameter, 1.0; rtol = 1.0e-3),
-            soil_fractions,
-        )
+    if !all(f -> isapprox(f, 1.0; rtol = 1.0e-3), soil_fractions)
         error("Particle fractions in the soil must sum to 1.")
     end
     soil_parameters = SoilErosionParameters(;

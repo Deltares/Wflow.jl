@@ -1229,11 +1229,10 @@ function update_ustorelayerdepth!(soil, zi_prev, water_table_depth, i)
             if isnan(unsaturated_layer_thickness[k])
                 unsaturated_layer_depth = setindex(unsaturated_layer_depth, 0.0, k)
             else
-                hydraulic_conductivity_scale_parameter =
-                    unsaturated_layer_thickness[k] / ustorelayerthickness_prev[k]
+                f = unsaturated_layer_thickness[k] / ustorelayerthickness_prev[k]
                 unsaturated_layer_depth = setindex(
                     unsaturated_layer_depth,
-                    hydraulic_conductivity_scale_parameter * unsaturated_layer_depth[k],
+                    f * unsaturated_layer_depth[k],
                     k,
                 )
             end

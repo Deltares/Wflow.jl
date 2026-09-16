@@ -61,14 +61,13 @@ function kw_ssf_newton_raphson(q, constant_term, celerity, dt, dx)
     celerity_inv = inv(celerity)
     df = dt_dx + celerity_inv
     while true
-        hydraulic_conductivity_scale_parameter =
-            dt_dx * q + celerity_inv * q - constant_term
-        q -= (hydraulic_conductivity_scale_parameter / df)
+        f = dt_dx * q + celerity_inv * q - constant_term
+        q -= (f / df)
         if isnan(q)
             q = 0.0
         end
         q = max(q, KIN_WAVE_MIN_FLOW)
-        if (abs(hydraulic_conductivity_scale_parameter) <= epsilon) || (count >= max_iters)
+        if (abs(f) <= epsilon) || (count >= max_iters)
             break
         end
         count += 1
