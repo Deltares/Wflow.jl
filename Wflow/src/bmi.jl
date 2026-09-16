@@ -425,7 +425,7 @@ function grid_element_type(model::Model, lens::ComposedFunction)
     return element_type
 end
 
-function get_standard_name(name::String)
+function get_standard_name(name::String)::String
     if startswith(name, "soil_layer_") && occursin(r"soil_layer_\d+_", name)
         # map to standard name for layered soil model variable (not available per layer)
         name, _ = soil_layer_standard_name(name)
