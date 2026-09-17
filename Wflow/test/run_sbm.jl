@@ -44,6 +44,8 @@
 
     @testset "NetCDF scalar output" begin
         ds = model.writer.scalar_writer.output_dataset
+        dt_val = model.config.time.timestepsecs
+        recharge_subbasin = mean(model.land.soil.variables.recharge)
         @test ds["time"][1] == DateTime("2000-01-02T00:00:00")
         @test ds["Q"][:][1:20] ≈ [
             0.6467097,
@@ -70,8 +72,9 @@
         @test ds["river_gauge__count"].attrib["cf_role"] == "timeseries_id"
         @test ds["temp_index"][:] ≈ [2.39]
         @test ds["temp_coord"][:] ≈ [2.39]
+        @test ds["recharge"][1] ≈ Wflow.from_SI(recharge_subbasin, Wflow.MM_PER_DT; dt_val)
         @test keys(ds.dim) ==
-            ["time", "layer", "river_gauge__count", "temp_bycoord", "temp_byindex"]
+            ["time", "layer", "river_gauge__count", "temp_bycoord", "temp_byindex", "subbasin_location__count"]
     end
 
     @testset "NetCDF grid output" begin
