@@ -32,6 +32,14 @@ of the standard name:
 subsurface_water__instantaneous_volume_flow_rate = "ssf"
 ```
 
+### Fixed
+- Forcing that is spread over multiple netCDF files is now read one file at a time (#1037).
+  Previously all files were kept open for the entire simulation, and since netCDF gives every
+  variable of every open file its own chunk cache, this used up to `n_files * n_variables *
+  64 MiB` of memory, which made runs with many forcing files run out of memory. Reading is
+  also faster, since presenting the files as a single aggregated dataset added a large
+  overhead to every read.
+
 ### Changed
 - All internal computations now use standardized SI units (m, s, kg, J, K) consistently
   throughout the codebase. Units are converted to/from the old units at I/O

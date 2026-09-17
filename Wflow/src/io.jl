@@ -12,6 +12,11 @@ function RollingDataset(paths::Vector{String})
             dataset["time"][:]
         end
     end
+    # glob sorts paths lexicographically, which is not necessarily chronologically
+    order = sortperm(times_per_file; by = first)
+    paths = paths[order]
+    times_per_file = times_per_file[order]
+
     file_end_indices = cumsum(length.(times_per_file))
     times = reduce(vcat, times_per_file)
     dataset = NCDataset(first(paths))
@@ -552,20 +557,17 @@ function NCReader(config)
     end
     dataset, nctimes = RollingDataset(dynamic_paths)
 
-    if haskey(dataset.dataset["time"].attrib, "_FillValue")
+    # a `_FillValue` on the time variable of any of the files widens the element type
+    if Missing <: eltype(nctimes)
         @warn "Time dimension contains `_FillValue` attribute, this is not in line with CF conventions."
         times_dropped = collect(skipmissing(nctimes))
-        # check if length has changed (missing in time dimension are not allowed), and throw
-        # an error if the lengths are different
+        # missing values in the time dimension are not allowed
         if length(times_dropped) != length(nctimes)
             error("Time dimension in `$abspath_forcing` contains missing values")
-        else
-            nctimes = times_dropped
-            nctimes_type = eltype(nctimes)
         end
-    else
-        nctimes_type = eltype(nctimes)
+        nctimes = times_dropped
     end
+    nctimes_type = eltype(nctimes)
 
     land_type = config.model.type == ModelType.sediment ? SoilLossModel : LandHydrologySBM
     for (par, var) in config.input.forcing
@@ -1418,6 +1420,8 @@ function read_x_axis(ds::CFDataset)::Vector{Float64}
     return error("no x axis found in $(path(ds))")
 end
 
+read_x_axis(ds::RollingDataset)::Vector{Float64} = read_x_axis(ds.dataset)
+
 """
     read_y_axis(ds::CFDataset)
 
@@ -1433,3 +1437,5 @@ function read_y_axis(ds::CFDataset)::Vector{Float64}
     end
     return error("no y axis found in $(path(ds))")
 end
+
+read_y_axis(ds::RollingDataset)::Vector{Float64} = read_y_axis(ds.dataset)
