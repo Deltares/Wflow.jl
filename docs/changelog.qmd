@@ -79,6 +79,7 @@ subsurface_water__instantaneous_volume_flow_rate = "ssf"
   grid method.
 - Added an optional `wflow_version` field to the config .toml file. This setting is used by
   the wflow model builder `hydromt_wflow` for incremental Wflow.jl version upgrading.
+- Support land surface temperature computations.
 
 ## v1.0.4 - 2026-07-24
 

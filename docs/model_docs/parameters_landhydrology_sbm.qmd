@@ -162,3 +162,15 @@ generate_table(Wflow.LandHydrologySBM, :demand_allocation_input; relative_widths
 # | code-fold: true
 generate_table(Wflow.LandHydrologySBM, :demand_allocation_output; relative_widths = [3, 3, 1, 1, 2])
 ```
+
+## Land surface temperature
+### Static or cyclic/forcing input
+```{julia}
+# | code-fold: true
+generate_table(Wflow.Domain, :lst_input; relative_widths = [6, 4, 2, 2, 2, 2])
+```
+### Output
+```{julia}
+# | code-fold: true
+generate_table(Wflow.LandHydrologySBM, :lst_output; relative_widths = [3, 3, 1, 1, 2])
+```
