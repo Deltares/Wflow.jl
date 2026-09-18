@@ -529,7 +529,7 @@ window.Quarto = {
 <section id="fixed" class="level3">
 <h3 class="anchored" data-anchor-id="fixed">Fixed</h3>
 <ul>
-<li>Forcing that is spread over multiple netCDF files is now read one file at a time (#1037). Previously all files were kept open for the entire simulation, and since netCDF gives every variable of every open file its own chunk cache, this used up to <code>n_files * n_variables *   64 MiB</code> of memory, which made runs with many forcing files run out of memory. Reading is also faster, since presenting the files as a single aggregated dataset added a large overhead to every read.</li>
+<li>Reduce memory use and improve performance of reading split NetCDF forcing files (<a href="https://github.com/Deltares/Wflow.jl/pull/1052">#1037</a>).</li>
 </ul>
 </section>
 <section id="changed" class="level3">
