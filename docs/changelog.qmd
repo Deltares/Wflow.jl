@@ -24,6 +24,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Variables `excesswatersoil` and `excesswaterpath` were mapped to standard names
   `compacted_soil_surface_water__excess_volume_flux` and
   `non_compacted_soil_surface_water__excess_volume_flux` respectively (interchanged).
+- Reduce memory use and improve performance of reading forcing split over multiple netCDF
+  files, by keeping only one forcing file open at a time (#1037).
 
 ## v1.0.4 - 2026-07-24
 

@@ -53,7 +53,7 @@ end
     # mock a NCReader object
     ncpath = Wflow.input_path(config, config.input.path_forcing)
     ds = NCDataset(ncpath)
-    reader = (; dataset = ds)
+    reader = (; dataset_times = ds["time"][:])
 
     clock = Wflow.Clock(config, reader)
 
@@ -175,6 +175,53 @@ end
     clock = Wflow.Clock(starttime, 0, Second(dt))
     Wflow.advance!(clock)
     @test clock.time == DateTimeNoLeap(2000, 3, 1)
+end
+
+@testitem "RollingDataset" begin
+    using NCDatasets: NCDataset
+
+    tomlpath = joinpath(@__DIR__, "sbm_config.toml")
+    config = Wflow.Config(tomlpath)
+    forcing_path = Wflow.input_path(config, config.input.path_forcing)
+
+    # write the first timesteps of the forcing both as a single file and split over three
+    # files, naming the parts in reverse, such that sorting them by name is chronologically
+    # wrong
+    chunks = [1:3, 4:6, 7:9]
+    n_time = last(last(chunks))
+    tmpdir = mktempdir()
+    single_path = joinpath(tmpdir, "forcing-single.nc")
+    part_paths = [joinpath(tmpdir, "forcing-part$i.nc") for i in reverse(eachindex(chunks))]
+    NCDataset(forcing_path) do ds
+        write(single_path, view(ds; time = 1:n_time))
+        for (chunk, part_path) in zip(chunks, part_paths)
+            write(part_path, view(ds; time = chunk))
+        end
+    end
+
+    single = NCDataset(single_path)
+    rolling, times = Wflow.RollingDataset(sort(part_paths))
+
+    @test rolling.paths == part_paths
+    @test rolling.file_end_indices == [3, 6, 9]
+    @test times == single["time"][:]
+    @test Wflow.read_x_axis(rolling) == Wflow.read_x_axis(single)
+    @test Wflow.read_y_axis(rolling) == Wflow.read_y_axis(single)
+
+    var = config.input.forcing["atmosphere_water__precipitation_volume_flux"]
+
+    # reading forwards and then backwards crosses every file boundary in both directions
+    for i in [1:n_time; n_time:-1:1]
+        @test isequal(Wflow.get_at(rolling, var, i), Wflow.get_at(single, var, i))
+    end
+    @test isequal(
+        Wflow.get_at(rolling, var, times, first(times)),
+        Wflow.get_at(single, var, 1),
+    )
+    @test_throws BoundsError Wflow.dataset_index!(rolling, n_time + 1)
+
+    close(rolling)
+    close(single)
 end
 
 @testitem "CFTime" begin
