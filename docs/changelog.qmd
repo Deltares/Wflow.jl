@@ -32,6 +32,9 @@ of the standard name:
 subsurface_water__instantaneous_volume_flow_rate = "ssf"
 ```
 
+### Fixed
+- Reduce memory use and improve performance of reading split NetCDF forcing files ([#1037](https://github.com/Deltares/Wflow.jl/pull/1052)).
+
 ### Changed
 - All internal computations now use standardized SI units (m, s, kg, J, K) consistently
   throughout the codebase. Units are converted to/from the old units at I/O

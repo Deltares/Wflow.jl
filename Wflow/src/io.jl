@@ -1,3 +1,46 @@
+"NetCDF forcing files with only the currently selected file open."
+mutable struct RollingDataset{D <: NCDataset}
+    paths::Vector{String}
+    file_end_indices::Vector{Int}
+    dataset::D
+    file_index::Int
+end
+
+function RollingDataset(paths::Vector{String})
+    times_per_file = map(paths) do path
+        NCDataset(path) do dataset
+            dataset["time"][:]
+        end
+    end
+    # glob sorts paths lexicographically, which is not necessarily chronologically
+    order = sortperm(times_per_file; by = first)
+    paths = paths[order]
+    times_per_file = times_per_file[order]
+
+    file_end_indices = cumsum(length.(times_per_file))
+    times = reduce(vcat, times_per_file)
+    dataset = NCDataset(first(paths))
+    return RollingDataset(paths, file_end_indices, dataset, 1), times
+end
+
+"Select the forcing dataset and local index for a global time index."
+function dataset_index!(dataset::RollingDataset{D}, index::Int)::Tuple{D, Int} where {D}
+    file_index = searchsortedfirst(dataset.file_end_indices, index)
+    checkbounds(dataset.paths, file_index)
+    if file_index != dataset.file_index
+        close(dataset.dataset)
+        dataset.file_index = 0
+        dataset.dataset = NCDataset(dataset.paths[file_index])
+        dataset.file_index = file_index
+    end
+    previous_end =
+        file_index == firstindex(dataset.file_end_indices) ? 0 :
+        dataset.file_end_indices[file_index - 1]
+    return dataset.dataset, index - previous_end
+end
+
+Base.close(dataset::RollingDataset) = close(dataset.dataset)
+
 """Turn "a.aa.aaa" into (:a, :aa, :aaa)"""
 symbols(s::AbstractString) = Tuple(Symbol(x) for x in split(s, '.'))
 
@@ -7,7 +50,7 @@ param(obj, fields::AbstractString) = param(obj, symbols(fields))
 
 "Extract a netCDF variable at a given time"
 function get_at(
-        ds::CFDataset,
+        ds::RollingDataset,
         var::InputEntry,
         metadata,
         times::AbstractVector{<:TimeType},
@@ -21,7 +64,12 @@ function get_at(
     return get_at(ds, var, metadata, i, dt)
 end
 
-function get_at(ds::CFDataset, var::InputEntry, metadata, i::Int, dt::Float64)
+function get_at(ds::RollingDataset, var::InputEntry, metadata, i::Int, dt::Float64)
+    dataset, local_index = dataset_index!(ds, i)
+    return get_at(dataset, var, metadata, local_index, dt)
+end
+
+function get_at(ds::NCDataset, var::InputEntry, metadata, i::Int, dt::Float64)
     data = read_standardized(ds, variable_name(var), (x = :, y = :, time = i))
     apply_affine_transform!(data, var)
     data_transformed = apply_unit_and_type_transform!(data, metadata; dt_val = dt)
@@ -430,7 +478,7 @@ function add_time(ds, time)
 end
 
 struct NCReader{T}
-    dataset::CFDataset
+    dataset::RollingDataset
     dataset_times::Vector{T}
     cyclic_dataset::Union{NCDataset, Nothing}
     cyclic_times::Dict{String, Vector{Tuple{Int, Int}}}
@@ -507,24 +555,19 @@ function NCReader(config)
     if isempty(dynamic_paths)
         error("No files found with name '$glob_path' in '$glob_dir'")
     end
-    dataset = NCDataset(dynamic_paths; aggdim = "time", deferopen = false)
+    dataset, nctimes = RollingDataset(dynamic_paths)
 
-    if haskey(dataset["time"].attrib, "_FillValue")
+    # a `_FillValue` on the time variable of any of the files widens the element type
+    if Missing <: eltype(nctimes)
         @warn "Time dimension contains `_FillValue` attribute, this is not in line with CF conventions."
-        nctimes = dataset["time"][:]
         times_dropped = collect(skipmissing(nctimes))
-        # check if length has changed (missing in time dimension are not allowed), and throw
-        # an error if the lengths are different
+        # missing values in the time dimension are not allowed
         if length(times_dropped) != length(nctimes)
             error("Time dimension in `$abspath_forcing` contains missing values")
-        else
-            nctimes = times_dropped
-            nctimes_type = eltype(nctimes)
         end
-    else
-        nctimes = dataset["time"][:]
-        nctimes_type = eltype(nctimes)
+        nctimes = times_dropped
     end
+    nctimes_type = eltype(nctimes)
 
     land_type = config.model.type == ModelType.sediment ? SoilLossModel : LandHydrologySBM
     for (par, var) in config.input.forcing
@@ -1159,7 +1202,7 @@ is_increasing(v) = last(v) > first(v)
 
 """
     nc_dim_name(dims::Vector{Symbol}, name::Symbol)
-    nc_dim_name(ds::CFDataset, name::Symbol)
+    nc_dim_name(ds::NCDataset, name::Symbol)
 
 Given a netCDF dataset or list of dimensions, and an internal dimension name, return the
 corresponding netCDF dimension name. Certain common alternatives are supported, e.g. :lon or
@@ -1184,16 +1227,16 @@ function nc_dim_name(dims::Vector{Symbol}, name::Symbol)
     end
 end
 
-nc_dim_name(ds::CFDataset, name::Symbol) = nc_dim_name(Symbol.(keys(ds.dim)), name)
+nc_dim_name(ds::NCDataset, name::Symbol) = nc_dim_name(Symbol.(keys(ds.dim)), name)
 
 """
-    nc_dim(ds::CFDataset, name::Symbol)
+    nc_dim(ds::NCDataset, name::Symbol)
 
 Return the dimension coordinate, based on the internal name (:x, :y, :`extra_dim.name`,
 :time), `extra_dim` depends on the model type, which will map to the correct netCDF name
 using `nc_dim_name`.
 """
-nc_dim(ds::CFDataset, name) = ds[nc_dim_name(ds, name)]
+nc_dim(ds::NCDataset, name) = ds[nc_dim_name(ds, name)]
 
 """
     internal_dim_name(name::Symbol)
@@ -1215,7 +1258,7 @@ function internal_dim_name(name::Symbol)
 end
 
 """
-    read_dims(A::CFVariable_MF, dim_sel)
+    read_dims(A::CFVariable, dim_sel)
 
 Return the data of a netCDF data variable as an Array. Only dimensions in `dim_sel`, a
 NamedTuple like (x=:, y=:, time=1). Other dimensions that may be present need to be size 1,
@@ -1223,7 +1266,7 @@ otherwise an error is thrown.
 
 `dim_sel` keys should be the internal dimension names; :x, :y, :time, :`extra_dim.name`.
 """
-function read_dims(A::CFVariable_MF, dim_sel::NamedTuple)
+function read_dims(A::CFVariable, dim_sel::NamedTuple)
     dimsizes = dimsize(A)
     indexer = []
     data_dim_order = Symbol[]
@@ -1268,7 +1311,7 @@ For the layer dimension, we allow coordinate arrays to be missing, in which case
 consider it increasing, going from the top layer (1) to deeper layers. This is to keep
 accepting data that we have accepted before.
 """
-function dim_directions(ds::CFDataset, dim_names)
+function dim_directions(ds::NCDataset, dim_names)
     pairs = Pair{Symbol, Bool}[]
     for d in dim_names
         if d == :layer && !(haskey(ds, "layer"))
@@ -1347,13 +1390,13 @@ function reverse_data!(data, dims_increasing)
 end
 
 """
-    read_standardized(ds::CFDataset, varname::AbstractString, dim_names)
+    read_standardized(ds::NCDataset, varname::AbstractString, dim_names)
 
 Read the dimensions listed in dim_names from a variable with name `varname` from a netCDF
 dataset `ds`. `dim_sel` should be a NamedTuple like (x=:, y=:, time=1), which will return
 a 2 dimensional array with x and y axes, representing the first index in the time dimension.
 """
-function read_standardized(ds::CFDataset, varname::AbstractString, dim_sel::NamedTuple)
+function read_standardized(ds::NCDataset, varname::AbstractString, dim_sel::NamedTuple)
     data, data_dim_order = read_dims(ds[varname], dim_sel)
     data, new_dim_order = permute_data(data, data_dim_order)
     dims_increasing = dim_directions(ds, new_dim_order)
@@ -1362,12 +1405,12 @@ function read_standardized(ds::CFDataset, varname::AbstractString, dim_sel::Name
 end
 
 """
-    read_x_axis(ds::CFDataset)
+    read_x_axis(ds::NCDataset)
 
 Return the x coordinate Vector{Float64}, whether it is called x, lon or longitude.
 Also sorts the vector to be increasing, to match `read_standardized`.
 """
-function read_x_axis(ds::CFDataset)::Vector{Float64}
+function read_x_axis(ds::NCDataset)::Vector{Float64}
     candidates = ("x", "lon", "longitude")
     for candidate in candidates
         if haskey(ds.dim, candidate)
@@ -1377,13 +1420,15 @@ function read_x_axis(ds::CFDataset)::Vector{Float64}
     return error("no x axis found in $(path(ds))")
 end
 
+read_x_axis(ds::RollingDataset)::Vector{Float64} = read_x_axis(ds.dataset)
+
 """
-    read_y_axis(ds::CFDataset)
+    read_y_axis(ds::NCDataset)
 
 Return the y coordinate Vector{Float64}, whether it is called y, lat or latitude.
 Also sorts the vector to be increasing, to match `read_standardized`.
 """
-function read_y_axis(ds::CFDataset)::Vector{Float64}
+function read_y_axis(ds::NCDataset)::Vector{Float64}
     candidates = ("y", "lat", "latitude")
     for candidate in candidates
         if haskey(ds.dim, candidate)
@@ -1392,3 +1437,5 @@ function read_y_axis(ds::CFDataset)::Vector{Float64}
     end
     return error("no y axis found in $(path(ds))")
 end
+
+read_y_axis(ds::RollingDataset)::Vector{Float64} = read_y_axis(ds.dataset)
