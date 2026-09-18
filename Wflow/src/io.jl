@@ -24,7 +24,7 @@ function RollingDataset(paths::Vector{String})
 end
 
 "Select the forcing dataset and local index for a global time index."
-function dataset_index!(dataset::RollingDataset, index::Int)
+function dataset_index!(dataset::RollingDataset{D}, index::Int)::Tuple{D, Int} where {D}
     file_index = searchsortedfirst(dataset.file_end_indices, index)
     checkbounds(dataset.paths, file_index)
     if file_index != dataset.file_index
