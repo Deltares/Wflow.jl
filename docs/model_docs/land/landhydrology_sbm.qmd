@@ -49,14 +49,14 @@ neglected.
 
 Table: Formulation of the components of interception loss according to Gash:
 
-| Components  | Interception loss |
-| -------- | ---- |
-| For $m$ small storms ($P_{g}<{P'}_{g}$)    | $(1-p-p_{t})\sum_{j=1}^{m}P_{g,j}$ |
-| Wetting up the canopy in $n$ large storms ($P_{g}\geq{P'}_{g}$)     | $n(1-p-p_{t}){P'}_{g}-nS$ |
-| Evaporation from saturated canopy during rainfall | $\overline{E}/\overline{R}\sum_{j=1}^{n}(P_{g,j}-{P'}_{g})$|
-| Evaporation after rainfall ceases for $n$ large storms | $nS$ |
-| Evaporation from trunks in $q$ storms that fill the trunk storage | $qS_{t}$ |
-| Evaporation from  trunks in $m+n-q$ storms that do not fill the trunk storage | $p_{t}\sum_{j=1}^{m+n-q}P_{g,j}$ |
+| Components                                                                    | Interception loss                                           |
+| ----------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| For $m$ small storms ($P_{g}<{P'}_{g}$)                                       | $(1-p-p_{t})\sum_{j=1}^{m}P_{g,j}$                          |
+| Wetting up the canopy in $n$ large storms ($P_{g}\geq{P'}_{g}$)               | $n(1-p-p_{t}){P'}_{g}-nS$                                   |
+| Evaporation from saturated canopy during rainfall                             | $\overline{E}/\overline{R}\sum_{j=1}^{n}(P_{g,j}-{P'}_{g})$ |
+| Evaporation after rainfall ceases for $n$ large storms                        | $nS$                                                        |
+| Evaporation from trunks in $q$ storms that fill the trunk storage             | $qS_{t}$                                                    |
+| Evaporation from  trunks in $m+n-q$ storms that do not fill the trunk storage | $p_{t}\sum_{j=1}^{m+n-q}P_{g,j}$                            |
 
 Saturated conditions are assumed to occur when the hourly rainfall exceeds a certain
 threshold. Often a threshold of $\SI{0.5}{mm\ h^{-1}}$ is used. $\overline{R}$ is calculated
@@ -966,6 +966,51 @@ let
   fig
 end
 ```
+
+#### Land surface water infiltration
+
+Infiltration from land surface water (overland flow) is supported when enabling the
+following setting in the TOML file:
+
+```toml
+[model]
+land_surface_water_reinfiltration__flag = true
+```
+
+This can be done with both `kinematic_wave` and `local_inertial` land routing settings.
+When enabling this process, part of the overland flow depth is added to the water available
+for infiltration. To keep some water in the overland flow (and avoid draining a cell
+completely in one time step), the potential infiltration from surface water
+`potential_infiltration_surfacewater` $\SIb{}{mm\ t^{-1}}$ is computed from the overland
+flow depth `waterdepth_land` $\SIb{}{mm}$ as:
+
+$$
+    \subtext{i}{pot, sw} = \subtext{h}{land} (1 - \subtext{f}{river}) \subtext{f}{reinfilt, max},
+$$
+
+where $\SIb{\subtext{f}{river}}{-}$ is the river fraction of the cell and
+$\SIb{\subtext{f}{reinfilt, max}}{-}$ is the maximum reinfiltration fraction (fixed at
+$0.95$). This amount is added to the water flux at the soil surface `water_flux_surface`
+$\SIb{}{mm\ t^{-1}}$, so that the total water available for infiltration
+`potential_infiltration` $\SIb{}{mm\ t^{-1}}$ becomes:
+
+$$
+    \subtext{i}{pot} = \subtext{q}{surface} + \subtext{i}{pot, sw}.
+$$
+
+The regular infiltration routine then computes the actual infiltration `actual_infiltration`
+$\SIb{}{mm\ t^{-1}}$ and infiltration excess `infiltexcess` $\SIb{}{mm\ t^{-1}}$. After
+infiltration, the share originating from overland flow is tracked with the ratio
+`infilt_ratio` = `actual_infiltration` / `potential_infiltration`, giving the infiltration
+from surface water:
+
+$$
+    \subtext{i}{sw} = \subtext{i}{pot, sw} \cdot \frac{\subtext{i}{act}}{\subtext{i}{pot}}.
+$$
+
+Finally, `actual_infiltration`, `infiltexcess` and `water_flux_surface` are corrected by
+$\subtext{i}{pot, sw}$ to avoid double counting of water already originating from surface
+water.
 
 ### Capillary rise
 
