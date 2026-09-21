@@ -55,7 +55,37 @@
 
     external_models = (; interception, runoff, demand, allocation)
 
-    Wflow.update_bc_soil_model!(soil_model, atmospheric_forcing, external_models, dt)
+    domain = Wflow.Domain(;
+        land = Wflow.DomainLand(;
+            parameters = Wflow.LandParameters(; river_fraction = [0.1]),
+        ),
+    )
+    config = Wflow.Config(;
+        model = Wflow.ModelSection(;
+            type = Wflow.ModelType.sbm,
+            land_surface_water_reinfiltration__flag = false,
+        ),
+        input = Wflow.InputSection(;
+            path_forcing = "",
+            path_static = "",
+            basin__local_drain_direction = "",
+            river_location__mask = "",
+            subbasin_location__count = "",
+            forcing = Wflow.InputEntries(),
+            static = Wflow.InputEntries(),
+            _location_maps = Wflow.PropertyDict(Dict{String, Any}()),
+        ),
+        path = "",
+    )
+
+    Wflow.update_bc_soil_model!(
+        soil_model,
+        atmospheric_forcing,
+        external_models,
+        domain,
+        config,
+        dt
+    )
 
     @test soil_model.boundary_conditions.potential_transpiration[1] ≈ 4.762378079461335e-9
     @test soil_model.boundary_conditions.potential_soilevaporation[1] ≈
@@ -297,9 +327,48 @@ end
     )
 
     subsurface_flow = (; variables = (; exfiltwater_average = [0.0]))
-    external_models = (; runoff, demand, subsurface_flow)
+    overland_flow = Wflow.OverlandFlowModel(;
+        routing_method = Wflow.KinematicWave(),
+        timestepping = Wflow.TimeStepping(),
+        boundary_conditions = Wflow.LandFlowBC(; n),
+        parameters = Wflow.ManningFlowParameters(;
+            slope = [0.01],
+            mannings_n = [0.072],
+            alpha_pow = 0.4,
+            alpha_term = [0.41038937516728013],
+            alpha = [2.544585458995107],
+        ),
+        variables = Wflow.OverLandFlowVariables(; n),
+    )
+    external_models = (; runoff, demand, subsurface_flow, overland_flow)
 
-    Wflow.update_soil_water_storage!(soil_model, external_models, dt)
+    domain = Wflow.Domain(;
+        land = Wflow.DomainLand(;
+            parameters = Wflow.LandParameters(;
+                surface_flow_width = [700.0],
+                river_fraction = [0.1],
+            ),
+        ),
+    )
+    config = Wflow.Config(;
+        model = Wflow.ModelSection(;
+            type = Wflow.ModelType.sbm,
+            land_surface_water_reinfiltration__flag = false,
+        ),
+        input = Wflow.InputSection(;
+            path_forcing = "",
+            path_static = "",
+            basin__local_drain_direction = "",
+            river_location__mask = "",
+            subbasin_location__count = "",
+            forcing = Wflow.InputEntries(),
+            static = Wflow.InputEntries(),
+            _location_maps = Wflow.PropertyDict(Dict{String, Any}()),
+        ),
+        path = "",
+    )
+
+    Wflow.update_soil_water_storage!(soil_model, external_models, domain, config, dt)
 
     @test soil_model.variables.runoff[1] ≈ 0.0
     @test soil_model.variables.unsaturated_store_capacity[1] ≈ 0.28033060970129986

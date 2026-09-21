@@ -809,3 +809,63 @@ get_inflow_reservoir(
 # Exclude subsurface flow from `GroundwaterFlowModel`.
 get_inflow_reservoir(::AbstractRiverFlowModel, ::GroundwaterFlowModel, inds::Vector{Int}) =
     zeros(length(inds))
+
+"""
+Update overland flow water level and discharge for KinWaveOverlandFlow model based on
+surface water infiltration.
+"""
+function update_overland_flow_and_depth!(
+        overland_flow_model::OverlandFlowModel{<:KinematicWave},
+        soil_model::SbmSoilModel,
+        domain::Domain,
+    )
+    (; infilt_surfacewater) = soil_model.variables
+    n = length(infilt_surfacewater)
+    return threaded_foreach(1:n; basesize = 1000) do i
+        update_overland_flow_and_depth!(
+            overland_flow_model,
+            infilt_surfacewater[i],
+            domain.land.parameters,
+            i,
+        )
+    end
+end
+
+"""
+Update overland flow water level and discharge in-place for a single cell based on
+surface water infiltration.
+"""
+function update_overland_flow_and_depth!(
+        overland_flow_model::OverlandFlowModel{<:KinematicWave},
+        infilt_surfacewater,
+        land_parameters,
+        i,
+    )
+    if infilt_surfacewater > 0.0
+        # Get original h_land in mm
+        original_h_land = overland_flow_model.variables.h[i] * 1000.0
+
+        # Correct values for river fraction to ensure correct water accounting
+        infiltrated_surfacewater =
+            (infilt_surfacewater / (1.0 - land_parameters.river_fraction[i]))
+        # Calculate new h_land in m
+        h = (original_h_land - infiltrated_surfacewater) / 1000.0
+
+        q = ifelse(
+            land_parameters.surface_flow_width[i] > 0.0 && h > 0.0,
+            # Compute cross-sectional area from h
+            pow(
+                (h * land_parameters.surface_flow_width[i]) /
+                    overland_flow_model.parameters.alpha[i],
+                1.0 / BETA_KINWAVE,
+            ),
+            0.0,
+        )
+        # set q to 0.0 if it is below the minimum flow threshold
+        q = ifelse(q < KIN_WAVE_MIN_FLOW, 0.0, q)
+
+        overland_flow_model.variables.q[i] = q
+        overland_flow_model.variables.h[i] = h
+    end
+    return nothing
+end
