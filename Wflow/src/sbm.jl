@@ -144,6 +144,8 @@ function update_land_hydrology_model!(
         soil,
         atmospheric_forcing,
         (; interception, runoff, demand, allocation),
+        domain,
+        config,
         dt,
     )
 
