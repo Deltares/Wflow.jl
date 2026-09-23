@@ -43,7 +43,7 @@ abstract type AbstractSoilModel end
     infiltration::Vector{Float64} = fill(MISSING_VALUE, n)
     # Infiltration excess water [m s⁻¹]
     infiltration_excess::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Infiltration from surface water [mm Δt⁻¹]
+    # Infiltration from surface water [m s⁻¹]
     infilt_surfacewater::Vector{Float64} = fill(0.0, n)
     # Water that cannot infiltrate due to saturated soil (saturation excess) [m s⁻¹]
     saturation_excess_water::Vector{Float64} = fill(MISSING_VALUE, n)
@@ -210,9 +210,9 @@ end
     potential_transpiration::Vector{Float64} = fill(MISSING_VALUE, n)
     # Potential soil evaporation rate [m s⁻¹]
     potential_soilevaporation::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Potential infiltration originating from surface water [mm Δt⁻¹]
+    # Potential infiltration originating from surface water [m s⁻¹]
     potential_infiltration_surfacewater::Vector{Float64} = fill(0.0, n)
-    # Total water available for infiltration [mm Δt⁻¹]
+    # Total water available for infiltration [m s⁻¹]
     potential_infiltration::Vector{Float64} = fill(0.0, n)
 end
 
@@ -691,6 +691,7 @@ function update_bc_soil_model!(
         domain,
         runoff,
         config.model.land_surface_water_reinfiltration__flag,
+        dt,
     )
     return nothing
 end
@@ -747,6 +748,7 @@ function update_available_for_infiltration!(
         domain::Domain,
         runoff::AbstractRunoffModel,
         do_surface_water_infiltration::Bool,
+        dt::Float64,
     )
     v = model.variables
     (; water_flux_surface, potential_infiltration_surfacewater, potential_infiltration) =
@@ -762,7 +764,7 @@ function update_available_for_infiltration!(
         potential_infiltration_surfacewater[i] = 0.0
         if do_surface_water_infiltration
             potential_infiltration_surfacewater[i] =
-                waterdepth_land[i] * (1.0 - river_fraction[i]) * max_reinfiltration_fraction
+                (waterdepth_land[i] / dt) * (1.0 - river_fraction[i]) * max_reinfiltration_fraction
             water_flux_surface[i] += potential_infiltration_surfacewater[i]
         end
         potential_infiltration[i] = water_flux_surface[i]
