@@ -507,78 +507,78 @@ end
     potential_infiltration_surfacewater = 2.0
     water_flux_surface_input = 10.0
     actual_infiltration_input = 6.0 # this includes the infiltration from surface water
-    infiltexcess_input = 1.0
+    infiltration_excess_input = 1.0
 
     infilt_surfacewater,
         actual_infiltration,
-        infiltexcess,
-        excesswater,
+        infiltration_excess,
+        saturation_excess_water,
         water_flux_surface = Wflow.update_infiltration_fluxes(
         potential_infiltration,
         potential_infiltration_surfacewater,
         water_flux_surface_input,
         actual_infiltration_input,
-        infiltexcess_input,
+        infiltration_excess_input,
     )
 
     @test infilt_surfacewater == 1.2 # this is the infiltration from surface water
     @test actual_infiltration ≈ 4.8 # this excludes the infiltration from surface water
     @test infilt_surfacewater + actual_infiltration ≈ actual_infiltration_input
-    @test infiltexcess == 0.8
+    @test infiltration_excess == 0.8
     @test water_flux_surface == 8.0
-    @test excesswater ≈ 2.4
+    @test saturation_excess_water ≈ 2.4
 
     # Test with infiltration from only precipitation, no infiltration from surface water
     potential_infiltration = 10.0
     potential_infiltration_surfacewater = 0.0
     water_flux_surface_input = 10.0
     actual_infiltration_input = 6.0
-    infiltexcess_input = 1.0
+    infiltration_excess_input = 1.0
 
     infilt_surfacewater,
         actual_infiltration,
-        infiltexcess,
-        excesswater,
+        infiltration_excess,
+        saturation_excess_water,
         water_flux_surface = Wflow.update_infiltration_fluxes(
         potential_infiltration,
         potential_infiltration_surfacewater,
         water_flux_surface_input,
         actual_infiltration_input,
-        infiltexcess_input,
+        infiltration_excess_input,
     )
 
     @test infilt_surfacewater == 0.0
     @test actual_infiltration == actual_infiltration_input
     @test infilt_surfacewater + actual_infiltration == actual_infiltration_input
-    @test infiltexcess == infiltexcess_input
+    @test infiltration_excess == infiltration_excess_input
     @test water_flux_surface == water_flux_surface_input
-    @test excesswater == 3.0
+    @test saturation_excess_water == 3.0
 
     # Test with infiltration from only surface water, no infiltration from precipitation
     potential_infiltration = 10.0
     potential_infiltration_surfacewater = 10.0
     water_flux_surface_input = 10.0
     actual_infiltration_input = 6.0
-    infiltexcess_input = 1.0
+    infiltration_excess_input = 1.0
 
     infilt_surfacewater,
         actual_infiltration,
-        infiltexcess,
-        excesswater,
+        infiltration_excess,
+        saturation_excess_water,
         water_flux_surface = Wflow.update_infiltration_fluxes(
         potential_infiltration,
         potential_infiltration_surfacewater,
         water_flux_surface_input,
         actual_infiltration_input,
-        infiltexcess_input,
+        infiltration_excess_input,
     )
 
     @test infilt_surfacewater == 6.0
     @test actual_infiltration == 0.0
     @test infilt_surfacewater + actual_infiltration == 6.0
-    @test infiltexcess == 0.0
+    @test infiltration_excess == 0.0
     @test water_flux_surface == 0.0
-    @test excesswater == 0.0
+    @test saturation_excess_water == 0.0
 end
 
 @testitem "unit: update_overland_flow_and_depth!" begin

@@ -329,10 +329,10 @@ end
 Correct infiltration fluxes by separating the surface water contribution from the total
 infiltration. The correction factor is based on the ratio of
 `potential_infiltration_surfacewater` to `potential_infiltration`, and is applied to
-`actual_infiltration` and `infiltexcess` to remove the surface water component. The surface water flux
+`actual_infiltration` and `infiltration_excess` to remove the surface water component. The surface water flux
 `water_flux_surface` is adjusted accordingly, and the remaining excess water is computed.
 
-Returns `infilt_surfacewater`, corrected `actual_infiltration`, corrected `infiltexcess`, `excesswater`,
+Returns `infilt_surfacewater`, corrected `actual_infiltration`, corrected `infiltration_excess`, `saturation_excess_water`,
 and corrected `water_flux_surface`.
 """
 function update_infiltration_fluxes(
@@ -340,7 +340,7 @@ function update_infiltration_fluxes(
         potential_infiltration_surfacewater,
         water_flux_surface,
         actual_infiltration,
-        infiltexcess,
+        infiltration_excess,
     )
     # Determine ratio of water that has infiltrated
     infilt_ratio = potential_infiltration == 0.0 ? 0.0 : actual_infiltration / potential_infiltration
@@ -353,11 +353,11 @@ function update_infiltration_fluxes(
 
     # Correct fluxes
     actual_infiltration *= correction_surfacewater
-    infiltexcess *= correction_surfacewater
+    infiltration_excess *= correction_surfacewater
 
     # subtract contribution from overland flow to ensure correct fluxes
     water_flux_surface -= potential_infiltration_surfacewater
-    excesswater = water_flux_surface - actual_infiltration - infiltexcess
+    saturation_excess_water = water_flux_surface - actual_infiltration - infiltration_excess
 
-    return infilt_surfacewater, actual_infiltration, infiltexcess, excesswater, water_flux_surface
+    return infilt_surfacewater, actual_infiltration, infiltration_excess, saturation_excess_water, water_flux_surface
 end
