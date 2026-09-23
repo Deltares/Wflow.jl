@@ -811,13 +811,14 @@ get_inflow_reservoir(::AbstractRiverFlowModel, ::GroundwaterFlowModel, inds::Vec
     zeros(length(inds))
 
 """
-Update overland flow water level and discharge for KinWaveOverlandFlow model based on
-surface water infiltration.
+Update overland flow water level and discharge for `KinWaveOverlandFlow` model based on
+surface water infiltration `infilt_surfacewater` [m s⁻¹] over timestep `dt` [s].
 """
 function update_overland_flow_and_depth!(
         overland_flow_model::OverlandFlowModel{<:KinematicWave},
         soil_model::SbmSoilModel,
         domain::Domain,
+        dt::Float64,
     )
     (; infilt_surfacewater) = soil_model.variables
     n = length(infilt_surfacewater)
@@ -827,45 +828,41 @@ function update_overland_flow_and_depth!(
             infilt_surfacewater[i],
             domain.land.parameters,
             i,
+            dt,
         )
     end
 end
 
 """
-Update overland flow water level and discharge in-place for a single cell based on
-surface water infiltration.
+Update overland flow water level and discharge in-place for a single cell `i` based on
+surface water infiltration `infilt_surfacewater` [m s⁻¹] over timestep `dt` [s].
 """
 function update_overland_flow_and_depth!(
         overland_flow_model::OverlandFlowModel{<:KinematicWave},
-        infilt_surfacewater,
+        infilt_surfacewater::Float64,
         land_parameters,
-        i,
+        i::Int,
+        dt::Float64,
     )
-    if infilt_surfacewater > 0.0
-        # Get original h_land in mm
-        original_h_land = overland_flow_model.variables.h[i] * 1000.0
+    infilt_surfacewater > 0.0 || return nothing
 
-        # Correct values for river fraction to ensure correct water accounting
-        infiltrated_surfacewater =
-            (infilt_surfacewater / (1.0 - land_parameters.river_fraction[i]))
-        # Calculate new h_land in m
-        h = (original_h_land - infiltrated_surfacewater) / 1000.0
+    (; alpha) = overland_flow_model.parameters
+    (; river_fraction, surface_flow_width) = land_parameters
 
-        q = ifelse(
-            land_parameters.surface_flow_width[i] > 0.0 && h > 0.0,
-            # Compute cross-sectional area from h
-            pow(
-                (h * land_parameters.surface_flow_width[i]) /
-                    overland_flow_model.parameters.alpha[i],
-                1.0 / BETA_KINWAVE,
-            ),
-            0.0,
-        )
-        # set q to 0.0 if it is below the minimum flow threshold
-        q = ifelse(q < KIN_WAVE_MIN_FLOW, 0.0, q)
+    # Scale reinfiltration depth by the land fraction to reverse the same scaling applied
+    # when `potential_infiltration_surfacewater` was derived from `waterdepth_land` in
+    # `update_available_for_infiltration!`, keeping the water balance consistent.
+    delta_h = infilt_surfacewater * dt / (1.0 - river_fraction[i])
+    h = overland_flow_model.variables.h[i] - delta_h
 
-        overland_flow_model.variables.q[i] = q
-        overland_flow_model.variables.h[i] = h
-    end
+    q = ifelse(
+        surface_flow_width[i] > 0.0 && h > 0.0,
+        pow((h * surface_flow_width[i]) / alpha[i], 1.0 / BETA_KINWAVE),
+        0.0,
+    )
+    q = ifelse(q < KIN_WAVE_MIN_FLOW, 0.0, q)
+
+    overland_flow_model.variables.h[i] = h
+    overland_flow_model.variables.q[i] = q
     return nothing
 end

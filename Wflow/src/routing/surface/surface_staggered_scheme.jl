@@ -1561,4 +1561,5 @@ update_overland_flow_and_depth!(
     ::OverlandFlowModel{<:LocalInertial},
     ::SbmSoilModel,
     ::Domain,
+    ::Float64,
 ) = nothing
