@@ -361,11 +361,14 @@ function kinwave_land_update!(
                 q[v], flow_area =
                     kinematic_wave(qin_eff, q[v], qlat_eff, alpha[v], dt, flow_length[v])
 
-                # update h, only if flow width > 0.0
+                # update h (including ponding contribution), only if flow width > 0.0
                 if surface_flow_width[v] > 0.0
-                    h[v] = flow_area / surface_flow_width[v]
+                    h[v] =
+                        flow_area / surface_flow_width[v] +
+                        ponding_storage[v] / (flow_length[v] * surface_flow_width[v])
                 end
-                storage[v] = flow_length[v] * surface_flow_width[v] * h[v] + ponding_storage[v]
+
+                storage[v] = flow_length[v] * surface_flow_width[v] * h[v]
 
                 # average flow
                 q_cumulative[v] += q[v] * dt
@@ -887,26 +890,40 @@ function update_overland_flow_and_depth!(
     infilt_surfacewater > 0.0 || return nothing
 
     (; alpha) = overland_flow_model.parameters
+    (; ponding_storage) = overland_flow_model.variables
     (; river_fraction, surface_flow_width, flow_length) = land_parameters
+
+    surface_flow_width[i] > 0.0 || return nothing
 
     # Scale reinfiltration depth by the land fraction to reverse the same scaling applied
     # when `potential_infiltration_surfacewater` was derived from `waterdepth_land` in
     # `update_available_for_infiltration!`, keeping the water balance consistent.
-    delta_h = infilt_surfacewater * dt / (1.0 - river_fraction[i])
-    h = overland_flow_model.variables.h[i] - delta_h
+    reinfiltration_depth = infilt_surfacewater * dt / (1.0 - river_fraction[i])
+
+    # Reinfiltration draws from stagnant ponded water first (in direct contact with the
+    # soil) and only the remainder reduces the kinematic (flowable) depth. Discharge is
+    # recomputed from the kinematic depth alone so that ponded water does not spuriously
+    # contribute to overland flow.
+    cell_area = flow_length[i] * surface_flow_width[i]
+    actual_pond_depth = ponding_storage[i] / cell_area
+    reinfiltration_from_pond = min(reinfiltration_depth, actual_pond_depth)
+    ponding_storage[i] -= reinfiltration_from_pond * cell_area
+    reinfiltration_from_flow = reinfiltration_depth - reinfiltration_from_pond
+
+    h_kin = max(0.0, (overland_flow_model.variables.h[i] - actual_pond_depth) - reinfiltration_from_flow)
 
     q = ifelse(
-        surface_flow_width[i] > 0.0 && h > 0.0,
-        pow((h * surface_flow_width[i]) / alpha[i], 1.0 / BETA_KINWAVE),
+        h_kin > 0.0,
+        pow((h_kin * surface_flow_width[i]) / alpha[i], 1.0 / BETA_KINWAVE),
         0.0,
     )
     q = ifelse(q < KIN_WAVE_MIN_FLOW, 0.0, q)
 
     # accumulate reinfiltration volume [m³] so it can be reported as routing outflow
     overland_flow_model.variables.reinfiltration_cumulative[i] +=
-        delta_h * surface_flow_width[i] * flow_length[i]
+        reinfiltration_depth * surface_flow_width[i] * flow_length[i]
 
-    overland_flow_model.variables.h[i] = h
+    overland_flow_model.variables.h[i] = h_kin + ponding_storage[i] / cell_area
     overland_flow_model.variables.q[i] = q
     return nothing
 end
