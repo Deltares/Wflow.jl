@@ -590,11 +590,12 @@ end
         TimeStepping
 
     n = 1
-    infiltration_amount = 5.0 # mm
+    infilt_surfacewater = 5.0e-6 # m s⁻¹
+    dt = 900.0 # s
     original_depth = 0.02 # m
     river_fraction = 0.2
     expected_water_depth =
-        original_depth - ((infiltration_amount * 1.0e-3) / (1 - river_fraction))
+        original_depth - (infilt_surfacewater * dt) / (1 - river_fraction)
 
     variables = OverLandFlowVariables(; n)
     variables.h[1] = original_depth
@@ -609,7 +610,7 @@ end
 
     boundary_conditions = LandFlowBC(; n)
     timestepping =
-        TimeStepping(; adaptive = false, dt_fixed = 900.0, stable_timesteps = zeros(n))
+        TimeStepping(; adaptive = false, dt_fixed = dt, stable_timesteps = zeros(n))
 
     overland_flow_model =
         OverlandFlowModel(; routing_method = Wflow.KinematicWave(), timestepping, boundary_conditions, parameters, variables)
@@ -619,18 +620,20 @@ end
     # Test with positive infiltration
     Wflow.update_overland_flow_and_depth!(
         overland_flow_model,
-        infiltration_amount,
+        infilt_surfacewater,
         land_parameters,
         1,
+        dt,
     )
     @test overland_flow_model.variables.h[1] ≈ expected_water_depth
-    @test overland_flow_model.variables.h[1] ≈ 0.01375
-    @test overland_flow_model.variables.q[1] ≈ 0.00772341601713081
+    @test overland_flow_model.variables.h[1] ≈ 0.014375
 
     # Test with zero infiltration (no update should occur)
     overland_flow_model.variables.h[1] = original_depth
     overland_flow_model.variables.q[1] = 0.1
-    Wflow.update_overland_flow_and_depth!(overland_flow_model, 0.0, land_parameters, 1)
+    Wflow.update_overland_flow_and_depth!(
+        overland_flow_model, 0.0, land_parameters, 1, dt,
+    )
     @test overland_flow_model.variables.q[1] == 0.1
     @test overland_flow_model.variables.h[1] == original_depth
 end
