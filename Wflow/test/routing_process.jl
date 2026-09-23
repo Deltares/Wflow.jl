@@ -1004,6 +1004,7 @@ end
             zx_max_at_edge = [257.3280029296875, 232.67100524902344, 232.67100524902344],
             theta = 1.0,
             h_thresh = 1.0e-3,
+            ponding_depth = zeros(n),
             zy_max_at_edge = [],
             mannings_n_sq_at_edge = [
                 0.24167056670421605,
@@ -1072,6 +1073,7 @@ end
             ywidth_at_edge = [],
             theta = 1.0,
             h_thresh = 1.0e-3,
+            ponding_depth = zeros(n_land),
             zx_max_at_edge = [],
             zy_max_at_edge = [],
             mannings_n_sq_at_edge = [],
@@ -1371,4 +1373,160 @@ end
         froude_limit,
         dt,
     ) ≈ 0.00017992597962222483
+end
+
+@testitem "unit: kinwave_land_update! with ponding retention" begin
+    # Single-cell overland flow test: incoming lateral flow first fills the ponding storage
+    # up to `ponding_depth` and only the remainder drives the kinematic wave. Verifies that
+    # when the pond is empty the entire inflow is absorbed and the kinematic depth remains
+    # zero, and that once the pond is full the excess reaches the kinematic wave.
+    using Graphs: DiGraph, add_edge!
+
+    n = 1
+    dt = 900.0
+    ponding_depth = 0.01
+    flow_length = 100.0
+    surface_flow_width = 10.0
+    cell_area = flow_length * surface_flow_width
+
+    parameters = Wflow.ManningFlowParameters(;
+        slope = [0.01],
+        mannings_n = [0.072],
+        alpha_pow = 0.4,
+        alpha_term = [0.41038937516728013],
+        alpha = [2.544585458995107],
+        ponding_depth = [ponding_depth],
+    )
+    boundary_conditions = Wflow.LandFlowBC(; n)
+    timestepping =
+        Wflow.TimeStepping(; adaptive = false, dt_fixed = dt, stable_timesteps = zeros(n))
+
+    variables = Wflow.OverLandFlowVariables(; n)
+    # constant lateral inflow rate [m² s⁻¹]; over dt this delivers a depth (over cell area)
+    # smaller than `ponding_depth`, so all inflow should be retained in the pond.
+    qlat = 1.0e-5
+    variables.qlat[1] = qlat
+    inflow_depth = qlat * flow_length * dt / cell_area
+    @test inflow_depth < ponding_depth
+
+    overland_flow_model = Wflow.OverlandFlowModel(;
+        routing_method = Wflow.KinematicWave(),
+        timestepping, boundary_conditions, parameters, variables,
+    )
+
+    domain = Wflow.DomainLand(;
+        network = Wflow.NetworkLand(;
+            order_of_subdomains = [[1]],
+            order_subdomain = [[1]],
+            subdomain_indices = [[1]],
+            upstream_nodes = [Int[]],
+        ),
+        parameters = Wflow.LandParameters(;
+            surface_flow_width = [surface_flow_width],
+            flow_length = [flow_length],
+            flow_fraction_to_river = [0.0],
+        ),
+    )
+
+    Wflow.kinwave_land_update!(overland_flow_model, domain, dt)
+
+    # All incoming water is retained in the pond, kinematic depth and discharge stay zero.
+    @test overland_flow_model.variables.ponding_storage[1] ≈ qlat * flow_length * dt
+    @test overland_flow_model.variables.h[1] ≈
+        overland_flow_model.variables.ponding_storage[1] / cell_area
+    @test overland_flow_model.variables.q[1] == 0.0
+    @test overland_flow_model.variables.storage[1] ≈
+        overland_flow_model.variables.ponding_storage[1]
+
+    # Pre-fill the pond to capacity and run again: subsequent inflow bypasses the pond and
+    # is passed to the kinematic wave.
+    variables = Wflow.OverLandFlowVariables(; n)
+    variables.qlat[1] = qlat
+    variables.ponding_storage[1] = ponding_depth * cell_area
+    overland_flow_model = Wflow.OverlandFlowModel(;
+        routing_method = Wflow.KinematicWave(),
+        timestepping, boundary_conditions, parameters, variables,
+    )
+    Wflow.kinwave_land_update!(overland_flow_model, domain, dt)
+
+    @test overland_flow_model.variables.ponding_storage[1] ≈ ponding_depth * cell_area
+    @test overland_flow_model.variables.q[1] > 0.0
+    # `h` is the total depth (kinematic + pond averaged over the cell), which must exceed
+    # the pond depth once the kinematic wave activates.
+    @test overland_flow_model.variables.h[1] > ponding_depth
+end
+
+@testitem "unit: local inertial ponding retention" begin
+    # Test that in the local inertial scheme water below `ponding_depth` is retained in the
+    # cell and does not drive overland flow. Adapted from the existing
+    # `unit: update_directional_flow!` test.
+    n = 3
+
+    parameters = Wflow.LocalInertialOverlandFlowParameters(;
+        n,
+        ywidth_at_edge = [926.6857061478484, 869.7426481339323, 812.7995901200163],
+        xwidth_at_edge = [],
+        zx_max_at_edge = [257.3280029296875, 232.67100524902344, 232.67100524902344],
+        theta = 1.0,
+        h_thresh = 1.0e-3,
+        # set the ponding threshold above the initial water depths at nodes 2 and 3 so the
+        # effective flow depth becomes zero and no flow should occur across the edge.
+        ponding_depth = [0.0, 2.0, 0.5],
+        zy_max_at_edge = [],
+        mannings_n_sq_at_edge =
+            [0.24167056670421605, 0.2883451232664811, 0.3928782408368683],
+        z = [257.3280029296875, 227.5050048828125, 232.67100524902344],
+        froude_limit = true,
+    )
+
+    overland_flow_model = Wflow.OverlandFlowModel(;
+        routing_method = Wflow.LocalInertial(),
+        timestepping = Wflow.TimeStepping(; alpha_coefficient = 0.7),
+        boundary_conditions = Wflow.LocalInertialOverlandFlowBC(;
+            n,
+            runoff = [0.0, 0.0, 0.003001456821567986],
+        ),
+        parameters,
+        variables = Wflow.LocalInertialOverlandFlowVariables(;
+            n,
+            qx0 = [0.0, -3.6332616217117395, -0.7525806207906618, 0.0],
+            qx = [0.0, -3.63341089804407, -0.7526187151790501, 0.0],
+            h = [0.0, 1.3754708010382453, 0.11735139800699446],
+            storage = [0.0, 783157.9568615163, 237954.47204911432],
+        ),
+    )
+    domain = Wflow.Domain(;
+        land = Wflow.DomainLand(;
+            network = Wflow.NetworkLand(;
+                edge_indices = Wflow.EdgeConnectivity(;
+                    n = 3,
+                    ind_x_up = [2, 3, 4],
+                    ind_x_down = [4, 1, 2],
+                ),
+            ),
+            parameters = Wflow.LandParameters(;
+                x_length = [614.4202561305977, 614.4202561305977, 614.4202561305977],
+                y_length = [926.6857061478484, 926.6857061478484, 926.6857061478484],
+                river_location = [0, 0, 1],
+            ),
+        ),
+    )
+
+    # At edge 2 both upstream (node 2, h = 1.375 < ponding_depth = 2.0) and current
+    # (node 3, h = 0.117 < ponding_depth = 0.5) cells have the water depth entirely below
+    # their respective ponding thresholds, so `h_eff` is zero on both sides and flow at
+    # the edge must be zero.
+    dt = 60.0
+    is_x_direction = true
+    overland_flow_model.variables.qx0 .= overland_flow_model.variables.qx
+    Wflow.update_directional_flow!(overland_flow_model, domain, 2, dt, is_x_direction)
+    @test overland_flow_model.variables.qx[2] == 0.0
+
+    # Lower the ponding threshold at the current cell so `h_eff_current > 0` and the
+    # remaining "free" surface elevation can drive flow across the edge.
+    overland_flow_model.parameters.ponding_depth[3] = 0.05
+    overland_flow_model.variables.qx[2] = -3.63341089804407
+    overland_flow_model.variables.qx0 .= overland_flow_model.variables.qx
+    Wflow.update_directional_flow!(overland_flow_model, domain, 2, dt, is_x_direction)
+    @test overland_flow_model.variables.qx[2] != 0.0
 end
