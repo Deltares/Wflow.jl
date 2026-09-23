@@ -772,7 +772,7 @@ function update_available_for_infiltration!(
 end
 
 function update_infiltration_fluxes!(soil_model::SbmSoilModel)
-    (; infilt_surfacewater, actual_infiltration, infiltexcess, excesswater) = soil_model.variables
+    (; infilt_surfacewater, actual_infiltration, infiltration_excess, saturation_excess_water) = soil_model.variables
     (; water_flux_surface, potential_infiltration, potential_infiltration_surfacewater) =
         soil_model.boundary_conditions
 
@@ -780,14 +780,14 @@ function update_infiltration_fluxes!(soil_model::SbmSoilModel)
     return threaded_foreach(1:n; basesize = 1000) do i
         infilt_surfacewater[i],
             actual_infiltration[i],
-            infiltexcess[i],
-            excesswater[i],
+            infiltration_excess[i],
+            saturation_excess_water[i],
             water_flux_surface[i] = update_infiltration_fluxes(
             potential_infiltration[i],
             potential_infiltration_surfacewater[i],
             water_flux_surface[i],
             actual_infiltration[i],
-            infiltexcess[i],
+            infiltration_excess[i],
         )
     end
 end
