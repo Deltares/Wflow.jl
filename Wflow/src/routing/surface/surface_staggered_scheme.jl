@@ -922,7 +922,7 @@ function LocalInertialOverlandFlowParameters(
     ponding_depth = ncread(
         dataset,
         config,
-        "land_surface_water_flow__ponding_depth",
+        "land_surface_water__ponding_depth",
         Routing;
         sel = indices,
     )
