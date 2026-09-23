@@ -433,7 +433,7 @@ function setup_grid_netcdf(
         attrib = [
             "long_name" => attrib_y[1],
             "standard_name" => attrib_y[2],
-            "axis" => "X",
+            "axis" => "Y",
             "units" => attrib_y[3],
         ],
     )
