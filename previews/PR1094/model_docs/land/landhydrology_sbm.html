@@ -1370,6 +1370,7 @@ T_\mathrm{soil}^t = T_\mathrm{soil}^{t-1} + w_\mathrm{soil}  (T_\mathrm{air} - T
     \subtext{i}{sw} = \subtext{i}{pot, sw} \cdot \frac{\subtext{i}{act}}{\subtext{i}{pot}}.
 \]</span></p>
 <p>Finally, <code>actual_infiltration</code>, <code>infiltexcess</code> and <code>water_flux_surface</code> are corrected by <span class="math inline">\(\subtext{i}{pot, sw}\)</span> to avoid double counting of water already originating from surface water.</p>
+<p>When a positive <a href="../../model_docs/routing/kinwave.html#surface-ponding">surface ponding depth</a> is configured, reinfiltration is drawn from the pond storage before reducing the flowable share of the overland flow depth. This applies to both <a href="../../model_docs/routing/kinwave.html#surface-ponding">kinematic wave overland flow</a> and <a href="../../model_docs/routing/staggered-grid.html#surface-ponding">2D local inertial overland flow</a>.</p>
 </section>
 </section>
 <section id="capillary-rise" class="level3">

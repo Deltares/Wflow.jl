@@ -552,7 +552,10 @@ window.Quarto = {
   </ul></li>
   <li><a href="#floodplain-schematization" id="toc-floodplain-schematization" class="nav-link" data-scroll-target="#floodplain-schematization">Floodplain schematization</a></li>
   <li><a href="#reservoirs" id="toc-reservoirs" class="nav-link" data-scroll-target="#reservoirs">Reservoirs</a></li>
-  <li><a href="#local-inertial-overland-flow-2d" id="toc-local-inertial-overland-flow-2d" class="nav-link" data-scroll-target="#local-inertial-overland-flow-2d">Local inertial overland flow (2D)</a></li>
+  <li><a href="#local-inertial-overland-flow-2d" id="toc-local-inertial-overland-flow-2d" class="nav-link" data-scroll-target="#local-inertial-overland-flow-2d">Local inertial overland flow (2D)</a>
+  <ul class="collapse">
+  <li><a href="#surface-ponding" id="toc-surface-ponding" class="nav-link" data-scroll-target="#surface-ponding">Surface ponding</a></li>
+  </ul></li>
   <li><a href="#external-inflows" id="toc-external-inflows" class="nav-link" data-scroll-target="#external-inflows">External inflows</a></li>
   <li><a href="#abstractions" id="toc-abstractions" class="nav-link" data-scroll-target="#abstractions">Abstractions</a></li>
   <li><a href="#multi-threading" id="toc-multi-threading" class="nav-link" data-scroll-target="#multi-threading">Multi-Threading</a></li>
@@ -675,6 +678,14 @@ Q_{(i+1/2)}^{n})\right]- g h_f \frac{\Delta t}{\Delta x} (\eta^n_i - \eta^n_{i-1
 <span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_water_flow__froude_limit_flag</span> <span class="op">=</span> <span class="cn">true</span>   <span class="co"># default is true, limit flow to subcritical-critical according to Froude number</span></span>
 <span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_water_flow_threshold__depth</span> <span class="op">=</span> <span class="fl">0.1</span>      <span class="co"># water depth [m] threshold for calculating flow between cells (default = 1e-03)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>The alpha coefficient, flow limitation according to the Froude number, and the adaptive model time step <span class="math inline">\(\Delta t\)</span> are explained in more detail in the <a href="#river-and-floodplain-routing">River and floodplain routing</a> section of the local inertial model.</p>
+<section id="surface-ponding" class="level3">
+<h3 class="anchored" data-anchor-id="surface-ponding">Surface ponding</h3>
+<p>The per-cell ponding depth <span class="math inline">\(\SIb{\subtext{h}{pond}}{m}\)</span> introduced for <a href="../../model_docs/routing/kinwave.html#surface-ponding">kinematic wave overland flow</a> is also used by the 2D local inertial overland flow scheme. Water below <span class="math inline">\(\subtext{h}{pond}\)</span> is retained in the cell and cannot flow towards neighboring cells. The effective water depth <span class="math inline">\(\SIb{\subtext{h}{eff}}{m}\)</span> used to compute the water surface elevation at each edge is:</p>
+<p><span class="math display">\[
+\subtext{h}{eff} = \max(0, h - \subtext{h}{pond}).
+\]</span></p>
+<p>Only water above <span class="math inline">\(\subtext{h}{pond}\)</span> contributes to flow. When <a href="../../model_docs/land/landhydrology_sbm.html#land-surface-water-infiltration">land surface water reinfiltration</a> is enabled, the ponded fraction is drawn from before the flowable fraction.</p>
+</section>
 </section>
 <section id="external-inflows" class="level2">
 <h2 class="anchored" data-anchor-id="external-inflows">External inflows</h2>
