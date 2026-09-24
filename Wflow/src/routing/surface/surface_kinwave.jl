@@ -33,13 +33,14 @@ function ManningFlowParameters(
         mannings_n::Vector{Float64},
         slope::Vector{Float64},
         wetted_perimeter::Vector{Float64},
+        ponding_depth::Vector{Float64} = zeros(length(mannings_n)),
     )
     hydraulic_radius_pow = 2.0 / 3.0
     alpha_term = @. pow(mannings_n / sqrt(slope), BETA_KINWAVE)
     alpha_pow = hydraulic_radius_pow * BETA_KINWAVE
     alpha = @. alpha_term * pow(wetted_perimeter, alpha_pow)
 
-    parameters = ManningFlowParameters(; slope, mannings_n, alpha_pow, alpha_term, alpha)
+    parameters = ManningFlowParameters(; slope, mannings_n, alpha_pow, alpha_term, alpha, ponding_depth)
     return parameters
 end
 
@@ -180,6 +181,8 @@ end
     reinfiltration_cumulative::Vector{Float64} = zeros(n)
     # Average reinfiltration flow rate [m³ s⁻¹] for model timestep dt
     reinfiltration_average::Vector{Float64} = zeros(n)
+    # Water stored on surface (due to ponding depth parameter) [m³]
+    ponding_storage::Vector{Float64} = zeros(n)
 end
 
 "Struct for storing overland flow model boundary conditions"
@@ -204,12 +207,19 @@ function init_kinematic_wave_overland_flow(
         Routing;
         sel = indices,
     )
+    ponding_depth = ncread(
+        dataset,
+        config,
+        "land_surface_water__ponding_depth",
+        Routing;
+        sel = indices,
+    )
 
     n = length(indices)
     timestepping = init_kinematic_wave_timestepping(config, n; domain = "land")
 
     variables = OverLandFlowVariables(; n)
-    parameters = ManningFlowParameters(mannings_n, slope, surface_flow_width)
+    parameters = ManningFlowParameters(mannings_n, slope, surface_flow_width, ponding_depth)
     boundary_conditions = LandFlowBC(; n)
     routing_method = KinematicWave()
 
@@ -303,8 +313,8 @@ function kinwave_land_update!(
     (; order_of_subdomains, order_subdomain, subdomain_indices, upstream_nodes) =
         domain.network
 
-    (; alpha) = overland_flow_model.parameters
-    (; h, q, q_cumulative, storage, qin, qin_cumulative, qlat, to_river_cumulative) =
+    (; alpha, ponding_depth) = overland_flow_model.parameters
+    (; h, q, q_cumulative, storage, qin, qin_cumulative, qlat, to_river_cumulative, ponding_storage) =
         overland_flow_model.variables
     (; surface_flow_width, flow_length, flow_fraction_to_river) = domain.parameters
 
@@ -328,14 +338,34 @@ function kinwave_land_update!(
                     )
                 end
 
+                # ponding retention: incoming water fills pond up to `ponding_depth` before
+                # contributing to overland flow.
+                qin_eff = qin[v]
+                qlat_eff = qlat[v]
+                if ponding_depth[v] > 0.0 && surface_flow_width[v] > 0.0
+                    retention_capacity =
+                        ponding_depth[v] * flow_length[v] * surface_flow_width[v]
+                    deficit = retention_capacity - ponding_storage[v]
+                    if deficit > 0.0
+                        inflow_rate = qin[v] + qlat[v] * flow_length[v]
+                        if inflow_rate > 0.0
+                            absorbed_rate = min(inflow_rate, deficit / dt)
+                            ponding_storage[v] += absorbed_rate * dt
+                            factor = 1.0 - absorbed_rate / inflow_rate
+                            qin_eff = qin[v] * factor
+                            qlat_eff = qlat[v] * factor
+                        end
+                    end
+                end
+
                 q[v], flow_area =
-                    kinematic_wave(qin[v], q[v], qlat[v], alpha[v], dt, flow_length[v])
+                    kinematic_wave(qin_eff, q[v], qlat_eff, alpha[v], dt, flow_length[v])
 
                 # update h, only if flow width > 0.0
                 if surface_flow_width[v] > 0.0
                     h[v] = flow_area / surface_flow_width[v]
                 end
-                storage[v] = flow_length[v] * surface_flow_width[v] * h[v]
+                storage[v] = flow_length[v] * surface_flow_width[v] * h[v] + ponding_storage[v]
 
                 # average flow
                 q_cumulative[v] += q[v] * dt
