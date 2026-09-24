@@ -345,11 +345,11 @@ function kinwave_land_update!(
                 if ponding_depth[v] > 0.0 && surface_flow_width[v] > 0.0
                     retention_capacity =
                         ponding_depth[v] * flow_length[v] * surface_flow_width[v]
-                    deficit = retention_capacity - ponding_storage[v]
-                    if deficit > 0.0
+                    remaining_capacity = retention_capacity - ponding_storage[v]
+                    if remaining_capacity > 0.0
                         inflow_rate = qin[v] + qlat[v] * flow_length[v]
                         if inflow_rate > 0.0
-                            absorbed_rate = min(inflow_rate, deficit / dt)
+                            absorbed_rate = min(inflow_rate, remaining_capacity / dt)
                             ponding_storage[v] += absorbed_rate * dt
                             factor = 1.0 - absorbed_rate / inflow_rate
                             qin_eff = qin[v] * factor
