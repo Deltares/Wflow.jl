@@ -198,6 +198,21 @@ The alpha coefficient, flow limitation according to the Froude number, and the a
 model time step $\Delta t$ are explained in more detail in the [River and floodplain
 routing](#river-and-floodplain-routing) section of the local inertial model.
 
+### Surface ponding
+The per-cell ponding depth $\SIb{\subtext{h}{pond}}{m}$ introduced for [kinematic wave
+overland flow](./kinwave.qmd#surface-ponding) is also used by the 2D local inertial overland
+flow scheme. Water below $\subtext{h}{pond}$ is retained in the cell and cannot flow towards
+neighboring cells. The effective water depth $\SIb{\subtext{h}{eff}}{m}$ used to compute the
+water surface elevation at each edge is:
+
+$$
+\subtext{h}{eff} = \max(0, h - \subtext{h}{pond}).
+$$
+
+Only water above $\subtext{h}{pond}$ contributes to flow. When [land surface water
+reinfiltration](../land/landhydrology_sbm.qmd#land-surface-water-infiltration) is enabled,
+the ponded fraction is drawn from before the flowable fraction.
+
 ## External inflows
 External inflows $\SIb{}{m^3\ s^{-1}}$ for example water supply or abstractions can to added
 the 1D river flow model on a staggered grid and local inertial river and overland flow
