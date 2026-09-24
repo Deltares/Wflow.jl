@@ -33,13 +33,14 @@ function ManningFlowParameters(
         mannings_n::Vector{Float64},
         slope::Vector{Float64},
         wetted_perimeter::Vector{Float64},
+        ponding_depth::Vector{Float64} = zeros(length(mannings_n)),
     )
     hydraulic_radius_pow = 2.0 / 3.0
     alpha_term = @. pow(mannings_n / sqrt(slope), BETA_KINWAVE)
     alpha_pow = hydraulic_radius_pow * BETA_KINWAVE
     alpha = @. alpha_term * pow(wetted_perimeter, alpha_pow)
 
-    parameters = ManningFlowParameters(; slope, mannings_n, alpha_pow, alpha_term, alpha)
+    parameters = ManningFlowParameters(; slope, mannings_n, alpha_pow, alpha_term, alpha, ponding_depth)
     return parameters
 end
 
@@ -180,6 +181,8 @@ end
     reinfiltration_cumulative::Vector{Float64} = zeros(n)
     # Average reinfiltration flow rate [m³ s⁻¹] for model timestep dt
     reinfiltration_average::Vector{Float64} = zeros(n)
+    # Water stored on surface (due to ponding depth parameter) [m³]
+    ponding_storage::Vector{Float64} = zeros(n)
 end
 
 "Struct for storing overland flow model boundary conditions"
