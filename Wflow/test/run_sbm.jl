@@ -1426,15 +1426,15 @@ end
         (; soil) = model.land
         # get total available infiltration
         @test soil.boundary_conditions.potential_infiltration[idxs] ≈
-            [0.07163384298140926, 12.55529617902951, 1.094994363241204]
+            [8.290954048774218e-10, 1.8193309401321751e-7, 9.71627171868268e-10]
         @test soil.boundary_conditions.potential_infiltration_surfacewater[idxs] ≈
-            [0.0, 12.485540999074937, 1.0244892972592872]
+            [0.0, 1.8112574239337292e-7, 1.555963155960821e-10]
         # get actual infiltration
         @test soil.variables.actual_infiltration[idxs] ≈
             [8.290954048774218e-10, 8.073516198445915e-10, 8.160308562721859e-10]
         # there is a lot of infiltration coming from overland flow in cell 54
         @test soil.variables.infilt_surfacewater[idxs] ≈
-            [0.0, 12.485540999074937, 1.0244892972592872]
+            [0.0, 1.8112574239337292e-7, 1.555963155960821e-10]
 
         Wflow.close_files(model; delete_output = false)
     end
@@ -1463,6 +1463,7 @@ end
         # the second item (index 13930) has a infiltration flux only originating from overland flow
         @test soil.variables.infilt_surfacewater[idxs] ≈
             [8.65749466839408e-11, 1.7024378589647516e-8, 0.0]
+
         Wflow.close_files(model; delete_output = false)
     end
 end
