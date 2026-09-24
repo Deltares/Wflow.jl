@@ -1423,15 +1423,15 @@ end
         (; soil) = model.land
         # get total available infiltration
         @test soil.boundary_conditions.potential_infiltration[idxs] ≈
-            [0.07163384298140926, 12.55529617902951, 1.094994363241204]
+            [8.290954048774218e-10, 1.8193309401321751e-7, 9.71627171868268e-10]
         @test soil.boundary_conditions.potential_infiltration_surfacewater[idxs] ≈
-            [0.0, 12.485540999074937, 1.0244892972592872]
+            [0.0, 1.8112574239337292e-7, 1.555963155960821e-10]
         # get actual infiltration
         @test soil.variables.actual_infiltration[idxs] ≈
-            [0.07163384298140926, 0.06975517995457337, 0.07050506598191691]
+            [8.290954048774218e-10, 8.073516198445915e-10, 8.160308562721859e-10]
         # there is a lot of infiltration coming from surface water in cell 54
         @test soil.variables.infilt_surfacewater[idxs] ≈
-            [0.0, 12.485540999074937, 1.0244892972592872]
+            [0.0, 1.8112574239337292e-7, 1.555963155960821e-10]
 
         Wflow.close_files(model; delete_output = false)
     end
@@ -1451,15 +1451,15 @@ end
         (; soil) = model.land
         # get total available infiltration
         @test soil.boundary_conditions.potential_infiltration[idxs] ≈
-            [0.16281059646400808, 1.9744062829658247, 0.16363083612044332]
+            [1.8843819035186123e-9, 2.2851924571363743e-8, 1.8938754180606866e-9]
         @test soil.boundary_conditions.potential_infiltration_surfacewater[idxs] ≈
-            [0.007480075393492462, 1.9744062829658247, 0.0]
+            [8.65749466839408e-11, 2.2851924571363743e-8, 0.0]
         # get actual infiltration
         @test soil.variables.actual_infiltration[idxs] ≈
-            [0.15533052107051562, 0.0, 0.16363083612044332]
+            [1.7978069568346715e-9, 0.0, 1.8938754180606866e-9]
         # there is a lot of infiltration coming from surface water in cell 54
         @test soil.variables.infilt_surfacewater[idxs] ≈
-            [0.007480075393492462, 1.9744062829658247, 0.0]
+            [8.65749466839408e-11, 2.2851924571363743e-8, 0.0]
 
         Wflow.close_files(model; delete_output = false)
     end
