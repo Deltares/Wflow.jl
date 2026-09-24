@@ -287,6 +287,13 @@ NCDataset.
 """
 const NC_HANDLES = Dict{String, NCDataset{Nothing}}()
 
+"NetCDF global attributes following the CF conventions."
+const CF_GLOBAL_ATTRIB = OrderedDict{String, String}(
+    "Conventions" => "CF-1.12",
+    "references" => "https://deltares.github.io/Wflow.jl/",
+    "wflow_version" => string(VERSION),
+)
+
 "Safely create a netCDF file, even if it has already been opened for creation"
 function create_tracked_netcdf(path)
     abs_path = abspath(path)
@@ -297,7 +304,7 @@ function create_tracked_netcdf(path)
     end
     # create directory if needed
     mkpath(dirname(path))
-    ds = NCDataset(path, "c")
+    ds = NCDataset(path, "c"; attrib = CF_GLOBAL_ATTRIB)
     NC_HANDLES[abs_path] = ds
     return ds
 end
@@ -322,7 +329,12 @@ function setup_scalar_netcdf(
         "time",
         Float64,
         ("time",);
-        attrib = ["units" => time_units, "calendar" => convert(String, calendar)],
+        attrib = [
+            "units" => time_units,
+            "calendar" => convert(String, calendar),
+            "standard_name" => "time",
+            "axis" => "T",
+        ],
     )
     set_extradim_netcdf(ds, extra_dim)
     for scalar_variable in config.output.netcdf_scalar.variable
@@ -444,7 +456,12 @@ function setup_grid_netcdf(
         "time",
         Float64,
         ("time",);
-        attrib = ["units" => time_units, "calendar" => convert(String, calendar)],
+        attrib = [
+            "units" => time_units,
+            "calendar" => convert(String, calendar),
+            "standard_name" => "time",
+            "axis" => "T",
+        ],
         deflatelevel,
     )
     for (name, output_data) in parameters
