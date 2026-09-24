@@ -86,6 +86,12 @@ subsurface_water__instantaneous_volume_flow_rate = "ssf"
   `model.land_surface_water_reinfiltration__flag = true` in the TOML file. When enabled, up
   to 95% of the overland flow depth is added to the water available for infiltration, and
   overland flow water levels are corrected accordingly.
+- Support surface ponding on the land surface for both kinematic wave and 2D local inertial
+  overland flow, through an optional per-cell parameter
+  `land_surface_water__ponding_depth`. Incoming water fills the pond up to the retention
+  capacity before contributing to overland flow. When land surface water reinfiltration is
+  enabled, the pond storage is drawn from before the flowable share of the overland flow
+  depth.
 
 ## v1.0.4 - 2026-07-24
 
