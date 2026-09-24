@@ -878,6 +878,8 @@ end
     theta::Float64
     # depth threshold for calculating flow [m]
     h_thresh::Float64
+    # water depth below which not overland flow occurs [m]
+    ponding_depth::Vector{Float64}
     # maximum cell elevation at edge [m] (x direction)
     zx_max_at_edge::Vector{Float64}
     # maximum cell elevation at edge [m] (y direction)
@@ -917,6 +919,13 @@ function LocalInertialOverlandFlowParameters(
         Routing;
         sel = indices,
     )
+    ponding_depth = ncread(
+        dataset,
+        config,
+        "land_surface_water_flow__ponding_depth",
+        Routing;
+        sel = indices,
+    )
     elevation = ncread(
         dataset,
         config,
@@ -951,6 +960,7 @@ function LocalInertialOverlandFlowParameters(
         ywidth_at_edge = we_y,
         theta,
         h_thresh = waterdepth_threshold,
+        ponding_depth,
         zx_max_at_edge,
         zy_max_at_edge,
         mannings_n_sq_at_edge = mannings_n .* mannings_n,
@@ -1237,11 +1247,16 @@ Update flow for the local inertial overland flow model at edge `i` in a single d
         q_cumulative = land_v.qy_cumulative
     end
 
+    # effective water depth: water below `ponding_depth` is retained in the cell and does
+    # not drive overland flow.
+    h_eff_current = max(0.0, land_v.h[i] - land_p.ponding_depth[i])
+
     # the effective flow width is zero when the river width exceeds the cell width and
     # floodplain flow is not calculated.
     if upstream_idx <= land_p.n && width_at_edge != 0.0
-        zs_current = land_p.z[i] + land_v.h[i]
-        zs_upstream = land_p.z[upstream_idx] + land_v.h[upstream_idx]
+        h_eff_upstream = max(0.0, land_v.h[upstream_idx] - land_p.ponding_depth[upstream_idx])
+        zs_current = land_p.z[i] + h_eff_current
+        zs_upstream = land_p.z[upstream_idx] + h_eff_upstream
         zs_max_at_edge = max(zs_current, zs_upstream)
         water_depth_at_edge = (zs_max_at_edge - z_max_at_edge)
 
@@ -1262,10 +1277,10 @@ Update flow for the local inertial overland flow model at edge `i` in a single d
                 dt,
             )
             # limit q in case water is not available
-            if land_v.h[i] <= 0.0
+            if h_eff_current <= 0.0
                 q_current[i] = min(q_current[i], 0.0)
             end
-            if land_v.h[upstream_idx] <= 0.0
+            if h_eff_upstream <= 0.0
                 q_current[i] = max(q_current[i], 0.0)
             end
         else
