@@ -550,6 +550,8 @@ window.Quarto = {
 <li>An optional 1D floodplain schematization to kinematic wave routing of river flow. This is the same 1D floodplain schematization used by the local inertial river flow model. River channel-floodplain water exchange is assumed to be instantaneous. Routing is done separately for the river channel and floodplain. Floodplain water is routed down slope using the <code>accucapacityflux</code> function with a transport capacity based on Manning’s equation.</li>
 <li>Support the use of Manning’s equation (assuming that the topography controls water flow mostly) for river and floodplain routing on a staggered grid. This is an additional routing scheme to the local inertial river routing scheme, both make us of the staggered grid method.</li>
 <li>Added an optional <code>wflow_version</code> field to the config .toml file. This setting is used by the wflow model builder <code>hydromt_wflow</code> for incremental Wflow.jl version upgrading.</li>
+<li>Optional reinfiltration of overland flow into the soil, enabled by setting <code>model.land_surface_water_reinfiltration__flag = true</code> in the TOML file. When enabled, up to 95% of the overland flow depth is added to the water available for infiltration, and overland flow water levels are corrected accordingly.</li>
+<li>Support surface ponding on the land surface for both kinematic wave and 2D local inertial overland flow, through an optional per-cell parameter <code>land_surface_water__ponding_depth</code>. Incoming water fills the pond up to the retention capacity before contributing to overland flow. When land surface water reinfiltration is enabled, the pond storage is drawn from before the flowable share of the overland flow depth.</li>
 </ul>
 </section>
 </section>
