@@ -7,6 +7,10 @@
     potential_evaporation::Vector{Float64} = fill(MISSING_VALUE, n)
     # Temperature [K]
     temperature::Vector{Float64} = fill(MISSING_VALUE, n)
+    # Wind speed [m s-1]
+    wind_speed::Vector{Float64} = Float64[]
+    # Net radiation [W m-2]
+    net_radiation::Vector{Float64} = Float64[]
 end
 
 "Struct to store hydrological forcing variables"
