@@ -386,11 +386,12 @@ function compute_flow_balance!(
     )
     (; storage_prev, error, relative_error) = water_balance
     (; inwater) = overland_flow_model.boundary_conditions
-    (; qin_average, q_average, storage) = overland_flow_model.variables
+    (; qin_average, q_average, storage, reinfiltration_average) =
+        overland_flow_model.variables
 
     for i in eachindex(storage_prev)
         total_in = inwater[i] + qin_average[i]
-        total_out = q_average[i]
+        total_out = q_average[i] + reinfiltration_average[i]
         storage_rate = (storage[i] - storage_prev[i]) / dt
         error[i], relative_error[i] =
             compute_mass_balance_error(total_in, total_out, storage_rate)

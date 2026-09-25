@@ -1096,10 +1096,9 @@ function update_bc_overland_flow_model!(
     overland_flow_model.boundary_conditions.runoff[river_indices] .+=
         get_flux_to_river(subsurface_flow, river_indices)
 
-    # TODO CHECK UNIT CONVERSION
     # infiltration volume [m³] from surface water, applied in `local_inertial_update_water_depth!`
     @. overland_flow_model.boundary_conditions.infiltration_volume =
-        soil.variables.infilt_surfacewater * area #* 0.001
+        soil.variables.infilt_surfacewater * area * dt
     return nothing
 end
 
