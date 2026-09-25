@@ -862,6 +862,10 @@ end
     error::Vector{Float64} = zeros(n)
     # water depth of cell [m] (for river cells the reference is the river bed elevation `zb`)
     h::Vector{Float64} = zeros(n)
+    # volume of ponded water [m³] retained in the cell and not driving overland flow;
+    # pond fills from any net non-infiltration inflow up to `ponding_depth * cell_area`
+    # and is depleted first by surface-water infiltration.
+    ponding_storage::Vector{Float64} = zeros(n)
 end
 
 "Struct to store local inertial overland flow model parameters"
@@ -878,7 +882,7 @@ end
     theta::Float64
     # depth threshold for calculating flow [m]
     h_thresh::Float64
-    # water depth below which not overland flow occurs [m]
+    # water depth below which overland flow does not occur [m]
     ponding_depth::Vector{Float64}
     # maximum cell elevation at edge [m] (x direction)
     zx_max_at_edge::Vector{Float64}
@@ -1247,14 +1251,18 @@ Update flow for the local inertial overland flow model at edge `i` in a single d
         q_cumulative = land_v.qy_cumulative
     end
 
-    # effective water depth: water below `ponding_depth` is retained in the cell and does
-    # not drive overland flow.
-    h_eff_current = max(0.0, land_v.h[i] - land_p.ponding_depth[i])
+    # effective water depth: the dynamically tracked pond depth (`ponding_storage/area`)
+    # is subtracted so that water retained in the pond does not drive overland flow.
+    pond_depth_current = land_v.ponding_storage[i] / (x_length[i] * y_length[i])
+    h_eff_current = max(0.0, land_v.h[i] - pond_depth_current)
 
     # the effective flow width is zero when the river width exceeds the cell width and
     # floodplain flow is not calculated.
     if upstream_idx <= land_p.n && width_at_edge != 0.0
-        h_eff_upstream = max(0.0, land_v.h[upstream_idx] - land_p.ponding_depth[upstream_idx])
+        pond_depth_upstream =
+            land_v.ponding_storage[upstream_idx] /
+            (x_length[upstream_idx] * y_length[upstream_idx])
+        h_eff_upstream = max(0.0, land_v.h[upstream_idx] - pond_depth_upstream)
         zs_current = land_p.z[i] + h_eff_current
         zs_upstream = land_p.z[upstream_idx] + h_eff_upstream
         zs_max_at_edge = max(zs_current, zs_upstream)
@@ -1458,6 +1466,38 @@ from horizontal fluxes and runoff.
 end
 
 """
+Update ponded storage at cell index `i` for the local inertial overland flow model. Any net
+non-infiltration inflow fills the pond up to `ponding_depth * cell_area` before contributing
+to flowable depth, and surface-water infiltration drains ponded water first (symmetric with
+the kinematic wave overland flow model).
+"""
+@inline function update_ponding_storage!(
+        overland_flow_model::OverlandFlowModel{<:LocalInertial},
+        cell_area::Float64,
+        net_inflow::Float64,
+        i::Int,
+    )
+    land_v = overland_flow_model.variables
+    land_p = overland_flow_model.parameters
+    land_bc = overland_flow_model.boundary_conditions
+
+    pond_capacity = land_p.ponding_depth[i] * cell_area
+    if net_inflow > 0.0
+        pond_room = max(0.0, pond_capacity - land_v.ponding_storage[i])
+        land_v.ponding_storage[i] += min(net_inflow, pond_room)
+    end
+    infilt = land_bc.infiltration_volume[i]
+    if infilt > 0.0
+        from_pond = min(infilt, land_v.ponding_storage[i])
+        land_v.ponding_storage[i] -= from_pond
+    end
+    # keep pond consistent with available storage in the cell (numerical safety).
+    land_v.ponding_storage[i] =
+        clamp(land_v.ponding_storage[i], 0.0, max(0.0, land_v.storage[i]))
+    return nothing
+end
+
+"""
 Update storage and water depth for the local inertial overland flow model at node index `i`
 containing a river.
 """
@@ -1502,6 +1542,22 @@ containing a river.
     overland_flow_model.variables.h[i] = land_h
     river_flow_model.variables.storage[river_idx] = river_storage
 
+    # Update pond storage: fill from net non-infiltration inflow, drain from infiltration.
+    # `storage_change` includes `-infiltration_volume`, so add it back and include the
+    # external inflow to obtain the net non-infiltration inflow contributing to the cell.
+    cell_area = domain.land.parameters.x_length[i] * domain.land.parameters.y_length[i]
+    net_inflow =
+        storage_change +
+        overland_flow_model.boundary_conditions.infiltration_volume[i] +
+        inflow * dt
+    update_ponding_storage!(overland_flow_model, cell_area, net_inflow, i)
+    # for river cells the physical pond sits on the floodplain part (`land_h`), cap
+    # accordingly.
+    overland_flow_model.variables.ponding_storage[i] = min(
+        overland_flow_model.variables.ponding_storage[i],
+        land_h * cell_area,
+    )
+
     return nothing
 end
 
@@ -1527,9 +1583,16 @@ Update storage and water depth for local inertial overland flow model at node in
     end
 
     # Update water depth
+    cell_area = domain.parameters.x_length[i] * domain.parameters.y_length[i]
     overland_flow_model.variables.h[i] =
-        overland_flow_model.variables.storage[i] /
-        (domain.parameters.x_length[i] * domain.parameters.y_length[i])
+        overland_flow_model.variables.storage[i] / cell_area
+
+    # Update pond storage: fill from net non-infiltration inflow, drain from infiltration.
+    # `storage_change` includes `-infiltration_volume`, so add it back to obtain the net
+    # non-infiltration inflow contributing to the cell.
+    net_inflow =
+        storage_change + overland_flow_model.boundary_conditions.infiltration_volume[i]
+    update_ponding_storage!(overland_flow_model, cell_area, net_inflow, i)
 
     return nothing
 end

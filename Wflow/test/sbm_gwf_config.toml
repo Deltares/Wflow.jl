@@ -31,6 +31,7 @@ river_water__instantaneous_volume_flow_rate = "q_river"
 
 land_surface_water__instantaneous_volume_flow_rate = "q_land"
 land_surface_water__depth = "h_land"
+land_surface_water__ponded_volume = "ponding_storage_land"
 
 subsurface_water__hydraulic_head = "head"
 

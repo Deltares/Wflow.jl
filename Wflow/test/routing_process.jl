@@ -1493,6 +1493,14 @@ end
             qx = [0.0, -3.63341089804407, -0.7526187151790501, 0.0],
             h = [0.0, 1.3754708010382453, 0.11735139800699446],
             storage = [0.0, 783157.9568615163, 237954.47204911432],
+            # pond storage in nodes 2 and 3 fills up to `min(h, ponding_depth) * cell_area`,
+            # so `h_eff = h - ponding_storage / cell_area` is zero at both nodes and no
+            # flow occurs across the edge.
+            ponding_storage = [
+                0.0,
+                1.3754708010382453 * 614.4202561305977 * 926.6857061478484,
+                0.11735139800699446 * 614.4202561305977 * 926.6857061478484,
+            ],
         ),
     )
     domain = Wflow.Domain(;
@@ -1522,9 +1530,12 @@ end
     Wflow.update_directional_flow!(overland_flow_model, domain, 2, dt, is_x_direction)
     @test overland_flow_model.variables.qx[2] == 0.0
 
-    # Lower the ponding threshold at the current cell so `h_eff_current > 0` and the
-    # remaining "free" surface elevation can drive flow across the edge.
+    # Lower the pond capacity at the current cell (both the `ponding_depth` parameter and
+    # the tracked `ponding_storage`) so `h_eff_current > 0` and the remaining "free"
+    # surface elevation can drive flow across the edge.
+    cell_area = 614.4202561305977 * 926.6857061478484
     overland_flow_model.parameters.ponding_depth[3] = 0.05
+    overland_flow_model.variables.ponding_storage[3] = 0.05 * cell_area
     overland_flow_model.variables.qx[2] = -3.63341089804407
     overland_flow_model.variables.qx0 .= overland_flow_model.variables.qx
     Wflow.update_directional_flow!(overland_flow_model, domain, 2, dt, is_x_direction)
