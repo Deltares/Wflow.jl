@@ -1513,6 +1513,14 @@ end
             qx = [0.0, -3.63341089804407, -0.7526187151790501, 0.0],
             h = [0.0, 1.3754708010382453, 0.11735139800699446],
             storage = [0.0, 783157.9568615163, 237954.47204911432],
+            # pond storage in nodes 2 and 3 fills up to `min(h, ponding_depth) * cell_area`,
+            # so `h_eff = h - ponding_storage / cell_area` is zero at both nodes and no
+            # flow occurs across the edge.
+            ponding_storage = [
+                0.0,
+                1.3754708010382453 * 614.4202561305977 * 926.6857061478484,
+                0.11735139800699446 * 614.4202561305977 * 926.6857061478484,
+            ],
         ),
     )
     domain = Wflow.Domain(;
