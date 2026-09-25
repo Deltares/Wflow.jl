@@ -985,7 +985,7 @@ completely in one time step), the potential infiltration from surface water
 flow depth `waterdepth_land` $\SIb{}{mm}$ as:
 
 $$
-    \subtext{i}{pot, sw} = \subtext{h}{land} (1 - \subtext{f}{river}) \subtext{f}{reinfilt, max},
+    \subtext{i}{pot, sw} = \frac{\subtext{h}{land}}{\Delta t} (1 - \subtext{f}{river}) \subtext{f}{reinfilt, max},
 $$
 
 where $\SIb{\subtext{f}{river}}{-}$ is the river fraction of the cell and
