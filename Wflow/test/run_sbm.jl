@@ -1418,7 +1418,6 @@ end
 
         model = Wflow.Model(config)
         Wflow.run_timestep!(model)
-        # old_h = copy(model.routing.overland_flow.variables.h)
         Wflow.run_timestep!(model)
 
         (; soil) = model.land
@@ -1434,18 +1433,6 @@ end
         @test soil.variables.infilt_surfacewater[idxs] ≈
             [0.0, 1.8112574239337292e-7, 1.555963155960821e-10]
 
-        # (; h) = model.routing.overland_flow.variables
-        # @test h[idxs] ≈ [0.0, 0.039396885875137864, 0.02395111033358323]
-        # @test h[idxs] - old_h[idxs] ≈ [0.0, -0.039396885875137864, -0.02395111033358323]
-        # # test that h decreased in the first two cells, but not in the third cell (had no
-        # # surface water infiltration)
-        # decreased_h = h[idxs] .< old_h[idxs]
-        # equal_h = h[idxs] .== old_h[idxs]
-        # increased_h = h[idxs] .> old_h[idxs]
-        # @test decreased_h == [false, true, true]
-        # @test equal_h == [true, false, false]
-        # @test increased_h == [false, false, false]
-
         Wflow.close_files(model; delete_output = false)
     end
 
@@ -1459,7 +1446,6 @@ end
 
         model = Wflow.Model(config)
         Wflow.run_timestep!(model)
-        # old_h = copy(model.routing.overland_flow.variables.h)
         Wflow.run_timestep!(model)
 
         (; soil) = model.land
@@ -1475,18 +1461,39 @@ end
         @test soil.variables.infilt_surfacewater[idxs] ≈
             [8.65749466839408e-11, 2.2851924571363743e-8, 0.0]
 
-        # (; h) = model.routing.overland_flow.variables
-        # # all available surface water was infiltrated
-        # @test h[idxs] ≈ [0.0, 0.0, 0.0]
-        # decreased_h = h[idxs] .< old_h[idxs]
-        # equal_h = h[idxs] .== old_h[idxs]
-        # increased_h = h[idxs] .> old_h[idxs]
-        # # test that h decreased in the first two cells, but not in the third cell (had no
-        # # surface water infiltration)
-        # @test decreased_h == [true, true, false]
-        # @test equal_h == [false, false, true]
-        # @test increased_h == [false, false, false]
-
         Wflow.close_files(model; delete_output = false)
     end
+end
+
+@testitem "water balance sbm with reinfiltration (kinematic wave routing)" begin
+    tomlpath = joinpath(@__DIR__, "sbm_config.toml")
+    config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
+    config.model.water_mass_balance__flag = true
+    config.model.land_surface_water_reinfiltration__flag = true
+    model = Wflow.Model(config)
+    (; overland_water_balance) = model.mass_balance.routing
+    (; reinfiltration_average) = model.routing.overland_flow.variables
+    (; infilt_surfacewater) = model.land.soil.variables
+    (; area) = model.domain.land.parameters
+
+    Wflow.run_timestep!(model)
+    Wflow.run_timestep!(model)
+
+    # `reinfiltration_average` must equal the soil-side surface-water infiltration flux
+    # (`infilt_surfacewater * area`), i.e. the routing outflow matches the soil inflow.
+    @test reinfiltration_average ≈ infilt_surfacewater .* area
+
+    # relative mass-balance error must be tight at flowing cells, including where
+    # reinfiltration is active.
+    inds = findall(x -> x > 1.0e-3, model.routing.overland_flow.variables.q_average)
+    @test all(re -> abs(re) < 1.0e-9, overland_water_balance.relative_error[inds])
+    reinf_inds = findall(x -> x > 0.0, reinfiltration_average)
+    @test !isempty(reinf_inds)
+    @test all(
+        re -> abs(re) < 1.0e-9,
+        overland_water_balance.relative_error[intersect(reinf_inds, inds)],
+    )
+
+    Wflow.close_files(model; delete_output = false)
 end
