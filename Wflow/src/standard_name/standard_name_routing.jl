@@ -327,6 +327,17 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
             :local_inertial_overland_output,
         ],
     ),
+    "land_surface_water__ponded_volume" => ParameterMetadata(;
+        lens = @optic(_.routing.overland_flow.variables.ponding_storage),
+        unit = Unit(; m = 3),
+        description = "Volume of water retained in the surface pond (`ponding_depth` buffer)",
+        tags = [
+            :kinematic_wave_overland_state,
+            :kinematic_wave_overland_output,
+            :local_inertial_overland_state,
+            :local_inertial_overland_output,
+        ],
+    ),
     #### Output
     "land_surface_water__volume_flow_rate" => ParameterMetadata(;
         lens = @optic(_.routing.overland_flow.variables.q_average),
