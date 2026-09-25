@@ -1405,3 +1405,95 @@ end
     end
     Wflow.close_files(model; delete_output = false)
 end
+
+
+@testitem "reinfiltration" begin
+    @testset "Kinematic wave overland flow" begin
+        tomlpath = joinpath(@__DIR__, "sbm_config.toml")
+        config = Wflow.Config(tomlpath)
+        config.dir_output = mktempdir()
+        config.model.land_surface_water_reinfiltration__flag = true
+
+        idxs = [53, 54, 55]
+
+        model = Wflow.Model(config)
+        Wflow.run_timestep!(model)
+        Wflow.run_timestep!(model)
+
+        (; soil) = model.land
+        # get total available infiltration
+        @test soil.boundary_conditions.potential_infiltration[idxs] ≈
+            [8.290954048774218e-10, 1.8193309401321751e-7, 9.71627171868268e-10]
+        @test soil.boundary_conditions.potential_infiltration_surfacewater[idxs] ≈
+            [0.0, 1.8112574239337292e-7, 1.555963155960821e-10]
+        # get actual infiltration
+        @test soil.variables.actual_infiltration[idxs] ≈
+            [8.290954048774218e-10, 8.073516198445915e-10, 8.160308562721859e-10]
+        # there is a lot of infiltration coming from surface water in cell 54
+        @test soil.variables.infilt_surfacewater[idxs] ≈
+            [0.0, 1.8112574239337292e-7, 1.555963155960821e-10]
+
+        Wflow.close_files(model; delete_output = false)
+    end
+
+    @testset "Local inertial overland flow" begin
+        tomlpath = joinpath(@__DIR__, "sbm_river-land-local-inertial_config.toml")
+        config = Wflow.Config(tomlpath)
+        config.dir_output = mktempdir()
+        config.model.land_surface_water_reinfiltration__flag = true
+
+        idxs = [13929, 13930, 13931]
+
+        model = Wflow.Model(config)
+        Wflow.run_timestep!(model)
+        Wflow.run_timestep!(model)
+
+        (; soil) = model.land
+        # get total available infiltration
+        @test soil.boundary_conditions.potential_infiltration[idxs] ≈
+            [1.8843819035186123e-9, 2.2851924571363743e-8, 1.8938754180606866e-9]
+        @test soil.boundary_conditions.potential_infiltration_surfacewater[idxs] ≈
+            [8.65749466839408e-11, 2.2851924571363743e-8, 0.0]
+        # get actual infiltration
+        @test soil.variables.actual_infiltration[idxs] ≈
+            [1.7978069568346715e-9, 0.0, 1.8938754180606866e-9]
+        # there is a lot of infiltration coming from surface water in cell 54
+        @test soil.variables.infilt_surfacewater[idxs] ≈
+            [8.65749466839408e-11, 2.2851924571363743e-8, 0.0]
+
+        Wflow.close_files(model; delete_output = false)
+    end
+end
+
+@testitem "water balance sbm with reinfiltration (kinematic wave routing)" begin
+    tomlpath = joinpath(@__DIR__, "sbm_config.toml")
+    config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
+    config.model.water_mass_balance__flag = true
+    config.model.land_surface_water_reinfiltration__flag = true
+    model = Wflow.Model(config)
+    (; overland_water_balance) = model.mass_balance.routing
+    (; reinfiltration_average) = model.routing.overland_flow.variables
+    (; infilt_surfacewater) = model.land.soil.variables
+    (; area) = model.domain.land.parameters
+
+    Wflow.run_timestep!(model)
+    Wflow.run_timestep!(model)
+
+    # `reinfiltration_average` must equal the soil-side surface-water infiltration flux
+    # (`infilt_surfacewater * area`), i.e. the routing outflow matches the soil inflow.
+    @test reinfiltration_average ≈ infilt_surfacewater .* area
+
+    # relative mass-balance error must be tight at flowing cells, including where
+    # reinfiltration is active.
+    inds = findall(x -> x > 1.0e-3, model.routing.overland_flow.variables.q_average)
+    @test all(re -> abs(re) < 1.0e-9, overland_water_balance.relative_error[inds])
+    reinf_inds = findall(x -> x > 0.0, reinfiltration_average)
+    @test !isempty(reinf_inds)
+    @test all(
+        re -> abs(re) < 1.0e-9,
+        overland_water_balance.relative_error[intersect(reinf_inds, inds)],
+    )
+
+    Wflow.close_files(model; delete_output = false)
+end
