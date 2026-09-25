@@ -302,6 +302,13 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
         description = "Manning's roughness",
         tags = [:kinematic_wave_overland_input, :local_inertial_overland_input],
     ),
+    "land_surface_water__ponding_depth" => ParameterMetadata(;
+        lens = @optic(_.routing.overland_flow.parameters.ponding_depth),
+        unit = Unit(; m = 1),
+        default = 0.0,
+        description = "Ponding depth on the land surface",
+        tags = [:kinematic_wave_overland_input, :local_inertial_overland_input],
+    ),
     #### States
     "land_surface_water__instantaneous_volume_flow_rate" => ParameterMetadata(;
         lens = @optic(_.routing.overland_flow.variables.q),
@@ -313,6 +320,17 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
         lens = @optic(_.routing.overland_flow.variables.h),
         unit = Unit(; m = 1),
         description = "Water depth",
+        tags = [
+            :kinematic_wave_overland_state,
+            :kinematic_wave_overland_output,
+            :local_inertial_overland_state,
+            :local_inertial_overland_output,
+        ],
+    ),
+    "land_surface_water__ponded_volume" => ParameterMetadata(;
+        lens = @optic(_.routing.overland_flow.variables.ponding_storage),
+        unit = Unit(; m = 3),
+        description = "Volume of water retained in the surface pond (`ponding_depth` buffer)",
         tags = [
             :kinematic_wave_overland_state,
             :kinematic_wave_overland_output,

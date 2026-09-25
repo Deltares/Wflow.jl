@@ -1012,6 +1012,12 @@ Finally, `actual_infiltration`, `infiltexcess` and `water_flux_surface` are corr
 $\subtext{i}{pot, sw}$ to avoid double counting of water already originating from surface
 water.
 
+When a positive [surface ponding depth](../routing/kinwave.qmd#surface-ponding) is
+configured, reinfiltration is drawn from the pond storage before reducing the flowable share
+of the overland flow depth. This applies to both [kinematic wave overland
+flow](../routing/kinwave.qmd#surface-ponding) and [2D local inertial overland
+flow](../routing/staggered-grid.qmd#surface-ponding).
+
 ### Capillary rise
 
 Capillary rise is determined when an unsaturated zone occurs in the soil column, using the
