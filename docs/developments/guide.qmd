@@ -47,16 +47,25 @@ files together constitute each example model used by the documentation. A DVC pi
 these selections into three public archives as non-cached, persistent outputs. On `main` these are
 published under `wflow/examples/dev`; release branches use their corresponding
 `wflow/examples/vX.Y` folder. After updating test data, example configurations, the selection, or
-the publishing utility, publish the archives and commit the updated lockfile:
+the publishing utility, merge those changes first. Then publish from an up-to-date `main` checkout
+and commit the updated lockfile:
 
 ```sh
 pixi run dvc repro publish-example-models
 git add Wflow/test/data/input.dvc dvc.lock
 ```
 
-When creating the minor release branch `release/vX.Y` (for any X or Y), replace `examples/dev` with `examples/vX.Y` in the stage
-command and all outputs in `dvc.yaml`. Make the same replacement in the download links in
-`docs/getting_started/download_example_models.qmd`, then publish and commit the release-specific
+The `examples/dev` archives are shared by the development documentation. Publishing from a
+feature branch can replace the files expected by `main`, so the publishing script refuses to
+upload `examples/dev` outside `main`. The DVC consistency workflow checks pushes to `main` and
+release branches; it does not check pull requests, because shared archives are published only
+after merge. If a consistency check reports modified outputs, reproduce the stage from the
+corresponding up-to-date branch and commit the resulting lockfile.
+
+When creating the minor release branch `release/vX.Y` (for any X or Y), replace `examples/dev`
+with `examples/vX.Y` in the stage command and all outputs in `dvc.yaml`. Make the same replacement
+in the download links in `docs/getting_started/download_example_models.qmd`. Publish only from the
+matching `release/vX.Y` branch, after merging the relevant changes, then commit the release-specific
 pipeline state:
 
 ```sh
@@ -64,8 +73,7 @@ pixi run dvc repro publish-example-models
 git add dvc.yaml dvc.lock docs/getting_started/download_example_models.qmd
 ```
 
-CI only downloads the DVC data and checks `dvc status`; it never uploads data. A consistency
-failure means that a maintainer must reproduce the stage and commit `dvc.lock` before merging.
+CI only downloads the DVC data and checks `dvc status`; it never uploads data.
 
 ## Parameter and variable metadata JSON export
 

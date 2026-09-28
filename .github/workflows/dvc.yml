@@ -1,7 +1,9 @@
 name: DVC consistency
 on:
   push:
-  pull_request:
+    branches:
+      - main
+      - "release/**"
 
 permissions:
   contents: read

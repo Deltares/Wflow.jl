@@ -58,7 +58,8 @@ using LoggingExtras:
     TeeLogger,
     Warn,
     with_logger
-using NCDatasets: NCDatasets, NCDataset, dimnames, dimsize, nomissing, defDim, defVar, path
+using NCDatasets:
+    NCDatasets, NCDataset, CFVariable, dimnames, dimsize, nomissing, defDim, defVar, path
 using OrderedCollections: OrderedDict
 using Parameters: @with_kw
 using Polyester: @batch
@@ -69,8 +70,6 @@ using Statistics: mean, median, quantile!
 using TerminalLoggers: TerminalLogger
 using TOML: TOML
 
-const CFDataset = Union{NCDataset, NCDatasets.MFDataset}
-const CFVariable_MF = Union{NCDatasets.CFVariable, NCDatasets.MFCFVariable}
 const VERSION =
     VersionNumber(TOML.parsefile(joinpath(@__DIR__, "..", "Project.toml"))["version"])
 
@@ -95,7 +94,7 @@ function Clock(config)
 end
 
 function Clock(config, reader)
-    nctimes = reader.dataset["time"][:]
+    nctimes = reader.dataset_times
 
     # if the timestep is not given, use the difference between netCDF time 1 and 2
     if isnothing(config.time.timestepsecs)
