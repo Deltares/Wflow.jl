@@ -594,6 +594,8 @@ end
     dt = 900.0 # s
     original_depth = 0.02 # m
     river_fraction = 0.2
+    flow_length = 100.0
+    surface_flow_width = 10.0
     expected_water_depth =
         original_depth - (infilt_surfacewater * dt) / (1 - river_fraction)
 
@@ -615,7 +617,11 @@ end
     overland_flow_model =
         OverlandFlowModel(; routing_method = Wflow.KinematicWave(), timestepping, boundary_conditions, parameters, variables)
 
-    land_parameters = (; river_fraction = [river_fraction], surface_flow_width = [10.0])
+    land_parameters = (;
+        river_fraction = [river_fraction],
+        surface_flow_width = [surface_flow_width],
+        flow_length = [flow_length],
+    )
 
     # Test with positive infiltration
     Wflow.update_overland_flow_and_depth!(
