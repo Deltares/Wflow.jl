@@ -126,10 +126,16 @@ website:
           - file: model_docs/parameters_mass_balance.qmd
     - title: Developments
       contents:
-        - developments/index.qmd
-        - changelog.qmd
-        - developments/guide.qmd
-        - developments/model_struct.qmd
+        - file: developments/index.qmd
+        - file: developments/guide.qmd
+        - file: developments/modular_setup.qmd
+        - file: developments/model_struct.qmd
+        - file: developments/NetCDF.qmd
+        - file: developments/units.qmd
+        - file: developments/BMI.qmd
+        - file: developments/building.qmd
+        - file: developments/release.qmd
+        - file: changelog.qmd
 
 format:
   html:

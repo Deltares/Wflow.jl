@@ -1,0 +1,46 @@
+---
+title: Building from source and testing
+---
+All actions building Wflow from source start at the `pixi.toml` file included in the repos. After the pixi environment is set up and the `install` job has been executed, i.e.
+```
+pixi install
+pixi run install
+```
+which prepares the default environment, building of the wflow-cli is initiated by
+
+```
+pixi run build-wflow-cli
+```
+This runs the script
+`build/create_binaries/create_app.jl`.
+The result of this step can be found in\
+`build/create_binaries/wflow_bundle`
+
+The built executable can be tested with:
+```
+pixi run test-wflow-cli
+```
+These tests require a set of test data that are retrieved by a `dvc pull`, which is automatically performed prior to running the tests.
+<br>
+<br>
+Also an `msix` package can be built in the directory in which the binaries were created through the following Powershell script:
+
+```
+try {
+    # Copy files needed for MSIX into the directory we will pack
+    Copy-Item AppxManifest.xml wflow_bundle/
+    Copy-Item logo-150.png wflow_bundle/
+    Copy-Item logo-44.png wflow_bundle/
+
+    # Pack the wflow_bundle directory to wflow_windows.msix, overwriting existing msix files
+    makeappx pack /o /d wflow_bundle /p wflow_windows.msix
+} Catch {
+    $ErrorMessage = $_.Exception.Message
+    Write-Output $ErrorMessage
+    exit(1)
+}
+```
+<br>
+<br>
+Finally, the repository contains a Docker file in order to build wflow within a new docker container.
+All of the abovementioned builds as well as the tests are running in the `wflow`-section on the TeamCity.

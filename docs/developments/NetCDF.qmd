@@ -1,0 +1,72 @@
+---
+title: NetCDF
+---
+On the output side, the NetCDF format for data storage is used in two ways:
+*   Save and load model state
+*   Write output on a time step basis
+
+The central function facilitating NetCDF output is
+    `write_netcdf_timestep` in `io.jl`
+
+For more information on the NetCDF standard we refer to the official documentation at [UniData](https://www.unidata.ucar.edu/software/netcdf)
+
+More details on the application of this file format within Wflow can be found in the [HydroMT-Wflow](https://deltares.github.io/hydromt_wflow/stable/index.html). More specific, the use of NetCDF is  described in the sections:
+
+* [Model methods](https://deltares.github.io/hydromt_wflow/model_methods/)
+ in relation to input and output for the Wflow model itself
+
+* [Data Catalog preparation](https://deltares.github.io/hydromt_wflow/data_catalog/) → specifying NetCDF sources
+
+* [Model building workflow](https://deltares.github.io/hydromt_wflow/model_building/) → conversion to CF‑compliant NetCDF
+
+<hr>
+
+## NetCDF for time-varying or fixed atmospheric forcing
+* initially set fixed atmospheric forcing
+ `load_fixed_forcing` → `get_field_in_model`
+* update atmospheric forcing for a given time
+ `update_forcing` → `get_at`
+
+ The list of names of the atmospheric quantities is enclosed in the `reader` which is part of the `model`.
+ This list of names is part of the model configuration.
+
+## NetCDF for static model layers
+
+The model opens `input.path_static` during initialization. Model components read their
+parameters from this dataset with `ncread` in [`utils.jl`](../../Wflow/src/utils.jl), then
+the dataset is closed after model construction. The `[input.static]` table maps Wflow
+standard names to NetCDF variable names; for example, `river__length = "wflow_riverlength"`.
+An input can instead be specified as a uniform TOML value. If an optional parameter is not
+mapped, its metadata default is used when one is defined.
+
+For NetCDF-backed values, `ncread` reads the first time slice (if a `time` dimension is
+present), standardizes the spatial axes, applies configured scale and offset, and selects
+the requested active cells. It handles missing and NaN values according to the parameter
+metadata, then converts the data to the expected type and SI units. Layered parameters also
+read their layer dimension and can apply layer-specific scale and offset values.
+
+## NetCDF for atmospheric forcing
+
+The `[input.forcing]` table maps Wflow standard names to variables in `input.path_forcing`,
+for example precipitation, potential evaporation, and air temperature. These mappings are
+stored in the model's `NCReader`, which sorts forcing files by their time values and keeps
+the currently needed file open. A glob can be used when forcing is split across files.
+
+At each timestep, `update_forcing!` in [`io.jl`](../../Wflow/src/io.jl) selects the first
+forcing timestamp at or after the model time. Wflow expects right-labelled forcing: a
+timestamp marks the end of its accumulation interval. The read field is scaled and offset,
+converted to the parameter's expected type and SI units, and reduced to the active model
+cells. Missing values on active cells are rejected. Precipitation and potential evaporation
+are averaged over reservoir coverage and passed to reservoir boundary fields when reservoirs
+are enabled.
+
+Forcing entries may also be constant values in the TOML configuration. These are loaded
+once by `load_fixed_forcing!`; NetCDF-backed forcing values are refreshed each timestep.
+
+## Cyclic parameters
+
+Cyclic parameters are also read from `input.path_static`, but are configured separately in
+`[input.cyclic]`. Their NetCDF variable must have a time dimension whose name starts with
+`time`. Wflow reads the cyclic data during initialization and updates the corresponding
+model fields on the configured cycle, rather than treating them as static parameters or
+ordinary timestep forcing.

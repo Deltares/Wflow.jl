@@ -32,13 +32,123 @@ struct Model{
 end
 ```
 
-The `domain` field represents network (including connectivity) information of different
-modelling domains as the `river`, `land`, or `subsurface` domain and it contains shared
-model parameters that can be used across different model components. The `routing` field of
-the `struct Model` can contain different routing concepts for river, land and subsurface
-flow domains. For example, the wflow\_sbm model with default configuration contains the
-kinematic wave routing concept for river, overland and lateral subsurface flow. The `land`
-field of the `struct Model` represents a land model, simulating vertical fluxes, for example
-soil erosion as part of the `sediment` model type and snow melt as part of the `sbm` model
-type. Finally, the `mass_balance` field contains water mass balance computations (error and
-relative error).
+The `domain` field represents network and shared-parameter information for the `land`,
+`river`, `reservoir`, and `drain` domains. The `routing` field represents different routing
+concepts for river, overland, and subsurface flow. For example, the wflow\_sbm model with
+default configuration contains the kinematic wave routing concept for river, overland, and
+lateral subsurface flow. The `land` field represents a land model that simulates vertical
+processes, such as soil hydrology in the `sbm` model type or soil erosion in the `sediment`
+model type. The `mass_balance` field stores model-specific balance bookkeeping: hydrological
+models use water-balance structures, while sediment models use `NoMassBalance`.
+
+## Type parameters
+
+`Model` is parameterized by the concrete implementations of its major components:
+
+| Parameter | Constraint | Role |
+|---|---|---|
+| `R` | `Routing` | Horizontal flow through the river, overland, and subsurface domains |
+| `L` | `AbstractLandModel` | Vertical land processes, such as soil hydrology or erosion |
+| `M` | `AbstractMassBalance` | Water balance bookkeeping, or `NoMassBalance` for sediment |
+| `W` | `Writer` | NetCDF output and end-state writing |
+| `T` | `AbstractModelType` | Dispatch tag: `SbmModel`, `SbmGwfModel`, or `SedimentModel` |
+
+The concrete type parameters are inferred when a model is constructed. They let Julia dispatch
+model-specific operations without storing a collection of loosely typed components.
+
+## Constructing a model
+
+The usual entry point is a parsed [`Config`](../user_guide/toml_file.qmd) object:
+
+```julia
+config = Wflow.Config("path/to/wflow_sbm.toml")
+model = Wflow.Model(config)
+```
+
+`Model(config)` reads `config.model.type` and delegates to one of the model-type constructors:
+
+```julia
+Wflow.Model(config, Wflow.SbmModel())
+Wflow.Model(config, Wflow.SbmGwfModel())
+Wflow.Model(config, Wflow.SedimentModel())
+```
+
+These constructors open the static input dataset, create the domain, land and routing
+components, initialize the clock and input/output handlers, and restore or initialize model
+states. The returned model is ready to run. The fixed forcing is loaded by `run(config)` or by
+the BMI initializer before the first timestep.
+
+## Running a model
+
+The high-level methods are:
+
+| Method | Description |
+|---|---|
+| `run(toml_path)` | Parse a TOML file, run the simulation, and close its files |
+| `run(config)` | Load fixed forcing, run the initialized model, and return the model |
+| `run!(model)` | Run all timesteps from the model clock to `config.time.endtime` |
+| `run_timestep!(model)` | Advance and execute exactly one timestep |
+| `run()` | Read the TOML path from the single command-line argument and run it |
+
+For example, use `run!` when the model needs to be inspected or modified between construction
+and execution:
+
+```julia
+config = Wflow.Config("path/to/wflow_sbm.toml")
+model = Wflow.Model(config)
+Wflow.load_fixed_forcing!(model)
+Wflow.run!(model)
+```
+
+`run_timestep!` is the central orchestration method. One call performs these operations in
+order:
+
+1. `advance!(model.clock)` moves the model time forward by one model timestep.
+2. `load_dynamic_input!(model)` reads time-varying forcing and cyclic inputs.
+3. `storage_prev!(model, model.mass_balance)` stores the previous state for balance checks.
+4. `update_model!(model)` dispatches to the selected model type and updates land and routing.
+5. `compute_mass_balance!(model, model.mass_balance)` calculates balance errors.
+6. `write_output(model)` writes configured output for the timestep.
+
+Output can be skipped for a particular call, and the update function can be replaced for
+specialized workflows:
+
+```julia
+Wflow.run_timestep!(model; write_model_output = false)
+Wflow.run_timestep!(model; update_func = my_update!)
+```
+
+`run!` writes the configured end state, resets the clock so the model can be run again, and
+closes files by default. Pass `close_files = false` when the open datasets are needed after the
+run or when another run will follow using the same model instance.
+
+## Model-type dispatch
+
+`update_model!` is an internal extension point selected by the model's type tag:
+
+```julia
+update_model!(model::AbstractModel{<:SbmModel})
+update_model!(model::AbstractModel{<:SbmGwfModel})
+update_model!(model::AbstractModel{<:SedimentModel})
+```
+
+The SBM variants update soil hydrology and water routing. The sediment variant updates soil
+loss and sediment transport and uses `NoMassBalance`. Calling `update_model!` directly skips
+the clock, forcing, balance, and output steps, so normal applications should call
+`run_timestep!` instead.
+
+## BMI methods
+
+The Basic Model Interface (BMI) exposes the same lifecycle to external couplers. Its main
+methods map onto `Model` operations as follows:
+
+| BMI method | Model operation |
+|---|---|
+| `BMI.initialize(Model, config_file)` | Construct a model and load fixed forcing |
+| `BMI.update(model)` | Call `run_timestep!(model)` once |
+| `BMI.update_until(model, time)` | Call `run_timestep!` until the requested model time |
+| `BMI.finalize(model)` | Write end state, reset the clock, and close files |
+
+This means a BMI client does not need to know the concrete routing or land model stored in the
+struct. It interacts with the model through the lifecycle and BMI variable methods, such as
+`BMI.get_value` and `BMI.set_value`.

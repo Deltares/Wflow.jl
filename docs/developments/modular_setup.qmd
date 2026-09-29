@@ -1,0 +1,252 @@
+---
+title: Modular setup
+---
+
+# Overview
+
+This document describes the structure of the Julia source in the `Wflow/src` folder, starting from the BMI adapter in [Wflow/src/bmi.jl](Wflow/src/bmi.jl#L1-L120). It highlights key types, modules, files, and relationships to help developers navigate the codebase.
+
+**Scope**: files under `Wflow/src` that implement configuration, model composition, IO, domain/routing, land models, and the BMI adapter.
+
+**Primary entry points**:
+- Top-level module: [Wflow/src/Wflow.jl](Wflow/src/Wflow.jl#L1-L120) — defines `Model`, includes submodules and orchestrates `run` and the timestep loop.
+- BMI adapter: [Wflow/src/bmi.jl](Wflow/src/bmi.jl#L1-L120) — exposes Basic Model Interface functions to external couplers.
+
+
+## 1. BMI adapter (starting point)
+
+See [Wflow/src/bmi.jl](Wflow/src/bmi.jl#L1-L120) for the implementation. Key responsibilities:
+
+- Initialization and lifecycle
+  - `BMI.initialize(::Type{<:Model}, config_file)` — builds `Config`, chooses model type, constructs `Model`, and loads fixed forcing. See [bmi.jl](Wflow/src/bmi.jl#L1-L120).
+  - `BMI.finalize(model)` — writes remaining state, resets clock, and closes files. See [bmi.jl](Wflow/src/bmi.jl#L1-L120).
+
+- Time-stepping helpers
+  - `BMI.update`, `BMI.update_until` — call internal `run_timestep!` and manage multi-step advances. See [bmi.jl](Wflow/src/bmi.jl#L1-L120) and related `run_timestep!` in [Wflow/src/Wflow.jl](Wflow/src/Wflow.jl#L200-L320).
+
+- Variable and grid interface
+  - `BMI.get_input_var_names`, `BMI.get_output_var_names` — derive exchange variables from the `API` TOML section and standard-name metadata. See [bmi.jl](Wflow/src/bmi.jl#L40-L120).
+  - `BMI.get_value_ptr`, `BMI.get_value`, `BMI.set_value`, `BMI.get_value_at_indices`, `BMI.set_value_at_indices` — map BMI variable names to internals via property lenses and domain active indices. See [bmi.jl](Wflow/src/bmi.jl#L120-L320).
+  - Grid functions: `BMI.get_grid_x`, `BMI.get_grid_y`, `BMI.get_grid_node_count`, `BMI.get_grid_edge_nodes`, `BMI.get_grid_edge_count` — map internal `domain` and `network` structures to BMI grid concepts. See [bmi.jl](Wflow/src/bmi.jl#L300-L600).
+
+- State I/O helpers
+  - `load_state`, `save_state`, `get_start_unix_time` — helpers to persist/restore simulation state for couplers. See [bmi.jl](Wflow/src/bmi.jl#L520-L680).
+
+- Utility helpers
+  - `soil_layer_standard_name(name::String)` — parse layered soil variable names.
+  - `grid_element_type(...)` — map variables/lenses to `node`/`edge` element types. See [bmi.jl](Wflow/src/bmi.jl#L600-L800).
+
+
+## 2. Core model composition
+
+- [Wflow/src/Wflow.jl](Wflow/src/Wflow.jl#L1-L120)
+  - Declares `Model{R,L,M,W,T}` composite type that aggregates configuration (`Config`), `Domain`, `Routing`, `Land` model, `MassBalance`, `Clock`, `NCReader` (reader), `Writer` and `ModelType` (type`).
+  - Provides constructors: `Model(config)` and `Model(config, type)` used by `BMI.initialize` and `run(config)`.
+  - Orchestrates the main loop: `run!`, `run_timestep!`, `run_timestep!(model; update_func=update_model!)` — see [Wflow/src/Wflow.jl](Wflow/src/Wflow.jl#L200-L360).
+
+- Configuration & clock
+  - [Wflow/src/config_structure.jl](Wflow/src/config_structure.jl#L1-L120) and [Wflow/src/config_init.jl](Wflow/src/config_init.jl#L1-L120) define `Config` types, defaults, and initialization helpers used by `BMI.initialize`.
+  - `Clock` type in [Wflow/src/Wflow.jl](Wflow/src/Wflow.jl#L10-L80) encapsulates simulation time, iteration, and `dt`.
+
+
+## 3. IO and dataset access
+
+- [Wflow/src/io.jl](Wflow/src/io.jl#L1-L120)
+  - Implements `NCReader` and `NCWriter` helpers; functions like `read_x_axis`, `read_y_axis`, `write_netcdf_timestep`, and `open/close` dataset helpers used by BMI and `run!`.
+
+- Readers and writers are stored on the `Model` as `reader` and `writer` fields and used by `run_timestep!` and BMI grid functions.
+
+
+## 4. Domain, network and indices
+
+- [Wflow/src/domain.jl](Wflow/src/domain.jl#L1-L120)
+  - Defines `Domain` and helpers such as `active_indices(domain, key)` and index maps between 1D internal arrays and 2D spatial coordinates.
+  - BMI relies on `active_indices(...)` to compute node counts and to slice internal arrays for BMI exchange. See [bmi.jl](Wflow/src/bmi.jl#L120-L220).
+
+- [Wflow/src/network.jl](Wflow/src/network.jl#L1-L120) and routing submodules
+  - Graph-based connectivity, adjacent-node tables, and edge indices used by BMI `get_grid_edge_nodes` and routing code.
+
+
+## 5. Routing and land models
+
+- Routing core: [Wflow/src/routing/routing.jl](Wflow/src/routing/routing.jl#L1-L120) and many `routing/*` submodules
+  - Implements `Routing` abstract and concrete routing models (river, overland, subsurface). Routing exposes property lenses used by BMI `grid_element_type` logic.
+
+- Land and hydrology: [Wflow/src/sbm.jl](Wflow/src/sbm.jl#L1-L120), [Wflow/src/sbm_model.jl](Wflow/src/sbm_model.jl#L1-L120)
+  - Soil/land vertical processes and `LandHydrologySBM` implementations; standard-name mappings for soil-layer variables that BMI recognizes.
+
+
+## 6. Standard-name metadata and variable lenses
+
+- Standard-name modules under [Wflow/src/standard_name/](Wflow/src/standard_name/)
+  - Provide mappings from human/standard names to `PropertyLens` accessors into `Model` fields.
+  - BMI uses `get_metadata(name; model)` and lenses to obtain references to internal arrays for `get_value_ptr` and `set_value`.
+
+
+## 7. State, mass-balance, and output
+
+- [Wflow/src/states.jl](Wflow/src/states.jl#L1-L120) — state extraction/restoration and `set_states!`/`extract_required_states` helpers used by `load_state`/`save_state`.
+- [Wflow/src/mass_balance.jl](Wflow/src/mass_balance.jl#L1-L120) — mass balance bookkeeping used during `run_timestep!`.
+- [Wflow/src/io.jl](Wflow/src/io.jl#L1-L120) — output NetCDF writing helpers.
+
+
+## 8. Call/Dependency sketch (high-level)
+
+- `Config` (from TOML) → `Model(config)` → includes `domain`, `reader`, `writer`, `routing`, `land`.
+- `BMI.initialize` → constructs `Config` and `Model` and calls `load_fixed_forcing!`.
+- `run_timestep!` (Wflow) / `BMI.update` (BMI) → `advance!(clock)` → `load_dynamic_input!` → `storage_prev!` → `update_model!` (routing+land) → `compute_mass_balance!` → `write_output`.
+- BMI variable access: BMI name → `get_metadata(name, model)` → lens → `lens(model)` → slice using `active_indices(domain, key)` → return view to caller.
+
+
+## 9. Where to look next (files to open)
+
+- BMI adapter: [Wflow/src/bmi.jl](Wflow/src/bmi.jl#L1-L800)
+- Core orchestrator: [Wflow/src/Wflow.jl](Wflow/src/Wflow.jl#L1-L400)
+- IO: [Wflow/src/io.jl](Wflow/src/io.jl#L1-L240)
+- Domain/indexing: [Wflow/src/domain.jl](Wflow/src/domain.jl#L1-L320)
+- Standard-name maps: [Wflow/src/standard_name/standard_name_utils.jl](Wflow/src/standard_name/standard_name_utils.jl#L1-L200)
+- State handling: [Wflow/src/states.jl](Wflow/src/states.jl#L1-L240)
+
+
+---
+
+## Modular overview
+
+Below is a compact modular diagram showing high-level relationships between the main
+components in `Wflow/src`. The diagram is intentionally coarse-grained so it remains
+useful at a glance; file links following the diagram point to the primary source files.
+
+```{mermaid}
+flowchart LR
+  Wflow[Wflow.jl]
+  BMI[bmi.jl]
+  Config[Config / TOML]
+  Domain[domain.jl]
+  IO[io.jl]
+  Routing[routing/*]
+  Land[soil & sbm*]
+  States[states.jl]
+  Reader[NCReader]
+  Writer[Writer]
+  Standard[standard_name/*]
+
+  Wflow --> BMI
+  Wflow --> Config
+  Wflow --> Domain
+  Wflow --> IO
+  Wflow --> Routing
+  Wflow --> Land
+  Wflow --> States
+  Wflow --> Reader
+  Wflow --> Writer
+  Wflow --> Standard
+
+  BMI --> IO
+  BMI --> Domain
+  BMI --> Config
+  BMI --> Reader
+  BMI --> Writer
+  BMI --> Standard
+
+  Routing --> Network[network.jl]
+  Routing --> Subsurface[routing/subsurface/*]
+  Routing --> Surface[routing/surface/*]
+
+  Land --> SBM[sbm.jl & sbm_model.jl]
+```
+
+## BMI lifecycle sequence (initialize → update → finalize)
+
+This sequence shows the typical calls a coupler makes through the BMI adapter.
+
+```{mermaid}
+sequenceDiagram
+  participant Coupler
+  participant BMI as BMI
+  participant Model as Wflow.Model
+  participant Runner as run_timestep!
+  participant Clock as Clock
+  participant Reader as NCReader
+  participant Domain as Domain
+  participant Routing as Routing
+  participant Land as Land
+  participant Writer as Writer
+
+  Coupler->>BMI: initialize(config_file)
+  BMI->>Model: BMI.initialize(::Type{<:Model}, config_file)
+  Model->>Model: Model(config) → Model(config, type) (per-type constructors)
+  Model-->>BMI: returns Model instance
+
+  note over BMI,Runner: repeated during simulation
+  Coupler->>BMI: update(model)
+  BMI->>Runner: run_timestep!(model)
+  Runner->>Clock: advance!(clock)
+  Runner->>Reader: load_dynamic_input!(model)
+  Runner->>Domain: storage_prev!(model)
+  Runner->>Model: update_model!(model)
+  Model->>Routing: routing updates
+  Model->>Land: land/soil updates
+  Runner->>Model: compute_mass_balance!(model)
+  Runner->>Writer: write_output(model)
+
+  Coupler->>BMI: finalize(model)
+  BMI->>Writer: write_netcdf_timestep(endstate_writer)
+  BMI->>Model: reset_clock!(model.clock, config)
+  BMI->>Model: close_files(model)
+
+```
+
+
+Quick map (module → representative files):
+
+- **Wflow core:** [Wflow/src/Wflow.jl](Wflow/src/Wflow.jl#L1-L400)
+- **BMI adapter:** [Wflow/src/bmi.jl](Wflow/src/bmi.jl#L1-L800)
+- **Configuration:** [Wflow/src/config_structure.jl](Wflow/src/config_structure.jl#L1-L200), [Wflow/src/config_init.jl](Wflow/src/config_init.jl#L1-L200)
+- **I/O / NetCDF:** [Wflow/src/io.jl](Wflow/src/io.jl#L1-L240)
+- **Domain & indices:** [Wflow/src/domain.jl](Wflow/src/domain.jl#L1-L320), [Wflow/src/network.jl](Wflow/src/network.jl#L1-L200)
+- **Routing:** [Wflow/src/routing/routing.jl](Wflow/src/routing/routing.jl#L1-L200) and [Wflow/src/routing/*](Wflow/src/routing#L1-L1)
+- **Land / SBM:** [Wflow/src/sbm.jl](Wflow/src/sbm.jl#L1-L200), [Wflow/src/sbm_model.jl](Wflow/src/sbm_model.jl#L1-L200)
+- **Standard-name lenses:** [Wflow/src/standard_name/standard_name_utils.jl](Wflow/src/standard_name/standard_name_utils.jl#L1-L200)
+- **State handling:** [Wflow/src/states.jl](Wflow/src/states.jl#L1-L240)
+
+### Detailed `update` flow — SBM example
+
+The following expands the `update` path (the most important runtime operation) with
+the sequence of calls and the main files involved. This is presented both as a
+compact flowchart and as annotated pointers to the implementation.
+
+```{mermaid}
+flowchart TD
+  RT --> RDR[load_dynamic_input!(model) \n(NCReader, io.jl)]
+  RT --> STP[storage_prev!(model) \n(states.jl)]
+  RT --> UPM[update_model!(model) \n(dispatch: SbmModel)]
+  UPM --> LHD[update_land_hydrology_model! \n(soil/*, vegetation/*)]
+  UPM --> RVS[update_river_storage_stage! \n(routing/surface/*)]
+  UPM --> SUB[kh_layered_profile! / update_subsurface_flow_model! \n(routing/subsurface/*)]
+  UPM --> SOI[update_soil_water_storage! \n(soil/*)]
+  UPM --> SURE[surface_routing! \n(routing/surface/*)]
+  UPM --> TWS[update_total_water_storage!]
+  RT --> MB[compute_mass_balance!(model) \n(mass_balance.jl)]
+  RT --> WRT[write_output(model) \n(Writer, io.jl)]
+```
+
+Annotated pointers:
+
+- `run_timestep!(model)` — orchestrator in [Wflow/src/Wflow.jl](Wflow/src/Wflow.jl#L200-L260). Called by `BMI.update`.
+- `advance!(clock)` — advances model time; clock logic in [Wflow/src/Wflow.jl](Wflow/src/Wflow.jl#L1-L120).
+- `load_dynamic_input!(model)` — reads forcing for the current timestep using `NCReader` helpers from [Wflow/src/io.jl](Wflow/src/io.jl#L1-L240).
+- `storage_prev!(model)` — snapshot/prepare previous-state bookkeeping in [Wflow/src/states.jl](Wflow/src/states.jl#L1-L240).
+- `update_model!(model)` — dispatched by model type; for `SbmModel` see [Wflow/src/sbm_model.jl](Wflow/src/sbm_model.jl#L1-L120). Key internal calls:
+  - `update_land_hydrology_model!` — vertical water processes (soil, interception). Implementations live under `Wflow/src/soil/*` and `Wflow/src/vegetation/*`.
+  - `kh_layered_profile!`, `update_subsurface_flow_model!` — subsurface lateral flow processing in `routing/subsurface/*`.
+  - `update_soil_water_storage!` — updates soil storage and runoff (see `soil/` files).
+  - `surface_routing!` / `update_river_storage_stage!` — routing of overland and river flows in `routing/surface/*`.
+- `compute_mass_balance!` — error/diagnostic bookkeeping in [Wflow/src/mass_balance.jl](Wflow/src/mass_balance.jl#L1-L200).
+- `write_output` — `Writer` writes variables for the timestep; implemented in [Wflow/src/io.jl](Wflow/src/io.jl#L1-L240) and writer helpers.
+
+BMI coupling specifics during update:
+
+- `BMI.update(model)` (see [Wflow/src/bmi.jl](Wflow/src/bmi.jl#L1-L200)) simply calls `run_timestep!(model)`; external couplers use `BMI.get_value` / `BMI.set_value` to read or modify variables between updates.
+- `BMI.get_value_ptr` returns a view into internal arrays using `get_metadata(name; model)` and `active_indices(domain, key)` (see [Wflow/src/bmi.jl](Wflow/src/bmi.jl#L120-L320) and [Wflow/src/domain.jl](Wflow/src/domain.jl#L1-L200)). Writing via the BMI API (e.g. `BMI.set_value`) modifies those arrays in place; the next `update` will see and process those values.
+
+Would you like me to expand this into per-function line anchors for the most critical functions (exact file:line links), or create a mini-sequence diagram for `sbm` sub-steps?
