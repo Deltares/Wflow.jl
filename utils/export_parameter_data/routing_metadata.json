@@ -134,6 +134,24 @@
     "allow_missing": false,
     "allow_dynamic_input": false
   },
+"land_surface_water__ponded_volume": {
+    "unit": "m3",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Volume of water retained in the surface pond (`ponding_depth` buffer)",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "land_surface_water__ponding_depth": {
+    "unit": "m",
+    "default": 0.0,
+    "fill": null,
+    "type": "Float64",
+    "description": "Ponding depth on the land surface",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
   "land_surface_water__to_river_volume_flow_rate": {
     "unit": "m3 s-1",
     "default": null,
