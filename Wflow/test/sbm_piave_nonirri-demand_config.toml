@@ -95,7 +95,7 @@ soil_layer_water__vertical_saturated_hydraulic_conductivity_factor = "kvfrac"
 irrigated_paddy_area__count = "paddy_irrigation_areas"
 irrigated_non_paddy_area__count = "nonpaddy_irrigation_areas"
 subsurface_water__horizontal_to_vertical_saturated_hydraulic_conductivity_ratio.value = 100
-subsurface_water_table__slope = "Slope"
+subsurface_bottom_surface__slope = "Slope"
 
 [input.cyclic]
 vegetation__leaf_area_index = "LAI"

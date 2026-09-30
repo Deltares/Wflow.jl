@@ -349,10 +349,10 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
         description = "A multiplication factor applied to vertical hydraulic conductivity",
         tags = [:kinematic_lateral_subsurface_input],
     ),
-    "subsurface_water_table__slope" =>
+    "subsurface_bottom_surface__slope" =>
         ParameterMetadata(;
         lens = @optic(_.routing.subsurface_flow.parameters.slope),
-        description = "Subsurface water table slope",
+        description = "Subsurface bottom (impermeable bedrock/layer) slope",
         tags = [:kinematic_lateral_subsurface_input],
     ),
     #### States

@@ -75,7 +75,7 @@ soil_layer_water__brooks_corey_exponent = "c"
 soil_surface_water__vertical_saturated_hydraulic_conductivity = "KsatVer"
 soil_water__vertical_saturated_hydraulic_conductivity_scale_parameter = "f"
 subsurface_water__horizontal_to_vertical_saturated_hydraulic_conductivity_ratio.value = 100
-subsurface_water_table__slope = "Slope"
+subsurface_bottom_surface__slope = "Slope"
 
 [input.cyclic]
 vegetation__leaf_area_index = "LAI"

@@ -101,7 +101,7 @@ function LateralSsfParameters(
         Routing;
         sel = indices,
     )
-    slope = ncread(dataset, config, "subsurface_water_table__slope", Routing; sel = indices)
+    slope = ncread(dataset, config, "subsurface_bottom_surface__slope", Routing; sel = indices)
     clamp!(slope, 0.00001, Inf)
 
     (; theta_s, theta_fc, soil_thickness) = soil
