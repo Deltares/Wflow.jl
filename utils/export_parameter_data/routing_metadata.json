@@ -754,5 +754,14 @@
     "description": "Net recharge flux",
     "allow_missing": false,
     "allow_dynamic_input": false
+  },
+  "subsurface_water_table__slope": {
+    "unit": "-",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Subsurface water table slope",
+    "allow_missing": false,
+    "allow_dynamic_input": false
   }
 }

@@ -51,6 +51,8 @@ end
     area::Vector{Float64}
     # Top of subsurface flow layer [m]
     top::Vector{Float64}
+    # Subsurface slope [-]
+    slope::Vector{Float64}
 end
 
 "Lateral subsurface flow model"
@@ -99,6 +101,8 @@ function LateralSsfParameters(
         Routing;
         sel = indices,
     )
+    slope = ncread(dataset, config, "subsurface_water_table__slope", Routing; sel = indices)
+    clamp!(slope, 0.00001, Inf)
 
     (; theta_s, theta_fc, soil_thickness) = soil
 
@@ -127,6 +131,7 @@ function LateralSsfParameters(
         specific_yield,
         area,
         top = elevation,
+        slope,
     )
     return ssf_parameters
 end
@@ -203,7 +208,7 @@ function kinwave_subsurface_update!(
     )
     (; order_of_subdomains, order_subdomain, subdomain_indices, upstream_nodes) =
         domain.land.network
-    (; flow_length, flow_width, area, flow_fraction_to_river, slope) =
+    (; flow_length, flow_width, area, flow_fraction_to_river) =
         domain.land.parameters
 
     (;
@@ -220,7 +225,7 @@ function kinwave_subsurface_update!(
         q_net_bnds,
         q_net_cumulative,
     ) = subsurface_flow_model.variables
-    (; specific_yield, top, soil_thickness, kh_profile) = subsurface_flow_model.parameters
+    (; specific_yield, top, soil_thickness, kh_profile, slope) = subsurface_flow_model.parameters
     (; river) = subsurface_flow_model.boundary_conditions
 
     ns = length(order_of_subdomains)
@@ -314,8 +319,8 @@ that a wide range of dt/dx values can be used without loss of accuracy.
 """
 function stable_timestep(subsurface_flow_model::LateralSSFModel, domain::DomainLand)
     (; water_table_depth) = subsurface_flow_model.variables
-    (; specific_yield, kh_profile) = subsurface_flow_model.parameters
-    (; flow_length, slope) = domain.parameters
+    (; specific_yield, kh_profile, slope) = subsurface_flow_model.parameters
+    (; flow_length) = domain.parameters
     (; stable_timesteps, alpha_coefficient) = subsurface_flow_model.timestepping
 
     n = length(water_table_depth)

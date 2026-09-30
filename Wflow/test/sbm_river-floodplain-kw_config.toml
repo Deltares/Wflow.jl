@@ -112,6 +112,7 @@ reservoir_water__rating_curve_type_count = "outflowfunc"
 reservoir_water__storage_curve_type_count = "storfunc"
 
 subsurface_water__horizontal_to_vertical_saturated_hydraulic_conductivity_ratio = "KsatHorFrac"
+subsurface_water_table__slope = "Slope"
 
 [input.cyclic]
 vegetation__leaf_area_index = "LAI"
