@@ -32,6 +32,19 @@ of the standard name:
 subsurface_water__instantaneous_volume_flow_rate = "ssf"
 ```
 
+Supporting using different slopes for overland and subsurface kinematic wave flow routing,
+and changing standard name `river__slope` to `river_bottom_surface__slope`
+([#1102](https://github.com/Deltares/Wflow.jl/pull/1102)), requires an additional mapping
+for `subsurface_bottom_surface__slope` and replacing `river__slope` by
+`river_bottom_surface__slope` in the TOML configuration file:
+
+```toml
+[input.static]
+land_surface__slope = "land_slope"
+subsurface_bottom_surface__slope = "subsurface_slope"
+river_bottom_surface__slope = "river_slope"
+```
+
 ### Fixed
 - Reduce memory use and improve performance of reading split NetCDF forcing files ([#1037](https://github.com/Deltares/Wflow.jl/pull/1052)).
 
@@ -60,6 +73,9 @@ subsurface_water__instantaneous_volume_flow_rate = "ssf"
   field capacity `theta_fc` is a new optional input parameter, when this parameter is not
   provided `theta_fc` is computed as the water content at a pressure head of -100 cm using
   the Brooks and Corey water retention model.
+- Standard name `river__slope` to `river_bottom_surface__slope` as it is more explicit and
+  consistent with other slope standard names like `land_surface__slope`
+  ([#1102](https://github.com/Deltares/Wflow.jl/pull/1102)).
 
 ### Added
 - Support internal timestepping for kinematic wave lateral subsurface flow concept
@@ -82,6 +98,11 @@ subsurface_water__instantaneous_volume_flow_rate = "ssf"
   grid method.
 - Added an optional `wflow_version` field to the config .toml file. This setting is used by
   the wflow model builder `hydromt_wflow` for incremental Wflow.jl version upgrading.
+- Support using different slopes for overland and subsurface kinematic wave flow routing
+  ([#1102](https://github.com/Deltares/Wflow.jl/pull/1102)). For example this can be useful
+  to simulate surface terrain changes that have less or no impact on the subsurface flow
+  slope. A new standard name `subsurface_bottom_surface__slope` has been added for the
+  subsurface flow slope.
 
 ## v1.0.4 - 2026-07-24
 
