@@ -34,11 +34,11 @@ subsurface_water__instantaneous_volume_flow_rate = "ssf"
 ```
 
 Supporting the use of different slopes for overland and subsurface kinematic wave flow
-routing, and changing standard name `river__slope` to `river_bottom_surface__slope` and
-standard name `floodplain__slope` to `floodplain_bottom_surface__slope`
+routing, and renaming standard names `river__slope` and `floodplain__slope`
 ([#1102](https://github.com/Deltares/Wflow.jl/pull/1102)), requires an additional mapping
-for `subsurface_bottom_surface__slope` and replacing `river__slope` by
-`river_bottom_surface__slope` in the TOML configuration file:
+for `subsurface_bottom_surface__slope`, replacing `river__slope` by
+`river_bottom_surface__slope` and `floodplain__slope` by `floodplain_bottom_surface__slope`
+in the TOML configuration file:
 
 ```toml
 [input.static]
