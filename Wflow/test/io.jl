@@ -350,7 +350,7 @@ end
         @test "snow" in ncvars
         @test "q_av_river" in ncvars
         @test "q_av_land" in ncvars
-        @test length(output_map) == 12
+        @test length(output_map) == 13
     end
 
     @testset "warm states" begin
