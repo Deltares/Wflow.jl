@@ -237,10 +237,10 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
             :staggered_grid_river_input,
         ],
     ),
-    "river__slope" => ParameterMetadata(;
+    "river_bottom_surface__slope" => ParameterMetadata(;
         lens = @optic(_.domain.river.parameters.slope),
         unit = Unit(; m = (1, 1)),
-        description = "River slope",
+        description = "River bottom slope",
         tags = [:kinematic_wave_river_flow_input],
     ),
     #### States
