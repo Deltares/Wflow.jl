@@ -429,10 +429,10 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
             :kinematic_wave_floodplain_1D_flow_input,
         ],
     ),
-    "floodplain__slope" => ParameterMetadata(;
+    "floodplain_bottom_surface__slope" => ParameterMetadata(;
         lens = @optic(_.routing.river_flow.floodplain.parameters.slope),
         unit = Unit(; m = (1, 1)),
-        description = "Floodplain slope",
+        description = "Floodplain bottom slope",
         tags = [:kinematic_wave_floodplain_1D_flow_input],
     ),
     #### States

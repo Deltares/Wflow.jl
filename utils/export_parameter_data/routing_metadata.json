@@ -1,10 +1,10 @@
 {
-  "floodplain__slope": {
+  "floodplain_bottom_surface__slope": {
     "unit": "m m-1",
     "default": null,
     "fill": null,
     "type": "Float64",
-    "description": "Floodplain slope",
+    "description": "Floodplain bottom slope",
     "allow_missing": false,
     "allow_dynamic_input": false
   },
