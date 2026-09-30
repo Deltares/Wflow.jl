@@ -22,13 +22,11 @@ function initialize_subsurface_flow_model(
     elseif kh_profile_type == VerticalConductivityProfile.layered ||
             kh_profile_type == VerticalConductivityProfile.layered_exponential
         (; kv_profile) = soil_model.parameters
-        dt = Second(config.time.timestepsecs)
         initialize_lateral_ssf_model!(
             subsurface_flow_model,
             soil_model,
             parameters,
             kv_profile,
-            tosecond(dt),
         )
     end
     return subsurface_flow_model

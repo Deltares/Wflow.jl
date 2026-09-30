@@ -789,10 +789,10 @@ function hydraulic_conductivity_at_depth(
 end
 
 """
-    kh_layered_profile!(soil_model::SbmSoilModel, subsurface_flow_model::LateralSSFModel, kv_profile::KvLayered, dt)
-    kh_layered_profile!(soil_model::SbmSoilModel, subsurface_flow_model::LateralSSFModel, kv_profile::KvLayeredExponential, dt)
+    kh_layered_profile!(soil_model::SbmSoilModel, subsurface_flow_model::LateralSSFModel, kv_profile::KvLayered)
+    kh_layered_profile!(soil_model::SbmSoilModel, subsurface_flow_model::LateralSSFModel, kv_profile::KvLayeredExponential)
 
-Compute equivalent horizontal hydraulic conductivity `kh` [m d⁻¹] using vertical hydraulic
+Compute equivalent horizontal hydraulic conductivity `kh` [m s⁻¹] using vertical hydraulic
 conductivity profile `kv_profile`.
 """
 function kh_layered_profile!(
@@ -920,8 +920,8 @@ function initialize_lateral_ssf_model!(
     )
     (; kh_0, hydraulic_conductivity_scale_parameter) = kh_profile
     (; q, q_max, water_table_depth) = subsurface_flow_model.variables
-    (; soil_thickness) = subsurface_flow_model.parameters
-    (; slope, flow_width) = parameters
+    (; soil_thickness, slope) = subsurface_flow_model.parameters
+    (; flow_width) = parameters
 
     @. q_max =
         ((kh_0 * slope) / hydraulic_conductivity_scale_parameter) *
@@ -944,8 +944,8 @@ function initialize_lateral_ssf_model!(
     (; kh_0, hydraulic_conductivity_scale_parameter) = kh_profile.exponential
     (; z_exp) = kh_profile
     (; q, q_max, water_table_depth) = subsurface_flow_model.variables
-    (; soil_thickness) = subsurface_flow_model.parameters
-    (; slope, flow_width) = parameters
+    (; soil_thickness, slope) = subsurface_flow_model.parameters
+    (; flow_width) = parameters
 
     q_constant = @. kh_0 *
         exp(-hydraulic_conductivity_scale_parameter * z_exp) *
@@ -979,8 +979,8 @@ function initialize_lateral_ssf_model!(
 end
 
 """
-    initialize_lateral_ssf_model!(subsurface_flow_model::LateralSSFModel, soil_model::SbmSoilModel, parameters::LandParameters, kv_profile::KvLayered, dt)
-    initialize_lateral_ssf_model!(subsurface_flow_model::LateralSSFModel, soil_model::SbmSoilModel, parameters::LandParameters, kv_profile::KvLayeredExponential, dt)
+    initialize_lateral_ssf_model!(subsurface_flow_model::LateralSSFModel, soil_model::SbmSoilModel, parameters::LandParameters, kv_profile::KvLayered)
+    initialize_lateral_ssf_model!(subsurface_flow_model::LateralSSFModel, soil_model::SbmSoilModel, parameters::LandParameters, kv_profile::KvLayeredExponential)
 
 Initialize lateral subsurface variables `q` and `q_max` using  vertical hydraulic
 conductivity profile `kv_profile`.
@@ -990,14 +990,13 @@ function initialize_lateral_ssf_model!(
         soil_model::SbmSoilModel,
         parameters::LandParameters,
         kv_profile::KvLayered,
-        dt,
     )
     (; kh) = subsurface_flow_model.parameters.kh_profile
     (; number_of_layers, actual_layer_thickness) = soil_model.parameters
     (; q, q_max, water_table_depth) = subsurface_flow_model.variables
-    (; horizontal_to_vertical_hydraulic_conductivity_ratio, soil_thickness) =
+    (; horizontal_to_vertical_hydraulic_conductivity_ratio, soil_thickness, slope) =
         subsurface_flow_model.parameters
-    (; slope, flow_width) = parameters
+    (; flow_width) = parameters
 
     kh_layered_profile!(soil_model, subsurface_flow_model, kv_profile)
     for i in eachindex(q)
@@ -1017,12 +1016,11 @@ function initialize_lateral_ssf_model!(
         soil_model::SbmSoilModel,
         parameters::LandParameters,
         kv_profile::KvLayeredExponential,
-        dt,
     )
     (; q, q_max, water_table_depth) = subsurface_flow_model.variables
-    (; horizontal_to_vertical_hydraulic_conductivity_ratio, soil_thickness) =
+    (; horizontal_to_vertical_hydraulic_conductivity_ratio, soil_thickness, slope) =
         subsurface_flow_model.parameters
-    (; slope, flow_width) = parameters
+    (; flow_width) = parameters
     (; number_of_layers, actual_layer_thickness) = soil_model.parameters
     (; kh) = subsurface_flow_model.parameters.kh_profile
     (; kv, hydraulic_conductivity_scale_parameter, nlayers_kv, z_layered) = kv_profile
