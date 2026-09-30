@@ -10,13 +10,14 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## Unreleased
 
 The change of using drainable and dynamic fillable porosity for computing water table
-changes (#730) instead of using the effective porosity (difference between saturated and
-residual water content) can have a relatively large impact on model results, generally
-resulting in higher peak flow, lower baseflow and higher actual evapotranspiration.
+changes ([#730](https://github.com/Deltares/Wflow.jl/pull/730)) instead of using the
+effective porosity (difference between saturated and residual water content) can have a
+relatively large impact on model results, generally resulting in higher peak flow, lower
+baseflow and higher actual evapotranspiration.
 
 By default hydraulic heads are computed for the kinematic wave lateral subsurface flow
-concept (#827). Land surface elevation data is required for this computation and can be set
-as follows in the TOML configuration file:
+concept ([#827](https://github.com/Deltares/Wflow.jl/pull/827)). Land surface elevation data
+is required for this computation and can be set as follows in the TOML configuration file:
 
 ```toml
 [input.static]
@@ -24,16 +25,16 @@ land_surface__elevation = "wflow_dem"
 ```
 
 Supporting internal timestepping for the kinematic wave lateral subsurface flow concept
-(#827) requires that the flow state variable contains `instantaneous` in the `quantity` part
-of the standard name:
+([#827](https://github.com/Deltares/Wflow.jl/pull/827)) requires that the flow state
+variable contains `instantaneous` in the `quantity` part of the standard name:
 
 ```toml
 [state.variables]
 subsurface_water__instantaneous_volume_flow_rate = "ssf"
 ```
 
-Supporting using different slopes for overland and subsurface kinematic wave flow routing,
-and changing standard name `river__slope` to `river_bottom_surface__slope`
+Supporting the use of different slopes for overland and subsurface kinematic wave flow
+routing, and changing standard name `river__slope` to `river_bottom_surface__slope`
 ([#1102](https://github.com/Deltares/Wflow.jl/pull/1102)), requires an additional mapping
 for `subsurface_bottom_surface__slope` and replacing `river__slope` by
 `river_bottom_surface__slope` in the TOML configuration file:
@@ -46,7 +47,8 @@ river_bottom_surface__slope = "river_slope"
 ```
 
 ### Fixed
-- Reduce memory use and improve performance of reading split NetCDF forcing files ([#1037](https://github.com/Deltares/Wflow.jl/pull/1052)).
+- Reduce memory use and improve performance of reading split NetCDF forcing files
+  ([#1052](https://github.com/Deltares/Wflow.jl/pull/1052)).
 
 ### Changed
 - All internal computations now use standardized SI units (m, s, kg, J, K) consistently
@@ -60,28 +62,30 @@ river_bottom_surface__slope = "river_slope"
   on the 5th root of discharge, and computing cross-sectional area as a byproduct of the
   solve instead of a separate `pow` call. The `beta` parameter has been removed
   from `ManningFlowParameters` and is now a module-level constant
-  `BETA_KINWAVE` (#898).
+  `BETA_KINWAVE` ([#898](https://github.com/Deltares/Wflow.jl/pull/898)).
 - Drainable porosity or specific yield, defined as the difference between `theta_s`
   (saturated water content) and `theta_fc` (water content at field capacity) is now used to
   compute the change of a falling water table for subsurface flow concepts `LateralSSF` and
-  `UnconfinedAquifer`. For the change of a rising water table of these concepts a dynamic
-  fillable porosity (based on `theta_s` and the water content of unsaturated soil layers) is
-  used. This results in a better integration of the `SBM` soil model (unsaturated zone) with
-  these subsurface flow concepts as specific yield is typically represented by drainable
-  porosity for these concepts and not by the effective porosity (difference between
-  saturated and residual water content) of the previous implementation. Water content at
-  field capacity `theta_fc` is a new optional input parameter, when this parameter is not
-  provided `theta_fc` is computed as the water content at a pressure head of -100 cm using
-  the Brooks and Corey water retention model.
+  `UnconfinedAquifer` ([#730](https://github.com/Deltares/Wflow.jl/pull/730)). For the
+  change of a rising water table of these concepts a dynamic fillable porosity (based on
+  `theta_s` and the water content of unsaturated soil layers) is used. This results in a
+  better integration of the `SBM` soil model (unsaturated zone) with these subsurface flow
+  concepts as specific yield is typically represented by drainable porosity for these
+  concepts and not by the effective porosity (difference between saturated and residual
+  water content) of the previous implementation. Water content at field capacity `theta_fc`
+  is a new optional input parameter, when this parameter is not provided `theta_fc` is
+  computed as the water content at a pressure head of -100 cm using the Brooks and Corey
+  water retention model.
 - Standard name `river__slope` to `river_bottom_surface__slope` as it is more explicit and
   consistent with other slope standard names like `land_surface__slope`
   ([#1102](https://github.com/Deltares/Wflow.jl/pull/1102)).
 
 ### Added
 - Support internal timestepping for kinematic wave lateral subsurface flow concept
-  `LateralSSF`.
+  `LateralSSF` ([#827](https://github.com/Deltares/Wflow.jl/pull/827)).
 - Support including river and drainage head-dependent flux boundary conditions for kinematic
-  wave lateral subsurface flow concept `LateralSSF`.
+  wave lateral subsurface flow concept `LateralSSF`
+  ([#827](https://github.com/Deltares/Wflow.jl/pull/827)).
 - Support for running only a subsection of the model, either by using a smaller active
   domain via `input.subbasin_location__count`, or specify specific subcatchments by linking
   `input.subbasin_location__count` to a subcatchment map, and indicate which subbasins
