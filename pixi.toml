@@ -78,7 +78,14 @@ boto3 = "*"
 dvc = "*"
 dvc-s3 = "*"
 julia = { version = "==1.13.1", channel = "https://prefix.dev/julia-forge" }
+python-dotenv = "*"
 python = ">=3.10"
 quarto = ">=1.8.26,<2"
 prek = "*"
 typos = "*"
+
+[target.unix.activation]
+scripts = ["scripts/load-env.sh"]
+
+[target.win.activation]
+scripts = ["scripts/load-env.bat"]
