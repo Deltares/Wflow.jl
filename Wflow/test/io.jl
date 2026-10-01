@@ -485,7 +485,9 @@ end
     using TOML
     @testset "NetCDF creation" begin
         path = Base.Filesystem.tempname()
-        _ = Wflow.create_tracked_netcdf(path)
+        ds = Wflow.create_tracked_netcdf(path)
+        @test ds.attrib["Conventions"] == "CF-1.12"
+        @test ds.attrib["wflow_version"] == string(Wflow.VERSION)
         # safe to open the same path twice
         ds = Wflow.create_tracked_netcdf(path)
         close(ds)  # path is removed on process exit
