@@ -261,7 +261,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/voluptuous-0.16.0-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/wcwidth-0.2.13-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/zc.lockfile-4.0-pyhd8ed1ab_0.conda
-      - conda: https://prefix.dev/julia-forge/linux-64/julia-1.13.0-hb0f4dca_0.conda
+      - conda: https://prefix.dev/julia-forge/linux-64/julia-1.13.1-hb0f4dca_0.conda
       osx-arm64:
       - conda: https://conda.anaconda.org/conda-forge/noarch/adwaita-icon-theme-49.0-unix_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/aiobotocore-3.9.0-pyhcf101f3_0.conda
@@ -460,7 +460,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/wrapt-2.4.0-py314hd98292b_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/yaml-0.2.5-h74c22ad_3.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/zstd-1.5.7-hf451053_7.conda
-      - conda: https://prefix.dev/julia-forge/osx-arm64/julia-1.13.0-h60d57d3_0.conda
+      - conda: https://prefix.dev/julia-forge/osx-arm64/julia-1.13.1-h60d57d3_0.conda
       win-64:
       - conda: https://conda.anaconda.org/conda-forge/noarch/aiobotocore-3.8.0-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/aiohappyeyeballs-2.7.1-pyhd8ed1ab_0.conda
@@ -665,7 +665,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/win-64/yarl-1.24.5-py313hd650c13_0.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/zstandard-0.23.0-py313h574b89f_1.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/zstd-1.5.6-h0ea2cb4_0.conda
-      - conda: https://prefix.dev/julia-forge/win-64/julia-1.13.0-h9490d1a_0.conda
+      - conda: https://prefix.dev/julia-forge/win-64/julia-1.13.1-h9490d1a_0.conda
 packages:
 - conda: https://conda.anaconda.org/conda-forge/linux-64/_libgcc_mutex-0.1-conda_forge.tar.bz2
   sha256: fe51de6107f9edc7aa4f786a70f4a883943bc9d39b3bb7307c04c41410990726
@@ -6610,24 +6610,24 @@ packages:
   license_family: BSD
   size: 349143
   timestamp: 1714723445995
-- conda: https://prefix.dev/julia-forge/linux-64/julia-1.13.0-hb0f4dca_0.conda
-  sha256: a52a4279a646ef30545bf5feb31add7093498206a237451ed5720dc3da892811
-  md5: bae69516fc974738895ba72191dba95f
+- conda: https://prefix.dev/julia-forge/linux-64/julia-1.13.1-hb0f4dca_0.conda
+  sha256: 2022baef9fb2e345f3a0a6967a6b2eaa91bcfb4a078b17db97a9e3f9749cb2c7
+  md5: 2e9b9a27549ff4bb406894e17d9b5f49
   license: MIT
   run_exports: {}
-  size: 230898355
-  timestamp: 1789056135112
-- conda: https://prefix.dev/julia-forge/osx-arm64/julia-1.13.0-h60d57d3_0.conda
-  sha256: 33dcc8d113b7cce34b38b1dcdddf3249ccf3292aaf49e69d7d73e96b30ac04d5
-  md5: 5ea008dca49678837d0efa55022ecae3
+  size: 230274242
+  timestamp: 1790515279487
+- conda: https://prefix.dev/julia-forge/osx-arm64/julia-1.13.1-h60d57d3_0.conda
+  sha256: 17a7e6dbf2b6230dc06ca168a25b4e827827ee54e816e1984efcd7f4ae2d4ca3
+  md5: 49a4e967159a08af623d00ebaf3f1903
   license: MIT
   run_exports: {}
-  size: 205811504
-  timestamp: 1789056144163
-- conda: https://prefix.dev/julia-forge/win-64/julia-1.13.0-h9490d1a_0.conda
-  sha256: 9db74e0d704926a496b26c08d2471cc897832c1594f8127c296f434f207be2e8
-  md5: b8c93202b7105a40bc2a7be3aa43d637
+  size: 205585525
+  timestamp: 1790515287053
+- conda: https://prefix.dev/julia-forge/win-64/julia-1.13.1-h9490d1a_0.conda
+  sha256: cd48f90a1e3ed285871723e21a2bbf95f8f41dbcb5fa58c70f8c812b104d180c
+  md5: a16a3a15b979360e23d5dbbe2d37eec2
   license: MIT
   run_exports: {}
-  size: 230489783
-  timestamp: 1789056151857
+  size: 229921017
+  timestamp: 1790515300396
