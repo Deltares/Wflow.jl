@@ -61,7 +61,7 @@ river_water__volume_flow_rate = "q"
 [input.static]
 land_surface__slope = "Slope"
 river__length = "wflow_riverlength"
-river__slope = "RiverSlope"
+river_bottom_surface__slope = "RiverSlope"
 river__width = "wflow_riverwidth"
 
 reservoir_surface__area = "ResSimpleArea"
