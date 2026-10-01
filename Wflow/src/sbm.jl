@@ -123,10 +123,12 @@ function update_land_hydrology_model!(
         soil,
         atmospheric_forcing,
         (; interception, runoff, demand, allocation),
+        domain,
+        config,
         dt,
     )
 
-    update_soil_water_flow!(soil, atmospheric_forcing, (; snow, runoff, demand), config, dt)
+    update_soil_water_flow!(soil, atmospheric_forcing, (; snow, runoff, demand), config, domain, dt)
     @. soil.variables.actual_evapotranspiration += interception.variables.interception_rate
     return nothing
 end

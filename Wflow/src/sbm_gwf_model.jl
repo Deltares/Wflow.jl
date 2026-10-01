@@ -64,7 +64,8 @@ end
 function update_model!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
     (; routing, land, domain, clock, config) = model
     (; soil, runoff, demand) = land
-    (; boundary_conditions) = routing.subsurface_flow
+    (; subsurface_flow, overland_flow) = routing
+    (; boundary_conditions) = subsurface_flow
 
     dt = tosecond(clock.dt)
 
@@ -84,7 +85,7 @@ function update_model!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
     end
     # update groundwater domain
     update_subsurface_flow_model!(
-        routing.subsurface_flow,
+        subsurface_flow,
         soil,
         domain,
         dt,
@@ -93,7 +94,9 @@ function update_model!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
     # update SBM soil model (runoff, unsaturated_layer_depth and saturated_water_depth)
     update_soil_water_storage!(
         soil,
-        (; runoff, demand, subsurface_flow = routing.subsurface_flow),
+        (; runoff, demand, subsurface_flow, overland_flow),
+        domain,
+        config,
         dt,
     )
 
