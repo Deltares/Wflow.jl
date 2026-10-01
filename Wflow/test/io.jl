@@ -350,7 +350,7 @@ end
         @test "snow" in ncvars
         @test "q_av_river" in ncvars
         @test "q_av_land" in ncvars
-        @test length(output_map) == 12
+        @test length(output_map) == 13
     end
 
     @testset "warm states" begin
@@ -571,7 +571,7 @@ end
         @test isfile(path_log)
         rm(tomlpath_temp)
         lines = readlines(path_log)
-        @test count(startswith(line, "[ Info: ") for line in lines) == 63
+        @test count(startswith(line, "[ Info: ") for line in lines) == 64
         @test count(startswith(line, "┌ Debug: ") for line in lines) == 0
 
         # Another run with debug log level and a non-default path_log.

@@ -76,6 +76,37 @@ kinematic_wave__adaptive_time_step_flag = true    # optional, default is false
 [Reservoir](./reservoirs.qmd) models representing reservoirs, (natural) lakes or other water
 storage features can be included as part of the river kinematic wave network.
 
+## Surface ponding
+A per-cell surface ponding depth $\SIb{\subtext{h}{pond}}{m}$ can be provided as a static
+parameter to represent retention of water on the land surface in small depressions. The
+parameter defaults to $\SI{0}{m}$ (no retention) and can be provided as follows in the TOML
+configuration file:
+
+```toml
+[input.static]
+land_surface_water__ponding_depth = "ponding_depth"
+```
+
+For kinematic wave overland flow, incoming lateral and upstream inflow is first used to fill
+pond storage $\SIb{\subtext{V}{pond}}{m^3}$ up to the retention capacity
+$\SIb{\subtext{V}{pond,cap}}{m^3}$:
+
+$$
+\subtext{V}{pond,cap} = \subtext{h}{pond} \subtext{L}{flow} \subtext{w}{flow},
+$$
+
+where $\SIb{\subtext{L}{flow}}{m}$ is the flow length and $\SIb{\subtext{w}{flow}}{m}$ is
+the surface flow width. The remaining pond capacity $\subtext{V}{pond,cap} -
+\subtext{V}{pond}$ is absorbed from the inflow first, and only the inflow in excess of this
+remaining capacity is passed on to the kinematic wave. The resulting pond depth
+$\subtext{V}{pond} / (\subtext{L}{flow} \subtext{w}{flow})$ is added to the reported surface
+water depth $\SIb{h}{m}$ but does not drive the downstream discharge $\SIb{Q}{m^3\ s^{-1}}$.
+
+The same `ponding_depth` parameter is used by the [local inertial overland flow (2D)
+routing](./staggered-grid.qmd#surface-ponding). When [land surface water
+reinfiltration](../land/landhydrology_sbm.qmd#land-surface-water-infiltration) is enabled,
+the pond storage is drawn from before the flowable share of the overland flow depth.
+
 ## Floodplain routing
 It is possible to include a [floodplain
 schematization](./staggered-grid.qmd#floodplain-schematization) as part of the kinematic
