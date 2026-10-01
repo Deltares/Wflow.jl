@@ -176,6 +176,12 @@ index.x = 100
 index.y = 264
 parameter = "atmosphere_air__temperature"
 
+[[output.netcdf_scalar.variable]]
+ name = "recharge"
+ map = "subbasin_location__count"
+ parameter = "soil_water_saturated_zone_top__net_recharge_volume_flux"
+ reducer = "mean"
+
 [output.csv]
 path = "output_moselle.csv"
 
