@@ -146,6 +146,7 @@ end
         config = Wflow.Config(normpath(@__DIR__, file_name))
         config.dir_output = mktempdir()
         config.model.water_mass_balance__flag = true
+        config.model.land_surface_temperature__flag = true
         push!(configs, config)
     end
 
