@@ -227,6 +227,7 @@ end
 function LandParameters(dataset::NCDataset, config::Config, domain::Domain)
     (; land_indices) = domain.river.network
     (; network) = domain.land
+    (; indices) = network
     x_length, y_length = get_cell_lengths(dataset, config, network)
     area = x_length .* y_length
     flow_width = map(get_flow_width, network.local_drain_direction, x_length, y_length)
@@ -266,6 +267,14 @@ function LandParameters(dataset::NCDataset, config::Config, domain::Domain)
         river_fraction,
         water_fraction,
     )
+
+    if config.model.land_surface_temperature__flag
+        @reset land_parameters.skin_layer_height = ncread(dataset, config, "atmosphere_bottom_air__above_ground_height", Domain; sel = indices)
+        @reset land_parameters.d0 = ncread(dataset, config, "atmosphere_bottom_air_flow__zero_plane_displacement_length", Domain; sel = indices)
+        @reset land_parameters.z0h = ncread(dataset, config, "atmosphere_bottom_air_heat_flow__roughness_length", Domain; sel = indices)
+        @reset land_parameters.z0m = ncread(dataset, config, "atmosphere_bottom_air_flow__roughness_length", Domain; sel = indices)
+    end
+
     return land_parameters
 end
 
