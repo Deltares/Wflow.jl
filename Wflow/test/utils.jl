@@ -146,7 +146,6 @@ end
         config = Wflow.Config(normpath(@__DIR__, file_name))
         config.dir_output = mktempdir()
         config.model.water_mass_balance__flag = true
-        config.model.land_surface_temperature__flag = true
         push!(configs, config)
     end
 
@@ -188,6 +187,10 @@ end
                 # these parameters are just not used in any test model
                 Set(
                     [
+                        "atmosphere_bottom_air__bulk_momentum_aerodynamic_resistance",
+                        "land_surface_air_latent_heat_of_evaporation__energy_flux",
+                        "land_surface__temperature",
+                        "land_surface_air_net_sensible_heat__energy_flux",
                         "soil_exponential_vertical_saturated_hydraulic_conductivity_profile_below_surface__depth",
                         "soil_layer_water__vertical_saturated_hydraulic_conductivity",
                     ]
