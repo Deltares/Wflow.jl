@@ -1290,7 +1290,7 @@ meteorological stations). The input wind speed reference height
 
 ```toml
 [model]
-land_surface_wind__speed_reference_height = 10.0
+land_surface_wind__speed_reference_height = 100.0
 ```
 
 This reference height should be greater than the sum of $d$ and $z_\mathrm{0m}$ to convert
