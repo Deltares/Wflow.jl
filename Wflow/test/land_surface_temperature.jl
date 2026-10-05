@@ -34,3 +34,26 @@
     @test aerodynamic_resistance ≈ 103.83203500394342
     @test lst ≈ 309.0240335235324
 end
+
+
+@testitem "land surface temperature" begin
+
+    using Statistics: mean
+
+    tomlpath = joinpath(@__DIR__, "sbm_lst_config.toml")
+    config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
+
+    model = Wflow.Model(config)
+    (; aerodynamic_resistance, land_surface_temperature) = model.land.land_surface_temperature.variables
+
+    Wflow.run_timestep!(model)
+    @test mean(aerodynamic_resistance) ≈ 32.81763772290553
+    @test mean(land_surface_temperature) ≈ 276.28613750757245
+    Wflow.run_timestep!(model)
+    @test mean(aerodynamic_resistance) ≈ 58.326186742695754
+    @test mean(land_surface_temperature) ≈ 275.87731008785306
+    Wflow.run_timestep!(model)
+    @test mean(aerodynamic_resistance) ≈ 23.38356968683098
+    @test mean(land_surface_temperature) ≈ 275.32705281671065
+end
