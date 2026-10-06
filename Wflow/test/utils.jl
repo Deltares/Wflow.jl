@@ -142,6 +142,7 @@ end
             "sbm_gwf_piave_demand_config.toml",
             "sediment_config.toml",
             "sediment_eurosem_engelund_config.toml",
+            "sbm_lst_config.toml",
         ]
         config = Wflow.Config(normpath(@__DIR__, file_name))
         config.dir_output = mktempdir()
@@ -187,10 +188,6 @@ end
                 # these parameters are just not used in any test model
                 Set(
                     [
-                        "atmosphere_bottom_air__bulk_momentum_aerodynamic_resistance",
-                        "land_surface_air_latent_heat_of_evaporation__energy_flux",
-                        "land_surface__temperature",
-                        "land_surface_air_net_sensible_heat__energy_flux",
                         "soil_exponential_vertical_saturated_hydraulic_conductivity_profile_below_surface__depth",
                         "soil_layer_water__vertical_saturated_hydraulic_conductivity",
                     ]
