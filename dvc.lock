@@ -5,8 +5,8 @@ stages:
     deps:
     - path: Wflow/test/data/input
       hash: md5
-      md5: 88ca646c32a3859e619362a55fe8bdca.dir
-      size: 317173497
+      md5: 8b115aa3caf1de56c890d1aec6719789.dir
+      size: 464091414
       nfiles: 19
     - path: Wflow/test/sbm_config.toml
       hash: md5
@@ -31,8 +31,8 @@ stages:
     outs:
     - path: https://s3.deltares.nl/wflow/examples/dev/wflow-sbm-example.zip
       hash: md5
-      checksum: '"673a23c8b035998b342f2dd6abbf5d42-15"'
-      size: 123656454
+      checksum: '"f58d946a27f480dc60d8ff981ac8655d-33"'
+      size: 270574371
     - path: https://s3.deltares.nl/wflow/examples/dev/wflow-sbm-gwf-example.zip
       hash: md5
       checksum: '"1a0af9bbb5010e66fd7702ce68c0ae56-4"'
