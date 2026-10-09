@@ -237,10 +237,10 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
             :staggered_grid_river_input,
         ],
     ),
-    "river__slope" => ParameterMetadata(;
+    "river_bottom_surface__slope" => ParameterMetadata(;
         lens = @optic(_.domain.river.parameters.slope),
         unit = Unit(; m = (1, 1)),
-        description = "River slope",
+        description = "River bottom slope",
         tags = [:kinematic_wave_river_flow_input],
     ),
     #### States
@@ -349,6 +349,12 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
         description = "A multiplication factor applied to vertical hydraulic conductivity",
         tags = [:kinematic_lateral_subsurface_input],
     ),
+    "subsurface_bottom_surface__slope" =>
+        ParameterMetadata(;
+        lens = @optic(_.routing.subsurface_flow.parameters.slope),
+        description = "Subsurface bottom (impermeable bedrock/layer) slope",
+        tags = [:kinematic_lateral_subsurface_input],
+    ),
     #### States
     "subsurface_water__instantaneous_volume_flow_rate" => ParameterMetadata(;
         lens = @optic(_.routing.subsurface_flow.variables.q),
@@ -423,10 +429,10 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
             :kinematic_wave_floodplain_1D_flow_input,
         ],
     ),
-    "floodplain__slope" => ParameterMetadata(;
+    "floodplain_bottom_surface__slope" => ParameterMetadata(;
         lens = @optic(_.routing.river_flow.floodplain.parameters.slope),
         unit = Unit(; m = (1, 1)),
-        description = "Floodplain slope",
+        description = "Floodplain bottom slope",
         tags = [:kinematic_wave_floodplain_1D_flow_input],
     ),
     #### States

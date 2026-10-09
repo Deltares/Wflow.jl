@@ -270,7 +270,7 @@ function RiverParameters(dataset::NCDataset, config::Config, network::NetworkRiv
     flow_width = ncread(dataset, config, "river__width", Routing; sel = indices)
     minimum(flow_width) > 0 || error("river width must be positive on river cells")
 
-    slope = ncread(dataset, config, "river__slope", Routing; sel = indices)
+    slope = ncread(dataset, config, "river_bottom_surface__slope", Routing; sel = indices)
     clamp!(slope, 0.00001, Inf)
 
     river_parameters = RiverParameters(; flow_width, flow_length, slope)
