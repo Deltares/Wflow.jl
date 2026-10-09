@@ -82,6 +82,10 @@ subsurface_water__instantaneous_volume_flow_rate = "ssf"
   grid method.
 - Added an optional `wflow_version` field to the config .toml file. This setting is used by
   the wflow model builder `hydromt_wflow` for incremental Wflow.jl version upgrading.
+- Optional reinfiltration of overland flow into the soil, enabled by setting
+  `model.land_surface_water_reinfiltration__flag = true` in the TOML file. When enabled, up
+  to 95% of the overland flow depth is added to the water available for infiltration, and
+  overland flow water levels are corrected accordingly.
 
 ## v1.0.4 - 2026-07-24
 

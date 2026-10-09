@@ -176,6 +176,10 @@ end
     to_river_cumulative::Vector{Float64} = zeros(n)
     # Part of average overland flow [m³ s⁻¹] that flows to the river
     to_river_average::Vector{Float64} = zeros(n)
+    # Cumulative volume [m³] transferred from overland storage to the soil by reinfiltration
+    reinfiltration_cumulative::Vector{Float64} = zeros(n)
+    # Average reinfiltration flow rate [m³ s⁻¹] for model timestep dt
+    reinfiltration_average::Vector{Float64} = zeros(n)
 end
 
 "Struct for storing overland flow model boundary conditions"
@@ -361,6 +365,8 @@ function update_overland_flow_model!(
         qin_cumulative,
         to_river_average,
         to_river_cumulative,
+        reinfiltration_average,
+        reinfiltration_cumulative,
     ) = overland_flow_model.variables
     (; adaptive) = overland_flow_model.timestepping
 
@@ -383,6 +389,9 @@ function update_overland_flow_model!(
     @. q_average = q_cumulative / dt
     @. to_river_average = to_river_cumulative / dt
     @. qin_average = qin_cumulative / dt
+    # `reinfiltration_cumulative` is populated in `update_overland_flow_and_depth!` before
+    # this routing update; convert the accumulated volume to an average flow rate here.
+    @. reinfiltration_average = reinfiltration_cumulative / dt
     return nothing
 end
 
@@ -809,3 +818,65 @@ get_inflow_reservoir(
 # Exclude subsurface flow from `GroundwaterFlowModel`.
 get_inflow_reservoir(::AbstractRiverFlowModel, ::GroundwaterFlowModel, inds::Vector{Int}) =
     zeros(length(inds))
+
+"""
+Update overland flow water level and discharge for `KinWaveOverlandFlow` model based on
+surface water infiltration `infilt_surfacewater` [m s⁻¹] over timestep `dt` [s].
+"""
+function update_overland_flow_and_depth!(
+        overland_flow_model::OverlandFlowModel{<:KinematicWave},
+        soil_model::SbmSoilModel,
+        domain::Domain,
+        dt::Float64,
+    )
+    (; infilt_surfacewater) = soil_model.variables
+    overland_flow_model.variables.reinfiltration_cumulative .= 0.0
+    n = length(infilt_surfacewater)
+    return threaded_foreach(1:n; basesize = 1000) do i
+        update_overland_flow_and_depth!(
+            overland_flow_model,
+            infilt_surfacewater[i],
+            domain.land.parameters,
+            i,
+            dt,
+        )
+    end
+end
+
+"""
+Update overland flow water level and discharge in-place for a single cell `i` based on
+surface water infiltration `infilt_surfacewater` [m s⁻¹] over timestep `dt` [s].
+"""
+function update_overland_flow_and_depth!(
+        overland_flow_model::OverlandFlowModel{<:KinematicWave},
+        infilt_surfacewater::Float64,
+        land_parameters,
+        i::Int,
+        dt::Float64,
+    )
+    infilt_surfacewater > 0.0 || return nothing
+
+    (; alpha) = overland_flow_model.parameters
+    (; river_fraction, surface_flow_width, flow_length) = land_parameters
+
+    # Scale reinfiltration depth by the land fraction to reverse the same scaling applied
+    # when `potential_infiltration_surfacewater` was derived from `waterdepth_land` in
+    # `update_available_for_infiltration!`, keeping the water balance consistent.
+    delta_h = infilt_surfacewater * dt / (1.0 - river_fraction[i])
+    h = overland_flow_model.variables.h[i] - delta_h
+
+    q = ifelse(
+        surface_flow_width[i] > 0.0 && h > 0.0,
+        pow((h * surface_flow_width[i]) / alpha[i], 1.0 / BETA_KINWAVE),
+        0.0,
+    )
+    q = ifelse(q < KIN_WAVE_MIN_FLOW, 0.0, q)
+
+    # accumulate reinfiltration volume [m³] so it can be reported as routing outflow
+    overland_flow_model.variables.reinfiltration_cumulative[i] +=
+        delta_h * surface_flow_width[i] * flow_length[i]
+
+    overland_flow_model.variables.h[i] = h
+    overland_flow_model.variables.q[i] = q
+    return nothing
+end

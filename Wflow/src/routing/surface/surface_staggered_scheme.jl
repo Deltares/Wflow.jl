@@ -965,6 +965,8 @@ end
     n::Int
     # runoff from hydrological model [m³ s⁻¹]
     runoff::Vector{Float64} = zeros(n)
+    # amount of infiltration from surface water [m³]
+    infiltration_volume::Vector{Float64} = zeros(n)
 end
 
 "Initialize local inertial overland flow model"
@@ -1093,6 +1095,10 @@ function update_bc_overland_flow_model!(
         (net_runoff + net_runoff_river) * area
     overland_flow_model.boundary_conditions.runoff[river_indices] .+=
         get_flux_to_river(subsurface_flow, river_indices)
+
+    # infiltration volume [m³] from surface water, applied in `local_inertial_update_water_depth!`
+    @. overland_flow_model.boundary_conditions.infiltration_volume =
+        soil.variables.infilt_surfacewater * area * dt
     return nothing
 end
 
@@ -1346,7 +1352,7 @@ fluxes of the local inertial river and overland flow model.
     net_flow =
         net_river_flow + net_land_flow + overland_flow_model.boundary_conditions.runoff[i] -
         river_flow_model.boundary_conditions.abstraction[river_idx]
-    storage_change = net_flow * dt
+    storage_change = net_flow * dt - overland_flow_model.boundary_conditions.infiltration_volume[i]
 
     return storage_change
 end
@@ -1433,7 +1439,7 @@ from horizontal fluxes and runoff.
         overland_flow_model.variables.qx[ind_x_down] - overland_flow_model.variables.qx[i] +
             overland_flow_model.variables.qy[ind_y_down] - overland_flow_model.variables.qy[i] +
             overland_flow_model.boundary_conditions.runoff[i]
-    ) * dt
+    ) * dt - overland_flow_model.boundary_conditions.infiltration_volume[i]
 end
 
 """
@@ -1544,3 +1550,15 @@ function local_inertial_update_water_depth!(
     end
     return nothing
 end
+
+"""
+No-op for the `LocalInertialOverlandFlowModel`. Surface water infiltration is applied via
+the `infiltration_volume` boundary condition set in `update_bc_overland_flow_model!` and
+subtracted from land storage in `local_inertial_update_water_depth!`.
+"""
+update_overland_flow_and_depth!(
+    ::OverlandFlowModel{<:LocalInertial},
+    ::SbmSoilModel,
+    ::Domain,
+    ::Float64,
+) = nothing
