@@ -31,14 +31,14 @@ stages:
     outs:
     - path: https://s3.deltares.nl/wflow/examples/v1.1/wflow-sbm-example.zip
       hash: md5
-      checksum: '"f58d946a27f480dc60d8ff981ac8655d-33"'
-      size: 270574371
+      checksum: '"c43b577f106b8f213d6d70f22cd93322-15"'
+      size: 123656217
     - path: https://s3.deltares.nl/wflow/examples/v1.1/wflow-sbm-gwf-example.zip
       hash: md5
-      checksum: '"1a0af9bbb5010e66fd7702ce68c0ae56-4"'
-      size: 32758751
+      checksum: '"8539b9ca6f17509f97e128a0e713ce18-4"'
+      size: 32758595
     - path:
         https://s3.deltares.nl/wflow/examples/v1.1/wflow-sediment-example.zip
       hash: md5
-      checksum: '"78ac3864487f7316d466c88a1a574163-15"'
-      size: 124843910
+      checksum: '"281ab0bf0c0aaf128d2245dda6ad8d37-15"'
+      size: 124843710
