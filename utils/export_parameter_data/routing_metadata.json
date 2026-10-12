@@ -1,10 +1,10 @@
 {
-  "floodplain__slope": {
+  "floodplain_bottom_surface__slope": {
     "unit": "m m-1",
     "default": null,
     "fill": null,
     "type": "Float64",
-    "description": "Floodplain slope",
+    "description": "Floodplain bottom slope",
     "allow_missing": false,
     "allow_dynamic_input": false
   },
@@ -485,15 +485,6 @@
     "allow_missing": false,
     "allow_dynamic_input": false
   },
-  "river__slope": {
-    "unit": "m m-1",
-    "default": null,
-    "fill": null,
-    "type": "Float64",
-    "description": "River slope",
-    "allow_missing": false,
-    "allow_dynamic_input": false
-  },
   "river__width": {
     "unit": "m",
     "default": null,
@@ -527,6 +518,15 @@
     "fill": null,
     "type": "Float64",
     "description": "River bottom elevation",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "river_bottom_surface__slope": {
+    "unit": "m m-1",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "River bottom slope",
     "allow_missing": false,
     "allow_dynamic_input": false
   },
@@ -653,6 +653,15 @@
     "fill": null,
     "type": "Float64",
     "description": "Factor controlling the reduction of horizontal conductivity with depth",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "subsurface_bottom_surface__slope": {
+    "unit": "-",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Subsurface bottom (impermeable bedrock/layer) slope",
     "allow_missing": false,
     "allow_dynamic_input": false
   },

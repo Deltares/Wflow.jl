@@ -194,7 +194,7 @@ end
                 )
             elseif map_name == "routing"
                 # The lens of this standard name is valid but not part of any test model.
-                Set(["floodplain__slope"])
+                Set(["floodplain_bottom_surface__slope"])
             else
                 Set{String}()
             end

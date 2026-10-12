@@ -18,12 +18,12 @@ and [Command Line Interface](./running_wflow.qmd#using-the-command-line-interfac
 
 ## wflow\_sbm + kinematic wave
 
-[Download the wflow_sbm example model](https://s3.deltares.nl/wflow/examples/dev/wflow-sbm-example.zip)
+[Download the wflow_sbm example model](https://s3.deltares.nl/wflow/examples/v1.1/wflow-sbm-example.zip)
 
 ## wflow\_sbm + groundwater flow
 
-[Download the wflow_sbm groundwater flow example model](https://s3.deltares.nl/wflow/examples/dev/wflow-sbm-gwf-example.zip)
+[Download the wflow_sbm groundwater flow example model](https://s3.deltares.nl/wflow/examples/v1.1/wflow-sbm-gwf-example.zip)
 
 ## wflow\_sediment
 
-[Download the wflow_sediment example model](https://s3.deltares.nl/wflow/examples/dev/wflow-sediment-example.zip)
+[Download the wflow_sediment example model](https://s3.deltares.nl/wflow/examples/v1.1/wflow-sediment-example.zip)
