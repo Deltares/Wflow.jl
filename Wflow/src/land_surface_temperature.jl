@@ -140,15 +140,13 @@ function compute_aerodynamic_resistance(
         z0m::Float64,
         z0h::Float64,
     )
-    # set reference height (minimal to FAO standard height of 2.0 m).
-    zm_ref = max(skin_layer_height, 2.0)
+    # set reference height (minimal to default in agrometeorology (FAO)).
+    zm_ref = max(skin_layer_height, STANDARD_HEIGHT_AGROMETEOROLOGY)
 
-    # wind speed at reference height and constrained to be greater than 0.5 m/s to consider
-    # vapour exchange on the surface induced by air buoyancy and layer instability effects.
-    min_wind_speed = 0.5
+    # wind speed at reference height and constrained to FAO minimum wind speed.
     wind_speed_ref = max(
         wind_speed * (log((zm_ref - d0) / z0m) / log((z_measured - d0) / z0m)),
-        min_wind_speed,
+        FAO_MINIMUM_WIND_SPEED,
     )
 
     # compute aerodynamic resistance based on Thom's equation.

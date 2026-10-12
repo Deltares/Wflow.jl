@@ -81,6 +81,10 @@ const AIR_SPECIFIC_HEAT_CAPACITY = 1005.0 # [J kg⁻¹ K⁻¹]
 const WATER_KINEMATIC_VISCOSITY = 1.16e-6 # [m² s⁻¹]
 # local drain direction pit [-]
 const LDD_PIT = 5
+const STANDARD_HEIGHT_AGROMETEOROLOGY = 2.0 # [m]
+# FAO minimum wind speed for computation aerodynamic resistance to consider vapour exchange
+# on the surface induced by air buoyancy and layer instability effects.
+const FAO_MINIMUM_WIND_SPEED = 0.5 # [m s⁻¹]
 
 mutable struct Clock{T}
     time::T
