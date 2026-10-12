@@ -41,6 +41,7 @@ struct Unit
     t::PowersType # tonne
     # Energy
     J::PowersType # joule
+    kJ::PowersType # kilojoule
     W::PowersType # watt
     # Fraction
     percentage::PowersType # percentage, converted to unitless fraction in the SI standard
@@ -116,6 +117,7 @@ const to_SI_data = @NamedTuple{factor::Float64, unit_SI::Unit}[
     (factor = 1.0e-3, unit_SI = Unit(; kg = 1)), # g
     (factor = 1.0e3, unit_SI = Unit(; kg = 1)), # t
     (factor = 1.0, unit_SI = Unit(; kg = 1, m = 2, s = -2)), # J
+    (factor = 1.0e3, unit_SI = Unit(; kg = 1, m = 2, s = -2)), # kJ
     (factor = 1.0, unit_SI = Unit(; kg = 1, m = 2, s = -3)), # W
     (factor = 1.0e-2, unit_SI = Unit()), # percentage
     (factor = 1.0e-6, unit_SI = Unit()), # ppm
@@ -142,6 +144,7 @@ const PPM = Unit(; ppm = 1)
 const M3_PER_DAY = Unit(; m = 3, d = -1)
 const PERCENTAGE = Unit(; percentage = 1)
 const MS = Unit(; ms = 1)
+const KJ_PER_KG = Unit(; kJ = 1, kg = -1)
 
 function Base.:*(u1::Unit, u2::Unit)
     absolute_temperature_new = u1.absolute_temperature || u2.absolute_temperature

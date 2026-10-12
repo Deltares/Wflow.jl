@@ -97,7 +97,8 @@ end
 "Compute latent heat of vaporization"
 function compute_latent_heat_of_vaporization(air_temperature::Float64)
     air_temperature_degc = from_SI(air_temperature, ABSOLUTE_DEGREES)
-    return (2501.0 - 2.375 * air_temperature_degc) * 1000.0 # J/kg converted from kJ/kg
+    latent_heat_vaporization = 2501.0 - 2.375 * air_temperature_degc # kJ/kg
+    return to_SI(latent_heat_vaporization, KJ_PER_KG)
 end
 
 "Compute latent heat flux"
