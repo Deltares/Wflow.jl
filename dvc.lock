@@ -10,35 +10,35 @@ stages:
       nfiles: 19
     - path: Wflow/test/sbm_config.toml
       hash: md5
-      md5: 14c5832b4585c791cc39cd40b65725b3
-      size: 7310
+      md5: 1dd31132107ed4ba6d6d878bfc547e0d
+      size: 7368
     - path: Wflow/test/sbm_gwf_piave_demand_config.toml
       hash: md5
-      md5: 0a2acce279e2355a6faa3e170279d242
-      size: 5989
+      md5: 5cbadd8f5ff98c70cec0ba99038de2ca
+      size: 6004
     - path: Wflow/test/sediment_config.toml
       hash: md5
-      md5: 2445ee47af3ac24d46fdb3dba330b2f0
-      size: 7176
+      md5: a5e92476e6b21b4e4618c8eb69e6b4b5
+      size: 7191
     - path: utils/example_models.toml
       hash: md5
-      md5: 557abc820d4108290025e0a74578f57c
-      size: 598
+      md5: cfa70befc7b4365f17a8a097d84a6032
+      size: 624
     - path: utils/publish_example_models.py
       hash: md5
-      md5: 066718c1103b91e94b28e802b7203dba
-      size: 2699
+      md5: fe9523f2b0aa6554e4f6a5305d500bda
+      size: 2775
     outs:
     - path: https://s3.deltares.nl/wflow/examples/v1.1/wflow-sbm-example.zip
       hash: md5
-      checksum: '"c43b577f106b8f213d6d70f22cd93322-15"'
-      size: 123656217
+      checksum: '"1958b8975379bd74ce45884da760d6c4-15"'
+      size: 123656275
     - path: https://s3.deltares.nl/wflow/examples/v1.1/wflow-sbm-gwf-example.zip
       hash: md5
-      checksum: '"8539b9ca6f17509f97e128a0e713ce18-4"'
-      size: 32758595
+      checksum: '"8b70f6ced3d6b5cb2ae818d0d3ffda75-4"'
+      size: 32758610
     - path:
         https://s3.deltares.nl/wflow/examples/v1.1/wflow-sediment-example.zip
       hash: md5
-      checksum: '"281ab0bf0c0aaf128d2245dda6ad8d37-15"'
-      size: 124843710
+      checksum: '"d2ca0ea1881eadbb7951f23a29eb9c98-15"'
+      size: 124843725
