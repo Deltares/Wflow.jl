@@ -393,7 +393,7 @@ function FloodPlainModel(dataset::NCDataset, config::Config, domain::DomainRiver
         Routing;
         sel = indices,
     )
-    slope = ncread(dataset, config, "floodplain__slope", Routing; sel = indices)
+    slope = ncread(dataset, config, "floodplain_bottom_surface__slope", Routing; sel = indices)
     clamp!(slope, 0.00001, Inf)
     parameters = FloodPlainParameters(; profile, mannings_n, slope)
     variables = FloodPlainVariables(; n)
