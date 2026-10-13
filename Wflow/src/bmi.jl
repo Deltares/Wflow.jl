@@ -334,13 +334,15 @@ function BMI.get_grid_edge_nodes(model::Model, grid::Int, edge_nodes::Vector{Int
         edge_nodes[range(2, n; step = 2)] = nodes_at_edge.dst
         return edge_nodes
     elseif grid == 4
-        ind_x_up = domain.land.network.edge_indices.ind_x_up
+        # copy to avoid modifying the edge connectivity of the model
+        ind_x_up = copy(domain.land.network.edge_indices.ind_x_up)
         edge_nodes[range(1, n; step = 2)] = 1:m
         ind_x_up[ind_x_up .== m + 1] .= -999
         edge_nodes[range(2, n; step = 2)] = ind_x_up
         return edge_nodes
     elseif grid == 5
-        ind_y_up = domain.land.network.edge_indices.ind_y_up
+        # copy to avoid modifying the edge connectivity of the model
+        ind_y_up = copy(domain.land.network.edge_indices.ind_y_up)
         edge_nodes[range(1, n; step = 2)] = 1:m
         ind_y_up[ind_y_up .== m + 1] .= -999
         edge_nodes[range(2, n; step = 2)] = ind_y_up

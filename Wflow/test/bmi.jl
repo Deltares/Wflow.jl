@@ -155,6 +155,10 @@ end
     @test_throws ErrorException BMI.get_grid_edge_count(model, 7)
     @test BMI.get_grid_edge_nodes(model, 4, fill(0, 2 * 50063))[1:4] == [1, -999, 2, 3]
     @test BMI.get_grid_edge_nodes(model, 5, fill(0, 2 * 50063))[1:4] == [1, 4, 2, 10]
+    # the edge connectivity of the model should not be modified
+    (; edge_indices) = model.domain.land.network
+    @test -999 ∉ edge_indices.ind_x_up
+    @test -999 ∉ edge_indices.ind_y_up
     @test_logs (
         :warn,
         "edges are not provided for grid type 2 (variables are located at nodes)",

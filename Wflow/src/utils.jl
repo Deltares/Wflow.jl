@@ -696,8 +696,8 @@ function threaded_foreach(f::Function, x::AbstractArray; basesize::Integer)::Not
         if length(partitions) > 1 && Threads.nthreads() > 1
             @sync for p in partitions
                 Threads.@spawn begin
-                    for i in eachindex(p)
-                        f(@inbounds p[i])
+                    for i in p
+                        f(@inbounds x[i])
                     end
                 end
             end

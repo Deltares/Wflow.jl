@@ -246,7 +246,7 @@ function update_cyclic!(model)
     for (par, ncvar) in cyclic_parameters
         metadata = get_metadata(par, land)
         if !metadata.allow_dynamic_input
-            error("Tried to update '$name' from cyclic input, which is not allowed.")
+            error("Tried to update '$par' from cyclic input, which is not allowed.")
         end
         if is_first_timestep || (month_day in cyclic_times[par])
             # time for an update of the cyclic forcing
@@ -338,7 +338,7 @@ function setup_scalar_netcdf(
     )
     set_extradim_netcdf(ds, extra_dim)
     for scalar_variable in config.output.netcdf_scalar.variable
-        (; map, _location_dim, location, parameter, name) = scalar_variable
+        (; map, _location_dim, location, parameter, name, layer) = scalar_variable
         v, metadata = get_field_in_model(modelmap, parameter)
         unit_str = to_string(metadata.unit; BMI_standard = true)
         # Delft-FEWS requires the attribute :cf_role = "timeseries_id" when a netCDF file
@@ -361,7 +361,8 @@ function setup_scalar_netcdf(
         dims = if type <: AbstractFloat
             base_dims
         elseif type <: SVector
-            if haskey(netcdfvars, extra_dim.name)
+            # a single layer is written if it is specified in the TOML file
+            if !isnothing(layer)
                 base_dims
             else
                 (base_dims[1], extra_dim.name, base_dims[2])
@@ -876,7 +877,6 @@ end
 function write_netcdf_timestep(model::AbstractModel, writer::NCWriter{<:NCDataset, <:Dict})
     (; clock) = model
     (; output_dataset, output_map, reducer) = writer
-    (; extra_dim) = model.writer
     dt_val = tosecond(clock.dt)
     time_index = add_time(output_dataset, clock.time)
     for (var, reducer_) in reducer
@@ -888,14 +888,14 @@ function write_netcdf_timestep(model::AbstractModel, writer::NCWriter{<:NCDatase
             v = from_SI(reducer_(vector), unit; dt_val)
             output_dataset[name][:, time_index] .= v
         elseif elemtype <: SVector
-            # check if an extra dimension and index is specified in the TOML file
-            if haskey(output_dataset, extra_dim.name)
+            # check if a layer index is specified in the TOML file
+            if !isnothing(layer)
                 v = from_SI(reducer_(getindex.(vector, layer)), unit; dt_val)
                 output_dataset[name][:, time_index] .= v
             else
                 nlayer = length(first(vector))
                 for i in 1:nlayer
-                    v = from_SI(reducer_(getindex.(vector, layer)), unit; dt_val)
+                    v = from_SI(reducer_(getindex.(vector, i)), unit; dt_val)
                     output_dataset[name][:, i, time_index] .= v
                 end
             end
@@ -933,7 +933,7 @@ function write_netcdf_timestep(model::AbstractModel, writer::NCWriter{<:NCDatase
                 # ensure no other information is written
                 fill!(buffer, missing)
                 buffer[sel] .= getindex.(vector, i)
-                from_SI!(buffer, unit)
+                from_SI!(buffer, unit; dt_val = dt)
                 output_dataset[key][:, :, i, time_index] = buffer
             end
         else
