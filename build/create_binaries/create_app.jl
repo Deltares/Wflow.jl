@@ -1,6 +1,4 @@
 using JuliaC
-import PackageCompiler
-using PackageCompiler: default_app_cpu_target
 using TOML
 using Pkg
 using LicenseCheck
@@ -32,7 +30,6 @@ end
 image_recipe = ImageRecipe(;
     output_type = "--output-exe",
     file = project_dir,
-    cpu_target = default_app_cpu_target(),
     verbose = true,
 )
 link_recipe = LinkRecipe(;
