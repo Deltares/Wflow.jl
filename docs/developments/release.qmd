@@ -1,3 +1,29 @@
 ---
 title: Release procedure
 ---
+
+## Modus operandi
+The release procedure for Wflow is currently in the process of automation. Nevertheless, the manual steps (internal procedure) associated with releasing are listed here:
+* The TeamCity project [`Wflow`](https://dpcbuild.deltares.nl/project/wflow) in its entirety should have a green status, all builds and testbenches successful
+* A commit and push on the repository to mark te version
+* Tag new patch release on commit message (@JuliaRegistrator register subdir=Wflow)
+* The release registration takes approx. 15 minutes
+* TeamCity builds should complete
+* Signing of resulting binaries should complete ([separate signing project producing signed binaries](https://dpcbuild.deltares.nl/project/SigningAndCertificates_SigningWflow?mode=buildsn))
+* Manually test the signed binaries <br>
+* The signed binaries should be uploaded to the P-drive under
+`p:\1000365-002-wflow\binaries\wflow_cli\`
+* Update the download portal with the location of the new binaries on the P-drive (notify DTC support department).
+* Notify the Wflow Teams chat of the new version
+
+
+## Overview of CI configurations on TeamCity
+All TeamCity configurations regarding Wflow, except for the signing of Wflow binaries is found under the [`Wflow`]([`Wflow`](https://dpcbuild.deltares.nl/project/wflow)) project, which has the following configurations:
+* Build Docker
+* Build MSIX package
+* Linux
+    * Build `wflow-cli`
+    * Test `wflow-cli`
+* Windows
+    * Build `wflow-cli`
+    * Test `wflow-cli`
