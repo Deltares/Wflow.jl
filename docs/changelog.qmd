@@ -82,6 +82,9 @@ floodplain_bottom_surface__slope = "floodplain_slope"
   `floodplain__slope` to `floodplain_bottom_surface__slope` as it is more explicit and
   consistent with other slope standard names like `land_surface__slope`
   ([#1102](https://github.com/Deltares/Wflow.jl/pull/1102)).
+- Reduced model initialization time (mostly compilation) by roughly half, and sped up
+  unit conversion of input and output arrays
+  ([#1118](https://github.com/Deltares/Wflow.jl/pull/1118)).
 
 ### Added
 - Support internal timestepping for kinematic wave lateral subsurface flow concept
