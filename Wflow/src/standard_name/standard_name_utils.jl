@@ -25,13 +25,14 @@ Metadata associated with parameters and variables.
 - `tags`: Identifiers to filter parameters/variables for specific tables in the docs
 """
 @kwdef struct ParameterMetadata{
-        L,
         D <: PARAMETER_TYPES,
         F <: PARAMETER_TYPES,
         T <: PARAMETER_TYPES,
         N <: Union{Symbol, Nothing},
     }
-    lens::L = nothing
+    # `lens` is deliberately not a type parameter: each lens has a unique type, which would
+    # cause e.g. `ncread` to be compiled separately for every parameter.
+    lens::Any = nothing
     unit::Unit = EMPTY_UNIT
     default::D = nothing
     fill::F = nothing
@@ -42,7 +43,7 @@ Metadata associated with parameters and variables.
     dimname::N = nothing
     tags::Vector{Symbol} = []
     function ParameterMetadata(
-            lens::L,
+            lens,
             unit,
             default::D,
             fill::F,
@@ -52,7 +53,7 @@ Metadata associated with parameters and variables.
             allow_dynamic_input,
             dimname::N,
             flags,
-        ) where {L, D, F, N}
+        ) where {D, F, N}
         if isnothing(type)
             type = if !isnothing(default)
                 D
@@ -64,7 +65,7 @@ Metadata associated with parameters and variables.
                 Float64
             end
         end
-        return new{L, D, F, type, N}(
+        return new{D, F, type, N}(
             lens,
             unit,
             default,
@@ -83,12 +84,28 @@ function Base.:(==)(a::ParameterMetadata, b::ParameterMetadata)
     return all(getfield(a, f) == getfield(b, f) for f in fieldnames(ParameterMetadata))
 end
 
+"""
+    lens_path(lens)
+
+Return the model path of a property `lens` as a string, e.g. `"land.soil.variables.zi"` for
+`@optic(_.land.soil.variables.zi)`. This avoids `string(lens)`, which compiles `show`
+methods for every distinct lens type.
+"""
+function lens_path(@nospecialize(lens))::String
+    return if lens isa ComposedFunction
+        string(lens_path(lens.inner), '.', lens_path(lens.outer))
+    else
+        String(typeof(lens::PropertyLens).parameters[1])
+    end
+end
+
 function metadata_from_lens_string(
         lens_string::AbstractString,
         standard_name_map::OrderedDict{String, ParameterMetadata},
     )::Union{ParameterMetadata, Nothing}
     for metadata_candidate in values(standard_name_map)
-        if string(metadata_candidate.lens)[7:(end - 1)] == lens_string
+        (; lens) = metadata_candidate
+        if !isnothing(lens) && lens_path(lens) == lens_string
             return metadata_candidate
         end
     end

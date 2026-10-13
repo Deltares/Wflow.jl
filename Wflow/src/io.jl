@@ -924,7 +924,7 @@ function write_netcdf_timestep(model::AbstractModel, writer::NCWriter{<:NCDatase
             # ensure no other information is written
             fill!(buffer, missing)
             # cut off possible boundary conditions/ ghost points with [1:length(sel)]
-            buffer[sel] .= collect(vector)[1:length(sel)]
+            buffer[sel] .= view(vector, 1:length(sel))
             from_SI!(buffer, unit; dt_val = dt)
             output_dataset[key][:, :, time_index] = buffer
         elseif elemtype <: SVector
