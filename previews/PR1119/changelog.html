@@ -536,7 +536,6 @@ window.Quarto = {
 <h3 class="anchored" data-anchor-id="fixed">Fixed</h3>
 <ul>
 <li>Reduce memory use and improve performance of reading split NetCDF forcing files (<a href="https://github.com/Deltares/Wflow.jl/pull/1052">#1052</a>).</li>
-<li>Fixed netCDF scalar output of layered variables, unit conversion of layered gridded output, <code>BMI.get_grid_edge_nodes</code> modifying the model edge connectivity, water demand with local inertial or Manning staggered river routing, and several error messages (<a href="https://github.com/Deltares/Wflow.jl/pull/1119">#1119</a>).</li>
 </ul>
 </section>
 <section id="changed" class="level3">
@@ -559,6 +558,7 @@ window.Quarto = {
 <li>Support the use of Manning’s equation (assuming that the topography controls water flow mostly) for river and floodplain routing on a staggered grid. This is an additional routing scheme to the local inertial river routing scheme, both make us of the staggered grid method.</li>
 <li>Added an optional <code>wflow_version</code> field to the config .toml file. This setting is used by the wflow model builder <code>hydromt_wflow</code> for incremental Wflow.jl version upgrading.</li>
 <li>Support using different slopes for overland and subsurface kinematic wave flow routing (<a href="https://github.com/Deltares/Wflow.jl/pull/1102">#1102</a>). For example this can be useful to simulate surface terrain changes that have less or no impact on the subsurface flow slope. A new standard name <code>subsurface_bottom_surface__slope</code> has been added for the subsurface flow slope.</li>
+<li>Support land surface temperature computations.</li>
 </ul>
 </section>
 </section>
