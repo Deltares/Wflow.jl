@@ -513,3 +513,40 @@ end
         rm(tomlpath_error)
     end
 end
+
+@testitem "NetCDF scalar output of layered variables" begin
+    using NCDatasets: dimnames
+    tomlpath = joinpath(@__DIR__, "sbm_config.toml")
+    config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
+    # a single layer, and all layers of a layered variable
+    for (name, layer) in (("vwc_layer_2", 2), ("vwc", nothing))
+        push!(
+            config.output.netcdf_scalar.variable,
+            Wflow.NetCDFScalarVariable(;
+                name,
+                parameter = "soil_layer_water__volume_fraction",
+                layer,
+                map = "river_gauge__count",
+                _location_dim = "river_gauge__count",
+            ),
+        )
+    end
+    model = Wflow.Model(config)
+    Wflow.run_timestep!(model)
+    ds = model.writer.dataset_scalar
+    @test dimnames(ds["vwc_layer_2"]) == ("river_gauge__count", "time")
+    @test dimnames(ds["vwc"]) == ("river_gauge__count", "layer", "time")
+    @test ds["vwc"][:, 2, 1] == ds["vwc_layer_2"][:, 1]
+    @test ds["vwc"][:, 1, 1] != ds["vwc"][:, 2, 1]
+    Wflow.close_files(model; delete_output = false)
+end
+
+@testitem "unit: Config error messages" begin
+    @test_throws "Invalid loglevel = verbose" Wflow.convert_value(Wflow.LogLevel, "verbose")
+    dict = Dict{String, Any}("name" => "Q", "parameter" => "river_water__volume_flow_rate")
+    @test_throws "with name = 'Q' is missing either a 'location' or a 'map' field" Wflow.init_config_section(
+        Wflow.NetCDFScalarVariable,
+        dict,
+    )
+end
