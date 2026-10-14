@@ -583,6 +583,7 @@ window.Quarto = {
   <li><a href="#allocation-areas" id="toc-allocation-areas" class="nav-link" data-scroll-target="#allocation-areas">Allocation areas</a></li>
   <li><a href="#abstractions" id="toc-abstractions" class="nav-link" data-scroll-target="#abstractions">Abstractions</a></li>
   </ul></li>
+  <li><a href="#land-surface-temperature" id="toc-land-surface-temperature" class="nav-link" data-scroll-target="#land-surface-temperature">Land surface temperature</a></li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
   </ul>
 </nav>
@@ -619,9 +620,10 @@ window.Quarto = {
 <li>the addition of a capillary rise;</li>
 <li>the addition of glacier, snow build-up and melting processes;</li>
 <li>the addition to divide the soil column into different layers to allow for transfer of water within the unsaturated zone;</li>
-<li>the addition of water demand and allocation computations.</li>
+<li>the addition of water demand and allocation computations;</li>
+<li>the addition of land surface temperature (LST) computations.</li>
 </ul>
-<p>The Land Hydrology <code>SBM</code> model contains besides a <code>SBM</code> <code>soil</code> model (including evapotranspiration), models for <code>interception</code>, <code>snow</code>, <code>glacier</code> , water <code>demand</code> and <code>allocation</code>. The sections below describe the working of the Land Hydrology <code>SBM</code> model in more detail.</p>
+<p>The Land Hydrology <code>SBM</code> model contains besides a <code>SBM</code> <code>soil</code> model (including evapotranspiration), models for <code>interception</code>, <code>snow</code>, <code>glacier</code> , water <code>demand</code> and <code>allocation</code> and land surface temperature (<code>land_surface_temperature</code>). The sections below describe the working of the Land Hydrology <code>SBM</code> model in more detail.</p>
 </section>
 <section id="rainfall-interception" class="level2">
 <h2 class="anchored" data-anchor-id="rainfall-interception">Rainfall interception</h2>
@@ -1357,19 +1359,21 @@ T_\mathrm{soil}^t = T_\mathrm{soil}^{t-1} + w_\mathrm{soil}  (T_\mathrm{air} - T
 <p>Infiltration from land surface water (overland flow) is supported when enabling the following setting in the TOML file:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_water_reinfiltration__flag</span> <span class="op">=</span> <span class="cn">true</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>This can be done with both <code>kinematic_wave</code> and <code>local_inertial</code> land routing settings. When enabling this process, part of the overland flow depth is added to the water available for infiltration. To keep some water in the overland flow (and avoid draining a cell completely in one time step), the potential infiltration from surface water <code>potential_infiltration_surfacewater</code> <span class="math inline">\(\SIb{}{mm\ t^{-1}}\)</span> is computed from the overland flow depth <code>waterdepth_land</code> <span class="math inline">\(\SIb{}{mm}\)</span> as:</p>
+<p>This can be done with both <code>kinematic_wave</code> and <code>local_inertial</code> land routing settings. When enabling this process, part of the overland flow depth is added to the water available for infiltration. To keep some water in the overland flow (and avoid draining a cell completely in one time step), the potential infiltration from surface water <code>potential_infiltration_surfacewater</code> <span class="math inline">\(\SIb{}{mm\ t^{-1}}\)</span> is computed from the overland flow variable <code>h</code>, the water depth at the end of the previous time step <span class="math inline">\(\SIb{\subtext{h}{land}^{t-1}}{mm}\)</span>, as:</p>
 <p><span class="math display">\[
-    \subtext{i}{pot, sw} = \frac{\subtext{h}{land}}{\Delta t} (1 - \subtext{f}{river}) \subtext{f}{reinfilt, max},
+  \subtext{i}{pot, sw}^{t} = \max\left(\frac{\subtext{h}{land}^{t-1}}{\Delta t} (1 - \subtext{f}{river}) - \subtext{E}{land, water}^{t}, 0\right) \subtext{f}{reinfilt, max},
 \]</span></p>
-<p>where <span class="math inline">\(\SIb{\subtext{f}{river}}{-}\)</span> is the river fraction of the cell and <span class="math inline">\(\SIb{\subtext{f}{reinfilt, max}}{-}\)</span> is the maximum reinfiltration fraction (fixed at <span class="math inline">\(0.95\)</span>). This amount is added to the water flux at the soil surface <code>water_flux_surface</code> <span class="math inline">\(\SIb{}{mm\ t^{-1}}\)</span>, so that the total water available for infiltration <code>potential_infiltration</code> <span class="math inline">\(\SIb{}{mm\ t^{-1}}\)</span> becomes:</p>
+<p>where <span class="math inline">\(t\)</span> denotes the current time step, <span class="math inline">\(\Delta t\)</span> is its duration, <span class="math inline">\(\SIb{\subtext{f}{river}}{-}\)</span> is the river fraction of the cell, <span class="math inline">\(\SIb{\subtext{E}{land, water}^{t}}{mm\ t^{-1}}\)</span> is the actual land open water evaporation rate (<code>actual_open_water_evaporation_land</code>) computed by the open water runoff model, and <span class="math inline">\(\SIb{\subtext{f}{reinfilt, max}}{-}\)</span> is the maximum reinfiltration fraction (fixed at <span class="math inline">\(0.95\)</span>). The stored water rate is first scaled by the non-river fraction to express it on the same cell-area basis as the evaporation rate. Evaporation is then subtracted before applying the reinfiltration fraction, with a lower bound of zero. This reserves water for evaporation so that evaporation and reinfiltration do not use the same stored water.</p>
+<p>This amount is added to the water flux at the soil surface <code>water_flux_surface</code> <span class="math inline">\(\SIb{}{mm\ t^{-1}}\)</span>, so that the total water available for infiltration <code>potential_infiltration</code> <span class="math inline">\(\SIb{}{mm\ t^{-1}}\)</span> becomes:</p>
 <p><span class="math display">\[
-    \subtext{i}{pot} = \subtext{q}{surface} + \subtext{i}{pot, sw}.
+  \subtext{i}{pot}^{t} = \subtext{q}{surface}^{t} + \subtext{i}{pot, sw}^{t}.
 \]</span></p>
+<p>Open water evaporation is not subtracted from the incoming soil-surface flux <span class="math inline">\(\subtext{q}{surface}^{t}\)</span>. Its actual loss is accounted for separately in net runoff; the subtraction above only limits the stored surface water available for reinfiltration.</p>
 <p>The regular infiltration routine then computes the actual infiltration <code>actual_infiltration</code> <span class="math inline">\(\SIb{}{mm\ t^{-1}}\)</span> and infiltration excess <code>infiltexcess</code> <span class="math inline">\(\SIb{}{mm\ t^{-1}}\)</span>. After infiltration, the share originating from overland flow is tracked with the ratio <code>infilt_ratio</code> = <code>actual_infiltration</code> / <code>potential_infiltration</code>, giving the infiltration from surface water:</p>
 <p><span class="math display">\[
-    \subtext{i}{sw} = \subtext{i}{pot, sw} \cdot \frac{\subtext{i}{act}}{\subtext{i}{pot}}.
+  \subtext{i}{sw}^{t} = \subtext{i}{pot, sw}^{t} \cdot \frac{\subtext{i}{act}^{t}}{\subtext{i}{pot}^{t}}.
 \]</span></p>
-<p>Finally, <code>actual_infiltration</code>, <code>infiltexcess</code> and <code>water_flux_surface</code> are corrected by <span class="math inline">\(\subtext{i}{pot, sw}\)</span> to avoid double counting of water already originating from surface water.</p>
+<p>Finally, <code>actual_infiltration</code>, <code>infiltexcess</code> and <code>water_flux_surface</code> are corrected by <span class="math inline">\(\subtext{i}{pot, sw}^{t}\)</span> to avoid double counting of water already originating from surface water.</p>
 </section>
 </section>
 <section id="capillary-rise" class="level3">
@@ -1483,16 +1487,53 @@ maxdepth}}{mm}\)</span> is the critical water depth beyond which capillary rise 
 <p>Groundwater abstraction is implemented by subtracting this amount from the recharge variable of the lateral subsurface flow component (kinematic wave) or the recharge rate variable of the groundwater flow module. Surface water abstraction <span class="math inline">\(\SIb{}{m^3\ s^{-1}}\)</span> is divided by the flow length <span class="math inline">\(\SIb{}{m}\)</span> and subtracted from the lateral inflow of kinematic wave routing scheme for river flow. For the local inertial routing scheme (river and optional floodplain routing), the surface water abstraction <span class="math inline">\(\SIb{}{m^3\ s^{-1}}\)</span> is subtracted as part of the continuity equation of the local inertial model. For reservoir locations surface water is abstracted <span class="math inline">\(\SIb{}{m^3\ s^{-1}}\)</span> from the reservoir storage <span class="math inline">\(\SIb{}{m^3}\)</span>, with a subsequent update of the reservoir water level <span class="math inline">\(\SIb{}{m}\)</span>.</p>
 </section>
 </section>
+<section id="land-surface-temperature" class="level2">
+<h2 class="anchored" data-anchor-id="land-surface-temperature">Land surface temperature</h2>
+<p>This optional module estimates the land surface temperature (LST) <span class="math inline">\(\SIb{T_\mathrm{s}}{\degree C}\)</span> based on evapotranspiration <span class="math inline">\(\SIb{ET}{mm\ t^{-1}}\)</span> simulated by the Land Hydrology <code>SBM</code> model and wind speed, air temperature and net radiation as input. The approach used to estimate <span class="math inline">\(T_\mathrm{s}\)</span> is based on work by Zink et al.&nbsp;(2018) and Purnamasari et al.&nbsp;(2025).</p>
+<p>This module can be enabled by specifying the following in the TOML file:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_temperature__flag</span> <span class="op">=</span> <span class="cn">true</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The energy balance of the land surface is computed as follows:</p>
+<p><span class="math display">\[
+    R_\mathrm{n} =  LE + H + G
+\]</span></p>
+<p>where <span class="math inline">\(\SIb{R_\mathrm{n}}{W\ m^{-2}}\)</span> is net radiation, <span class="math inline">\(\SIb{LE}{W\ m^{-2}}\)</span> is latent heat flux, <span class="math inline">\(\SIb{H}{W\ m^{-2}}\)</span> is sensible heat flux and <span class="math inline">\(\SIb{G}{W\ m^{-2}}\)</span> is soil heat flux. The latent heat flux <span class="math inline">\(LE\)</span> is determined by converting evapotranspiration <span class="math inline">\(ET\)</span> to an energy flux as follows:</p>
+<p><span class="math display">\[
+    LE =  \lambda \rho_\mathrm{water} ET
+\]</span></p>
+<p>where <span class="math inline">\(\SIb{\lambda}{J\ kg^{-1}}\)</span> is latent heat of vaporization approximated by <span class="math inline">\(\lambda =
+(2501 - 2.375 T_\mathrm{air})  1000\)</span> using air temperature <span class="math inline">\(\SIb{T_\mathrm{air}}{\degree C}\)</span> and <span class="math inline">\(\rho_\mathrm{water}\)</span> is the density of water (<span class="math inline">\(\SI{1000.0}{kg\ m^{-3}}\)</span>). The soil heat flux <span class="math inline">\(G\)</span> is estimated with a fixed linear coefficient (0.1) applied to net radiation <span class="math inline">\(R_\mathrm{n}\)</span>. With <span class="math inline">\(R_\mathrm{n}\)</span> as input, sensible heat flux <span class="math inline">\(H\)</span> can be estimated using the energy balance equation. LST can be computed as follows:</p>
+<p><span class="math display">\[
+    T_\mathrm{s} = \frac{H r_\mathrm{air}}{\rho_\mathrm{air} c_\mathrm{p}} + T_\mathrm{air}
+\]</span></p>
+<p>where <span class="math inline">\(\SIb{r_\mathrm{air}}{s\ m^{-1}}\)</span> is aerodynamic resistance, <span class="math inline">\(\SIb{c_\mathrm{p}}{J\
+kg^{-1}\ K^{-1}}\)</span> is the specific heat of air (<span class="math inline">\(\SI{1005.0}{J\ kg^{-1}\ K^{-1}}\)</span>) and <span class="math inline">\(\SIb{\rho_\mathrm{air}}{kg\ m^{-3}}\)</span> is the density of air (<span class="math inline">\(\SI{1.225}{kg\ m^{-3}}\)</span>).</p>
+<p>The aerodynamic resistance <span class="math inline">\(r_\mathrm{air}\)</span> that controls the vapour and heat transfer is computed based on Thom’s equation (Thom, 1975):</p>
+<p><span class="math display">\[
+    r_\mathrm{air} = \frac{\ln(\frac{z_\mathrm{m} - d}{z_\mathrm{0m}}) \ln(\frac{z_\mathrm{h} - d}{z_\mathrm{0h}})}{k^2 u_\mathrm{z}}
+\]</span></p>
+<p>where <span class="math inline">\(\SIb{d}{m}\)</span> is the zero plane displacement height, <span class="math inline">\(\SIb{z_\mathrm{m}}{m}\)</span> is the height of wind measurement, <span class="math inline">\(\SIb{z_\mathrm{h}}{m}\)</span> is the height of humidity measurement, <span class="math inline">\(\SIb{z_\mathrm{0m}}{m}\)</span> is the roughness length for momentum transfer, <span class="math inline">\(\SIb{z_\mathrm{0h}}{m}\)</span> is the roughness length for heat transfer, <span class="math inline">\(\SIb{u_\mathrm{z}}{m\
+s^{-1}}\)</span> is the wind speed at the wind speed measurement height <span class="math inline">\(z_\mathrm{m}\)</span> and <span class="math inline">\(k\)</span> is the von Kármán constant (<span class="math inline">\(k = 0.41\)</span>). It is assumed that the heights of measurements for wind and humidity are equal. The wind speed is constrained to a minimum value of <span class="math inline">\(\SI{0.5}{m\ s^{-1}}\)</span> to account for vapour exchange on the surface induced by air buoyancy and boundary layer instability effects during low wind conditions (Allen et al., 1998).</p>
+<p>It is assumed that the input wind speed is consistent with <span class="math inline">\(z_\mathrm{0m}\)</span> and <span class="math inline">\(d\)</span> of the surface terrain (and not based on “open-terrain” (short grass) as observed typically by meteorological stations). The input wind speed reference height <code>land_surface_wind__speed_reference_height</code> should be set in the TOML file as follows:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb22"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_wind__speed_reference_height</span> <span class="op">=</span> <span class="fl">100.0</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>This reference height should be greater than the sum of <span class="math inline">\(d\)</span> and <span class="math inline">\(z_\mathrm{0m}\)</span> to convert the wind speed (assuming a logarithmic profile) properly to the reference height <span class="math inline">\(z\)</span> (<span class="math inline">\(z =
+z_\mathrm{m} = z_\mathrm{h}\)</span>) used for the computation of <span class="math inline">\(r_\mathrm{air}\)</span>. The reference height <span class="math inline">\(z\)</span> is set equal the input parameter <code>atmosphere_bottom_air__above_ground_height</code> (land surface “skin” layer height above the ground), with a minimum of 2 m, consistent with the FAO (Allen et al., 1998) standardized height for wind speed, temperature and humidity.</p>
+<p>The list of input parameters for LST that can be provided through the TOML file can be found <a href="../../model_docs/parameters_landhydrology_sbm.html#land-surface-temperature">here</a>. The required wind speed, air temperature and net radiation forcing inputs are listed <a href="../../model_docs/parameters_landhydrology_sbm.html#atmospheric-forcing">here</a>.</p>
+</section>
 <section id="references" class="level2">
 <h2 class="anchored" data-anchor-id="references">References</h2>
 <ul>
+<li>Allen, R. G., Pereira, L. S., Raes, D., an Smith, M., 1998, Crop evapotranspiration - Guidelines for computing crop water requirements - FAO Irrigation and drainage paper 56, FAO, Rome, 300, D05109.</li>
 <li>Bergström, S., 1992, The HBV model – its structure and applications, SMHI Reports Hydrology, Norrköping, Sweden, RH 4.</li>
 <li>Brooks, R. H., and Corey, A. T., 1964, Hydraulic properties of porous media, Hydrology Papers 3, Colorado State University, Fort Collins, 27 p.</li>
 <li>Feddes, R.A., Kowalik, P.J. and Zaradny, H., 1978, Simulation of field water use and crop yield, Pudoc, Wageningen, Simulation Monographs.</li>
 <li>Gash, J. H. C., 1979, An analytical model of rainfall interception by forests, Q. J. Roy. Meteor. Soc., 105, 43–55, doi:1026 10.1002/qj.497105443041027.</li>
 <li>Liu, S., 1998, Estimation of rainfall storage capacity in the canopies of cypress wetlands and slash pine uplands in North-Central Florida, J. Hydr., 207, 32–41, doi: 10.1016/S0022-1694(98)00115-2.</li>
 <li>Pitman, J., 1989, Rainfall interception by bracken in open habitats—relations between leaf area, canopy storage and drainage rate, J. Hydr. 105, 317–334, doi: 10.1016/0022-1694(89)90111-X.</li>
+<li>Purnamasari, D., Teuling, A. J., and Weerts, A. H., 2025, Identifying irrigated areas using land surface temperature and hydrological modelling: application to the Rhine basin, Hydrol. Earth Syst. Sci., 29, 1483–1503, https://doi.org/10.5194/hess-29-1483-2025.</li>
 <li>Seibert, J., Vis, M. J. P., Kohn, I., Weiler, M., and Stahl, K., 2018, Technical note: Representing glacier geometry changes in a semi-distributed hydrological model, Hydrol. Earth Syst. Sci., 22, 2211–2224, https://doi.org/10.5194/hess-22-2211-2018.</li>
+<li>Thom, A. S., 1975, Momentum, mass and heat exchange of plant communities, Vegetation and the Atmosphere, 4, 57–109.</li>
 <li>Van Dijk, A. I. J. M., and Bruijnzeel, L. A., 2001, Modelling rainfall interception by vegetation of variable density using an adapted analytical model, Part 2, Model validation for a tropical upland mixed cropping system, J. Hydr., 247, 239–262.</li>
 <li>Vertessy, R., and Elsenbeer, H., 1999, Distributed modeling of storm ﬂow generation in an amazonian rain forest catchment: effects of model parameterization, Water Resour. Res., 35, 2173–2187. doi: 10.1029/1999WR9000511257.</li>
 <li>Wang, X., Huo, Z., Feng, S., Guo, P., and Guan, H. 2016, Estimating groundwater evapotranspiration from irrigated cropland incorporating root zone soil texture and moisture dynamics, J. Hydrol., 543, 501–509, https://doi.org/10.1016/j.jhydrol.2016.10.027.</li>
@@ -1500,6 +1541,7 @@ maxdepth}}{mm}\)</span> is the critical water depth beyond which capillary rise 
 <li>Xie, X. and Cui, Y., 2011, Development and test of SWAT for modeling hydrological processes in irrigation districts with paddy rice, J. Hydrol., 396, pp.&nbsp;61-71.</li>
 <li>Yang, F., Zhang, G., Yin, X., Liu, Z., and Huang, Z., 2011, Study on capillary rise from shallow groundwater and critical water table depth of a saline-sodic soil in western Songnen plain of China, Environ. Earth Sci. 64, 2119–2126, https://doi.org/10.1007/s12665-011-1038-4.</li>
 <li>Zammouri, M., 2001: Case study of water table evaporation at Ichkeul Marshes (Tunisia), J. Irrig. Drain. Eng. 127, 265–271.</li>
+<li>Zink, M., Mai, J., Cuntz, M., and Samaniego, L., 2018, Conditioning a hydrologic model using patterns of remotely sensed land surface temperature. Water Resources Research, 54, 2976–2998. https://doi.org/10.1002/2017WR021346.</li>
 </ul>
 
 
