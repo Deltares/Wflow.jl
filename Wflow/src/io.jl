@@ -126,14 +126,14 @@ function routing_with_reservoirs(model::AbstractModel{<:SedimentModel})
     return false
 end
 
-"Set a model field from input data, for fields that are a vector of floats."
-function set_input!(field::AbstractVector{Float64}, data)::Nothing
+"Set a model field from input data, for fields that are a vector of numbers."
+function set_input!(field::AbstractVector{<:Real}, data)::Nothing
     field .= data
     return nothing
 end
 
 set_input!(field, data) =
-    error("Setting input is only supported for vectors of Float64, not $(typeof(field)).")
+    error("Setting input is only supported for vectors of numbers, not $(typeof(field)).")
 
 """
     set_dynamic_input!(model, par::String, data)
@@ -141,7 +141,7 @@ set_input!(field, data) =
 Set the model field corresponding to standard name `par` from forcing or cyclic `data`.
 """
 function set_dynamic_input!(model, par::String, data)::Nothing
-    with_standard_name(model, par) do field, metadata
+    with_model_field(model, par) do field, metadata
         if !metadata.allow_dynamic_input
             error(
                 "Tried to set '$par' dynamically via cyclic/forcing input, which is not allowed.",
@@ -185,7 +185,7 @@ function load_fixed_forcing!(model)
             value = something(ncvar.value)
             val = only(value) * only(ncvar.scale) + only(ncvar.offset)
 
-            with_standard_name(model, par) do param, metadata
+            with_model_field(model, par) do param, metadata
                 val_SI = to_SI(val, metadata.unit; dt_val = dt)
                 set_input!(param, val_SI)
                 # set fixed precipitation and evaporation over the reservoirs and put these into
@@ -838,10 +838,7 @@ Create a Dict that maps output names to the standard names and units in the Mode
 function out_map(output_names, modelmap)::OrderedDict{String, OutputData}
     output_map = OrderedDict{String, OutputData}()
     for (par, output_name) in output_names
-        if !has_standard_name(modelmap, par)
-            error("Couldn't obtain a field from this model specified by '$par'.")
-        end
-        unit, layered = with_standard_name(modelmap, par) do field, metadata
+        unit, layered = with_model_field(modelmap, par) do field, metadata
             metadata.unit, is_layered_field(field)
         end
         output_map[output_name] = OutputData(; par, unit, layered)
@@ -1012,7 +1009,7 @@ function write_netcdf_scalar_timestep(model::AbstractModel, writer::NCWriter)::N
     for (var, reducer_) in reducer
         (; name, layer) = var
         (; par, unit, layered) = output_map[name]
-        with_standard_name(model, par) do field, _
+        with_model_field(model, par) do field, _
             if layered && isnothing(layer)
                 nlayer = length(extra_dim.value)
                 for i in 1:nlayer
@@ -1067,7 +1064,7 @@ function write_netcdf_timestep(model::AbstractModel, writer::NCWriter)::Nothing
     for (key, val) in output_map
         (; par, unit, layered) = val
         sel = active_indices(domain, par)
-        with_standard_name(model, par) do field, _
+        with_model_field(model, par) do field, _
             if layered
                 nlayer = length(model.writer.extra_dim.value)
                 for i in 1:nlayer
@@ -1315,7 +1312,7 @@ function write_csv_row(model::AbstractModel, csv_writer::CSVWriter)::Nothing
     for (col, reducer_) in reducer
         (; header, layer) = col
         (; par, unit) = output_map[header]
-        v = with_standard_name(model, par) do field, _
+        v = with_model_field(model, par) do field, _
             from_SI(apply_reducer(reducer_, field_values(field, layer)), unit; dt_val)
         end
         for el in v
@@ -1387,15 +1384,39 @@ function rewind!(clock)
     return nothing
 end
 
+"""
+    read_csv_matrix(path)::Tuple{Matrix{Float64}, Vector{String}}
+
+Read a comma separated file with a header line and numeric values. Returns the values as a
+matrix (rows are lines in the file) and the column names. This replaces
+`DelimitedFiles.readdlm`, which is not compatible with `juliac --trim`.
+"""
+function read_csv_matrix(path::AbstractString)::Tuple{Matrix{Float64}, Vector{String}}
+    lines = filter!(!isempty, strip.(readlines(path)))
+    isempty(lines) && error("No data found in CSV file `$path`.")
+    header = String[strip(name) for name in split(first(lines), ',')]
+    ncol = length(header)
+    data = Matrix{Float64}(undef, length(lines) - 1, ncol)
+    for (row, line) in enumerate(Iterators.drop(lines, 1))
+        values = split(line, ',')
+        length(values) == ncol ||
+            error("Expected $ncol values on line $(row + 1) of CSV file `$path`.")
+        for (col, value) in enumerate(values)
+            data[row, col] = parse(Float64, value)
+        end
+    end
+    return data, header
+end
+
 "Read a rating curve from CSV into a NamedTuple of vectors"
 function read_sh_csv(path)
-    data, header = readdlm(path, ',', Float64; header = true)
-    names = vec(uppercase.(header))
+    data, header = read_csv_matrix(path)
+    names = uppercase.(header)
     idx_h = findfirst(==("H"), names)
     idx_s = findfirst(==("S"), names)
 
     if isnothing(idx_h) || isnothing(idx_s)
-        error("$path needs to provide H and S columns, got $names")
+        error("$path needs to provide H and S columns, got $(join(names, ", "))")
     end
 
     return (H = data[:, idx_h], S = data[:, idx_s])
@@ -1403,7 +1424,7 @@ end
 
 "Read a specific storage curve from CSV into a NamedTuple of vectors"
 function read_hq_csv(path)
-    data = readdlm(path, ',', Float64; skipstart = 1)
+    data, _ = read_csv_matrix(path)
     # Q is a matrix with 365 columns, one for each day in the year
     return (H = data[:, 1], Q = data[:, 2:366])
 end

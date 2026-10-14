@@ -80,7 +80,8 @@ TOML have type `Any`, so dispatching on them would require dynamic dispatch.
 =#
 
 convert_value(::Type{Any}, @nospecialize(value)) = value
-convert_value(::Type{Union{Nothing, T}}, @nospecialize(value)) where {T} = convert_value(T, value)
+convert_value(::Type{T}, @nospecialize(value)) where {T >: Nothing} =
+    convert_value(Base.nonnothingtype(T), value)
 
 convert_value(::Type{String}, @nospecialize(value))::String =
     value isa String ? value : conversion_error(String, value)
@@ -163,6 +164,7 @@ end
 
 # Automatically convert strings into enumerator instances
 function convert_value(::Type{T}, @nospecialize(value))::T where {T <: EnumX.Enum}
+    value isa T && return value
     value isa String || conversion_error(T, value)
     option = Symbol(add_leading_underscore(value))
     for instance in instances(T)
@@ -178,7 +180,9 @@ function convert_value(::Type{T}, @nospecialize(value))::T where {T <: EnumX.Enu
 end
 
 function convert_value(::Type{T}, @nospecialize(value))::T where {T <: AbstractConfigSection}
-    return if value isa Dict{String, Any}
+    return if value isa T
+        value
+    elseif value isa Dict{String, Any}
         init_config_section(T, value)
     else
         init_config_section_from_value(T, value)

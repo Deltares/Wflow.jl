@@ -412,7 +412,7 @@ function reservoir_mask(
             "reservoir_$(region)__count",
             Routing;
             sel = network.indices,
-        )::Vector{Union{Missing, Int}}
+        )::Union{Vector{Int}, Vector{Union{Missing, Int}}}
         # check if any reservoirs are found in the active model domain, if not disable reservoir model component
         if !all(x -> ismissing(x) || x == 0, reservoir_ids)
             reservoirs .= coalesce.(reservoir_ids, 0) .> 0

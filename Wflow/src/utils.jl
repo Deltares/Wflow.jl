@@ -34,10 +34,10 @@ function to_enumx(T, i::Int)
     if 1 ≤ i ≤ n_options
         return options[i]
     else
-        options_repr = repr(MIME("text/plain"), T)
+        options_repr = join(option_names(T), ", ")
         throw(
             error(
-                "Cannot convert $i to $T, there are only $n_options options:\n$options_repr.",
+                "Cannot convert $i to $(nameof(T)), there are only $n_options options: $options_repr.",
             ),
         )
     end
@@ -148,16 +148,16 @@ function cell_lengths(
 end
 
 "Convert an array with missing values to an array without, erroring if any are missing."
-function nomissing(A::AbstractArray{Union{Missing, T}, N})::Array{T, N} where {T, N}
+function nomissing(A::AbstractArray{T, N}) where {T >: Missing, N}
     any(ismissing, A) && error("Arrays with missing values are not supported.")
-    return convert(Array{T, N}, A)
+    return convert(Array{nonmissingtype(T), N}, A)
 end
 
 nomissing(A::AbstractArray{T}) where {T <: Number} = A
 
 "Replace missing values in an array with `fill`."
-nomissing(A::AbstractArray{Union{Missing, T}, N}, fill::T) where {T, N} =
-    Array{T, N}(coalesce.(A, fill))
+nomissing(A::AbstractArray{T, N}, fill) where {T >: Missing, N} =
+    Array{nonmissingtype(T), N}(coalesce.(A, fill))
 
 """
     set_states!(instate_path, model, state_ncnames; <keyword arguments>)
@@ -182,7 +182,7 @@ function set_states!(instate_path::AbstractString, model; dimname = nothing)::No
         for (state, ncname) in state_ncnames
             sel = active_indices(domain, state)
             dims = length(NC.var_dimnames(ds, ncname))
-            with_standard_name(model, state) do field, metadata
+            with_model_field(model, state) do field, metadata
                 (; unit) = metadata
                 @info "Setting initial state from netCDF." ncpath = instate_path ncvarname =
                     ncname state unit

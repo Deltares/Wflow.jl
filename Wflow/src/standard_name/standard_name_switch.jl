@@ -101,3 +101,40 @@ Whether `with_standard_name` supports `name` for this `model`.
     push!(body.args, :(return false))
     return body
 end
+
+"""
+    allow_dynamic_field_access(model)
+
+Whether model fields can be accessed by a path that is not a standard name, e.g.
+"routing.river_flow.variables.q". This needs dynamic dispatch, and is therefore not
+supported for builds with a fixed build profile, see `SbmModel`.
+"""
+allow_dynamic_field_access(::AbstractModel{T}) where {T} = allow_dynamic_field_access(T)
+allow_dynamic_field_access(modelmap::NamedTuple) =
+    haskey(modelmap, :type) ? allow_dynamic_field_access(typeof(modelmap.type)) : true
+allow_dynamic_field_access(::Type{SbmModel{P}}) where {P} = P === nothing
+allow_dynamic_field_access(::Type{<:AbstractModelType}) = true
+
+"""
+    with_model_field(f, model, name::String)
+
+Call `f(field, metadata)` for the model field corresponding to `name`, a standard name or a
+path in the model. Standard names and paths matching the lens of a standard name are looked
+up type stably with `with_standard_name`. Other paths are looked up dynamically if allowed,
+see `allow_dynamic_field_access`, with default metadata.
+"""
+function with_model_field(f::F, model, name::String) where {F}
+    if has_standard_name(model, name)
+        return with_standard_name(f, model, name)
+    elseif allow_dynamic_field_access(model)
+        field = try
+            param(model, name)
+        catch
+            error("Couldn't obtain a field from this model specified by '$name'.")
+        end
+        @warn "No metadata was found for $name, so the output will be expressed in standard SI units ($(join(STANDARD_UNITS, ", "))) and might fail."
+        return f(field, ParameterMetadata())
+    else
+        error("Couldn't obtain a field from this model specified by '$name'.")
+    end
+end

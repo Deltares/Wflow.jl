@@ -1,3 +1,4 @@
+import NCDatasets
 using Statistics: mean
 using SpecialFunctions: expint
 using StaticArrays: SVector
@@ -229,4 +230,10 @@ function test_means(obj::Any, means::Dict{Symbol})
         end
     end
     return isempty(failed)
+end
+
+"Open the netCDF output of a writer with NCDatasets, while it is still open for writing."
+function open_output(writer)
+    Wflow.NC.sync(writer.output_dataset)
+    return NCDatasets.NCDataset(writer.output_path)
 end

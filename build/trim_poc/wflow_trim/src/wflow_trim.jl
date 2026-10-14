@@ -6,9 +6,10 @@ using Wflow: ModelType, RoutingType, VerticalConductivityProfile
 """
 Build profile: the model options that are supported by this binary. These are compile time
 constants, only code for these options is compiled. A TOML with other options gives an
-error.
+error. The profile can be overridden at build time with the `WFLOW_TRIM_PROFILE`
+environment variable, containing a NamedTuple expression.
 """
-const PROFILE = (
+const DEFAULT_PROFILE = (
     soil_layers = 3,
     gash_interception = true,
     snow = false,
@@ -24,6 +25,12 @@ const PROFILE = (
     river_routing = RoutingType.kinematic_wave,
     saturated_hydraulic_conductivity_profile = VerticalConductivityProfile.exponential,
 )
+
+const PROFILE = if haskey(ENV, "WFLOW_TRIM_PROFILE")
+    merge(DEFAULT_PROFILE, eval(Meta.parse(ENV["WFLOW_TRIM_PROFILE"])))
+else
+    DEFAULT_PROFILE
+end
 
 "Error message for common exception types, `showerror` needs dynamic dispatch."
 function error_message(@nospecialize(e))::String

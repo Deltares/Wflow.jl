@@ -40,9 +40,9 @@ model time step dt for a hydrological model.
 - `routing`: Water mass balance results for river, overland, subsurface and reservoir flow
     routing.
 """
-@with_kw struct HydrologicalMassBalance <: AbstractMassBalance
+@with_kw struct HydrologicalMassBalance{R <: FlowRoutingMassBalance} <: AbstractMassBalance
     land_water_balance::MassBalance
-    routing::FlowRoutingMassBalance
+    routing::R
 end
 
 "Initialize `HydrologicalMassBalance` for storing water mass balance error results."

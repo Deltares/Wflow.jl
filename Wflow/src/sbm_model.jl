@@ -28,7 +28,7 @@ function Model(config::Config, type::SbmModel)
     mass_balance = HydrologicalMassBalance(domain, routing.subsurface_flow, config, type)
 
     (; maximum_number_of_layers) = land_hydrology.soil.parameters
-    modelmap = (land = land_hydrology, routing, mass_balance)
+    modelmap = (land = land_hydrology, routing, mass_balance, type)
     writer = Writer(
         config,
         modelmap,

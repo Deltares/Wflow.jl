@@ -614,6 +614,7 @@ end
 
 @testitem "NetCDF scalar output of layered variables" begin
     using NCDatasets: dimnames
+    include("testing_utils.jl")
     tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     config = Wflow.Config(tomlpath)
     config.dir_output = mktempdir()
@@ -632,10 +633,11 @@ end
     end
     model = Wflow.Model(config)
     Wflow.run_timestep!(model)
-    ds = model.writer.scalar_writer.output_dataset
+    ds = open_output(model.writer.scalar_writer)
     @test dimnames(ds["vwc_layer_2"]) == ("river_gauge__count", "time")
     @test dimnames(ds["vwc"]) == ("river_gauge__count", "layer", "time")
     @test ds["vwc"][:, 2, 1] == ds["vwc_layer_2"][:, 1]
     @test ds["vwc"][:, 1, 1] != ds["vwc"][:, 2, 1]
+    close(ds)
     Wflow.close_files(model; delete_output = false)
 end
