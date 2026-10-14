@@ -669,7 +669,7 @@ function update_bc_soil_model!(
         config::Config,
         dt::Float64,
     )
-    (; interception, runoff, demand, allocation) = external_models
+    (; interception, runoff, demand, allocation, overland_flow) = external_models
     (; potential_transpiration, water_flux_surface, potential_soilevaporation) =
         soil_model.boundary_conditions
 
@@ -689,6 +689,7 @@ function update_bc_soil_model!(
     update_available_for_infiltration!(
         soil_model,
         domain,
+        overland_flow,
         runoff,
         config.model.land_surface_water_reinfiltration__flag,
         dt,
@@ -743,17 +744,19 @@ function infiltration_reduction_factor!(
     return nothing
 end
 
+"Update the water available for infiltration in the SBM soil model for a single timestep"
 function update_available_for_infiltration!(
         model::SbmSoilModel,
         domain::Domain,
-        runoff::AbstractRunoffModel,
+        overland_flow::AbstractOverlandFlowModel,
+        runoff::OpenWaterRunoff,
         do_surface_water_infiltration::Bool,
         dt::Float64,
     )
-    v = model.variables
+    (; actual_open_water_evaporation_land) = runoff.variables
     (; water_flux_surface, potential_infiltration_surfacewater, potential_infiltration) =
         model.boundary_conditions
-    (; waterdepth_land) = runoff.boundary_conditions
+    (; h) = overland_flow.variables
     (; river_fraction) = domain.land.parameters
 
     # Fraction of overland flow that is made available for reinfiltration [-]
@@ -763,8 +766,11 @@ function update_available_for_infiltration!(
     threaded_foreach(1:n; basesize = 1000) do i
         potential_infiltration_surfacewater[i] = 0.0
         if do_surface_water_infiltration
-            potential_infiltration_surfacewater[i] =
-                (waterdepth_land[i] / dt) * (1.0 - river_fraction[i]) * max_reinfiltration_fraction
+            potential_infiltration_surfacewater[i] = max(
+                (h[i] / dt) * (1.0 - river_fraction[i]) -
+                    actual_open_water_evaporation_land[i],
+                0.0,
+            ) * max_reinfiltration_fraction
             water_flux_surface[i] += potential_infiltration_surfacewater[i]
         end
         potential_infiltration[i] = water_flux_surface[i]
@@ -773,6 +779,7 @@ function update_available_for_infiltration!(
     return nothing
 end
 
+"Corrects the infiltration fluxes in the SBM soil model for a single timestep, for the case when water from overland flow is infiltrated"
 function update_infiltration_fluxes!(soil_model::SbmSoilModel)
     (; infilt_surfacewater, actual_infiltration, infiltration_excess, saturation_excess_water) = soil_model.variables
     (; water_flux_surface, potential_infiltration, potential_infiltration_surfacewater) =
@@ -1221,7 +1228,6 @@ function update_soil_water_flow!(
         atmospheric_forcing::AtmosphericForcing,
         external_models::NamedTuple,
         config::Config,
-        domain::Domain,
         dt::Float64,
     )
     (; snow, runoff, demand) = external_models
@@ -1359,7 +1365,7 @@ function update_ustorelayerdepth!(soil_model::SbmSoilModel, subsurface_flow)
 end
 
 """
-    update_soil_water_storage!(soil_model::SbmSoilModel, external_models::NamedTuple)
+    update_soil_water_storage!(soil_model::SbmSoilModel, external_models::NamedTuple, dt::Float64)
 
 Update the SBM soil model for a single timestep based on the update of a subsurface flow
 model, resulting in a change in water table depth and an exfiltration rate `exfiltwater_average`.
@@ -1373,11 +1379,9 @@ the root zone are updated.
 function update_soil_water_storage!(
         soil_model::SbmSoilModel,
         external_models::NamedTuple,
-        domain::Domain,
-        config::Config,
         dt::Float64,
     )
-    (; runoff, demand, subsurface_flow, overland_flow) = external_models
+    (; runoff, demand, subsurface_flow) = external_models
     (; runoff_land, actual_open_water_evaporation_land) = runoff.variables
     p = soil_model.parameters
     v = soil_model.variables

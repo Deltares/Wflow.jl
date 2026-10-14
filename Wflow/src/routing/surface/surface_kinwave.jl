@@ -820,8 +820,8 @@ get_inflow_reservoir(::AbstractRiverFlowModel, ::GroundwaterFlowModel, inds::Vec
     zeros(length(inds))
 
 """
-Update overland flow water level and discharge for `KinWaveOverlandFlow` model based on
-surface water infiltration `infilt_surfacewater` [m s⁻¹] over timestep `dt` [s].
+Update overland flow water level and discharge for `OverlandFlowModel{<:KinematicWave}` model
+based on surface water infiltration `infilt_surfacewater` [m s⁻¹] over timestep `dt` [s].
 """
 function update_overland_flow_and_depth!(
         overland_flow_model::OverlandFlowModel{<:KinematicWave},
@@ -860,7 +860,7 @@ function update_overland_flow_and_depth!(
     (; river_fraction, surface_flow_width, flow_length) = land_parameters
 
     # Scale reinfiltration depth by the land fraction to reverse the same scaling applied
-    # when `potential_infiltration_surfacewater` was derived from `waterdepth_land` in
+    # when `potential_infiltration_surfacewater` was derived from overland flow `h` in
     # `update_available_for_infiltration!`, keeping the water balance consistent.
     delta_h = infilt_surfacewater * dt / (1.0 - river_fraction[i])
     h = overland_flow_model.variables.h[i] - delta_h

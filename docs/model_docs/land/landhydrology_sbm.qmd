@@ -983,21 +983,35 @@ When enabling this process, part of the overland flow depth is added to the wate
 for infiltration. To keep some water in the overland flow (and avoid draining a cell
 completely in one time step), the potential infiltration from surface water
 `potential_infiltration_surfacewater` $\SIb{}{mm\ t^{-1}}$ is computed from the overland
-flow depth `waterdepth_land` $\SIb{}{mm}$ as:
+flow variable `h`, the water depth at the end of the previous time step
+$\SIb{\subtext{h}{land}^{t-1}}{mm}$, as:
 
 $$
-    \subtext{i}{pot, sw} = \frac{\subtext{h}{land}}{\Delta t} (1 - \subtext{f}{river}) \subtext{f}{reinfilt, max},
+  \subtext{i}{pot, sw}^{t} = \max\left(\frac{\subtext{h}{land}^{t-1}}{\Delta t} (1 - \subtext{f}{river}) - \subtext{E}{land, water}^{t}, 0\right) \subtext{f}{reinfilt, max},
 $$
 
-where $\SIb{\subtext{f}{river}}{-}$ is the river fraction of the cell and
+where $t$ denotes the current time step, $\Delta t$ is its duration,
+$\SIb{\subtext{f}{river}}{-}$ is the river fraction of the cell,
+$\SIb{\subtext{E}{land, water}^{t}}{mm\ t^{-1}}$ is the actual land open water
+evaporation rate (`actual_open_water_evaporation_land`) computed by the open water runoff
+model, and
 $\SIb{\subtext{f}{reinfilt, max}}{-}$ is the maximum reinfiltration fraction (fixed at
-$0.95$). This amount is added to the water flux at the soil surface `water_flux_surface`
+$0.95$). The stored water rate is first scaled by the non-river fraction to express it on
+the same cell-area basis as the evaporation rate. Evaporation is then subtracted before
+applying the reinfiltration fraction, with a lower bound of zero. This reserves water for
+evaporation so that evaporation and reinfiltration do not use the same stored water.
+
+This amount is added to the water flux at the soil surface `water_flux_surface`
 $\SIb{}{mm\ t^{-1}}$, so that the total water available for infiltration
 `potential_infiltration` $\SIb{}{mm\ t^{-1}}$ becomes:
 
 $$
-    \subtext{i}{pot} = \subtext{q}{surface} + \subtext{i}{pot, sw}.
+  \subtext{i}{pot}^{t} = \subtext{q}{surface}^{t} + \subtext{i}{pot, sw}^{t}.
 $$
+
+Open water evaporation is not subtracted from the incoming soil-surface flux
+$\subtext{q}{surface}^{t}$. Its actual loss is accounted for separately in net runoff;
+the subtraction above only limits the stored surface water available for reinfiltration.
 
 The regular infiltration routine then computes the actual infiltration `actual_infiltration`
 $\SIb{}{mm\ t^{-1}}$ and infiltration excess `infiltexcess` $\SIb{}{mm\ t^{-1}}$. After
@@ -1006,12 +1020,12 @@ infiltration, the share originating from overland flow is tracked with the ratio
 from surface water:
 
 $$
-    \subtext{i}{sw} = \subtext{i}{pot, sw} \cdot \frac{\subtext{i}{act}}{\subtext{i}{pot}}.
+  \subtext{i}{sw}^{t} = \subtext{i}{pot, sw}^{t} \cdot \frac{\subtext{i}{act}^{t}}{\subtext{i}{pot}^{t}}.
 $$
 
 Finally, `actual_infiltration`, `infiltexcess` and `water_flux_surface` are corrected by
-$\subtext{i}{pot, sw}$ to avoid double counting of water already originating from surface
-water.
+$\subtext{i}{pot, sw}^{t}$ to avoid double counting of water already originating from
+surface water.
 
 ### Capillary rise
 
