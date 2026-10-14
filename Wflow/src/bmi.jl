@@ -327,13 +327,13 @@ function BMI.get_grid_edge_nodes(model::Model, grid::Int, edge_nodes::Vector{Int
         edge_nodes[range(2, n; step = 2)] = nodes_at_edge.dst
         return edge_nodes
     elseif grid == 4
-        xu = domain.land.network.edge_indices.xu
+        xu = copy(domain.land.network.edge_indices.xu)
         edge_nodes[range(1, n; step = 2)] = 1:m
         xu[xu .== m + 1] .= -999
         edge_nodes[range(2, n; step = 2)] = xu
         return edge_nodes
     elseif grid == 5
-        yu = domain.land.network.edge_indices.yu
+        yu = copy(domain.land.network.edge_indices.yu)
         edge_nodes[range(1, n; step = 2)] = 1:m
         yu[yu .== m + 1] .= -999
         edge_nodes[range(2, n; step = 2)] = yu

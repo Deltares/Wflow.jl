@@ -273,7 +273,7 @@ function setup_scalar_netcdf(
     )
     set_extradim_netcdf(ds, extra_dim)
     for scalar_variable in config.output.netcdf_scalar.variable
-        (; map, _location_dim, location, parameter, name) = scalar_variable
+        (; map, _location_dim, location, parameter, name, layer) = scalar_variable
         # Delft-FEWS requires the attribute :cf_role = "timeseries_id" when a netCDF file
         # contains more than one location list
         if _location_dim ∉ keys(ds.dim)
@@ -302,8 +302,8 @@ function setup_scalar_netcdf(
                 attrib = ["_FillValue" => float_type(NaN)],
             )
         elseif eltype(v) <: SVector
-            if haskey(netcdfvars, extra_dim.name)
-                # `extra_dim.name` as specified in the TOML file is used to index
+            # a single layer is written if it is specified in the TOML file
+            if !isnothing(layer)
                 defVar(
                     ds,
                     name,
@@ -854,7 +854,7 @@ function write_netcdf_timestep(model, dataset)
 
     time_index = add_time(dataset, clock.time)
     for var in writer.nc_scalar
-        (; name, parameter) = var
+        (; name, parameter, layer) = var
         reducer = writer.reducer[var]
         A = if haskey(standard_name_map(land), parameter)
             lens = get_lens(parameter, land)
@@ -868,15 +868,14 @@ function write_netcdf_timestep(model, dataset)
             v = reducer(A)
             dataset[name][:, time_index] .= v
         elseif elemtype <: SVector
-            # check if an extra dimension and index is specified in the TOML file
-            if haskey(nc, writer.extra_dim.name)
-                i = only(nc.layer)
-                v = nt.reducer(getindex.(A, i))
+            # check if a layer index is specified in the TOML file
+            if !isnothing(layer)
+                v = reducer(getindex.(A, layer))
                 dataset[name][:, time_index] .= v
             else
                 nlayer = length(first(A))
                 for i in 1:nlayer
-                    v = nt.reducer(getindex.(A, i))
+                    v = reducer(getindex.(A, i))
                     dataset[name][:, i, time_index] .= v
                 end
             end
