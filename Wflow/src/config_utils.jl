@@ -65,8 +65,10 @@ function Base.show(io::IO, input_entry::InputEntry)
         end
     elseif !isnothing(value)
         print(io, "[", join(value, ", "), "]")
-    else
+    elseif !isnothing(external_name)
         print(io, external_name)
+    else
+        print(io, "nothing")
     end
 end
 
