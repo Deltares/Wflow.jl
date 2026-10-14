@@ -94,9 +94,7 @@ function update_model!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
     # update SBM soil model (runoff, unsaturated_layer_depth and saturated_water_depth)
     update_soil_water_storage!(
         soil,
-        (; runoff, demand, subsurface_flow, overland_flow),
-        domain,
-        config,
+        (; runoff, demand, subsurface_flow),
         dt,
     )
 

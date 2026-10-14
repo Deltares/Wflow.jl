@@ -1552,7 +1552,7 @@ function local_inertial_update_water_depth!(
 end
 
 """
-No-op for the `LocalInertialOverlandFlowModel`. Surface water infiltration is applied via
+No-op for the `OverlandFlowModel{<:LocalInertial}`. Surface water infiltration is applied via
 the `infiltration_volume` boundary condition set in `update_bc_overland_flow_model!` and
 subtracted from land storage in `local_inertial_update_water_depth!`.
 """

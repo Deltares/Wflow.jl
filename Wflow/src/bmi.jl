@@ -137,9 +137,9 @@ function BMI.get_var_grid(::Model, name::String)
         1
     elseif occursin("river", name) || occursin("floodplain", name)
         2
-    elseif occursin("land_surface_water__x_component", name) # LocalInertialOverlandFlowModel
+    elseif occursin("land_surface_water__x_component", name) # OverlandFlowModel{<:LocalInertial}
         3
-    elseif occursin("land_surface_water__y_component", name) # LocalInertialOverlandFlowModel
+    elseif occursin("land_surface_water__y_component", name) # OverlandFlowModel{<:LocalInertial}
         4
     else
         5

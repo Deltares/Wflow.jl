@@ -114,7 +114,7 @@ floodplain_bottom_surface__slope = "floodplain_slope"
 - Optional reinfiltration of overland flow into the soil, enabled by setting
   `model.land_surface_water_reinfiltration__flag = true` in the TOML file. When enabled, up
   to 95% of the overland flow depth is added to the water available for infiltration, and
-  overland flow water levels are corrected accordingly.
+  overland flow water depths and discharges are corrected accordingly.
 
 ## v1.0.4 - 2026-07-24
 
