@@ -1,6 +1,6 @@
 "Initialize subsurface flow routing for model type `sbm`"
 function initialize_subsurface_flow_model(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         domain::Domain,
         soil_model::SbmSoilModel,
@@ -34,7 +34,7 @@ end
 
 "Initialize subsurface flow routing for model type `sbm_gwf`"
 function initialize_subsurface_flow_model(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         domain::Domain,
         soil_model::SbmSoilModel,
@@ -45,7 +45,7 @@ function initialize_subsurface_flow_model(
 end
 
 "Initialize kinematic wave or local inertial overland flow routing"
-function initialize_overland_flow(dataset::NCDataset, config::Config, domain::Domain)
+function initialize_overland_flow(dataset::NC.Dataset, config::Config, domain::Domain)
     (; land_routing) = config.model
 
     if land_routing == RoutingType.kinematic_wave
@@ -60,7 +60,7 @@ end
 Initialize kinematic wave or local inertial overland flow routing, including optional
 reservoirs.
 """
-function initialize_river_flow(dataset::NCDataset, config::Config, domain::Domain)
+function initialize_river_flow(dataset::NC.Dataset, config::Config, domain::Domain)
     (; river_routing) = config.model
 
     reservoir =
@@ -78,7 +78,7 @@ end
 
 "Initialize `Routing` for model types `sbm` and `sbm_gwf`"
 function Routing(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         domain::Domain,
         soil_model::SbmSoilModel,
@@ -95,7 +95,7 @@ end
 
 "Initialize `Routing` for model type `sediment`"
 function Routing(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         domain::Domain,
         soil_loss_model::SoilLossModel,

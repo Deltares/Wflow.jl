@@ -87,7 +87,7 @@ end
 
 "Initialize lateral subsurface flow model parameters"
 function LateralSsfParameters(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         indices::Vector{CartesianIndex{2}},
         soil::SbmSoilParameters,
@@ -147,7 +147,7 @@ end
 
 "Initialize lateral subsurface flow model"
 function LateralSSFModel(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         domain::Domain,
         soil::SbmSoilModel,

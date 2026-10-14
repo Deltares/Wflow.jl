@@ -32,7 +32,7 @@ end
 
 "Initialize Julian and Torres river erosion parameters"
 function RiverErosionParameters(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         indices::Vector{CartesianIndex{2}},
     )
@@ -50,7 +50,7 @@ end
 
 "Initialize Julian and Torres river erosion model"
 function RiverErosionJulianTorresModel(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         indices::Vector{CartesianIndex{2}},
     )

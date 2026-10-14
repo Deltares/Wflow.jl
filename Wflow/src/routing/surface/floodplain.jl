@@ -48,7 +48,7 @@ end
 
 "Initialize floodplain profile `FloodPlainProfile`"
 function FloodPlainProfile(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         domain::DomainRiver;
         index_pit::Vector{Int} = Int[],
@@ -68,7 +68,7 @@ function FloodPlainProfile(
     # storage, width (river width) and wetted perimeter (p).
     storage = vcat(fill(Float64(0), n)', storage)
     start_storage = storage
-    flood_depths = Float64.(dataset["flood_depth"][:])
+    flood_depths = NC.read_vector_nomissing(dataset, "flood_depth")
     pushfirst!(flood_depths, 0.0)
     n_depths = length(flood_depths)
 
@@ -164,7 +164,7 @@ end
 
 "Initialize floodplain flow model parameters on a staggered grid"
 function FloodPlainStaggeredParameters(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         domain::DomainRiver,
         zb_floodplain::Vector{Float64},
@@ -355,7 +355,7 @@ end
 
 "Initialize floodplain geometry, model variables and parameters on staggered grid"
 function FloodPlainModel(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         domain::DomainRiver,
         zb_floodplain::Vector{Float64},
@@ -382,7 +382,7 @@ end
 Initialize floodplain geometry, model variables and parameters for floodplain flow routing
 as part of kinematic wave river flow routing (solved using Newton's method).
 """
-function FloodPlainModel(dataset::NCDataset, config::Config, domain::DomainRiver)
+function FloodPlainModel(dataset::NC.Dataset, config::Config, domain::DomainRiver)
     (; indices) = domain.network
     n = length(indices)
     profile = FloodPlainProfile(dataset, config, domain)

@@ -147,6 +147,18 @@ function cell_lengths(
     return xl, yl
 end
 
+"Convert an array with missing values to an array without, erroring if any are missing."
+function nomissing(A::AbstractArray{Union{Missing, T}, N})::Array{T, N} where {T, N}
+    any(ismissing, A) && error("Arrays with missing values are not supported.")
+    return convert(Array{T, N}, A)
+end
+
+nomissing(A::AbstractArray{T}) where {T <: Number} = A
+
+"Replace missing values in an array with `fill`."
+nomissing(A::AbstractArray{Union{Missing, T}, N}, fill::T) where {T, N} =
+    Array{T, N}(coalesce.(A, fill))
+
 """
     set_states!(instate_path, model, state_ncnames; <keyword arguments>)
 
@@ -158,58 +170,78 @@ and set states in `model` object. Active cells are selected with the correspondi
 - `type = nothing`: type to convert data to after reading. By default no conversion is done.
 """
 function set_states!(instate_path::AbstractString, model; dimname = nothing)::Nothing
-    (; domain, config, clock, land) = model
+    (; domain, config, clock) = model
     dt_val = tosecond(clock.dt)
 
     # Check if required states are covered
     state_ncnames = check_states(config)
 
     # states in netCDF include dim time (one value) at index 3 or 4, 3 or 4 dims are allowed
-    NCDataset(instate_path) do ds
+    ds = NC.Dataset(instate_path)
+    try
         for (state, ncname) in state_ncnames
-            metadata = get_metadata(state; model)
-            (; unit) = metadata
-            @info "Setting initial state from netCDF." ncpath = instate_path ncvarname =
-                ncname state unit
             sel = active_indices(domain, state)
-            n = length(sel)
-            dims = length(dimnames(ds[ncname]))
-            # 4 dims, for example (x,y,layer,time) where dim layer is an SVector for soil layers
-            if dims == 4
-                if dimname == :layer
-                    dimensions = (x = :, y = :, layer = :, time = 1)
-                else
-                    error("Unrecognized dimension name $dimname")
-                end
-                A = read_standardized(ds, ncname, dimensions)
-                A = permutedims(A[sel, :])
-                # note that this array is allowed to have missing, since not every land
-                # column is `maximum_number_of_layers` layers deep
-                if dimname == :layer
-                    A = replace!(A, missing => NaN)
-                end
-                A = apply_unit_and_type_transform!(A, metadata; dt_val)
-                # set state in model object
-                metadata.lens(model) .= svectorscopy(A, Val{size(A)[1]}())
-                # 3 dims (x,y,time)
-            elseif dims == 3
-                A = read_standardized(ds, ncname, (x = :, y = :, time = 1))
-                A = A[sel]
-                A = nomissing(A)
-                A = apply_unit_and_type_transform!(A, metadata; dt_val)
-                # set state in model object, only set active cells ([1:n]) (ignore boundary conditions/ghost points)
-                lens = get_metadata(state, typeof(land), Routing; model).lens
-                lens(model)[1:n] .= A
-            else
-                error(
-                    "Number of state dims should be 3 or 4, number of dims = ",
-                    string(dims),
-                )
+            dims = length(NC.var_dimnames(ds, ncname))
+            with_standard_name(model, state) do field, metadata
+                (; unit) = metadata
+                @info "Setting initial state from netCDF." ncpath = instate_path ncvarname =
+                    ncname state unit
+                set_state!(field, ds, ncname, sel, dims, dimname, unit, dt_val)
             end
         end
+    finally
+        close(ds)
     end
     return nothing
 end
+
+"Set a layered state (x, y, layer, time) in a vector of SVectors."
+function set_state!(
+        field::Vector{SVector{N, Float64}},
+        ds::NC.Dataset,
+        ncname::String,
+        sel::Vector{CartesianIndex{2}},
+        dims::Int,
+        dimname,
+        unit::Unit,
+        dt_val::Float64,
+    )::Nothing where {N}
+    # 4 dims, for example (x,y,layer,time) where dim layer is an SVector for soil layers
+    dims == 4 || error("Number of dims for layered state $ncname should be 4, got $dims")
+    dimname == :layer || error("Unrecognized dimension name $dimname")
+    A = read_standardized(ds, ncname, (x = :, y = :, layer = :, time = 1))
+    # note that this array is allowed to have missing, since not every land
+    # column is `maximum_number_of_layers` layers deep
+    B = Matrix{Float64}(coalesce.(permutedims(A[sel, :]), NaN))
+    to_SI!(B, unit; dt_val)
+    # set state in model object
+    field .= svectorscopy(B, Val(N))
+    return nothing
+end
+
+"Set a state (x, y, time) in a vector, only for the active cells."
+function set_state!(
+        field::AbstractVector{Float64},
+        ds::NC.Dataset,
+        ncname::String,
+        sel::Vector{CartesianIndex{2}},
+        dims::Int,
+        dimname,
+        unit::Unit,
+        dt_val::Float64,
+    )::Nothing
+    dims == 3 || error("Number of dims for state $ncname should be 3, got $dims")
+    A = read_standardized(ds, ncname, (x = :, y = :, time = 1))
+    B = nomissing(A[sel])
+    to_SI!(B, unit; dt_val)
+    # set state in model object, only set active cells ([1:n]) (ignore boundary conditions/ghost points)
+    n = length(sel)
+    field[1:n] .= B
+    return nothing
+end
+
+set_state!(field, ds, ncname, sel, dims, dimname, unit, dt_val) =
+    error("Unsupported state type $(typeof(field)) for $ncname")
 
 function get_var(config::Config, parameter::AbstractString; optional = true)
     if hasfield(InputSection, Symbol(parameter))
@@ -271,49 +303,61 @@ values.
 - `metadata`: The metadata of the read parameter or state, obtained from the parameter name by default.
 """
 function ncread(
-        nc,
+        nc::NC.Dataset,
         config::Config,
         parameter::AbstractString,
-        model_type;
+        model_type::Type;
         sel = nothing,
-        logging = true,
-        metadata = get_metadata(parameter, model_type),
+        logging::Bool = true,
+        metadata::ParameterMetadata = get_metadata(parameter, model_type),
     )
-    (; default, fill, type, allow_missing, dimname) = metadata
+    # dispatch on the element type here, such that the rest is type stable
+    type = metadata.type
+    return if type === Int
+        ncread_typed(Int, nc, config, parameter, metadata, sel, logging)
+    elseif type === Bool
+        ncread_typed(Bool, nc, config, parameter, metadata, sel, logging)
+    else
+        ncread_typed(Float64, nc, config, parameter, metadata, sel, logging)
+    end
+end
+
+"Convert a parameter value to type `T`, used for defaults and fill values."
+convert_parameter(::Type{T}, x::Union{Float64, Int, Bool}) where {T} = T(x)
+
+function ncread_typed(
+        ::Type{T},
+        nc::NC.Dataset,
+        config::Config,
+        parameter::AbstractString,
+        metadata::ParameterMetadata,
+        sel,
+        logging::Bool,
+    ) where {T}
+    (; allow_missing, dimname, unit) = metadata
+    default = metadata.default::Union{Nothing, Float64, Int, Bool}
+    fill = metadata.fill::Union{Nothing, Float64, Int, Bool}
     var = get_var(config, parameter; optional = !isnothing(default))
     dt_val = config.time.timestepsecs
-    (; unit) = metadata
 
     # for optional parameters default values are used.
     if isnothing(var)
         @info "Set `$parameter [$unit]` using default value `$default $unit`."
         @assert !isnothing(default) "Default value required but not available for $parameter (if you see this as a user please open an issue)."
-        default = unit_and_type_transform(default, metadata; dt_val)
-        if isnothing(dimname)
-            return Base.fill(default, length(sel))
+        default_SI = to_SI(convert_parameter(T, default), unit; dt_val)
+        return if isnothing(dimname)
+            Base.fill(default_SI, length(sel))
         else
-            return Base.fill(default, (nc.dim[String(dimname)], length(sel)))
+            Base.fill(default_SI, (NC.dimlength(nc, String(dimname)), length(sel)))
         end
     end
 
-    # dim `time` is also included in `dim_sel`: this allows for cyclic parameters (read
-    # first timestep), that is later updated with the `update_cyclic!` function.
-    if isnothing(dimname)
-        dim_sel = (x = :, y = :, time = 1)
-    elseif dimname == :layer
-        dim_sel = (x = :, y = :, layer = :, time = 1)
-    elseif dimname == :flood_depth
-        dim_sel = (x = :, y = :, flood_depth = :, time = 1)
-    else
-        error("Unrecognized dimension name $dimname")
-    end
-
     if var isa Number
-        var = InputEntry(; value = var)
+        var = InputEntry(; value = [Float64(var)])
     elseif var isa String
         var = InputEntry(; external_name = var)
     else
-        @assert var isa InputEntry
+        var = var::InputEntry
     end
 
     (; value, layer, scale, offset) = var
@@ -321,23 +365,41 @@ function ncread(
 
     if !isnothing(value)
         @info "Set `$parameter [$unit]` using uniform value `$value $unit` from TOML file."
+        values_T = T[convert_parameter(T, x) for x in value]
+        n = length(sel)
         A = if isnothing(dimname)
             # set to one uniform value
-            Base.fill(only(value), length(sel))
-        elseif length(value) == 1
+            Base.fill(only(values_T), n)
+        elseif length(values_T) == 1
             # set to one uniform value (parameter with third dimension of size 1)
-            Base.fill(only(value), (nc.dim[String(dimname)], length(sel)))
-        elseif length(value) > 1
+            Base.fill(only(values_T), (NC.dimlength(nc, String(dimname)), n))
+        else
             # set to multiple uniform values (parameter with third dimension of size > 1)
-            @assert length(value) == nc.dim[String(dimname)]
-            repeat(value, 1, length(sel))
+            @assert length(values_T) == NC.dimlength(nc, String(dimname))
+            repeat(values_T, 1, n)
         end
-        return apply_unit_and_type_transform!(A, metadata; dt_val)
+        return to_SI!(A, unit; dt_val)
+    end
+
+    if logging
+        @info "Set `$parameter [$unit]` using netCDF variable `$var`."
+    end
+    ncname = something(variable_name(var))
+    return if isnothing(dimname)
+        # dim `time` is also included in `dim_sel`: this allows for cyclic parameters (read
+        # first timestep), that is later updated with the `update_cyclic!` function.
+        A = read_standardized(nc, ncname, (x = :, y = :, time = 1))
+        apply_affine_transform!(A, var)
+        # Take out only the active cells
+        finalize_parameter(T, select_cells(A, sel), var, fill, allow_missing, unit, dt_val)
     else
-        if logging
-            @info "Set `$parameter [$unit]` using netCDF variable `$var`."
+        A = if dimname == :layer
+            read_standardized(nc, ncname, (x = :, y = :, layer = :, time = 1))
+        elseif dimname == :flood_depth
+            read_standardized(nc, ncname, (x = :, y = :, flood_depth = :, time = 1))
+        else
+            error("Unrecognized dimension name $dimname")
         end
-        A = read_standardized(nc, variable_name(var), dim_sel)
         if !isnothing(layer)
             # the modifier index is only set in combination with scale and offset for SVectors,
             # provided through the TOML file.
@@ -348,35 +410,53 @@ function ncread(
         else
             apply_affine_transform!(A, var)
         end
+        # Take out only the active cells
+        finalize_parameter(T, permutedims(A[sel, :]), var, fill, allow_missing, unit, dt_val)
     end
+end
 
-    # Take out only the active cells
-    if !isnothing(sel)
-        if isnothing(dimname)
-            A = A[sel]
-        else
-            A = permutedims(A[sel, :])
-        end
-    end
+"Select active cells from a 2D input array, or return the full array for `sel = nothing`."
+select_cells(A::Matrix, sel::AbstractVector{CartesianIndex{2}}) = A[sel]
+select_cells(A::Matrix, ::Nothing) = A
 
+"""
+Handle missing values, convert to element type `T` and convert to SI units, for a parameter
+read from netCDF.
+"""
+function finalize_parameter(
+        ::Type{T},
+        A::Array{Union{Missing, Float64}, N},
+        var::InputEntry,
+        fill::Union{Nothing, Float64, Int, Bool},
+        allow_missing::Bool,
+        unit::Unit,
+        dt_val,
+    ) where {T, N}
     if allow_missing
         # Convert to desired type if needed
-        A = map(x -> ismissing(x) ? x : type(x), A)
+        B = Array{Union{Missing, T}, N}(undef, size(A))
+        for i in eachindex(A, B)
+            x = A[i]
+            B[i] = ismissing(x) ? missing : convert_parameter(T, x)
+        end
+        return to_SI!(B, unit; dt_val)
     else
         if isnothing(fill)
             # errors if missing are found
-            A = nomissing(A)
-            if any(isnan, A)
+            C = nomissing(A)
+            if any(isnan, C)
                 error("NaN not allowed in $var")
             end
         else
             # replaces missing with a fill value
-            A = nomissing(A, fill)
+            fill_value = Float64(fill)
+            C = nomissing(A, fill_value)
             # replace also NaN values with the fill value
-            replace!(x -> isnan(x) ? fill : x, A)
+            replace!(x -> isnan(x) ? fill_value : x, C)
         end
+        D = T === Float64 ? C : Array{T, N}(convert_parameter.(T, C))
+        return to_SI!(D, unit; dt_val)
     end
-    return apply_unit_and_type_transform!(A, metadata; dt_val)
 end
 
 """

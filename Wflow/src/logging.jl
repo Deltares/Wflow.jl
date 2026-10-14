@@ -51,9 +51,9 @@ function init_logger(config::Config; silent = false)::Tuple{TeeLogger, IOStream}
     end
 
     logger = TeeLogger(
-        # avoid progresslogger and NCDatasets debug messages in the file
+        # avoid progresslogger debug messages in the file
         EarlyFilteredLogger(
-            log -> log.group !== :ProgressLogging && log._module != NCDatasets,
+            log -> log.group !== :ProgressLogging,
             file_logger,
         ),
         terminal_logger,

@@ -36,7 +36,7 @@ end
 
 "Get river parameters for a river flow model on a staggered grid"
 function get_river_parameters(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         domain::DomainRiver,
         index_pit::Vector{Int},
@@ -97,7 +97,7 @@ end
 
 "Initialize river flow model parameters on a staggered grid."
 function RiverFlowStaggeredParameters(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         domain::DomainRiver,
     )
@@ -188,7 +188,7 @@ end
 
 "Initialize river flow model variables on a staggered grid."
 function RiverFlowStaggeredVariables(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         network::NetworkRiver,
     )
@@ -228,7 +228,7 @@ end
 
 "Initialize river flow model on a staggered grid."
 function init_staggered_river_flow(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         domain::DomainRiver,
         reservoir_model::Union{ReservoirModel, Nothing},
@@ -892,7 +892,7 @@ end
 
 "Initialize local inertial overland flow model parameters"
 function LocalInertialOverlandFlowParameters(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         domain::Domain,
     )
@@ -969,7 +969,7 @@ end
 
 "Initialize local inertial overland flow model"
 function init_local_inertial_overland_flow(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         domain::Domain,
     )

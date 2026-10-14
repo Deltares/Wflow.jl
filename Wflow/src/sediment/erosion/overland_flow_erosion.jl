@@ -26,7 +26,7 @@ end
 
 "Initialize ANSWERS overland flow erosion model parameters"
 function OverlandFlowErosionAnswersParameters(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         indices::Vector{CartesianIndex{2}},
     )
@@ -57,7 +57,7 @@ end
 
 "Initialize ANSWERS overland flow erosion model"
 function OverlandFlowErosionAnswersModel(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         indices::Vector{CartesianIndex{2}},
     )

@@ -42,7 +42,7 @@ end
 
 "Initialize soil erosion model parameters"
 function SoilErosionParameters(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         indices::Vector{CartesianIndex{2}},
     )
@@ -97,7 +97,7 @@ end
 
 "Initialize soil erosion model"
 function SoilErosionModel(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         indices::Vector{CartesianIndex{2}},
     )

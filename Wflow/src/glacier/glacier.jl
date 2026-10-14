@@ -11,7 +11,7 @@ end
 
 "Initialize glacier model variables"
 function GlacierVariables(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         indices::Vector{CartesianIndex{2}},
     )
@@ -60,7 +60,7 @@ end
 
 "Initialize glacier HBV model parameters"
 function GlacierHbvParameters(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         indices::Vector{CartesianIndex{2}},
         dt::Second,
@@ -106,7 +106,7 @@ end
 
 "Initialize glacier HBV model"
 function GlacierHbvModel(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         indices::Vector{CartesianIndex{2}},
         dt::Second,

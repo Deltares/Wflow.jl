@@ -2,22 +2,30 @@ abstract type AbstractDemandModel end
 abstract type AbstractAllocationModel end
 
 "Land hydrology model with SBM soil model"
-@with_kw struct LandHydrologySBM{D <: AbstractDemandModel, A <: AbstractAllocationModel} <:
-    AbstractLandModel
+@with_kw struct LandHydrologySBM{
+        I <: AbstractInterceptionModel,
+        S <: AbstractSnowModel,
+        T <: AbstractLandSurfaceTemperatureModel,
+        G <: AbstractGlacierModel,
+        R <: AbstractRunoffModel,
+        SO <: SbmSoilModel,
+        D <: AbstractDemandModel,
+        A <: AbstractAllocationModel,
+    } <: AbstractLandModel
     atmospheric_forcing::AtmosphericForcing
     vegetation_parameters::VegetationParameters
-    interception::AbstractInterceptionModel
-    snow::AbstractSnowModel
-    land_surface_temperature::AbstractLandSurfaceTemperatureModel
-    glacier::AbstractGlacierModel
-    runoff::AbstractRunoffModel
-    soil::SbmSoilModel
+    interception::I
+    snow::S
+    land_surface_temperature::T
+    glacier::G
+    runoff::R
+    soil::SO
     demand::D
     allocation::A
 end
 
 "Initialize land hydrology model with SBM soil model"
-function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand)
+function LandHydrologySBM(dataset::NC.Dataset, config::Config, domain::DomainLand)
     (; indices) = domain.network
     dt = Second(config.time.timestepsecs)
     n = length(indices)

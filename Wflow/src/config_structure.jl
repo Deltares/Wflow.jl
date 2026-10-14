@@ -20,12 +20,60 @@ For configuration files we use TOML.
 abstract type AbstractConfigSection end
 const PropertyDictType = PropertyDict{String, Any, Dict{String, Any}}
 
+"""
+    @config_section mutable struct Section <: AbstractConfigSection ... end
+
+Like `Base.@kwdef`, and additionally define a type stable
+`init_config_section_default(::Type{Section}, dict::AbstractDict{String})` that parses a
+TOML dictionary field by field, using the declared field types and defaults. This avoids
+splatting a `Dict{Symbol, Any}` into the keyword constructor, which needs dynamic dispatch
+and is therefore incompatible with `juliac --trim`.
+"""
+macro config_section(expr)
+    @assert Meta.isexpr(expr, :struct)
+    type_name = expr.args[2]
+    section_type = Meta.isexpr(type_name, :<:) ? type_name.args[1] : type_name
+    fields = Tuple{Symbol, Any, Any}[]
+    for arg in expr.args[3].args
+        arg isa LineNumberNode && continue
+        has_default = Meta.isexpr(arg, :(=))
+        lhs = has_default ? arg.args[1] : arg
+        field_name, field_type =
+            Meta.isexpr(lhs, :(::)) ? (lhs.args[1], lhs.args[2]) : (lhs, :Any)
+        key = String(field_name)
+        fallback = has_default ? arg.args[2] : :(missing_field_error($section_type, $key))
+        push!(fields, (field_name, field_type, fallback))
+    end
+    assignments = map(fields) do (field_name, field_type, fallback)
+        key = String(field_name)
+        :(
+            $field_name =
+                haskey(dict, $key) ?
+                convert_field($section_type, $key, $field_type, dict[$key]) : $fallback
+        )
+    end
+    field_names = first.(fields)
+    return esc(
+        quote
+            Base.@kwdef $expr
+            function init_config_section_default(
+                    ::Type{$section_type},
+                    dict::AbstractDict{String},
+                )::$section_type
+                warn_unknown_keys($section_type, dict)
+                $(assignments...)
+                return $section_type($(field_names...))
+            end
+        end,
+    )
+end
+
 ###
 ### Time section
 ###
 
 # Time related configurations
-@kwdef mutable struct TimeSection <: AbstractConfigSection
+@config_section mutable struct TimeSection <: AbstractConfigSection
     calendar::CalendarType.T = CalendarType.standard
     starttime::Union{Nothing, DateTime} = nothing # default from forcing netCDF
     endtime::Union{Nothing, DateTime} = nothing   # default from forcing netCDF
@@ -38,7 +86,7 @@ end
 ###
 
 # Logging related configurations
-@kwdef mutable struct LoggingSection <: AbstractConfigSection
+@config_section mutable struct LoggingSection <: AbstractConfigSection
     silent::Bool = false
     loglevel::LogLevel = Info
     path_log::String = "log.txt"
@@ -49,7 +97,7 @@ end
 ###
 
 # Water demand configurations
-@kwdef mutable struct WaterDemandSubSection <: AbstractConfigSection
+@config_section mutable struct WaterDemandSubSection <: AbstractConfigSection
     domestic__flag::Bool = false
     industry__flag::Bool = false
     livestock__flag::Bool = false
@@ -59,7 +107,7 @@ end
 end
 
 # Model configurations
-@kwdef mutable struct ModelSection <: AbstractConfigSection
+@config_section mutable struct ModelSection <: AbstractConfigSection
     # General
     type::ModelType.T
     cold_start__flag::Bool = true
@@ -94,11 +142,11 @@ end
     river_local_inertial_flow__alpha_coefficient::Float64 = 0.7
     land_local_inertial_flow__alpha_coefficient::Float64 = 0.7
     land_local_inertial_flow__theta_coefficient::Float64 = 1.0
-    land_surface_water_flow_threshold__depth = 1.0e-3
-    river_water_flow__froude_limit_flag = true
-    land_surface_water_flow__froude_limit_flag = true
+    land_surface_water_flow_threshold__depth::Float64 = 1.0e-3
+    river_water_flow__froude_limit_flag::Bool = true
+    land_surface_water_flow__froude_limit_flag::Bool = true
     # Local inertial and staggered manning river flow routing
-    river_water_flow_threshold__depth = 1.0e-3
+    river_water_flow_threshold__depth::Float64 = 1.0e-3
     floodplain_1d__flag::Bool = false
     # Staggered manning river flow routing
     river_staggered_manning_flow__alpha_coefficient::Float64 = 0.7
@@ -122,7 +170,7 @@ end
 ###
 
 # State configurations
-@kwdef mutable struct StateSection <: AbstractConfigSection
+@config_section mutable struct StateSection <: AbstractConfigSection
     path_input::Union{Nothing, String} = nothing
     path_output::Union{Nothing, String} = nothing
     # Variable name mapping
@@ -133,18 +181,18 @@ end
 ### Input section
 ###
 
-@kwdef mutable struct InputEntry <: AbstractConfigSection
+@config_section mutable struct InputEntry <: AbstractConfigSection
     # Option 1
     netcdf_variable_name::Union{Nothing, String} = nothing
     scale::Vector{Float64} = [1.0]
     _do_scaling::Bool = !all(isone, scale)
-    _scale_scalar = isone(length(scale))
+    _scale_scalar::Bool = isone(length(scale))
     offset::Vector{Float64} = [0.0]
     _do_offsetting::Bool = !all(iszero, offset)
-    _offset_scalar = isone(length(offset))
+    _offset_scalar::Bool = isone(length(offset))
     layer::Union{Nothing, Vector{Int}} = nothing
     # Option 2
-    value::Any = nothing
+    value::Union{Nothing, Vector{Float64}} = nothing
     # Option 3
     external_name::Union{Nothing, String} = nothing
 end
@@ -152,8 +200,8 @@ end
 variable_name(var::InputEntry) =
     isnothing(var.netcdf_variable_name) ? var.external_name : var.netcdf_variable_name
 
-@kwdef mutable struct InputEntries <: AbstractConfigSection
-    dict::Dict{String, InputEntry} = Dict()
+@config_section mutable struct InputEntries <: AbstractConfigSection
+    dict::Dict{String, InputEntry} = Dict{String, InputEntry}()
 end
 
 Base.haskey(input_entries::InputEntries, key) = haskey(input_entries.dict, key)
@@ -166,7 +214,7 @@ Base.iterate(input_entries::InputEntries) = iterate(input_entries.dict)
 Base.iterate(input_entries::InputEntries, state) = iterate(input_entries.dict, state)
 
 # Input configurations
-@kwdef mutable struct InputSection <: AbstractConfigSection
+@config_section mutable struct InputSection <: AbstractConfigSection
     # Flow direction and modelling domains
     path_forcing::String
     path_static::String
@@ -190,19 +238,19 @@ const input_field_names = String.(fieldnames(InputSection))
 ### Output section
 ###
 
-@kwdef mutable struct CoordinateSection <: AbstractConfigSection
+@config_section mutable struct CoordinateSection <: AbstractConfigSection
     x::Float64
     y::Float64
 end
 
-@kwdef mutable struct IndexSection <: AbstractConfigSection
+@config_section mutable struct IndexSection <: AbstractConfigSection
     i::Union{Nothing, Int} = nothing
     x::Union{Nothing, Int} = nothing
     y::Union{Nothing, Int} = nothing
     _was_specified::Bool = true
 end
 
-@kwdef mutable struct CSVColumn <: AbstractConfigSection
+@config_section mutable struct CSVColumn <: AbstractConfigSection
     header::String
     parameter::String
     reducer::Union{Nothing, ReducerType.T} = nothing
@@ -212,13 +260,13 @@ end
     coordinate::Union{Nothing, CoordinateSection} = nothing
 end
 
-@kwdef mutable struct CSVSection <: AbstractConfigSection
+@config_section mutable struct CSVSection <: AbstractConfigSection
     path::String
-    column::Vector{CSVColumn} = []
+    column::Vector{CSVColumn} = CSVColumn[]
     _was_specified::Bool = true
 end
 
-@kwdef mutable struct NetCDFScalarVariable <: AbstractConfigSection
+@config_section mutable struct NetCDFScalarVariable <: AbstractConfigSection
     name::String
     parameter::String
     reducer::Union{Nothing, ReducerType.T} = nothing
@@ -230,20 +278,20 @@ end
     _location_dim::String
 end
 
-@kwdef mutable struct NetCDFScalarSection <: AbstractConfigSection
+@config_section mutable struct NetCDFScalarSection <: AbstractConfigSection
     path::String
-    variable::Vector{NetCDFScalarVariable} = []
+    variable::Vector{NetCDFScalarVariable} = NetCDFScalarVariable[]
     _was_specified::Bool = true
 end
 
-@kwdef mutable struct NetCDFGridSection <: AbstractConfigSection
+@config_section mutable struct NetCDFGridSection <: AbstractConfigSection
     path::String
     compressionlevel::Int = 0
     variables::PropertyDictType = PropertyDict(Dict{String, Any}())
     _was_specified::Bool = true
 end
 
-@kwdef mutable struct OutputSection <: AbstractConfigSection
+@config_section mutable struct OutputSection <: AbstractConfigSection
     csv::CSVSection = CSVSection(; _was_specified = false, path = "")
     netcdf_scalar::NetCDFScalarSection =
         NetCDFScalarSection(; _was_specified = false, path = "")
@@ -255,8 +303,8 @@ end
 ###
 
 # API variable configuration
-@kwdef mutable struct APISection <: AbstractConfigSection
-    variables::Vector{String} = []
+@config_section mutable struct APISection <: AbstractConfigSection
+    variables::Vector{String} = String[]
     _was_specified::Bool = true
 end
 
@@ -265,7 +313,7 @@ end
 ###
 
 # Fields with a default value are optional
-@kwdef mutable struct Config <: AbstractConfigSection
+@config_section mutable struct Config <: AbstractConfigSection
     wflow_version::Union{Nothing, VersionNumber} = nothing
     dir_input::String = "."
     dir_output::String = "."

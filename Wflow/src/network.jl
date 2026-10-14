@@ -84,7 +84,7 @@ end
 Initialize `NetworkLand` fields related to catchment (active indices model domain) and land
 drainage network.
 """
-function NetworkLand(dataset::NCDataset, config::Config)
+function NetworkLand(dataset::NC.Dataset, config::Config)
     subcatch_2d = ncread(dataset, config, "subbasin_location__count", Domain)
     # check if specific IDs are requested, and only keep those if this is the case
     if !isnothing(config.input.subbasin_active_location__count)
@@ -155,7 +155,7 @@ end
 
 "Return local drain direction `ldd` and directed `graph` based on `ldd`"
 function get_drainage_network(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         indices::Vector{CartesianIndex{2}};
         do_pits::Bool = false,
@@ -212,7 +212,7 @@ Initialize `NetworkRiver` fields related to river location (active indices model
 river drainage network.
 """
 function NetworkRiver(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         network::NetworkLand;
         do_pits = false,
@@ -307,7 +307,7 @@ end
 end
 
 "Initialize `NetworkReservoir`"
-function NetworkReservoir(dataset::NCDataset, config::Config, network::NetworkRiver)
+function NetworkReservoir(dataset::NC.Dataset, config::Config, network::NetworkRiver)
     (; indices) = network
     logging = false
     # allow reservoir only in river cells
@@ -372,7 +372,7 @@ end
 
 "Initialize `NetworkDrain`"
 function NetworkDrain(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         indices::Vector{CartesianIndex{2}},
         surface_flow_width::Vector{Float64},

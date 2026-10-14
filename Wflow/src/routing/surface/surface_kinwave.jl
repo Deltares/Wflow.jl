@@ -65,7 +65,7 @@ function Base.getproperty(v::RiverFlowParameters, s::Symbol)
 end
 
 "Initialize river flow model parameters"
-function RiverFlowParameters(dataset::NCDataset, config::Config, domain::DomainRiver)
+function RiverFlowParameters(dataset::NC.Dataset, config::Config, domain::DomainRiver)
     (; indices) = domain.network
     (; slope, flow_length, flow_width) = domain.parameters
     mannings_n = ncread(
@@ -88,7 +88,7 @@ end
 
 "Initialize river flow model boundary conditions"
 function RiverFlowBC(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         network::NetworkRiver,
         reservoir::Union{ReservoirModel, Nothing},
@@ -108,7 +108,7 @@ end
 
 "Initialize kinematic wave river flow model"
 function init_kinematic_wave_river_flow(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         domain::DomainRiver,
         reservoir::Union{ReservoirModel, Nothing},
@@ -187,7 +187,7 @@ end
 
 "Initialize kinematic wave overland flow model"
 function init_kinematic_wave_overland_flow(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         domain::DomainLand,
     )

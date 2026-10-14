@@ -245,7 +245,7 @@ end
 
 "Initialize SBM soil model hydraulic conductivity depth profile"
 function sbm_kv_profiles(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         indices::Vector{CartesianIndex{2}},
         kv_0::Vector{Float64},
@@ -318,7 +318,7 @@ end
 
 "Initialize SBM soil model parameters"
 function SbmSoilParameters(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         vegetation_parameter_set::VegetationParameters,
         indices::Vector{CartesianIndex{2}},
@@ -626,7 +626,7 @@ end
 
 "Initialize SBM soil model"
 function SbmSoilModel(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         vegetation_parameter_set::VegetationParameters,
         indices::Vector{CartesianIndex{2}},

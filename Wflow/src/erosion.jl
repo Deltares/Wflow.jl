@@ -13,7 +13,7 @@ end
 
 "Initialize soil loss model"
 function SoilLossModel(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         indices::Vector{CartesianIndex{2}},
     )

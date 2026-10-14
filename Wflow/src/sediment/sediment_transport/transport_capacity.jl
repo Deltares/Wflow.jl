@@ -49,7 +49,7 @@ end
 
 "Initialize Govers overland flow transport capacity model parameters"
 function TransportCapacityGoversParameters(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         indices::Vector{CartesianIndex{2}},
     )
@@ -84,7 +84,7 @@ end
 
 "Initialize Govers overland flow transport capacity model"
 function TransportCapacityGoversModel(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         indices::Vector{CartesianIndex{2}},
     )
@@ -134,7 +134,7 @@ end
 
 "Initialize Yalin overland flow transport capacity model parameters"
 function TransportCapacityYalinParameters(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         indices::Vector{CartesianIndex{2}},
     )
@@ -163,7 +163,7 @@ end
 
 "Initialize Yalin overland flow transport capacity model"
 function TransportCapacityYalinModel(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         indices::Vector{CartesianIndex{2}},
     )
@@ -237,7 +237,7 @@ end
 
 "Initialize Yalin differentiated overland flow transport capacity model parameters"
 function TransportCapacityYalinDifferentiationParameters(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         indices::Vector{CartesianIndex{2}},
     )
@@ -287,7 +287,7 @@ end
 
 "Initialize Yalin differentiated overland flow transport capacity model"
 function TransportCapacityYalinDifferentiationModel(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         indices::Vector{CartesianIndex{2}},
     )
@@ -405,7 +405,7 @@ end
 
 "Initialize common river transport capacity model parameters"
 function TransportCapacityRiverParameters(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         indices::Vector{CartesianIndex{2}},
     )
@@ -434,7 +434,7 @@ end
 
 "Initialize Bagnold transport capacity model parameters"
 function TransportCapacityBagnoldParameters(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         indices::Vector{CartesianIndex{2}},
     )
@@ -468,7 +468,7 @@ end
 
 "Initialize Bagnold river transport capacity model"
 function TransportCapacityBagnoldModel(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         indices::Vector{CartesianIndex{2}},
     )
@@ -515,7 +515,7 @@ end
 
 "Initialize Engelund and Hansen river transport capacity model"
 function TransportCapacityEngelundModel(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         indices::Vector{CartesianIndex{2}},
     )
@@ -565,7 +565,7 @@ end
 
 "Initialize Kodatie river transport capacity model parameters"
 function TransportCapacityKodatieParameters(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         indices::Vector{CartesianIndex{2}},
     )
@@ -614,7 +614,7 @@ end
 
 "Initialize Kodatie river transport capacity model"
 function TransportCapacityKodatieModel(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         indices::Vector{CartesianIndex{2}},
     )
@@ -662,7 +662,7 @@ end
 
 "Initialize Yang river transport capacity model"
 function TransportCapacityYangModel(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         indices::Vector{CartesianIndex{2}},
     )
@@ -708,7 +708,7 @@ end
 
 "Initialize Molinas and Wu river transport capacity model"
 function TransportCapacityMolinasModel(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         indices::Vector{CartesianIndex{2}},
     )

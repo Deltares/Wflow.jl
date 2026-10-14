@@ -31,7 +31,7 @@ end
 
 "Initialize Gash interception model"
 function GashInterceptionModel(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         indices::Vector{CartesianIndex{2}},
         vegetation_parameter_set::VegetationParameters,

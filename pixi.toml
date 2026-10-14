@@ -89,3 +89,17 @@ scripts = ["scripts/load-env.sh"]
 
 [target.win.activation]
 scripts = ["scripts/load-env.bat"]
+
+# Trimmed binary proof of concept (build/trim_poc), JuliaC needs a C compiler to link
+[feature.trim.target.linux-64.dependencies]
+gcc = "*"
+
+[feature.trim.target.osx-arm64.dependencies]
+clang = "*"
+
+[feature.trim.tasks]
+build-trim-poc = { cmd = "julia --startup-file=no --project=build/create_binaries build/trim_poc/build.jl build/trim_poc/wflow_trim wflow_trim" }
+
+[environments]
+default = { solve-group = "default" }
+trim = { features = ["trim"], solve-group = "default" }

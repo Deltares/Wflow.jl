@@ -20,7 +20,7 @@ end
 
 "Initialize (shared) vegetation parameters"
 function VegetationParameters(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         indices::Vector{CartesianIndex{2}},
     )

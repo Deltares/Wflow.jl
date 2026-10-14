@@ -120,7 +120,7 @@ end
 end
 
 function GroundwaterFlowParameters(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         indices::Vector{CartesianIndex{2}},
         top::Vector{Float64},
@@ -169,7 +169,7 @@ end
 end
 
 function ConstantHead(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         indices::Vector{CartesianIndex{2}},
     )
@@ -238,7 +238,7 @@ storativity(A::GroundwaterFlowModel) = A.parameters.specific_yield
 
 "Initialize groundwater flow model"
 function GroundwaterFlowModel(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         domain::Domain,
         soil::SbmSoilModel,

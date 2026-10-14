@@ -4,10 +4,12 @@ import BasicModelInterface as BMI
 
 using Accessors: @optic, @reset, PropertyLens
 using Base.Threads: nthreads
-using CFTime: CFTime, monthday, dayofyear
+using CFTime: CFTime
 using CompositionsBase: decompose
 using Dates:
     Dates,
+    monthday,
+    dayofyear,
     Second,
     Minute,
     Hour,
@@ -26,7 +28,6 @@ using Dates:
 using DelimitedFiles: readdlm
 using FillArrays: Zeros
 using EnumX: @enumx, EnumX
-using Glob: glob
 using Graphs:
     add_edge!,
     add_vertex!,
@@ -58,8 +59,6 @@ using LoggingExtras:
     TeeLogger,
     Warn,
     with_logger
-using NCDatasets:
-    NCDatasets, NCDataset, CFVariable, dimnames, dimsize, nomissing, defDim, defVar, path
 using OrderedCollections: OrderedDict
 using Parameters: @with_kw
 using Polyester: @batch
@@ -139,6 +138,8 @@ struct SbmModel <: AbstractModelType end         # "sbm" type / sbm_model.jl
 struct SbmGwfModel <: AbstractModelType end      # "sbm_gwf" type / sbm_gwf_model.jl
 struct SedimentModel <: AbstractModelType end    # "sediment" type / sediment_model.jl
 
+include("netcdf.jl")
+using .NC: NC
 include("units.jl")
 include("config_structure.jl")
 include("config_utils.jl")
@@ -166,7 +167,7 @@ struct Model{
     routing::R                      # routing model (horizontal fluxes), moves along network
     land::L                         # land model simulating vertical fluxes, independent of each other
     mass_balance::M                 # mass balance error
-    clock::Clock                    # to keep track of simulation time
+    clock::Clock{DateTime}          # to keep track of simulation time
     reader::NCReader                # provides the model with dynamic input
     writer::W                       # writes model output
     type::T                         # model type
@@ -256,6 +257,8 @@ const STANDARD_NAME_MAPS = (
     ("domain", domain_standard_name_map, Domain),
     ("routing", routing_standard_name_map, Routing),
 )
+
+include("standard_name/standard_name_switch.jl")
 
 include("utils.jl")
 include("bmi.jl")
