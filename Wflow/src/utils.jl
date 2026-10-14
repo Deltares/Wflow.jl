@@ -302,57 +302,134 @@ values.
 - `logging=true`: Generate a logging message when reading a netCDF variable.
 - `metadata`: The metadata of the read parameter or state, obtained from the parameter name by default.
 """
-function ncread(
+Base.@constprop :aggressive function ncread(
         nc::NC.Dataset,
         config::Config,
         parameter::AbstractString,
-        model_type::Type;
+        model_type::Type{M};
         sel = nothing,
         logging::Bool = true,
-        metadata::ParameterMetadata = get_metadata(parameter, model_type),
+        metadata::Union{Nothing, ParameterMetadata} = nothing,
+    ) where {M}
+    # The parameter name is a literal at nearly all call sites, so with aggressive constant
+    # propagation and a foldable metadata lookup, the metadata is a compile time constant.
+    # This makes the return type concrete without annotations at the call sites.
+    md = isnothing(metadata) ? get_metadata_foldable(parameter, model_type) : metadata
+    return ncread_dispatch(md, nc, config, parameter, sel, logging)
+end
+
+"""
+Call `ncread_typed` with the element type, extra dimension and missing value settings of
+the metadata as compile time constants. For constant metadata this folds to a single call,
+otherwise it is a static branch over all supported combinations.
+"""
+Base.@constprop :aggressive function ncread_dispatch(
+        @nospecialize(md::ParameterMetadata),
+        nc::NC.Dataset,
+        config::Config,
+        parameter::AbstractString,
+        sel,
+        logging::Bool,
     )
-    # dispatch on the element type here, such that the rest is type stable
-    type = metadata.type
+    type = md.type
+    no_extra_dim = isnothing(md.dimname)
+    allow_missing = md.allow_missing
     return if type === Int
-        ncread_typed(Int, nc, config, parameter, metadata, sel, logging)
+        ncread_dispatch(Int, no_extra_dim, allow_missing, nc, config, parameter, md, sel, logging)
     elseif type === Bool
-        ncread_typed(Bool, nc, config, parameter, metadata, sel, logging)
+        ncread_dispatch(Bool, no_extra_dim, allow_missing, nc, config, parameter, md, sel, logging)
     else
-        ncread_typed(Float64, nc, config, parameter, metadata, sel, logging)
+        ncread_dispatch(
+            Float64,
+            no_extra_dim,
+            allow_missing,
+            nc,
+            config,
+            parameter,
+            md,
+            sel,
+            logging,
+        )
     end
 end
+
+Base.@constprop :aggressive function ncread_dispatch(
+        ::Type{T},
+        no_extra_dim::Bool,
+        allow_missing::Bool,
+        nc::NC.Dataset,
+        config::Config,
+        parameter::AbstractString,
+        @nospecialize(md::ParameterMetadata),
+        sel,
+        logging::Bool,
+    ) where {T}
+    return if no_extra_dim
+        if allow_missing
+            ncread_typed(T, Val(true), Val(true), nc, config, parameter, md, sel, logging)
+        else
+            ncread_typed(T, Val(true), Val(false), nc, config, parameter, md, sel, logging)
+        end
+    else
+        if allow_missing
+            ncread_typed(T, Val(false), Val(true), nc, config, parameter, md, sel, logging)
+        else
+            ncread_typed(T, Val(false), Val(false), nc, config, parameter, md, sel, logging)
+        end
+    end
+end
+
+"""
+    get_metadata_foldable(name, model_type)
+
+Metadata lookup that may be evaluated at compile time for a constant `name`. The standard
+name maps are constant after module initialization, so the lookup is consistent.
+"""
+Base.@assume_effects :foldable get_metadata_foldable(
+    name::AbstractString,
+    model_type::Type{M},
+) where {M} = something(get_metadata(name, model_type))::ParameterMetadata
 
 "Convert a parameter value to type `T`, used for defaults and fill values."
 convert_parameter(::Type{T}, x::Union{Float64, Int, Bool}) where {T} = T(x)
 
+"Uniform value array, for a parameter without (`V = true`) or with an extra dimension."
+uniform_array(value::T, ::Val{true}, nc, dimname, sel) where {T} = Base.fill(value, length(sel))
+uniform_array(value::T, ::Val{false}, nc, dimname, sel) where {T} =
+    Base.fill(value, (NC.dimlength(nc, String(dimname)), length(sel)))
+
+"Convert an array to allow missing values if `M = true`."
+missing_eltype(A::Array{T, N}, ::Val{true}) where {T, N} = Array{Union{Missing, T}, N}(A)
+missing_eltype(A::Array, ::Val{false}) = A
+
 function ncread_typed(
         ::Type{T},
+        no_extra_dim::Val{V},
+        allow_missing::Val{M},
         nc::NC.Dataset,
         config::Config,
         parameter::AbstractString,
-        metadata::ParameterMetadata,
+        @nospecialize(metadata::ParameterMetadata),
         sel,
         logging::Bool,
-    ) where {T}
-    (; allow_missing, dimname, unit) = metadata
+    ) where {T, V, M}
+    (; dimname, unit) = metadata
     default = metadata.default::Union{Nothing, Float64, Int, Bool}
     fill = metadata.fill::Union{Nothing, Float64, Int, Bool}
     var = get_var(config, parameter; optional = !isnothing(default))
-    dt_val = config.time.timestepsecs
+    # the timestep is set from the forcing if not given, before reading parameters
+    dt_val = something(config.time.timestepsecs)
 
     # for optional parameters default values are used.
     if isnothing(var)
         @info "Set `$parameter [$unit]` using default value `$default $unit`."
         @assert !isnothing(default) "Default value required but not available for $parameter (if you see this as a user please open an issue)."
         default_SI = to_SI(convert_parameter(T, default), unit; dt_val)
-        return if isnothing(dimname)
-            Base.fill(default_SI, length(sel))
-        else
-            Base.fill(default_SI, (NC.dimlength(nc, String(dimname)), length(sel)))
-        end
+        A = uniform_array(default_SI, no_extra_dim, nc, dimname, sel)
+        return missing_eltype(A, allow_missing)
     end
 
-    if var isa Number
+    if var isa Float64 || var isa Int
         var = InputEntry(; value = [Float64(var)])
     elseif var isa String
         var = InputEntry(; external_name = var)
@@ -364,28 +441,24 @@ function ncread_typed(
     variable_info(var)
 
     if !isnothing(value)
-        @info "Set `$parameter [$unit]` using uniform value `$value $unit` from TOML file."
+        @info "Set `$parameter [$unit]` using uniform value `$(join(value, ", ")) $unit` from TOML file."
         values_T = T[convert_parameter(T, x) for x in value]
-        n = length(sel)
-        A = if isnothing(dimname)
-            # set to one uniform value
-            Base.fill(only(values_T), n)
-        elseif length(values_T) == 1
-            # set to one uniform value (parameter with third dimension of size 1)
-            Base.fill(only(values_T), (NC.dimlength(nc, String(dimname)), n))
+        A = if V || length(values_T) == 1
+            # set to one uniform value (also for a parameter with third dimension of size 1)
+            uniform_array(only(values_T), no_extra_dim, nc, dimname, sel)
         else
             # set to multiple uniform values (parameter with third dimension of size > 1)
             @assert length(values_T) == NC.dimlength(nc, String(dimname))
-            repeat(values_T, 1, n)
+            repeat(values_T, 1, length(sel))
         end
-        return to_SI!(A, unit; dt_val)
+        return missing_eltype(to_SI!(A, unit; dt_val), allow_missing)
     end
 
     if logging
         @info "Set `$parameter [$unit]` using netCDF variable `$var`."
     end
     ncname = something(variable_name(var))
-    return if isnothing(dimname)
+    return if V
         # dim `time` is also included in `dim_sel`: this allows for cyclic parameters (read
         # first timestep), that is later updated with the `update_cyclic!` function.
         A = read_standardized(nc, ncname, (x = :, y = :, time = 1))
@@ -411,7 +484,15 @@ function ncread_typed(
             apply_affine_transform!(A, var)
         end
         # Take out only the active cells
-        finalize_parameter(T, permutedims(A[sel, :]), var, fill, allow_missing, unit, dt_val)
+        finalize_parameter(
+            T,
+            permutedims(A[sel, :]),
+            var,
+            fill,
+            allow_missing,
+            unit,
+            dt_val,
+        )
     end
 end
 
@@ -428,35 +509,43 @@ function finalize_parameter(
         A::Array{Union{Missing, Float64}, N},
         var::InputEntry,
         fill::Union{Nothing, Float64, Int, Bool},
-        allow_missing::Bool,
+        ::Val{true},
         unit::Unit,
         dt_val,
     ) where {T, N}
-    if allow_missing
-        # Convert to desired type if needed
-        B = Array{Union{Missing, T}, N}(undef, size(A))
-        for i in eachindex(A, B)
-            x = A[i]
-            B[i] = ismissing(x) ? missing : convert_parameter(T, x)
-        end
-        return to_SI!(B, unit; dt_val)
-    else
-        if isnothing(fill)
-            # errors if missing are found
-            C = nomissing(A)
-            if any(isnan, C)
-                error("NaN not allowed in $var")
-            end
-        else
-            # replaces missing with a fill value
-            fill_value = Float64(fill)
-            C = nomissing(A, fill_value)
-            # replace also NaN values with the fill value
-            replace!(x -> isnan(x) ? fill_value : x, C)
-        end
-        D = T === Float64 ? C : Array{T, N}(convert_parameter.(T, C))
-        return to_SI!(D, unit; dt_val)
+    # Convert to desired type if needed
+    B = Array{Union{Missing, T}, N}(undef, size(A))
+    for i in eachindex(A, B)
+        x = A[i]
+        B[i] = ismissing(x) ? missing : convert_parameter(T, x)
     end
+    return to_SI!(B, unit; dt_val)
+end
+
+function finalize_parameter(
+        ::Type{T},
+        A::Array{Union{Missing, Float64}, N},
+        var::InputEntry,
+        fill::Union{Nothing, Float64, Int, Bool},
+        ::Val{false},
+        unit::Unit,
+        dt_val,
+    ) where {T, N}
+    if isnothing(fill)
+        # errors if missing are found
+        C = nomissing(A)
+        if any(isnan, C)
+            error("NaN not allowed in $var")
+        end
+    else
+        # replaces missing with a fill value
+        fill_value = Float64(fill)
+        C = nomissing(A, fill_value)
+        # replace also NaN values with the fill value
+        replace!(x -> isnan(x) ? fill_value : x, C)
+    end
+    D = T === Float64 ? C : Array{T, N}(convert_parameter.(T, C))
+    return to_SI!(D, unit; dt_val)
 end
 
 """
@@ -769,18 +858,23 @@ Run function `f` in parallel by spawning tasks (nthreads <= 8), each task iterat
 chunk of size `basesize`. For nthreads > 8 run function `f` in parallel with
 `Polyester@batch` with `minbatch` equal to `basesize`.
 """
-function threaded_foreach(f::Function, x::AbstractArray; basesize::Integer)::Nothing
+function threaded_foreach(f::F, x::AbstractArray; basesize::Integer)::Nothing where {F}
     if Threads.nthreads() <= 8
         len = length(x)
         partitions = _partition(len, basesize)
         if length(partitions) > 1 && Threads.nthreads() > 1
-            @sync for p in partitions
-                Threads.@spawn begin
+            # collect the tasks in a typed vector rather than using `@sync`, which waits on
+            # a `Channel{Any}` and therefore needs dynamic dispatch
+            tasks = Task[]
+            for p in partitions
+                task = Threads.@spawn begin
                     for i in p
                         f(@inbounds x[i])
                     end
                 end
+                push!(tasks, task)
             end
+            foreach(wait, tasks)
         else
             for i in eachindex(x)
                 f(@inbounds x[i])

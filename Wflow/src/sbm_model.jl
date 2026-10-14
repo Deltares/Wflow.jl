@@ -23,9 +23,9 @@ function Model(config::Config, type::SbmModel)
 
     domain = Domain(dataset, config, type)
 
-    land_hydrology = LandHydrologySBM(dataset, config, domain.land)
+    land_hydrology = LandHydrologySBM(dataset, config, domain.land, type)
     routing = Routing(dataset, config, domain, land_hydrology.soil, type)
-    mass_balance = HydrologicalMassBalance(domain, routing.subsurface_flow, config)
+    mass_balance = HydrologicalMassBalance(domain, routing.subsurface_flow, config, type)
 
     (; maximum_number_of_layers) = land_hydrology.soil.parameters
     modelmap = (land = land_hydrology, routing, mass_balance)
@@ -47,7 +47,7 @@ function Model(config::Config, type::SbmModel)
         clock,
         reader,
         writer,
-        SbmModel(),
+        type,
     )
 
     set_states!(model)

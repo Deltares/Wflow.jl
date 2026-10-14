@@ -6,7 +6,7 @@ argument_error(msg::String) = throw(ArgumentError(msg))
 String representation of a value parsed from TOML, for error messages. Uses explicit type
 checks to avoid dynamic dispatch on values of unknown type.
 """
-function toml_string(value)::String
+function toml_string(@nospecialize(value))::String
     return if value isa String
         value
     elseif value isa Int
@@ -16,7 +16,7 @@ function toml_string(value)::String
     elseif value isa Bool
         string(value)
     elseif value isa DateTime
-        string(value)
+        format_datetime(value)
     elseif value isa AbstractDict
         "<table>"
     elseif value isa AbstractVector
@@ -26,7 +26,20 @@ function toml_string(value)::String
     end
 end
 
-conversion_error(::Type{T}, value) where {T} =
+"Length of a TOML value, 1 for scalars."
+function toml_length(@nospecialize(value))::Int
+    return if value isa Vector{Any}
+        length(value)
+    elseif value isa Vector{Float64}
+        length(value)
+    elseif value isa Vector{Int}
+        length(value)
+    else
+        1
+    end
+end
+
+conversion_error(::Type{T}, @nospecialize(value)) where {T} =
     argument_error("Cannot convert `$(toml_string(value))` to $T.")
 
 missing_field_error(::Type{T}, key::String) where {T} = argument_error(
@@ -43,7 +56,12 @@ function warn_unknown_keys(::Type{T}, dict::AbstractDict{String})::Nothing where
     return nothing
 end
 
-function convert_field(::Type{S}, key::String, ::Type{T}, value)::T where {S, T}
+function convert_field(
+        ::Type{S},
+        key::String,
+        ::Type{T},
+        @nospecialize(value),
+    )::T where {S, T}
     try
         return convert_value(T, value)
     catch e
@@ -61,16 +79,16 @@ only dispatch on the target type, and check the value type explicitly. Values fr
 TOML have type `Any`, so dispatching on them would require dynamic dispatch.
 =#
 
-convert_value(::Type{Any}, value) = value
-convert_value(::Type{Union{Nothing, T}}, value) where {T} = convert_value(T, value)
+convert_value(::Type{Any}, @nospecialize(value)) = value
+convert_value(::Type{Union{Nothing, T}}, @nospecialize(value)) where {T} = convert_value(T, value)
 
-convert_value(::Type{String}, value)::String =
-    value isa AbstractString ? String(value) : conversion_error(String, value)
+convert_value(::Type{String}, @nospecialize(value))::String =
+    value isa String ? value : conversion_error(String, value)
 
-convert_value(::Type{Bool}, value)::Bool =
+convert_value(::Type{Bool}, @nospecialize(value))::Bool =
     value isa Bool ? value : conversion_error(Bool, value)
 
-function convert_value(::Type{Int}, value)::Int
+function convert_value(::Type{Int}, @nospecialize(value))::Int
     return if value isa Int
         value
     elseif value isa Float64 && isinteger(value)
@@ -80,7 +98,7 @@ function convert_value(::Type{Int}, value)::Int
     end
 end
 
-function convert_value(::Type{Float64}, value)::Float64
+function convert_value(::Type{Float64}, @nospecialize(value))::Float64
     return if value isa Float64
         value
     elseif value isa Int
@@ -90,41 +108,41 @@ function convert_value(::Type{Float64}, value)::Float64
     end
 end
 
-function convert_value(::Type{DateTime}, value)::DateTime
+function convert_value(::Type{DateTime}, @nospecialize(value))::DateTime
     return if value isa DateTime
         value
     elseif value isa Date
         DateTime(value)
-    elseif value isa AbstractString
+    elseif value isa String
         DateTime(value)
     else
         conversion_error(DateTime, value)
     end
 end
 
-convert_value(::Type{VersionNumber}, value)::VersionNumber =
-    value isa AbstractString ? VersionNumber(value) : conversion_error(VersionNumber, value)
+convert_value(::Type{VersionNumber}, @nospecialize(value))::VersionNumber =
+    value isa String ? VersionNumber(value) : conversion_error(VersionNumber, value)
 
-function convert_value(::Type{LogLevel}, value)::LogLevel
+function convert_value(::Type{LogLevel}, @nospecialize(value))::LogLevel
     if value isa Int
         return LogLevel(value)
-    elseif value isa AbstractString
+    elseif value isa String
         for (name, level) in log_level_map
             name == lowercase(value) && return level
         end
         argument_error(
-            "Invalid loglevel = $value in the [logging] section of the TOML, must be one of $(keys(log_level_map)).",
+            "Invalid loglevel = $value in the [logging] section of the TOML, must be one of debug, info, warn, error.",
         )
     else
         conversion_error(LogLevel, value)
     end
 end
 
-convert_value(::Type{PropertyDictType}, value)::PropertyDictType =
+convert_value(::Type{PropertyDictType}, @nospecialize(value))::PropertyDictType =
     value isa Dict{String, Any} ? PropertyDict(value) :
     conversion_error(PropertyDictType, value)
 
-function convert_value(::Type{Vector{T}}, value)::Vector{T} where {T}
+function convert_value(::Type{Vector{T}}, @nospecialize(value))::Vector{T} where {T}
     value isa AbstractVector || conversion_error(Vector{T}, value)
     return if value isa Vector{T}
         value
@@ -144,9 +162,9 @@ function convert_value(::Type{Vector{T}}, value)::Vector{T} where {T}
 end
 
 # Automatically convert strings into enumerator instances
-function convert_value(::Type{T}, value)::T where {T <: EnumX.Enum}
-    value isa AbstractString || conversion_error(T, value)
-    option = Symbol(add_leading_underscore(String(value)))
+function convert_value(::Type{T}, @nospecialize(value))::T where {T <: EnumX.Enum}
+    value isa String || conversion_error(T, value)
+    option = Symbol(add_leading_underscore(value))
     for instance in instances(T)
         if option == Symbol(instance)
             return instance
@@ -154,12 +172,12 @@ function convert_value(::Type{T}, value)::T where {T <: EnumX.Enum}
     end
     throw(
         ArgumentError(
-            "Invalid value $value in the TOML, must be one of $(option_names(T)).",
+            "Invalid value $value in the TOML, must be one of $(join(option_names(T), ", ")).",
         ),
     )
 end
 
-function convert_value(::Type{T}, value)::T where {T <: AbstractConfigSection}
+function convert_value(::Type{T}, @nospecialize(value))::T where {T <: AbstractConfigSection}
     return if value isa Dict{String, Any}
         init_config_section(T, value)
     else
@@ -174,7 +192,10 @@ type <:AbstractConfigSection, this function works recursively.
 init_config_section(::Type{T}, dict::AbstractDict{String}) where {T <: AbstractConfigSection} =
     init_config_section_default(T, dict)
 
-init_config_section_from_value(::Type{T}, data) where {T <: AbstractConfigSection} =
+init_config_section_from_value(
+    ::Type{T},
+    @nospecialize(data),
+) where {T <: AbstractConfigSection} =
     argument_error(
     "Couldn't parse the $(section_name(T)) section in the TOML with data $(toml_string(data)), must be a section.",
 )
@@ -194,7 +215,7 @@ function init_config_section(::Type{InputEntry}, dict::AbstractDict{String})
                 # Convert scalar to vector
                 field_value = (field_value isa Number) ? Any[field_value] : field_value
                 dict[field_name] = field_value
-                field_length = field_value isa AbstractVector ? length(field_value) : 1
+                field_length = toml_length(field_value)
                 if len >= 0 && field_length != len
                     throw(
                         ArgumentError(
@@ -229,7 +250,10 @@ function init_config_section(::Type{InputEntry}, dict::AbstractDict{String})
 end
 
 # Option 3 (see struct InputEntry), or a uniform value
-function init_config_section_from_value(::Type{InputEntry}, value)::InputEntry
+function init_config_section_from_value(
+        ::Type{InputEntry},
+        @nospecialize(value),
+    )::InputEntry
     return if value isa String
         InputEntry(; external_name = value)
     elseif value isa Number
@@ -241,7 +265,7 @@ end
 Base.convert(::Type{InputEntry}, external_name::String) = InputEntry(; external_name)
 Base.convert(::Type{InputEntry}, value::Number) = InputEntry(; value = [Float64(value)])
 
-init_config_section_from_value(::Type{IndexSection}, i)::IndexSection =
+init_config_section_from_value(::Type{IndexSection}, @nospecialize(i))::IndexSection =
     i isa Int ? IndexSection(; i) : conversion_error(IndexSection, i)
 
 function init_config_section(::Type{InputEntries}, dict::AbstractDict{String})
@@ -269,7 +293,7 @@ function init_config_section(::Type{InputSection}, dict::AbstractDict{String})
     if !isempty(overlap)
         argument_error(
             "These parameters were specified in more than one of the static, forcing and cyclic" *
-                "sections of the [input] in the TOML: $overlap.",
+                "sections of the [input] in the TOML: $(join(overlap, ", ")).",
         )
     end
 

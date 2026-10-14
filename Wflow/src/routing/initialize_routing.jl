@@ -4,12 +4,16 @@ function initialize_subsurface_flow_model(
         config::Config,
         domain::Domain,
         soil_model::SbmSoilModel,
-        ::SbmModel,
+        type::SbmModel,
     )
     (; parameters) = domain.land
-    subsurface_flow_model = LateralSSFModel(dataset, config, domain, soil_model)
+    subsurface_flow_model = LateralSSFModel(dataset, config, domain, soil_model, type)
 
-    kh_profile_type = config.model.saturated_hydraulic_conductivity_profile
+    kh_profile_type = option(
+        type,
+        Val(:saturated_hydraulic_conductivity_profile),
+        config.model.saturated_hydraulic_conductivity_profile,
+    )
     @info "Using saturated hydraulic conductivity profile: `$kh_profile_type`"
 
     if kh_profile_type == VerticalConductivityProfile.exponential ||
@@ -45,8 +49,13 @@ function initialize_subsurface_flow_model(
 end
 
 "Initialize kinematic wave or local inertial overland flow routing"
-function initialize_overland_flow(dataset::NC.Dataset, config::Config, domain::Domain)
-    (; land_routing) = config.model
+function initialize_overland_flow(
+        dataset::NC.Dataset,
+        config::Config,
+        domain::Domain,
+        type::AbstractModelType,
+    )
+    land_routing = option(type, Val(:land_routing), config.model.land_routing)
 
     if land_routing == RoutingType.kinematic_wave
         overland_flow = init_kinematic_wave_overland_flow(dataset, config, domain.land)
@@ -60,16 +69,21 @@ end
 Initialize kinematic wave or local inertial overland flow routing, including optional
 reservoirs.
 """
-function initialize_river_flow(dataset::NC.Dataset, config::Config, domain::Domain)
-    (; river_routing) = config.model
+function initialize_river_flow(
+        dataset::NC.Dataset,
+        config::Config,
+        domain::Domain,
+        type::AbstractModelType,
+    )
+    river_routing = option(type, Val(:river_routing), config.model.river_routing)
 
     reservoir =
-        config.model.reservoir__flag ?
+        option(type, Val(:reservoir), config.model.reservoir__flag) ?
         ReservoirModel(dataset, config, domain.reservoir.network) : nothing
 
     return if river_routing == RoutingType.kinematic_wave
         river_flow =
-            init_kinematic_wave_river_flow(dataset, config, domain.river, reservoir)
+            init_kinematic_wave_river_flow(dataset, config, domain.river, reservoir, type)
     elseif river_routing == RoutingType.local_inertial ||
             river_routing == RoutingType.manning_staggered
         river_flow = init_staggered_river_flow(dataset, config, domain.river, reservoir)
@@ -86,8 +100,8 @@ function Routing(
     )
     subsurface_flow =
         initialize_subsurface_flow_model(dataset, config, domain, soil_model, type)
-    overland_flow = initialize_overland_flow(dataset, config, domain)
-    river_flow = initialize_river_flow(dataset, config, domain)
+    overland_flow = initialize_overland_flow(dataset, config, domain, type)
+    river_flow = initialize_river_flow(dataset, config, domain, type)
 
     routing = Routing(; subsurface_flow, overland_flow, river_flow)
     return routing

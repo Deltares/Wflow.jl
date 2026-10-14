@@ -92,6 +92,7 @@ function LateralSsfParameters(
         indices::Vector{CartesianIndex{2}},
         soil::SbmSoilParameters,
         area::Vector{Float64},
+        type::AbstractModelType = SbmModel(),
     )
     elevation = ncread(dataset, config, "land_surface__elevation", Routing; sel = indices)
     horizontal_to_vertical_hydraulic_conductivity_ratio = ncread(
@@ -106,7 +107,11 @@ function LateralSsfParameters(
 
     (; theta_s, theta_fc, soil_thickness) = soil
 
-    kh_profile_type = config.model.saturated_hydraulic_conductivity_profile
+    kh_profile_type = option(
+        type,
+        Val(:saturated_hydraulic_conductivity_profile),
+        config.model.saturated_hydraulic_conductivity_profile,
+    )
 
     if kh_profile_type == VerticalConductivityProfile.exponential
         (; kv_0, hydraulic_conductivity_scale_parameter) = soil.kv_profile
@@ -151,22 +156,28 @@ function LateralSSFModel(
         config::Config,
         domain::Domain,
         soil::SbmSoilModel,
+        type::AbstractModelType = SbmModel(),
     )
     (; land, river, drain) = domain
     (; indices) = land.network
     (; area) = domain.land.parameters
     n = length(indices)
     timestepping = init_kinematic_wave_timestepping(config, n; domain = "subsurface")
-    parameters = LateralSsfParameters(dataset, config, indices, soil.parameters, area)
+    parameters =
+        LateralSsfParameters(dataset, config, indices, soil.parameters, area, type)
     water_table_depth = copy(soil.variables.water_table_depth)
     variables = LateralSsfVariables(parameters, water_table_depth)
     recharge = RechargeModel(; n)
-    if config.model.river_subsurface_exchange_head_based__flag
+    if option(
+            type,
+            Val(:river_subsurface_exchange_head_based),
+            config.model.river_subsurface_exchange_head_based__flag,
+        )
         river = GwfRiverModel(dataset, config, river.network.indices)
     else
         river = nothing
     end
-    if config.model.drain__flag
+    if option(type, Val(:drain), config.model.drain__flag)
         drain = DrainageModel(dataset, config, drain.network.indices)
     else
         drain = nothing

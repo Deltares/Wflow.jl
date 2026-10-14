@@ -144,14 +144,13 @@ end
 
 "Update canopy parameters `maximum_canopy_storage` and `canopy_gap_fraction` based on `leaf_area_index` for a single timestep"
 function update_canopy_parameters!(parameters::VegetationParameters)
-    (;
-        leaf_area_index,
-        storage_wood,
-        light_extinction_coefficient,
-        storage_specific_leaf,
-        canopy_gap_fraction,
-        maximum_canopy_storage,
-    ) = parameters
+    (; canopy_gap_fraction, maximum_canopy_storage) = parameters
+    # these are set when the leaf area index is provided, the type assertions make the
+    # closure below concretely typed
+    leaf_area_index = parameters.leaf_area_index::Vector{Float64}
+    storage_wood = parameters.storage_wood::Vector{Float64}
+    light_extinction_coefficient = parameters.light_extinction_coefficient::Vector{Float64}
+    storage_specific_leaf = parameters.storage_specific_leaf::Vector{Float64}
 
     n = length(leaf_area_index)
     threaded_foreach(1:n; basesize = 1000) do i

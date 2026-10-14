@@ -53,40 +53,46 @@ param(obj, fields::AbstractString) = param(obj, symbols(fields))
 function get_at(
         ds::RollingDataset,
         var::InputEntry,
-        metadata,
+        unit::Unit,
         times::Vector{DateTime},
         t::DateTime,
         dt::Float64,
     )::Matrix{Union{Missing, Float64}}
     # this behaves like a backward fill interpolation
     i = findfirst(>=(t), times)
-    t < first(times) && throw(DomainError("time $t before dataset begin $(first(times))"))
-    i === nothing && throw(DomainError("time $t after dataset end $(last(times))"))
-    return get_at(ds, var, metadata, i, dt)
+    if t < first(times)
+        msg = "time $(format_datetime(t)) before dataset begin $(format_datetime(first(times)))"
+        throw(DomainError(msg))
+    end
+    if i === nothing
+        msg = "time $(format_datetime(t)) after dataset end $(format_datetime(last(times)))"
+        throw(DomainError(msg))
+    end
+    return get_at(ds, var, unit, i, dt)
 end
 
 function get_at(
         ds::RollingDataset,
         var::InputEntry,
-        metadata,
+        unit::Unit,
         i::Int,
         dt::Float64,
     )::Matrix{Union{Missing, Float64}}
     dataset, local_index = dataset_index!(ds, i)
-    return get_at(dataset, var, metadata, local_index, dt)
+    return get_at(dataset, var, unit, local_index, dt)
 end
 
 function get_at(
         ds::NC.Dataset,
         var::InputEntry,
-        metadata,
+        unit::Unit,
         i::Int,
         dt::Float64,
     )::Matrix{Union{Missing, Float64}}
-    data = read_standardized(ds, variable_name(var), (x = :, y = :, time = i))
+    data = read_standardized(ds, something(variable_name(var)), (x = :, y = :, time = i))
     apply_affine_transform!(data, var)
     # dynamic input is always floating point, only a unit conversion is needed
-    return to_SI!(data, metadata.unit; dt_val = dt)
+    return to_SI!(data, unit; dt_val = dt)
 end
 
 function get_param_res(model)
@@ -218,10 +224,11 @@ function update_forcing!(model)
 
         time = clock.time
         metadata = get_metadata(par, typeof(land))
-        if isnothing(metadata) || !metadata.allow_dynamic_input
+        metadata === nothing && error("No metadata found for forcing parameter '$par'.")
+        if !metadata.allow_dynamic_input
             error("Tried to update '$par' forcing from input, which is not allowed.")
         end
-        data = get_at(dataset, ncvar, metadata, dataset_times, time, dt)
+        data = get_at(dataset, ncvar, metadata.unit, dataset_times, time, dt)
 
         # calculate the mean precipitation and evaporation over reservoirs and put these
         # into the reservoir structs and set the precipitation and evaporation to 0 in the
@@ -245,7 +252,7 @@ function update_forcing!(model)
             data_sel = data[sel]
         end
         if any(ismissing, data_sel)
-            msg = "Forcing data at $time has missing values on active model cells for $(variable_name(ncvar))"
+            msg = "Forcing data at $(format_datetime(time)) has missing values on active model cells for $(variable_name(ncvar))"
             throw(ArgumentError(msg))
         end
         set_dynamic_input!(model, par, data_sel)
@@ -292,7 +299,8 @@ function update_cyclic!(model)
 
     for (par, ncvar) in cyclic_parameters
         metadata = get_metadata(par, typeof(land))
-        if isnothing(metadata) || !metadata.allow_dynamic_input
+        metadata === nothing && error("No metadata found for cyclic parameter '$par'.")
+        if !metadata.allow_dynamic_input
             error("Tried to update '$par' from cyclic input, which is not allowed.")
         end
         if is_first_timestep || (month_day in cyclic_times[par])
@@ -301,7 +309,7 @@ function update_cyclic!(model)
             isnothing(i) &&
                 error("Could not find applicable cyclic timestep for $month_day")
             # load from netCDF into the model according to the mapping
-            data = get_at(cyclic_dataset, ncvar, metadata, i, dt)
+            data = get_at(cyclic_dataset, ncvar, metadata.unit, i, dt)
             sel = active_indices(domain, par)
             # missing data for observed reservoir outflow is allowed at reservoir
             # location(s)
@@ -466,11 +474,11 @@ end
 function def_data_netcdf(
         ds::NC.Dataset,
         name::String,
-        float_type::Type{<:AbstractFloat},
+        float_type::Type{F},
         dims::Vector{String},
         unit::Unit;
         deflatelevel::Int = 0,
-    )::Nothing
+    )::Nothing where {F <: AbstractFloat}
     id = NC.def_var(ds, name, float_type, dims; deflatelevel)
     NC.put_attribute(ds, id, "_FillValue", float_type(NaN))
     NC.put_attribute(ds, id, "units", to_string(unit; BMI_standard = true))
@@ -487,8 +495,8 @@ function setup_scalar_netcdf(
         extra_dim::ExtraDim,
         config,
         indices;
-        float_type = Float32,
-    )
+        float_type::Type{F} = Float32,
+    ) where {F <: AbstractFloat}
     ds = create_tracked_netcdf(path)
     def_time_netcdf(ds, calendar, time_units)
     set_extradim_netcdf(ds, extra_dim)
@@ -541,10 +549,10 @@ function setup_grid_netcdf(
         calendar,
         time_units::String,
         extra_dim::ExtraDim,
-        cell_length_in_meter::Bool;
-        float_type = Float32,
+        cell_length_in_meter::Bool,
+        float_type::Type{F} = Float32;
         deflatelevel::Int = 0,
-    )
+    ) where {F <: AbstractFloat}
     base_dims, attrib_x, attrib_y = if cell_length_in_meter
         ("x", "y", "time"),
             ("x coordinate of projection", "projection_x_coordinate", "m"),
@@ -771,15 +779,20 @@ Dict(
     "a.d.c.field_of_c" => "other_name_in_output,
 )
 """
-function flat!(d::Dict{String, String}, path::String, el)::Nothing
-    if el isa AbstractDict
-        for (k, v) in pairs(el)
-            flat!(d, string(path, '.', k), v)
+function flat!(d::Dict{String, String}, path::String, @nospecialize(el))::Nothing
+    # use an explicit stack rather than recursion, since the values are of unknown type
+    stack = Tuple{String, Any}[(path, el)]
+    while !isempty(stack)
+        key, value = pop!(stack)
+        if value isa Dict{String, Any}
+            for (k, v) in value
+                push!(stack, (string(key, '.', k), v))
+            end
+        elseif value isa String
+            d[key] = value
+        else
+            error("Expected a string value for `$key` in the TOML.")
         end
-    elseif el isa String
-        d[path] = el
-    else
-        error("Expected a string value for `$path` in the TOML.")
     end
     return nothing
 end
@@ -836,18 +849,19 @@ function out_map(output_names, modelmap)::OrderedDict{String, OutputData}
     return output_map
 end
 
-function get_reducer_func(col, domain, args...)::Reducer
+function get_reducer_func(col, domain, x_nc, y_nc, config, dataset)::Reducer
     (; parameter) = col
     (; indices) = domain.land.network
-    return if startswith(parameter, domain_parameter_map["reservoir"])
-        reducer(col, domain.reservoir.network.reverse_indices, indices, args...)
+    rev_inds = if startswith(parameter, domain_parameter_map["reservoir"])
+        domain.reservoir.network.reverse_indices
     elseif startswith(parameter, domain_parameter_map["river"])
-        reducer(col, domain.river.network.reverse_indices, indices, args...)
+        domain.river.network.reverse_indices
     elseif startswith(parameter, domain_parameter_map["drain"])
-        reducer(col, domain.drain.network.reverse_indices, indices, args...)
+        domain.drain.network.reverse_indices
     else
-        reducer(col, domain.land.network.reverse_indices, indices, args...)
+        domain.land.network.reverse_indices
     end
+    return reducer(col, rev_inds, indices, x_nc, y_nc, config, dataset)
 end
 
 function Writer(
@@ -901,8 +915,8 @@ function Writer(
             config.time.calendar,
             time_units,
             extra_dim,
-            config.model.cell_length_in_meter__flag;
-            float_type = Float64,
+            config.model.cell_length_in_meter__flag,
+            Float64,
         )
         @info "Created a state output netCDF file `$output_path_endstate`."
         NCWriter(;
@@ -1161,6 +1175,19 @@ function close_files(model; delete_output::Bool = false)
     return nothing
 end
 
+"""
+Median of a vector, NaN if any value is NaN. `Statistics.median` is not used since its
+error path is not compatible with `juliac --trim`.
+"""
+function median_value(A::AbstractVector{Float64})::Float64
+    isempty(A) && throw(ArgumentError("median of an empty array is undefined"))
+    any(isnan, A) && return NaN
+    sorted = sort(A)
+    n = length(sorted)
+    mid = n ÷ 2
+    return isodd(n) ? sorted[mid + 1] : (sorted[mid] + sorted[mid + 1]) / 2
+end
+
 "Apply a reduction function to a vector."
 function reduce_values(reducer_type::ReducerType.T, A::AbstractVector{Float64})::Float64
     return if reducer_type == ReducerType.maximum
@@ -1170,7 +1197,7 @@ function reduce_values(reducer_type::ReducerType.T, A::AbstractVector{Float64}):
     elseif reducer_type == ReducerType.mean
         mean(A)
     elseif reducer_type == ReducerType.median
-        median(A)
+        median_value(A)
     elseif reducer_type == ReducerType.first
         first(A)
     elseif reducer_type == ReducerType.last
@@ -1283,7 +1310,7 @@ function write_csv_row(model::AbstractModel, csv_writer::CSVWriter)::Nothing
     (; clock) = model
     (; output_path, output_io, output_map, reducer) = csv_writer
     isnothing(output_path) && return nothing
-    print(output_io, string(clock.time))
+    print(output_io, format_datetime(clock.time))
     dt_val = tosecond(clock.dt)
     for (col, reducer_) in reducer
         (; header, layer) = col
@@ -1297,6 +1324,37 @@ function write_csv_row(model::AbstractModel, csv_writer::CSVWriter)::Nothing
     end
     println(output_io)
     return nothing
+end
+
+"Zero pad a non-negative integer to `width` digits."
+function zero_pad(x::Integer, width::Int)::String
+    s = string(x)
+    while length(s) < width
+        s = "0" * s
+    end
+    return s
+end
+
+"""
+Format a DateTime as ISO 8601, like `string(::DateTime)`. The Dates formatting code is not
+compatible with `juliac --trim`.
+"""
+function format_datetime(t::DateTime)::String
+    s = string(
+        zero_pad(year(t), 4),
+        '-',
+        zero_pad(Dates.month(t), 2),
+        '-',
+        zero_pad(Dates.day(t), 2),
+        'T',
+        zero_pad(Dates.hour(t), 2),
+        ':',
+        zero_pad(Dates.minute(t), 2),
+        ':',
+        zero_pad(Dates.second(t), 2),
+    )
+    ms = Dates.millisecond(t)
+    return iszero(ms) ? s : string(s, '.', zero_pad(ms, 3))
 end
 
 """

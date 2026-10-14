@@ -1,5 +1,5 @@
-get_states_by_tag(model_type::Type, tag::Symbol) =
-    [name for (name, metadata) in get_standard_name_map(model_type) if tag in metadata.tags]
+get_states_by_tag(model_type::Type, tag::Symbol)::Vector{String} =
+    String[name for (name, metadata) in get_standard_name_map(model_type) if tag in metadata.tags]
 
 """
     get_snow_states(model_type::ModelType.T)
@@ -7,10 +7,10 @@ get_states_by_tag(model_type::Type, tag::Symbol) =
 Extract required snow model states, given a certain `model_type`. Returns a tuple with the
 required states (standard name).
 """
-function get_snow_states(model_type::ModelType.T)
+function get_snow_states(model_type::ModelType.T)::Vector{String}
     if model_type == ModelType.sbm || model_type == ModelType.sbm_gwf
         return get_states_by_tag(LandHydrologySBM, :snow_state)
-    elseif model_type == ModelType.sediment
+    else
         return String[]
     end
 end
@@ -21,10 +21,10 @@ end
 Extract required glacier model states, given a certain `model_type`. Returns a tuple with
 the required states (standard name).
 """
-function get_glacier_states(model_type::ModelType.T)
+function get_glacier_states(model_type::ModelType.T)::Vector{String}
     return if model_type == ModelType.sbm || model_type == ModelType.sbm_gwf
         get_states_by_tag(LandHydrologySBM, :glacier_state)
-    elseif model_type == ModelType.sediment
+    else
         String[]
     end
 end
@@ -35,10 +35,10 @@ end
 Extract required interception model states, given a certain `model_type`. Returns a tuple
 with the required states (standard name).
 """
-function get_interception_states(model_type::ModelType.T)
+function get_interception_states(model_type::ModelType.T)::Vector{String}
     if model_type == ModelType.sbm || model_type == ModelType.sbm_gwf
         return get_states_by_tag(LandHydrologySBM, :vegetation_state)
-    elseif model_type == ModelType.sediment
+    else
         return String[]
     end
 end
@@ -49,17 +49,17 @@ end
 Extract required soil model states, given a certain `model_type` and whether `snow` is
 modelled. Returns a tuple with the required states (internal names as symbols).
 """
-function get_soil_states(model_type::ModelType.T; snow::Bool = false)
+function get_soil_states(model_type::ModelType.T; snow::Bool = false)::Vector{String}
     if model_type == ModelType.sbm || model_type == ModelType.sbm_gwf
         states = get_states_by_tag(LandHydrologySBM, :soil_state)
         states = snow ? states : filter(!=("soil_surface__temperature"), states)
         return states
-    elseif model_type == ModelType.sediment
+    else
         return String[]
     end
 end
 
-function get_sediment_states()
+function get_sediment_states()::Vector{String}
     return get_states_by_tag(SoilLossModel, :sediment_river_transport_state)
 end
 
@@ -71,7 +71,7 @@ are inferred from the model settings (mainly model_type, model options and routi
 Returns as list of required states, in the same formats as the keys that are returned from the
 `ncnames` function.
 """
-function extract_required_states(config::Config)
+function extract_required_states(config::Config)::Vector{String}
     # Extract model type
     model_type = config.model.type
 
@@ -146,18 +146,21 @@ function extract_required_states(config::Config)
         do_paddy ? get_states_by_tag(LandHydrologySBM, :demand_paddy_irrigation_state) :
         String[]
 
-    required_states = vcat(
-        snow_states,
-        glacier_states,
-        interception_states,
-        soil_states,
-        ssf_states,
-        land_states,
-        river_states,
-        floodplain_states,
-        reservoir_states,
-        paddy_states,
-    )
+    required_states = String[]
+    for states in (
+            snow_states,
+            glacier_states,
+            interception_states,
+            soil_states,
+            ssf_states,
+            land_states,
+            river_states,
+            floodplain_states,
+            reservoir_states,
+            paddy_states,
+        )
+        append!(required_states, states)
+    end
 
     return required_states
 end
@@ -170,7 +173,7 @@ required states. If not all states are covered, an error is thrown to warn the u
 (including logging messages to explain which variables are missing). If more states are
 provided than required, a warning is logged, and the unnecessary state is removed.
 """
-function check_states(config::Config)
+function check_states(config::Config)::Dict{String, String}
     state_ncnames = ncnames(config.state.variables)
 
     # Get required states
@@ -194,7 +197,7 @@ function check_states(config::Config)
     if error
         throw(
             ArgumentError(
-                "Not all required states are provided, these states are missing: `$missing_states`",
+                "Not all required states are provided, these states are missing: `$(join(missing_states, ", "))`",
             ),
         )
     end

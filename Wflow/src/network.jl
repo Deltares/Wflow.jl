@@ -85,7 +85,9 @@ Initialize `NetworkLand` fields related to catchment (active indices model domai
 drainage network.
 """
 function NetworkLand(dataset::NC.Dataset, config::Config)
+    # the return type is asserted, the metadata lookup is not always constant folded
     subcatch_2d = ncread(dataset, config, "subbasin_location__count", Domain)
+    subcatch_2d = subcatch_2d::Matrix{Union{Missing, Int}}
     # check if specific IDs are requested, and only keep those if this is the case
     if !isnothing(config.input.subbasin_active_location__count)
         active_ids = Set(config.input.subbasin_active_location__count)
@@ -161,10 +163,13 @@ function get_drainage_network(
         do_pits::Bool = false,
         logging::Bool = true,
     )
+    # the return type is asserted, the metadata lookup is not always constant folded
     ldd_2d = ncread(dataset, config, "basin__local_drain_direction", Domain; logging)
+    ldd_2d = ldd_2d::Matrix{Union{Missing, Int}}
     ldd = convert(Array{UInt8}, ldd_2d[indices])
     if do_pits
-        pits_2d = ncread(dataset, config, "basin_pit_location__mask", Domain)
+        pits_2d =
+            ncread(dataset, config, "basin_pit_location__mask", Domain)::Matrix{Bool}
         ldd = set_pit_ldd(pits_2d, ldd, indices)
     end
     graph, ldd = flowgraph(ldd, indices, PCR_DIR)
@@ -225,7 +230,7 @@ function NetworkRiver(
         Domain;
         sel = network.indices,
         logging = false,
-    )
+    )::Vector{Bool}
 
     # find the land cells that are river cells
     land_indices = findall(!isequal(0), river_location)

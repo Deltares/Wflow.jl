@@ -269,10 +269,10 @@ function LandParameters(dataset::NC.Dataset, config::Config, domain::Domain)
     )
 
     if config.model.land_surface_temperature__flag
-        @reset land_parameters.skin_layer_height = ncread(dataset, config, "atmosphere_bottom_air__above_ground_height", Domain; sel = indices)
-        @reset land_parameters.d0 = ncread(dataset, config, "atmosphere_bottom_air_flow__zero_plane_displacement_length", Domain; sel = indices)
-        @reset land_parameters.z0h = ncread(dataset, config, "atmosphere_bottom_air_heat_flow__roughness_length", Domain; sel = indices)
-        @reset land_parameters.z0m = ncread(dataset, config, "atmosphere_bottom_air_flow__roughness_length", Domain; sel = indices)
+        @reset land_parameters.skin_layer_height = ncread(dataset, config, "atmosphere_bottom_air__above_ground_height", Domain; sel = indices)::Vector{Float64}
+        @reset land_parameters.d0 = ncread(dataset, config, "atmosphere_bottom_air_flow__zero_plane_displacement_length", Domain; sel = indices)::Vector{Float64}
+        @reset land_parameters.z0h = ncread(dataset, config, "atmosphere_bottom_air_heat_flow__roughness_length", Domain; sel = indices)::Vector{Float64}
+        @reset land_parameters.z0m = ncread(dataset, config, "atmosphere_bottom_air_flow__roughness_length", Domain; sel = indices)::Vector{Float64}
     end
 
     return land_parameters
@@ -386,7 +386,13 @@ end
 "Return river mask"
 function river_mask(dataset::NC.Dataset, config::Config, network::NetworkLand)::Vector{Bool}
     river_location =
-        ncread(dataset, config, "river_location__mask", Domain; sel = network.indices)
+        ncread(
+        dataset,
+        config,
+        "river_location__mask",
+        Domain;
+        sel = network.indices,
+    )::Vector{Bool}
     return river_location
 end
 
@@ -397,24 +403,24 @@ function reservoir_mask(
         network::NetworkLand;
         region::String = "location",
     )
-    reservoirs = fill(0, length(network.indices))
+    reservoirs = fill(false, length(network.indices))
     if config.model.reservoir__flag
-        reservoirs = ncread(
+        # the parameter name is not a constant, so the return type is asserted
+        reservoir_ids = ncread(
             dataset,
             config,
             "reservoir_$(region)__count",
             Routing;
             sel = network.indices,
-        )
+        )::Vector{Union{Missing, Int}}
         # check if any reservoirs are found in the active model domain, if not disable reservoir model component
-        if !all(x -> ismissing(x) || x == 0, reservoirs)
-            replace!(x -> ismissing(x) ? 0 : x, reservoirs)
+        if !all(x -> ismissing(x) || x == 0, reservoir_ids)
+            reservoirs .= coalesce.(reservoir_ids, 0) .> 0
         else
             config.model.reservoir__flag = false
             @warn "No reservoirs found in active model domain, disabling reservoir model component."
         end
     end
-    reservoirs = Vector{Bool}(reservoirs .> 0)
     return reservoirs
 end
 
@@ -437,7 +443,7 @@ function get_allocation_area_indices(dataset::NC.Dataset, config::Config, domain
         Domain;
         sel = indices,
         logging = false,
-    )
+    )::Vector{Int}
     unique_areas = unique(areas)
     allocation_area_inds = Vector{Int}[]
     river_allocation_area_inds = Vector{Int}[]

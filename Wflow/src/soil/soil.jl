@@ -150,10 +150,10 @@ end
 end
 
 "Initialize SBM soil model variables"
-function SbmSoilVariables(n::Int, parameters::SbmSoilParameters)
+function SbmSoilVariables(n::Int, parameters::SbmSoilParameters{N}) where {N}
+    maximum_number_of_layers = N
     (;
         soil_thickness,
-        maximum_number_of_layers,
         actual_layer_thickness,
         cumulative_layer_depth,
         soil_water_capacity,
@@ -250,12 +250,18 @@ function sbm_kv_profiles(
         indices::Vector{CartesianIndex{2}},
         kv_0::Vector{Float64},
         hydraulic_conductivity_scale_parameter::Vector{Float64},
-        maximum_number_of_layers::Int,
+        ::Val{N},
         number_of_layers::Vector{Int},
         cumulative_layer_depth::Vector,
         dt::Second,
+        type::AbstractModelType,
+    ) where {N}
+    maximum_number_of_layers = N
+    kv_profile_type = option(
+        type,
+        Val(:saturated_hydraulic_conductivity_profile),
+        config.model.saturated_hydraulic_conductivity_profile,
     )
-    kv_profile_type = config.model.saturated_hydraulic_conductivity_profile
     n = length(indices)
     if kv_profile_type == VerticalConductivityProfile.exponential
         kv_profile = KvExponential(kv_0, hydraulic_conductivity_scale_parameter)
@@ -279,10 +285,7 @@ function sbm_kv_profiles(
             sel = indices,
         )
         if size(kv, 1) != maximum_number_of_layers
-            parname = param(
-                config.input.static,
-                "soil_layer_water__vertical_saturated_hydraulic_conductivity",
-            )
+            parname = "soil_layer_water__vertical_saturated_hydraulic_conductivity"
             size1 = size(kv, 1)
             error(
                 "$parname needs a layer dimension of size $maximum_number_of_layers, but is $size1",
@@ -323,13 +326,38 @@ function SbmSoilParameters(
         vegetation_parameter_set::VegetationParameters,
         indices::Vector{CartesianIndex{2}},
         dt::Second,
+        type::AbstractModelType = SbmModel(),
     )
     config_soil_layer_thickness =
         to_SI.(Float64.(config.model.soil_layer__thickness), Ref(MM))
+    # the number of layers is a type parameter, which can be fixed by the build profile
+    n_layers = option(type, Val(:soil_layers), length(config_soil_layer_thickness))
+    return SbmSoilParameters(
+        dataset,
+        config,
+        vegetation_parameter_set,
+        indices,
+        dt,
+        type,
+        config_soil_layer_thickness,
+        Val(n_layers + 1),
+    )
+end
 
-    soil_layer_thickness = SVector(Tuple(push!(config_soil_layer_thickness, MISSING_VALUE)))
+function SbmSoilParameters(
+        dataset::NC.Dataset,
+        config::Config,
+        vegetation_parameter_set::VegetationParameters,
+        indices::Vector{CartesianIndex{2}},
+        dt::Second,
+        type::AbstractModelType,
+        config_soil_layer_thickness::Vector{Float64},
+        ::Val{N},
+    ) where {N}
+    soil_layer_thickness =
+        SVector{N, Float64}(push!(copy(config_soil_layer_thickness), MISSING_VALUE))
     cum_depth_layers = pushfirst(cumsum(soil_layer_thickness), 0.0)
-    maximum_number_of_layers = length(soil_layer_thickness) # max number of soil layers
+    maximum_number_of_layers = N # max number of soil layers
 
     @info "Using `$(maximum_number_of_layers - 1)` soil layers with the following thickness: `$config_soil_layer_thickness`"
 
@@ -450,7 +478,7 @@ function SbmSoilParameters(
         sel = indices,
     )
     if size(brooks_corey_exponent, 1) != maximum_number_of_layers
-        parname = param(config.input.static, "soil_layer_water__brooks_corey_exponent")
+        parname = "soil_layer_water__brooks_corey_exponent"
         size1 = size(brooks_corey_exponent, 1)
         error(
             "$parname needs a layer dimension of size $maximum_number_of_layers, but is $size1",
@@ -466,10 +494,7 @@ function SbmSoilParameters(
         sel = indices,
     )
     if size(vertical_hydraulic_conductivity_factor, 1) != maximum_number_of_layers
-        parname = param(
-            config.input.static,
-            "soil_layer_water__vertical_saturated_hydraulic_conductivity_factor",
-        )
+        parname = "soil_layer_water__vertical_saturated_hydraulic_conductivity_factor"
         size1 = size(vertical_hydraulic_conductivity_factor, 1)
         error(
             "$parname needs a layer dimension of size $maximum_number_of_layers, but is $size1",
@@ -568,10 +593,11 @@ function SbmSoilParameters(
         indices,
         kv_0,
         hydraulic_conductivity_scale_parameter,
-        maximum_number_of_layers,
+        Val(N),
         number_of_layers,
         cumulative_layer_depth,
         dt,
+        type,
     )
 
     soil_water_capacity = @. soil_thickness * (theta_s - theta_r)
@@ -631,9 +657,11 @@ function SbmSoilModel(
         vegetation_parameter_set::VegetationParameters,
         indices::Vector{CartesianIndex{2}},
         dt::Second,
+        type::AbstractModelType = SbmModel(),
     )
     n = length(indices)
-    parameters = SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, dt)
+    parameters =
+        SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, dt, type)
     variables = SbmSoilVariables(n, parameters)
     soil_model = SbmSoilModel(; n, parameters, variables)
     return soil_model
