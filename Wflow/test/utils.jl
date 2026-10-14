@@ -142,6 +142,7 @@ end
             "sbm_gwf_piave_demand_config.toml",
             "sediment_config.toml",
             "sediment_eurosem_engelund_config.toml",
+            "sbm_lst_config.toml",
         ]
         config = Wflow.Config(normpath(@__DIR__, file_name))
         config.dir_output = mktempdir()

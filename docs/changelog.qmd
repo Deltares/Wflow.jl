@@ -110,6 +110,7 @@ floodplain_bottom_surface__slope = "floodplain_slope"
   to simulate surface terrain changes that have less or no impact on the subsurface flow
   slope. A new standard name `subsurface_bottom_surface__slope` has been added for the
   subsurface flow slope.
+- Support land surface temperature computations.
 
 ## v1.0.4 - 2026-07-24
 
