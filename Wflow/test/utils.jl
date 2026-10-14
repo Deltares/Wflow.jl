@@ -60,6 +60,16 @@ end
     @test string(unit) == "s m⁻¹ᐟ³"
     @test to_string(unit; BMI_standard = true) == "s m-1/3"
 
+    # in-place array conversion matches scalar conversion and skips missing values
+    for unit in (ABSOLUTE_DEGREES, Unit(; mm = 1, dt = -1))
+        x = [0.0, missing, 10.0]
+        x_SI = [to_SI(v, unit; dt_val = dt) for v in x]
+        @test isequal(Wflow.to_SI!(copy(x), unit; dt_val = dt), x_SI)
+        y = copy(x_SI)
+        Wflow.from_SI!(y, unit; dt_val = dt)
+        @test isequal(y, [Wflow.from_SI(v, unit; dt_val = dt) for v in x_SI])
+    end
+
     @test_throws Exception Unit(; foo = 42)
 end
 
@@ -306,4 +316,10 @@ end
         copy(v),
         InputEntry(; scale = [6.0], offset = fill(7.0, 3)),
     ) == 6.0 * v .+ 7.0
+end
+
+@testitem "unit: lens_path" begin
+    using Accessors: @optic
+    @test Wflow.lens_path(@optic(_.land)) == "land"
+    @test Wflow.lens_path(@optic(_.land.soil.variables.zi)) == "land.soil.variables.zi"
 end

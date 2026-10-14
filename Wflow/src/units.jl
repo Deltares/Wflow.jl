@@ -287,12 +287,26 @@ end
 # Fallback method for non-Floats, e.g. nothing, missing, Bool, Int
 to_SI(x, unit::Unit; kwargs...) = x
 
+# Element-wise helpers for in-place array conversion, leaving non-floats (e.g. missing,
+# Bool, Int) unchanged, consistent with the scalar `to_SI` and `from_SI` fallbacks.
+add_to_float(x::AbstractFloat, y) = x + y
+add_to_float(x, y) = x
+multiply_float(x::AbstractFloat, y) = x * y
+multiply_float(x, y) = x
+divide_float(x::AbstractFloat, y) = x / y
+divide_float(x, y) = x
+
 """
 In-place conversion of an array of values to the corresponding SI unit
 """
 function to_SI!(x::AbstractArray, unit::Unit; dt_val::Union{Nothing, Number} = nothing)
-    unit_ref = Ref(unit)
-    @. x = to_SI(x, unit_ref; dt_val)
+    # determine the conversion once for the whole array instead of per element
+    if unit == ABSOLUTE_DEGREES
+        x .= add_to_float.(x, 273.15)
+    else
+        factor = to_SI_factor(unit; dt_val)
+        x .= multiply_float.(x, factor)
+    end
     return x
 end
 
@@ -329,7 +343,12 @@ from_SI(x, unit::Unit; kwargs...) = x
 In-place conversion of values in SI unit to the given unit
 """
 function from_SI!(x::AbstractArray, unit::Unit; dt_val::Union{Nothing, Number} = nothing)
-    unit_ref = Ref(unit)
-    @. x = from_SI(x, unit_ref; dt_val)
+    # determine the conversion once for the whole array instead of per element
+    if unit == ABSOLUTE_DEGREES
+        x .= add_to_float.(x, -273.15)
+    else
+        factor = to_SI_factor(unit; dt_val)
+        x .= divide_float.(x, factor)
+    end
     return nothing
 end
