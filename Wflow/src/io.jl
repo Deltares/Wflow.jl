@@ -1392,7 +1392,8 @@ matrix (rows are lines in the file) and the column names. This replaces
 `DelimitedFiles.readdlm`, which is not compatible with `juliac --trim`.
 """
 function read_csv_matrix(path::AbstractString)::Tuple{Matrix{Float64}, Vector{String}}
-    lines = filter!(!isempty, strip.(readlines(path)))
+    # `readlines` is not used, `EachLine` stores a `Function` field
+    lines = filter!(!isempty, strip.(split(read(path, String), '\n')))
     isempty(lines) && error("No data found in CSV file `$path`.")
     header = String[strip(name) for name in split(first(lines), ',')]
     ncol = length(header)

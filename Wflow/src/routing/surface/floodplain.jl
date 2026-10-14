@@ -190,10 +190,10 @@ function FloodPlainStaggeredParameters(
     if river_routing == RoutingType.local_inertial
         zb_at_edge = compute_value_at_edge(zb_floodplain, nodes_at_edge, n_edges, maximum)
         mannings_n_sq_at_edge = mannings_n_at_edge .* mannings_n_at_edge
-        slope_at_edge = []
+        slope_at_edge = Float64[]
     elseif river_routing == RoutingType.manning_staggered
         zb_at_edge = compute_value_at_edge(zb_floodplain, nodes_at_edge, n_edges, first)
-        mannings_n_sq_at_edge = []
+        mannings_n_sq_at_edge = Float64[]
         flow_length_at_edge =
             compute_value_at_edge(flow_length, nodes_at_edge, n_edges, mean)
         slope_at_edge = compute_slope_at_edge(

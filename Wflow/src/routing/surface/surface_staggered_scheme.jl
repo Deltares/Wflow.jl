@@ -125,10 +125,10 @@ function RiverFlowStaggeredParameters(
     if river_routing == RoutingType.local_inertial
         zb_at_edge = compute_value_at_edge(zb, nodes_at_edge, n_edges, maximum)
         mannings_n_sq_at_edge = mannings_n_at_edge .* mannings_n_at_edge
-        slope_at_edge = []
+        slope_at_edge = Float64[]
     elseif river_routing == RoutingType.manning_staggered
         zb_at_edge = compute_value_at_edge(zb, nodes_at_edge, n_edges, first)
-        mannings_n_sq_at_edge = []
+        mannings_n_sq_at_edge = Float64[]
         slope_at_edge =
             compute_slope_at_edge(zb, flow_length_at_edge, nodes_at_edge, n_edges)
     end
@@ -232,6 +232,7 @@ function init_staggered_river_flow(
         config::Config,
         domain::DomainRiver,
         reservoir_model::Union{ReservoirModel, Nothing},
+        type::AbstractModelType = SbmModel(),
     )
     # This river flow model makes use of a staggered grid (Bates et al. (2010)), with nodes
     # and edges. This information is extracted from the directed graph of the river.
@@ -247,7 +248,7 @@ function init_staggered_river_flow(
     # outlets (pits): river length and river depth
 
     # stability coefficient for model time step (0.2-0.7)
-    (; river_routing) = config.model
+    river_routing = option(type, Val(:river_routing), config.model.river_routing)
     alpha_coefficient = if river_routing == RoutingType.local_inertial
         config.model.river_local_inertial_flow__alpha_coefficient
     elseif river_routing == RoutingType.manning_staggered
@@ -259,14 +260,13 @@ function init_staggered_river_flow(
     variables = RiverFlowStaggeredVariables(dataset, config, domain.network)
     boundary_conditions = RiverFlowBC(dataset, config, domain.network, reservoir_model)
 
-    if config.model.floodplain_1d__flag
+    if option(type, Val(:floodplain_1d), config.model.floodplain_1d__flag)
         zb_floodplain = parameters.zb .+ parameters.bankfull_depth
         floodplain = FloodPlainModel(dataset, config, domain, zb_floodplain)
     else
         floodplain = nothing
     end
 
-    (; river_routing) = config.model
     routing_method = if river_routing == RoutingType.local_inertial
         LocalInertial()
     elseif river_routing == RoutingType.manning_staggered
@@ -280,8 +280,8 @@ function init_staggered_river_flow(
         parameters,
         variables,
         floodplain,
-        allocation = do_water_demand(config) ? AllocationRiverModel(; n) :
-            NoAllocationRiverModel(n),
+        allocation = option(type, Val(:water_demand), do_water_demand(config)) ?
+            AllocationRiverModel(; n) : NoAllocationRiverModel(n),
         routing_method,
     )
     return river_flow

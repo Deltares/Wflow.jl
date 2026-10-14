@@ -28,7 +28,7 @@ function scurve(x::Real, a::Real, b::Real, c::Real)::Real
     return s
 end
 
-function to_enumx(T, i::Int)
+function to_enumx(::Type{T}, i::Int) where {T}
     options = instances(T)
     n_options = length(options)
     if 1 ≤ i ≤ n_options
