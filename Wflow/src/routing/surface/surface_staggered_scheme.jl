@@ -965,7 +965,7 @@ end
     n::Int
     # runoff from hydrological model [m³ s⁻¹]
     runoff::Vector{Float64} = zeros(n)
-    # amount of infiltration from surface water [m³]
+    # amount of infiltration from overland flow [m³]
     infiltration_volume::Vector{Float64} = zeros(n)
 end
 
@@ -1096,7 +1096,7 @@ function update_bc_overland_flow_model!(
     overland_flow_model.boundary_conditions.runoff[river_indices] .+=
         get_flux_to_river(subsurface_flow, river_indices)
 
-    # infiltration volume [m³] from surface water, applied in `local_inertial_update_water_depth!`
+    # infiltration volume [m³] from overland flow, applied in `local_inertial_update_water_depth!`
     @. overland_flow_model.boundary_conditions.infiltration_volume =
         soil.variables.infilt_surfacewater * area * dt
     return nothing
@@ -1552,7 +1552,7 @@ function local_inertial_update_water_depth!(
 end
 
 """
-No-op for the `OverlandFlowModel{<:LocalInertial}`. Surface water infiltration is applied via
+No-op for the `OverlandFlowModel{<:LocalInertial}`. Overland flow infiltration is applied via
 the `infiltration_volume` boundary condition set in `update_bc_overland_flow_model!` and
 subtracted from land storage in `local_inertial_update_water_depth!`.
 """

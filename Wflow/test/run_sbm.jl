@@ -1432,7 +1432,7 @@ end
         # get actual infiltration
         @test soil.variables.actual_infiltration[idxs] ≈
             [8.290954048774218e-10, 8.073516198445915e-10, 8.160308562721859e-10]
-        # there is a lot of infiltration coming from surface water in cell 54
+        # there is a lot of infiltration coming from overland flow in cell 54
         @test soil.variables.infilt_surfacewater[idxs] ≈
             [0.0, 1.8112574239337292e-7, 1.555963155960821e-10]
 
@@ -1483,7 +1483,7 @@ end
     Wflow.run_timestep!(model)
     Wflow.run_timestep!(model)
 
-    # `reinfiltration_average` must equal the soil-side surface-water infiltration flux
+    # `reinfiltration_average` must equal the soil-side overland flow infiltration flux
     # (`infilt_surfacewater * area`), i.e. the routing outflow matches the soil inflow.
     @test reinfiltration_average ≈ infilt_surfacewater .* area
 
