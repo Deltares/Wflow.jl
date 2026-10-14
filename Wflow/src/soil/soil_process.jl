@@ -326,11 +326,12 @@ function actual_infiltration_soil_path(
 end
 
 """
-Correct infiltration fluxes by separating the surface water contribution from the total
+Correct infiltration fluxes by separating the overland flow contribution from the total
 infiltration. The correction factor is based on the ratio of
 `potential_infiltration_surfacewater` to `potential_infiltration`, and is applied to
-`actual_infiltration` and `infiltration_excess` to remove the surface water component. The surface water flux
-`water_flux_surface` is adjusted accordingly, and the remaining excess water is computed.
+`actual_infiltration` and `infiltration_excess` to remove the overland flow component. The
+overland flow flux `water_flux_surface` is adjusted accordingly, and the remaining excess water
+is computed.
 
 Returns `infilt_surfacewater`, corrected `actual_infiltration`, corrected `infiltration_excess`, `saturation_excess_water`,
 and corrected `water_flux_surface`.
