@@ -51,10 +51,6 @@ floodplain_bottom_surface__slope = "floodplain_slope"
 ### Fixed
 - Reduce memory use and improve performance of reading split NetCDF forcing files
   ([#1052](https://github.com/Deltares/Wflow.jl/pull/1052)).
-- Fixed netCDF scalar output of layered variables, unit conversion of layered gridded
-  output, `BMI.get_grid_edge_nodes` modifying the model edge connectivity, water demand
-  with local inertial or Manning staggered river routing, and several error messages
-  ([#1119](https://github.com/Deltares/Wflow.jl/pull/1119)).
 
 ### Changed
 - All internal computations now use standardized SI units (m, s, kg, J, K) consistently
