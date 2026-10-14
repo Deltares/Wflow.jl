@@ -53,7 +53,7 @@ NCDatasets, BasicModelInterface, Graphs, Polyester, StaticArrays, CFTime, Access
 ## BMI (`bmi.jl`)
 - `BMI.initialize`, `update`, `update_until`, `finalize`
 - `get_value_ptr` uses standard name lens system; CSDMS-style names
-- 6 grid IDs: 0=reservoir, 1=drain, 2=river, 3–5=land
+- 6 grid IDs: 0=reservoir, 1=drain, 2=river (nodes + edges), 3=land x-edges, 4=land y-edges, 5=land nodes
 - `API` TOML section lists exposed variables
 - Layered soil: name pattern `"soil_layer_N_..."` → SVector index
 

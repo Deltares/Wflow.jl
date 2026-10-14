@@ -211,8 +211,8 @@
             [47.8175, 47.825833333333335, 47.825833333333335]
         @test request((fn = "get_grid_node_count", grid = 0)) ==
             Dict("grid_node_count" => 2)
-        @test request((fn = "get_grid_edge_count", grid = 3))["grid_edge_count"] == 5808
-        msg = (fn = "get_grid_edge_nodes", grid = 3, edge_nodes = fill(0, 2 * 5808))
+        @test request((fn = "get_grid_edge_count", grid = 2))["grid_edge_count"] == 5808
+        msg = (fn = "get_grid_edge_nodes", grid = 2, edge_nodes = fill(0, 2 * 5808))
         @test request(msg)["grid_edge_nodes"][1:6] == [1, 5, 2, 1, 3, 2]
     end
 
