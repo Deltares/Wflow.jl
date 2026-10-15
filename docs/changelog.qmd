@@ -11,6 +11,12 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 - BMI functions `get_var_units` and `get_var_location` for layered soil variables.
+- netCDF scalar output of layered variables (`[[output.netcdf_scalar.variable]]`) failed
+  at model initialization.
+- BMI function `get_grid_edge_nodes` for grids 4 and 5 modified the edge connectivity of
+  the model, which is used by local inertial land routing.
+- Error messages for an invalid `loglevel` and for a netCDF scalar variable without a
+  `location` or `map` field.
 - Variables `excesswatersoil` and `excesswaterpath` were mapped to standard names
   `compacted_soil_surface_water__excess_volume_flux` and
   `non_compacted_soil_surface_water__excess_volume_flux` respectively (interchanged).
