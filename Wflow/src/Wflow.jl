@@ -4,10 +4,12 @@ import BasicModelInterface as BMI
 
 using Accessors: @optic, @reset, PropertyLens
 using Base.Threads: nthreads
-using CFTime: CFTime, monthday, dayofyear
+using CFTime: CFTime
 using CompositionsBase: decompose
 using Dates:
     Dates,
+    monthday,
+    dayofyear,
     Second,
     Minute,
     Hour,
@@ -21,12 +23,9 @@ using Dates:
     DateTime,
     now,
     isleapyear,
-    datetime2unix,
-    canonicalize
-using DelimitedFiles: readdlm
+    datetime2unix
 using FillArrays: Zeros
 using EnumX: @enumx, EnumX
-using Glob: glob
 using Graphs:
     add_edge!,
     add_vertex!,
@@ -58,8 +57,6 @@ using LoggingExtras:
     TeeLogger,
     Warn,
     with_logger
-using NCDatasets:
-    NCDatasets, NCDataset, CFVariable, dimnames, dimsize, nomissing, defDim, defVar, path
 using OrderedCollections: OrderedDict
 using Parameters: @with_kw
 using Polyester: @batch
@@ -135,10 +132,43 @@ abstract type AbstractMassBalance end
 
 # different model types (used for dispatch)
 abstract type AbstractModelType end
-struct SbmModel <: AbstractModelType end         # "sbm" type / sbm_model.jl
+"""
+    SbmModel{P}
+
+Model type tag for the "sbm" model type (sbm_model.jl). `P` is a build profile: `nothing`
+(the default) allows all model options. For ahead-of-time compiled (trimmed) binaries, `P`
+can be a NamedTuple that fixes model options, e.g. `(snow = false, soil_layers = 3)`. Fixed
+options are compile time constants (see `option`), such that only the code needed for those
+options is compiled, and model types are inferred concretely.
+"""
+struct SbmModel{P} <: AbstractModelType end
+SbmModel() = SbmModel{nothing}()
 struct SbmGwfModel <: AbstractModelType end      # "sbm_gwf" type / sbm_gwf_model.jl
 struct SedimentModel <: AbstractModelType end    # "sediment" type / sediment_model.jl
 
+"""
+    option(type::AbstractModelType, ::Val{name}, value)
+
+Return the value of model option `name`, given its `value` from the TOML. If the build
+profile of `type` fixes this option, the profile value is returned as a compile time
+constant, and an error is thrown if the TOML value differs.
+"""
+option(::AbstractModelType, ::Val, value) = value
+
+function option(::SbmModel{P}, ::Val{name}, value) where {P, name}
+    P === nothing && return value
+    hasfield(typeof(P), name) || return value
+    fixed = getfield(P, name)
+    if value != fixed
+        error(
+            "Model option `$name = $value` is not supported by this build of Wflow, which requires `$name = $fixed`.",
+        )
+    end
+    return fixed
+end
+
+include("netcdf.jl")
+using .NC: NC
 include("units.jl")
 include("config_structure.jl")
 include("config_utils.jl")
@@ -166,7 +196,7 @@ struct Model{
     routing::R                      # routing model (horizontal fluxes), moves along network
     land::L                         # land model simulating vertical fluxes, independent of each other
     mass_balance::M                 # mass balance error
-    clock::Clock                    # to keep track of simulation time
+    clock::Clock{DateTime}          # to keep track of simulation time
     reader::NCReader                # provides the model with dynamic input
     writer::W                       # writes model output
     type::T                         # model type
@@ -257,6 +287,8 @@ const STANDARD_NAME_MAPS = (
     ("routing", routing_standard_name_map, Routing),
 )
 
+include("standard_name/standard_name_switch.jl")
+
 include("utils.jl")
 include("bmi.jl")
 include("subdomains.jl")
@@ -281,7 +313,11 @@ This makes it easier to start a run from the command line without having to esca
 
     julia -e "using Wflow; Wflow.run()" "path/to/config.toml"
 """
-function run(tomlpath::AbstractString; silent = nothing)
+function run(
+        tomlpath::AbstractString;
+        silent = nothing,
+        model_types::Tuple = ALL_MODEL_TYPES,
+    )
     config = Config(tomlpath)
     # if the silent kwarg is not set, check if it is set in the TOML
     if isnothing(silent)
@@ -292,7 +328,7 @@ function run(tomlpath::AbstractString; silent = nothing)
         @info "Wflow version `v$VERSION`"
         # to catch stacktraces in the log file a try-catch is required
         try
-            run(config)
+            run(config, model_types)
         catch e
             # avoid logging backtrace for the single line FEWS log format
             # that logger also uses SimpleLogger which doesn't result in a good backtrace
@@ -310,11 +346,38 @@ function run(tomlpath::AbstractString; silent = nothing)
     return nothing
 end
 
-function run(config::Config)
-    model = Model(config)
-    load_fixed_forcing!(model)
-    run!(model)
-    return model
+const ALL_MODEL_TYPES = (SbmModel(), SbmGwfModel(), SedimentModel())
+
+model_type_enum(::SbmModel) = ModelType.sbm
+model_type_enum(::SbmGwfModel) = ModelType.sbm_gwf
+model_type_enum(::SedimentModel) = ModelType.sediment
+
+"""
+    run(config::Config, model_types::Tuple = ALL_MODEL_TYPES)
+
+Run a simulation with the model type from the `config`. The model type is selected from
+`model_types` with static dispatch, such that every model type is compiled separately and
+the rest of the simulation is type stable. Limiting `model_types` reduces what needs to be
+compiled, which is used for creating small trimmed binaries.
+"""
+function run(config::Config, model_types::Tuple = ALL_MODEL_TYPES)
+    type = config.model.type
+    @info "Initialize model variables for model type `$type`."
+    return run_model_type(config, model_types)
+end
+
+run_model_type(config::Config, ::Tuple{}) =
+    error("Model type `$(config.model.type)` is not supported by this build of Wflow.")
+
+function run_model_type(config::Config, model_types::Tuple)
+    type = first(model_types)
+    if model_type_enum(type) == config.model.type
+        model = Model(config, type)
+        load_fixed_forcing!(model)
+        run!(model)
+        return model
+    end
+    return run_model_type(config, Base.tail(model_types))
 end
 
 function run_timestep!(model::Model; update_func = update_model!, write_model_output = true)
@@ -347,7 +410,7 @@ function run!(model::Model; close_files = true)
         @debug "Starting timestep." time i now()
         run_timestep!(model)
     end
-    @info "Simulation duration: $(canonicalize(now() - runstart_time))"
+    @info "Simulation duration: $(format_duration(now() - runstart_time))"
 
     # write output state netCDF
     if !isnothing(writer.endstate_writer.output_path)
@@ -372,9 +435,9 @@ function run!(model::Model; close_files = true)
             @debug "Not writing config as the input path is equal to the output path."
         else
             @debug "Writing configuration." dst
-            open(dst, "w") do io
-                TOML.print(io, to_dict(config); sorted = true)
-            end
+            # copy the TOML rather than writing `to_dict(config)` with `TOML.print`, which
+            # is not compatible with `juliac --trim`
+            cp(src, dst; force = true)
         end
     end
     return nothing

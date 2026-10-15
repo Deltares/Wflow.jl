@@ -40,18 +40,24 @@ model time step dt for a hydrological model.
 - `routing`: Water mass balance results for river, overland, subsurface and reservoir flow
     routing.
 """
-@with_kw struct HydrologicalMassBalance <: AbstractMassBalance
+@with_kw struct HydrologicalMassBalance{R <: FlowRoutingMassBalance} <: AbstractMassBalance
     land_water_balance::MassBalance
-    routing::FlowRoutingMassBalance
+    routing::R
 end
 
 "Initialize `HydrologicalMassBalance` for storing water mass balance error results."
-function HydrologicalMassBalance(domain::Domain, subsurface_flow, config::Config)
-    (; river_routing, land_routing, water_mass_balance__flag) = config.model
-    if water_mass_balance__flag
+function HydrologicalMassBalance(
+        domain::Domain,
+        subsurface_flow,
+        config::Config,
+        type::AbstractModelType = SbmModel(),
+    )
+    river_routing = option(type, Val(:river_routing), config.model.river_routing)
+    land_routing = option(type, Val(:land_routing), config.model.land_routing)
+    if option(type, Val(:water_mass_balance), config.model.water_mass_balance__flag)
         n_land = length(domain.land.network.indices)
         n_river = length(domain.river.network.indices)
-        if config.model.reservoir__flag
+        if option(type, Val(:reservoir), config.model.reservoir__flag)
             n_reservoir = length(domain.reservoir.network.indices_outlet)
             reservoir_water_balance = MassBalance(; n = n_reservoir)
         else

@@ -43,7 +43,7 @@
     end
 
     @testset "NetCDF scalar output" begin
-        ds = model.writer.scalar_writer.output_dataset
+        ds = open_output(model.writer.scalar_writer)
         dt_val = model.config.time.timestepsecs
         recharge_subbasin = mean(model.land.soil.variables.recharge)
         @test ds["time"][1] == DateTime("2000-01-02T00:00:00")
@@ -78,7 +78,7 @@
     end
 
     @testset "NetCDF grid output" begin
-        ds = model.writer.grid_writer.output_dataset
+        ds = open_output(model.writer.grid_writer)
         land_inds = model.domain.land.network.indices
         river_inds = model.domain.river.network.indices
         reservoir_inds = model.domain.reservoir.network.indices_outlet

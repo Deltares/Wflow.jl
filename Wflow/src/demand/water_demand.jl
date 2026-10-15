@@ -44,7 +44,7 @@ get_demand_gross(demand_model::NoNonIrrigationDemandModel) = Zeros(demand_model.
 
 "Initialize non-irrigation water demand model for a water use `sector`"
 function NonIrrigationDemandModel(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         indices::Vector{CartesianIndex{2}},
         sector::AbstractString,
@@ -99,7 +99,7 @@ end
 
 "Initialize non-paddy irrigation model"
 function NonPaddyModel(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         indices::Vector{CartesianIndex{2}},
     )
@@ -291,7 +291,7 @@ end
 end
 
 "Initialize paddy irrigation model"
-function PaddyModel(dataset::NCDataset, config::Config, indices::Vector{CartesianIndex{2}})
+function PaddyModel(dataset::NC.Dataset, config::Config, indices::Vector{CartesianIndex{2}})
     h_min = ncread(
         dataset,
         config,
@@ -493,7 +493,7 @@ end
 end
 
 "Initialize water demand model"
-function DemandModel(dataset::NCDataset, config::Config, indices::Vector{CartesianIndex{2}})
+function DemandModel(dataset::NC.Dataset, config::Config, indices::Vector{CartesianIndex{2}})
     n = length(indices)
     demand(
         name;
@@ -579,7 +579,7 @@ end
 
 "Initialize water allocation for the land domain"
 function AllocationLandModel(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         indices::Vector{CartesianIndex{2}},
     )

@@ -1,112 +1,207 @@
 argument_error(msg::String) = throw(ArgumentError(msg))
 
-# Use convert_value wrapper to avoid type piracy
-convert_value(::Type{<:PropertyDict}, dict::AbstractDict{String}) = PropertyDict(dict)
-convert_value(::Type{LogLevel}, level::Int) = LogLevel(level)
-convert_value(::Type{Vector{T}}, v::Vector) where {T <: AbstractConfigSection} =
-    init_config_section.(T, v)
+"""
+    toml_string(value)::String
 
-function convert_value(::Type{T}, value::Any) where {T}
-    if value isa T
-        return value
-    elseif T isa Union
-        T_ = get_something_type(T)
-        if T_ <: AbstractConfigSection
-            return init_config_section(T_, value)
-        elseif T_ == VersionNumber
-            return VersionNumber(value)
-        else
-            return convert(T_, value)
-        end
+String representation of a value parsed from TOML, for error messages. Uses explicit type
+checks to avoid dynamic dispatch on values of unknown type.
+"""
+function toml_string(@nospecialize(value))::String
+    return if value isa String
+        value
+    elseif value isa Int
+        string(value)
+    elseif value isa Float64
+        string(value)
+    elseif value isa Bool
+        string(value)
+    elseif value isa DateTime
+        format_datetime(value)
+    elseif value isa AbstractDict
+        "<table>"
+    elseif value isa AbstractVector
+        "<array>"
     else
-        return convert(T, value)
+        "<value>"
     end
 end
 
-convert_value(::Type{Union{Nothing, DateTime}}, s::AbstractString) = DateTime(s)
+"Length of a TOML value, 1 for scalars."
+function toml_length(@nospecialize(value))::Int
+    return if value isa Vector{Any}
+        length(value)
+    elseif value isa Vector{Float64}
+        length(value)
+    elseif value isa Vector{Int}
+        length(value)
+    else
+        1
+    end
+end
 
-function convert_value(::Type{LogLevel}, input_string::String)
-    level = get(log_level_map, lowercase(input_string), missing)
-    ismissing(level) && argument_error(
-        "Invalid loglevel = $input_string in the [logging] section of the TOML, must be one of $(keys(log_level_map)).",
-    )
-    return level
+conversion_error(::Type{T}, @nospecialize(value)) where {T} =
+    argument_error("Cannot convert `$(toml_string(value))` to $T.")
+
+missing_field_error(::Type{T}, key::String) where {T} = argument_error(
+    "Couldn't parse the $(section_name(T)) section in the TOML, the mandatory field `$key` is missing.",
+)
+
+function warn_unknown_keys(::Type{T}, dict::AbstractDict{String})::Nothing where {T}
+    for key in keys(dict)
+        if Symbol(key) ∉ fieldnames(T)
+            @warn "'$key' is not recognized as a valid field of the $(section_name(T)) section in the TOML, " *
+                "this will be ignored."
+        end
+    end
+    return nothing
+end
+
+function convert_field(
+        ::Type{S},
+        key::String,
+        ::Type{T},
+        @nospecialize(value),
+    )::T where {S, T}
+    try
+        return convert_value(T, value)
+    catch e
+        e isa ArgumentError || rethrow()
+        argument_error(
+            "Couldn't convert the value $key = $(toml_string(value)) in the TOML section $(section_name(S)) " *
+                "to the target type $T.",
+        )
+    end
+end
+
+#=
+Conversion of values parsed from TOML to the types of the configuration fields. Methods
+only dispatch on the target type, and check the value type explicitly. Values from a parsed
+TOML have type `Any`, so dispatching on them would require dynamic dispatch.
+=#
+
+convert_value(::Type{Any}, @nospecialize(value)) = value
+convert_value(::Type{T}, @nospecialize(value)) where {T >: Nothing} =
+    convert_value(Base.nonnothingtype(T), value)
+
+convert_value(::Type{String}, @nospecialize(value))::String =
+    value isa String ? value : conversion_error(String, value)
+
+convert_value(::Type{Bool}, @nospecialize(value))::Bool =
+    value isa Bool ? value : conversion_error(Bool, value)
+
+function convert_value(::Type{Int}, @nospecialize(value))::Int
+    return if value isa Int
+        value
+    elseif value isa Float64 && isinteger(value)
+        Int(value)
+    else
+        conversion_error(Int, value)
+    end
+end
+
+function convert_value(::Type{Float64}, @nospecialize(value))::Float64
+    return if value isa Float64
+        value
+    elseif value isa Int
+        Float64(value)
+    else
+        conversion_error(Float64, value)
+    end
+end
+
+function convert_value(::Type{DateTime}, @nospecialize(value))::DateTime
+    return if value isa DateTime
+        value
+    elseif value isa Date
+        DateTime(value)
+    elseif value isa String
+        DateTime(value)
+    else
+        conversion_error(DateTime, value)
+    end
+end
+
+convert_value(::Type{VersionNumber}, @nospecialize(value))::VersionNumber =
+    value isa String ? VersionNumber(value) : conversion_error(VersionNumber, value)
+
+function convert_value(::Type{LogLevel}, @nospecialize(value))::LogLevel
+    if value isa Int
+        return LogLevel(value)
+    elseif value isa String
+        for (name, level) in log_level_map
+            name == lowercase(value) && return level
+        end
+        argument_error(
+            "Invalid loglevel = $value in the [logging] section of the TOML, must be one of debug, info, warn, error.",
+        )
+    else
+        conversion_error(LogLevel, value)
+    end
+end
+
+convert_value(::Type{PropertyDictType}, @nospecialize(value))::PropertyDictType =
+    value isa Dict{String, Any} ? PropertyDict(value) :
+    conversion_error(PropertyDictType, value)
+
+function convert_value(::Type{Vector{T}}, @nospecialize(value))::Vector{T} where {T}
+    value isa AbstractVector || conversion_error(Vector{T}, value)
+    return if value isa Vector{T}
+        value
+    elseif value isa Vector{Any}
+        T[convert_value(T, x) for x in value]
+    elseif value isa Vector{Int}
+        T[convert_value(T, x) for x in value]
+    elseif value isa Vector{Float64}
+        T[convert_value(T, x) for x in value]
+    elseif value isa Vector{String}
+        T[convert_value(T, x) for x in value]
+    elseif value isa Vector{Dict{String, Any}}
+        T[convert_value(T, x) for x in value]
+    else
+        conversion_error(Vector{T}, value)
+    end
 end
 
 # Automatically convert strings into enumerator instances
-function convert_value(
-        ::Type{T},
-        option_string::String,
-    ) where {T <: Union{Nothing, EnumX.Enum}}
-    option = Symbol(add_leading_underscore(option_string))
-    for instance in instances(get_something_type(T))
+function convert_value(::Type{T}, @nospecialize(value))::T where {T <: EnumX.Enum}
+    value isa T && return value
+    value isa String || conversion_error(T, value)
+    option = Symbol(add_leading_underscore(value))
+    for instance in instances(T)
         if option == Symbol(instance)
             return instance
         end
     end
     throw(
         ArgumentError(
-            "Invalid value $option_string in the TOML, must be one of $(option_names(T)).",
+            "Invalid value $value in the TOML, must be one of $(join(option_names(T), ", ")).",
         ),
     )
+end
+
+function convert_value(::Type{T}, @nospecialize(value))::T where {T <: AbstractConfigSection}
+    return if value isa T
+        value
+    elseif value isa Dict{String, Any}
+        init_config_section(T, value)
+    else
+        init_config_section_from_value(T, value)
+    end
 end
 
 """
 Initialize the configuration section of type T<:AbstractConfigSection. If T itself contains fields of
 type <:AbstractConfigSection, this function works recursively.
 """
-function init_config_section(
-        ::Type{T},
-        dict::AbstractDict{String}
-    )::T where {T <: AbstractConfigSection}
-    args = Dict{Symbol, Any}()
-    all_target_fields = fieldnames(T)
+init_config_section(::Type{T}, dict::AbstractDict{String}) where {T <: AbstractConfigSection} =
+    init_config_section_default(T, dict)
 
-    for (option_string, value) in dict
-        option = Symbol(option_string)
-        if option in all_target_fields
-            target_arg_type = fieldtype(T, option)
-            # Recursively call this function if the target type is a AbstractConfigSection
-            args[option] = if target_arg_type <: AbstractConfigSection
-                init_config_section(target_arg_type, value)
-            else
-                try
-                    convert_value(target_arg_type, value)
-                catch
-                    argument_error(
-                        "Couldn't convert the value $option_string = $value in the TOML section $(section_name(T)) " *
-                            "to the target type $target_arg_type.",
-                    )
-                end
-            end
-        else
-            @warn "'$option_string' is not recognized as a valid field of the $(section_name(T)) section in the TOML, " *
-                "this will be ignored."
-        end
-    end
-
-    try
-        return T(; args...)
-    catch
-        argument_error(
-            "Couldn't parse the $(section_name(T)) section in the TOML with data $dict, check for missing mandatory fields.",
-        )
-    end
-end
-
-init_config_section_default(
-    type::Type{<:AbstractConfigSection},
-    dict::AbstractDict{String}
-) = invoke(
-    init_config_section,
-    Tuple{Type{<:AbstractConfigSection}, AbstractDict{String}},
-    type,
-    dict,
-)
-
-init_config_section(::Type{T}, data::Any) where {T <: AbstractConfigSection} =
+init_config_section_from_value(
+    ::Type{T},
+    @nospecialize(data),
+) where {T <: AbstractConfigSection} =
     argument_error(
-    "Couldn't parse the $(section_name(T)) section in the TOML with data $data, must be a section.",
+    "Couldn't parse the $(section_name(T)) section in the TOML with data $(toml_string(data)), must be a section.",
 )
 
 # Option 1 and 2 (see struct InputEntry)
@@ -116,29 +211,30 @@ function init_config_section(::Type{InputEntry}, dict::AbstractDict{String})
 
     if !isnothing(netcdf_variable_name)
         # Option 1
-        len = missing
+        len = -1
 
         for field_name in ("scale", "offset", "layer")
             if haskey(dict, field_name)
-                value = dict[field_name]
+                field_value = dict[field_name]
                 # Convert scalar to vector
-                value = (value isa Number) ? [value] : value
-                dict[field_name] = value
-                if !ismissing(len) && length(value) != len
+                field_value = (field_value isa Number) ? Any[field_value] : field_value
+                dict[field_name] = field_value
+                field_length = toml_length(field_value)
+                if len >= 0 && field_length != len
                     throw(
                         ArgumentError(
-                            "In the TOML [input] section with netcdf variable name $netcdf_variable_name," *
+                            "In the TOML [input] section with netcdf variable name $(toml_string(netcdf_variable_name))," *
                                 "the 'scale' 'offset' and 'layer' values must all have the same length if provided.",
                         ),
                     )
                 else
-                    len = length(value)
+                    len = field_length
                 end
             end
         end
 
         # Add a proper amount of the default values
-        len = coalesce(len, 0)
+        len = max(len, 0)
         !haskey(dict, "scale") && (dict["scale"] = ones(len))
         !haskey(dict, "offset") && (dict["offset"] = zeros(len))
 
@@ -147,28 +243,41 @@ function init_config_section(::Type{InputEntry}, dict::AbstractDict{String})
     elseif value isa String
         # Option 3
         return InputEntry(; external_name = value)
+    elseif value isa Number
+        # Option 2
+        return InputEntry(; value = [convert_value(Float64, value)])
     elseif !isnothing(value)
         # Option 2
-        return InputEntry(; value)
+        return InputEntry(; value = convert_value(Vector{Float64}, value))
     end
-    argument_error("Couldn't parse the section under [input] in the TOML with data $dict.")
+    argument_error("Couldn't parse the section under [input] in the TOML.")
 end
 
-# Option 3 (see struct InputEntry)
-init_config_section(::Type{InputEntry}, external_name::String) = InputEntry(; external_name)
+# Option 3 (see struct InputEntry), or a uniform value
+function init_config_section_from_value(
+        ::Type{InputEntry},
+        @nospecialize(value),
+    )::InputEntry
+    return if value isa String
+        InputEntry(; external_name = value)
+    elseif value isa Number
+        InputEntry(; value = [convert_value(Float64, value)])
+    else
+        argument_error("Couldn't parse the section under [input] in the TOML.")
+    end
+end
 Base.convert(::Type{InputEntry}, external_name::String) = InputEntry(; external_name)
-Base.convert(::Type{InputEntry}, value::Number) = InputEntry(; value)
+Base.convert(::Type{InputEntry}, value::Number) = InputEntry(; value = [Float64(value)])
 
-convert_value(::Type{IndexSection}, i::Int) = IndexSection(; i)
-convert_value(::Type{IndexSection}, dict::AbstractDict{String}) =
-    init_config_section_default(IndexSection, dict)
-init_config_section(::Type{IndexSection}, i::Int) = IndexSection(; i)
+init_config_section_from_value(::Type{IndexSection}, @nospecialize(i))::IndexSection =
+    i isa Int ? IndexSection(; i) : conversion_error(IndexSection, i)
 
 function init_config_section(::Type{InputEntries}, dict::AbstractDict{String})
-    input_entries = InputEntries(
-        Dict(key => init_config_section(InputEntry, value) for (key, value) in dict),
-    )
-    return input_entries
+    entries = Dict{String, InputEntry}()
+    for (key, value) in dict
+        entries[key] = convert_value(InputEntry, value)
+    end
+    return InputEntries(entries)
 end
 
 function init_config_section(::Type{InputSection}, dict::AbstractDict{String})
@@ -188,7 +297,7 @@ function init_config_section(::Type{InputSection}, dict::AbstractDict{String})
     if !isempty(overlap)
         argument_error(
             "These parameters were specified in more than one of the static, forcing and cyclic" *
-                "sections of the [input] in the TOML: $overlap.",
+                "sections of the [input] in the TOML: $(join(overlap, ", ")).",
         )
     end
 
@@ -211,7 +320,7 @@ function init_config_section(::Type{NetCDFScalarVariable}, dict::AbstractDict{St
     else
         throw(
             ArgumentError(
-                "The variable in the [[output.netcdf_scalar.variable]] section with name = '$(dict["name"])'" *
+                "The variable in the [[output.netcdf_scalar.variable]] section with name = '$(toml_string(dict["name"]))'" *
                     " is missing either a 'location' or a 'map' field.",
             ),
         )
@@ -236,7 +345,7 @@ end
 
 function Config(dict::AbstractDict; path::AbstractString)
     # Add path to config
-    dict["path"] = path
+    dict["path"] = String(path)
     config = init_config_section(Config, dict)
     return config
 end

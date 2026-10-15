@@ -48,7 +48,7 @@ end
 end
 
 function GwfRiverModel(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         indices::Vector{CartesianIndex{2}},
     )
@@ -126,7 +126,7 @@ end
 end
 
 function DrainageModel(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         indices::Vector{CartesianIndex{2}},
     )

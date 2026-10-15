@@ -7,7 +7,7 @@ Config object. Will return a Model that is ready to run.
 function Model(config::Config, type::SbmModel)
     # unpack the paths to the netCDF files
     static_path = input_path(config, config.input.path_static)
-    dataset = NCDataset(static_path)
+    dataset = NC.Dataset(static_path)
 
     reader = NCReader(config)
     clock = Clock(config, reader)
@@ -23,18 +23,18 @@ function Model(config::Config, type::SbmModel)
 
     domain = Domain(dataset, config, type)
 
-    land_hydrology = LandHydrologySBM(dataset, config, domain.land)
+    land_hydrology = LandHydrologySBM(dataset, config, domain.land, type)
     routing = Routing(dataset, config, domain, land_hydrology.soil, type)
-    mass_balance = HydrologicalMassBalance(domain, routing.subsurface_flow, config)
+    mass_balance = HydrologicalMassBalance(domain, routing.subsurface_flow, config, type)
 
     (; maximum_number_of_layers) = land_hydrology.soil.parameters
-    modelmap = (land = land_hydrology, routing, mass_balance)
+    modelmap = (land = land_hydrology, routing, mass_balance, type)
     writer = Writer(
         config,
         modelmap,
         domain,
         dataset;
-        extra_dim = (name = "layer", value = Float64.(1:(maximum_number_of_layers))),
+        extra_dim = ExtraDim("layer", Float64.(1:(maximum_number_of_layers))),
     )
     close(dataset)
 
@@ -47,7 +47,7 @@ function Model(config::Config, type::SbmModel)
         clock,
         reader,
         writer,
-        SbmModel(),
+        type,
     )
 
     set_states!(model)

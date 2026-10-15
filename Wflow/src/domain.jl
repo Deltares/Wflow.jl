@@ -85,7 +85,7 @@ each domain that can used by different model components.
 end
 
 "Initialize `Domain` for model types `sbm` and `sbm_gwf`"
-function Domain(dataset::NCDataset, config::Config, ::Union{SbmModel, SbmGwfModel})
+function Domain(dataset::NC.Dataset, config::Config, ::Union{SbmModel, SbmGwfModel})
     (; land_routing, river_routing) = config.model
 
     network_land = NetworkLand(dataset, config)
@@ -187,7 +187,7 @@ function Domain(dataset::NCDataset, config::Config, ::Union{SbmModel, SbmGwfMode
 end
 
 "Initialize `Domain` for model type `sediment`"
-function Domain(dataset::NCDataset, config::Config, ::SedimentModel)
+function Domain(dataset::NC.Dataset, config::Config, ::SedimentModel)
     network_land = NetworkLand(dataset, config)
     network_river = NetworkRiver(dataset, config, network_land)
 
@@ -203,7 +203,7 @@ function Domain(dataset::NCDataset, config::Config, ::SedimentModel)
 end
 
 "Initialize (shared) land parameters for model type `sediment`"
-function LandParameters(dataset::NCDataset, config::Config, network::NetworkLand)
+function LandParameters(dataset::NC.Dataset, config::Config, network::NetworkLand)
     x_length, y_length = get_cell_lengths(dataset, config, network)
     area = x_length .* y_length
     flow_width = map(get_flow_width, network.local_drain_direction, x_length, y_length)
@@ -224,7 +224,7 @@ function LandParameters(dataset::NCDataset, config::Config, network::NetworkLand
 end
 
 "Initialize (shared) land parameters for model types `sbm` and `sbm_gwf`"
-function LandParameters(dataset::NCDataset, config::Config, domain::Domain)
+function LandParameters(dataset::NC.Dataset, config::Config, domain::Domain)
     (; land_indices) = domain.river.network
     (; network) = domain.land
     (; indices) = network
@@ -269,17 +269,17 @@ function LandParameters(dataset::NCDataset, config::Config, domain::Domain)
     )
 
     if config.model.land_surface_temperature__flag
-        @reset land_parameters.skin_layer_height = ncread(dataset, config, "atmosphere_bottom_air__above_ground_height", Domain; sel = indices)
-        @reset land_parameters.d0 = ncread(dataset, config, "atmosphere_bottom_air_flow__zero_plane_displacement_length", Domain; sel = indices)
-        @reset land_parameters.z0h = ncread(dataset, config, "atmosphere_bottom_air_heat_flow__roughness_length", Domain; sel = indices)
-        @reset land_parameters.z0m = ncread(dataset, config, "atmosphere_bottom_air_flow__roughness_length", Domain; sel = indices)
+        @reset land_parameters.skin_layer_height = ncread(dataset, config, "atmosphere_bottom_air__above_ground_height", Domain; sel = indices)::Vector{Float64}
+        @reset land_parameters.d0 = ncread(dataset, config, "atmosphere_bottom_air_flow__zero_plane_displacement_length", Domain; sel = indices)::Vector{Float64}
+        @reset land_parameters.z0h = ncread(dataset, config, "atmosphere_bottom_air_heat_flow__roughness_length", Domain; sel = indices)::Vector{Float64}
+        @reset land_parameters.z0m = ncread(dataset, config, "atmosphere_bottom_air_flow__roughness_length", Domain; sel = indices)::Vector{Float64}
     end
 
     return land_parameters
 end
 
 "Initialize (shared) river parameters"
-function RiverParameters(dataset::NCDataset, config::Config, network::NetworkRiver)
+function RiverParameters(dataset::NC.Dataset, config::Config, network::NetworkRiver)
     (; indices) = network
     flow_length = ncread(dataset, config, "river__length", Routing; sel = indices)
     minimum(flow_length) > 0 || error("river length must be positive on river cells")
@@ -295,7 +295,7 @@ function RiverParameters(dataset::NCDataset, config::Config, network::NetworkRiv
 end
 
 "Initialize (shared) parameters for the river and land domains"
-function initialize_shared_parameters(dataset::NCDataset, config::Config, domain::Domain)
+function initialize_shared_parameters(dataset::NC.Dataset, config::Config, domain::Domain)
     land_params = LandParameters(dataset, config, domain)
     river_params = RiverParameters(dataset, config, domain.river.network)
 
@@ -310,7 +310,7 @@ end
 
 "Return open water fraction (excluding rivers)"
 function get_water_fraction(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         network::NetworkLand,
         river_fraction::Vector{Float64},
@@ -328,7 +328,7 @@ end
 
 "Return river fraction"
 function get_river_fraction(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         network::NetworkLand,
         river_location::Vector{Bool},
@@ -365,7 +365,7 @@ function get_river_fraction(
 end
 
 "Return cell lengths in x and y direction"
-function get_cell_lengths(dataset::NCDataset, config::Config, network::NetworkLand)
+function get_cell_lengths(dataset::NC.Dataset, config::Config, network::NetworkLand)
     y_coords = read_y_axis(dataset)
     x_coords = read_x_axis(dataset)
     y = permutedims(repeat(y_coords; outer = (1, length(x_coords))))[network.indices]
@@ -377,44 +377,50 @@ function get_cell_lengths(dataset::NCDataset, config::Config, network::NetworkLa
 end
 
 "Return land surface slope"
-function get_landsurface_slope(dataset::NCDataset, config::Config, network::NetworkLand)
+function get_landsurface_slope(dataset::NC.Dataset, config::Config, network::NetworkLand)
     slope = ncread(dataset, config, "land_surface__slope", Routing; sel = network.indices)
     clamp!(slope, 0.00001, Inf)
     return slope
 end
 
 "Return river mask"
-function river_mask(dataset::NCDataset, config::Config, network::NetworkLand)::Vector{Bool}
+function river_mask(dataset::NC.Dataset, config::Config, network::NetworkLand)::Vector{Bool}
     river_location =
-        ncread(dataset, config, "river_location__mask", Domain; sel = network.indices)
+        ncread(
+        dataset,
+        config,
+        "river_location__mask",
+        Domain;
+        sel = network.indices,
+    )::Vector{Bool}
     return river_location
 end
 
 "Return reservoir mask"
 function reservoir_mask(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         network::NetworkLand;
         region::String = "location",
     )
-    reservoirs = fill(0, length(network.indices))
+    reservoirs = fill(false, length(network.indices))
     if config.model.reservoir__flag
-        reservoirs = ncread(
+        # the parameter name is not a constant, so the return type is asserted
+        reservoir_ids = ncread(
             dataset,
             config,
             "reservoir_$(region)__count",
             Routing;
             sel = network.indices,
-        )
+        )::Union{Vector{Int}, Vector{Union{Missing, Int}}}
         # check if any reservoirs are found in the active model domain, if not disable reservoir model component
-        if !all(x -> ismissing(x) || x == 0, reservoirs)
-            replace!(x -> ismissing(x) ? 0 : x, reservoirs)
+        if !all(x -> ismissing(x) || x == 0, reservoir_ids)
+            reservoirs .= coalesce.(reservoir_ids, 0) .> 0
         else
             config.model.reservoir__flag = false
             @warn "No reservoirs found in active model domain, disabling reservoir model component."
         end
     end
-    reservoirs = Vector{Bool}(reservoirs .> 0)
     return reservoirs
 end
 
@@ -428,7 +434,7 @@ function mask_reservoir_coverage!(mask::AbstractMatrix, config::Config, domain::
 end
 
 "Return indices of 1D land and river domains per allocation area number."
-function get_allocation_area_indices(dataset::NCDataset, config::Config, domain::Domain)
+function get_allocation_area_indices(dataset::NC.Dataset, config::Config, domain::Domain)
     (; indices) = domain.land.network
     areas = ncread(
         dataset,
@@ -437,7 +443,7 @@ function get_allocation_area_indices(dataset::NCDataset, config::Config, domain:
         Domain;
         sel = indices,
         logging = false,
-    )
+    )::Vector{Int}
     unique_areas = unique(areas)
     allocation_area_inds = Vector{Int}[]
     river_allocation_area_inds = Vector{Int}[]

@@ -13,7 +13,7 @@ end
 function get_transport_capacity(
         transport_methods::Dict{<:EnumX.Enum, Type{<:AbstractTransportCapacityModel}},
         transport_method::Union{LandTransportType.T, RiverTransportType.T},
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         indices,
     )::AbstractTransportCapacityModel
@@ -32,7 +32,7 @@ const land_transport_method =
 
 "Initialize the overland flow sediment transport model"
 function OverlandFlowSedimentModel(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         domain::DomainLand,
         soilloss::SoilLossModel,
@@ -140,7 +140,7 @@ const river_transport_method =
 )
 
 "Initialize the river sediment transport model"
-function RiverSedimentModel(dataset::NCDataset, config::Config, domain::DomainRiver)
+function RiverSedimentModel(dataset::NC.Dataset, config::Config, domain::DomainRiver)
     (; indices) = domain.network
     n = length(indices)
     hydrological_forcing = HydrologicalForcing(; n)

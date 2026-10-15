@@ -58,7 +58,7 @@ end
 
 "Initialize snow HBV model parameters"
 function SnowHbvParameters(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         indices::Vector{CartesianIndex{2}},
     )
@@ -109,7 +109,7 @@ end
 
 "Initialize snow HBV model"
 function SnowHbvModel(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         indices::Vector{CartesianIndex{2}},
     )

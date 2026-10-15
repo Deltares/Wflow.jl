@@ -34,7 +34,7 @@ end
 
 "Initialize EUROSEM rainfall erosion model parameters"
 function RainfallErosionEurosemParameters(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         indices::Vector{CartesianIndex{2}},
     )
@@ -89,7 +89,7 @@ end
 
 "Initialize EUROSEM rainfall erosion model"
 function RainfallErosionEurosemModel(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         indices::Vector{CartesianIndex{2}},
     )
@@ -165,7 +165,7 @@ end
 
 "Initialize ANSWERS rainfall erosion model parameters"
 function RainfallErosionAnswersParameters(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         indices::Vector{CartesianIndex{2}},
     )
@@ -196,7 +196,7 @@ end
 
 "Initialize ANSWERS rainfall erosion model"
 function RainfallErosionAnswersModel(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         indices::Vector{CartesianIndex{2}},
     )

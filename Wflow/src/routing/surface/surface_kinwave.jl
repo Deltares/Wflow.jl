@@ -65,7 +65,7 @@ function Base.getproperty(v::RiverFlowParameters, s::Symbol)
 end
 
 "Initialize river flow model parameters"
-function RiverFlowParameters(dataset::NCDataset, config::Config, domain::DomainRiver)
+function RiverFlowParameters(dataset::NC.Dataset, config::Config, domain::DomainRiver)
     (; indices) = domain.network
     (; slope, flow_length, flow_width) = domain.parameters
     mannings_n = ncread(
@@ -88,7 +88,7 @@ end
 
 "Initialize river flow model boundary conditions"
 function RiverFlowBC(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         network::NetworkRiver,
         reservoir::Union{ReservoirModel, Nothing},
@@ -108,10 +108,11 @@ end
 
 "Initialize kinematic wave river flow model"
 function init_kinematic_wave_river_flow(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         domain::DomainRiver,
         reservoir::Union{ReservoirModel, Nothing},
+        type::AbstractModelType = SbmModel(),
     )
     (; indices) = domain.network
     n = length(indices)
@@ -119,9 +120,11 @@ function init_kinematic_wave_river_flow(
     timestepping = init_kinematic_wave_timestepping(config, n; domain = "river")
 
     allocation =
-        do_water_demand(config) ? AllocationRiverModel(; n) : NoAllocationRiverModel(n)
+        option(type, Val(:water_demand), do_water_demand(config)) ?
+        AllocationRiverModel(; n) : NoAllocationRiverModel(n)
 
-    variables = if config.model.floodplain_1d__flag
+    do_floodplain = option(type, Val(:floodplain_1d), config.model.floodplain_1d__flag)
+    variables = if do_floodplain
         # When floodplain is enabled, q_channel fields must be separate from q fields
         # because q_average will hold channel + floodplain combined discharge.
         RiverFlowVariables(; n, q_channel_cumulative = zeros(n), q_channel_average = zeros(n))
@@ -131,7 +134,7 @@ function init_kinematic_wave_river_flow(
     end
     parameters = RiverFlowParameters(dataset, config, domain)
     boundary_conditions = RiverFlowBC(dataset, config, domain.network, reservoir)
-    if config.model.floodplain_1d__flag
+    if do_floodplain
         floodplain = FloodPlainModel(dataset, config, domain)
     else
         floodplain = nothing
@@ -187,7 +190,7 @@ end
 
 "Initialize kinematic wave overland flow model"
 function init_kinematic_wave_overland_flow(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         domain::DomainLand,
     )

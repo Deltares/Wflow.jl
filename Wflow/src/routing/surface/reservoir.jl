@@ -44,7 +44,7 @@
 end
 
 "Initialize reservoir model parameters"
-function ReservoirParameters(dataset::NCDataset, config::Config, network::NetworkReservoir)
+function ReservoirParameters(dataset::NC.Dataset, config::Config, network::NetworkReservoir)
     (; indices_outlet) = network
 
     area = ncread(dataset, config, "reservoir_surface__area", Routing; sel = indices_outlet)
@@ -219,7 +219,7 @@ end
 
 "Initialize reservoir model variables"
 function ReservoirVariables(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         network::NetworkReservoir,
         parameters::ReservoirParameters,
@@ -271,7 +271,7 @@ end
 end
 
 "Initialize reservoir model boundary conditions"
-function ReservoirBC(dataset::NCDataset, config::Config, network::NetworkReservoir)
+function ReservoirBC(dataset::NC.Dataset, config::Config, network::NetworkReservoir)
     (; indices_outlet) = network
     external_inflow = ncread(
         dataset,
@@ -293,7 +293,7 @@ end
 end
 
 "Initialize reservoir model `SimpleReservoir`"
-function ReservoirModel(dataset::NCDataset, config::Config, network::NetworkReservoir)
+function ReservoirModel(dataset::NC.Dataset, config::Config, network::NetworkReservoir)
     parameters, waterlevel = ReservoirParameters(dataset, config, network)
     variables = ReservoirVariables(dataset, config, network, parameters, waterlevel)
     boundary_conditions = ReservoirBC(dataset, config, network)

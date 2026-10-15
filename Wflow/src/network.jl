@@ -84,12 +84,14 @@ end
 Initialize `NetworkLand` fields related to catchment (active indices model domain) and land
 drainage network.
 """
-function NetworkLand(dataset::NCDataset, config::Config)
+function NetworkLand(dataset::NC.Dataset, config::Config)
+    # the return type is asserted, the metadata lookup is not always constant folded
     subcatch_2d = ncread(dataset, config, "subbasin_location__count", Domain)
+    subcatch_2d = subcatch_2d::Matrix{Union{Missing, Int}}
     # check if specific IDs are requested, and only keep those if this is the case
     if !isnothing(config.input.subbasin_active_location__count)
         active_ids = Set(config.input.subbasin_active_location__count)
-        @info "Only subcatchments with IDs `$(sort!(collect(active_ids)))` are active."
+        @info "Only subcatchments with IDs `$(vector_string(sort!(collect(active_ids))))` are active."
         subcatch_2d = map(v -> v in active_ids ? v : missing, subcatch_2d)
     end
     indices, reverse_indices = active_indices(subcatch_2d, missing)
@@ -155,16 +157,19 @@ end
 
 "Return local drain direction `ldd` and directed `graph` based on `ldd`"
 function get_drainage_network(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         indices::Vector{CartesianIndex{2}};
         do_pits::Bool = false,
         logging::Bool = true,
     )
+    # the return type is asserted, the metadata lookup is not always constant folded
     ldd_2d = ncread(dataset, config, "basin__local_drain_direction", Domain; logging)
+    ldd_2d = ldd_2d::Matrix{Union{Missing, Int}}
     ldd = convert(Array{UInt8}, ldd_2d[indices])
     if do_pits
-        pits_2d = ncread(dataset, config, "basin_pit_location__mask", Domain)
+        pits_2d =
+            ncread(dataset, config, "basin_pit_location__mask", Domain)::Matrix{Bool}
         ldd = set_pit_ldd(pits_2d, ldd, indices)
     end
     graph, ldd = flowgraph(ldd, indices, PCR_DIR)
@@ -212,7 +217,7 @@ Initialize `NetworkRiver` fields related to river location (active indices model
 river drainage network.
 """
 function NetworkRiver(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         network::NetworkLand;
         do_pits = false,
@@ -225,7 +230,7 @@ function NetworkRiver(
         Domain;
         sel = network.indices,
         logging = false,
-    )
+    )::Vector{Bool}
 
     # find the land cells that are river cells
     land_indices = findall(!isequal(0), river_location)
@@ -307,7 +312,7 @@ end
 end
 
 "Initialize `NetworkReservoir`"
-function NetworkReservoir(dataset::NCDataset, config::Config, network::NetworkRiver)
+function NetworkReservoir(dataset::NC.Dataset, config::Config, network::NetworkRiver)
     (; indices) = network
     logging = false
     # allow reservoir only in river cells
@@ -372,7 +377,7 @@ end
 
 "Initialize `NetworkDrain`"
 function NetworkDrain(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         indices::Vector{CartesianIndex{2}},
         surface_flow_width::Vector{Float64},

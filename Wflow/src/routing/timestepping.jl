@@ -28,7 +28,13 @@ function init_kinematic_wave_timestepping(config::Config, n::Int; domain::String
             timestepping = TimeStepping(; stable_timesteps, adaptive)
         end
     else
-        dt_fixed = getfield(config.model, Symbol("$(domain)_kinematic_wave__time_step"))
+        dt_fixed = if domain == "river"
+            config.model.river_kinematic_wave__time_step
+        elseif domain == "land"
+            config.model.land_kinematic_wave__time_step
+        else
+            config.model.subsurface_kinematic_wave__time_step
+        end
         @info "Using a fixed internal timestep (seconds) $dt_fixed for kinematic wave $domain flow."
         timestepping = TimeStepping(; dt_fixed, adaptive)
     end

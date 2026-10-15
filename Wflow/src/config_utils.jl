@@ -53,12 +53,22 @@ function Base.show(io::IO, input_entry::InputEntry)
         if scale == [1.0] && offset == [0.0]
             print(io, netcdf_variable_name)
         else
-            print(io, netcdf_variable_name * " (scale = $scale, offset = $offset)")
+            print(
+                io,
+                netcdf_variable_name,
+                " (scale = [",
+                join(scale, ", "),
+                "], offset = [",
+                join(offset, ", "),
+                "])",
+            )
         end
     elseif !isnothing(value)
-        print(io, value)
-    else
+        print(io, "[", join(value, ", "), "]")
+    elseif !isnothing(external_name)
         print(io, external_name)
+    else
+        print(io, "nothing")
     end
 end
 
@@ -67,7 +77,7 @@ Base.show(io::IO, cs::CoordinateSection) = print(io, "(x = $(cs.x), y = $(cs.y))
 
 # Specialized printing for IndexSection
 Base.isnothing(index::IndexSection) =
-    all(isnothing(val) for val in (index.i, index.x, index.y))
+    isnothing(index.i) && isnothing(index.x) && isnothing(index.y)
 Base.show(io::IO, index::IndexSection) =
     isnothing(index.i) ? print(io, "(x = $(index.x), y = $(index.y))") : print(io, index.i)
 

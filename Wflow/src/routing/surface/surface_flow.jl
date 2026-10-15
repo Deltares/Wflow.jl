@@ -40,10 +40,11 @@ end
         P <: AbstractRiverFlowParameters,
         V <: AbstractRiverFlowVariables,
         A <: AbstractAllocationModel,
+        B <: RiverFlowBC,
     } <: AbstractRiverFlowModel
     routing_method::T
     timestepping::TimeStepping
-    boundary_conditions::RiverFlowBC
+    boundary_conditions::B
     parameters::P
     variables::V
     floodplain::F

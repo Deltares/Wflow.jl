@@ -84,7 +84,7 @@ end
 
 "Initialize river sediment transport model parameters"
 function SedimentRiverTransportParameters(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         indices::Vector{CartesianIndex{2}},
     )
@@ -198,7 +198,7 @@ end
 
 "Initialize river sediment transport model"
 function SedimentRiverTransportModel(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         indices::Vector{CartesianIndex{2}},
     )
@@ -865,7 +865,7 @@ end
 
 "Initialize river sediment concentrations model parameters"
 function SedimentConcentrationsRiverParameters(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         indices::Vector{CartesianIndex{2}},
     )
@@ -914,7 +914,7 @@ end
 
 "Initialize river sediment concentrations model"
 function SedimentConcentrationsRiverModel(
-        dataset::NCDataset,
+        dataset::NC.Dataset,
         config::Config,
         indices::Vector{CartesianIndex{2}},
     )

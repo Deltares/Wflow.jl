@@ -1,0 +1,9 @@
+name = "wflow_trim"
+uuid = "3f6c2a1e-8b7d-4e5f-9a0b-1c2d3e4f5a6b"
+version = "0.1.0"
+
+[deps]
+Wflow = "d48b7d99-76e7-47ae-b1d5-ff0c1cf9a818"
+
+[sources]
+Wflow = { path = "../../../Wflow" }

@@ -10,7 +10,7 @@ function Model(config::Config, type::SedimentModel)
 
     # unpack the paths to the netCDF files
     static_path = input_path(config, config.input.path_static)
-    dataset = NCDataset(static_path)
+    dataset = NC.Dataset(static_path)
 
     reader = NCReader(config)
     clock = Clock(config, reader)
