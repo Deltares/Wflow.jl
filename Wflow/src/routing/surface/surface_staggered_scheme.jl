@@ -280,7 +280,7 @@ function init_staggered_river_flow(
         parameters,
         variables,
         floodplain,
-        allocation = do_water_demand(config) ? AllocationRiverModel(n) :
+        allocation = do_water_demand(config) ? AllocationRiverModel(; n) :
             NoAllocationRiverModel(n),
         routing_method,
     )

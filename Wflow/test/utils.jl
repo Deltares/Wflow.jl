@@ -60,6 +60,16 @@ end
     @test string(unit) == "s m⁻¹ᐟ³"
     @test to_string(unit; BMI_standard = true) == "s m-1/3"
 
+    # in-place array conversion matches scalar conversion and skips missing values
+    for unit in (ABSOLUTE_DEGREES, Unit(; mm = 1, dt = -1))
+        x = [0.0, missing, 10.0]
+        x_SI = [to_SI(v, unit; dt_val = dt) for v in x]
+        @test isequal(Wflow.to_SI!(copy(x), unit; dt_val = dt), x_SI)
+        y = copy(x_SI)
+        Wflow.from_SI!(y, unit; dt_val = dt)
+        @test isequal(y, [Wflow.from_SI(v, unit; dt_val = dt) for v in x_SI])
+    end
+
     @test_throws Exception Unit(; foo = 42)
 end
 
@@ -74,32 +84,6 @@ end
 
     f = π
     @test f * Wflow.scurve(x, a + log(f) / c, f * b, c) ≈ out
-end
-
-@testitem "unit: Units" begin
-    using Wflow: Unit, to_SI_factor, to_SI, to_string, ABSOLUTE_DEGREES
-
-    @test to_SI_factor(ABSOLUTE_DEGREES) == 1.0
-    @test to_SI(0.0, ABSOLUTE_DEGREES) == 273.15
-    @test string(ABSOLUTE_DEGREES) == "°C"
-
-    unit = Unit(; degC = 1) # relative degrees
-    @test to_SI_factor(unit) == 1.0
-    @test to_SI(0.0, unit) == 0.0
-
-    dt = 86400.0
-    unit = Unit(; m = 1, dt = -1)
-    @test_throws Exception to_SI(unit, 1.0)
-    @test to_SI_factor(unit; dt_val = dt) == inv(dt)
-    @test string(unit) == "m Δt⁻¹"
-    @test to_string(unit; BMI_standard = true) == "m Δt-1"
-
-    unit = Unit(; s = 1, m = -1 // 3)
-    @test to_SI_factor(unit) == 1.0
-    @test string(unit) == "s m⁻¹ᐟ³"
-    @test to_string(unit; BMI_standard = true) == "s m-1/3"
-
-    @test_throws Exception Unit(; foo = 42)
 end
 
 @testitem "unit: compute_mass_balance_error" begin
@@ -142,6 +126,7 @@ end
             "sbm_gwf_piave_demand_config.toml",
             "sediment_config.toml",
             "sediment_eurosem_engelund_config.toml",
+            "sbm_lst_config.toml",
         ]
         config = Wflow.Config(normpath(@__DIR__, file_name))
         config.dir_output = mktempdir()
@@ -193,7 +178,7 @@ end
                 )
             elseif map_name == "routing"
                 # The lens of this standard name is valid but not part of any test model.
-                Set(["floodplain__slope"])
+                Set(["floodplain_bottom_surface__slope"])
             else
                 Set{String}()
             end
@@ -305,4 +290,10 @@ end
         copy(v),
         InputEntry(; scale = [6.0], offset = fill(7.0, 3)),
     ) == 6.0 * v .+ 7.0
+end
+
+@testitem "unit: lens_path" begin
+    using Accessors: @optic
+    @test Wflow.lens_path(@optic(_.land)) == "land"
+    @test Wflow.lens_path(@optic(_.land.soil.variables.zi)) == "land.soil.variables.zi"
 end

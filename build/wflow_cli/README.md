@@ -3,7 +3,7 @@
 This is a [Julia](https://julialang.org/) project that uses the
 [Wflow.jl](https://github.com/Deltares/Wflow.jl) Julia package, puts a simple command line
 interface (cli) on top, and packages this into a standalone application using
-[PackageCompiler.jl](https://github.com/JuliaLang/PackageCompiler.jl).
+[JuliaC.jl](https://github.com/JuliaLang/JuliaC.jl).
 
 This enables using Wflow.jl without having to install Julia, and thus makes it more
 convenient to use in certain settings where installation must be simple and no interactive

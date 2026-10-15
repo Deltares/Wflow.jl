@@ -1,6 +1,7 @@
 # General
 .DS_Store
 LocalPreferences.toml
+.env
 
 # Packaging stuff
 *.jl.*.cov

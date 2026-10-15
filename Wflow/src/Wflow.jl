@@ -75,9 +75,16 @@ const VERSION =
 
 const GRAVITATIONAL_ACCELERATION = 9.80665 # m s⁻²
 const WATER_DENSITY = 1.0e3 # [kg m⁻³]
+# standard sea level density of air at 101.325 kPa and 15 °C
+const AIR_DENSITY = 1.225 # [kg m⁻³]
+const AIR_SPECIFIC_HEAT_CAPACITY = 1005.0 # [J kg⁻¹ K⁻¹]
 const WATER_KINEMATIC_VISCOSITY = 1.16e-6 # [m² s⁻¹]
 # local drain direction pit [-]
 const LDD_PIT = 5
+const STANDARD_HEIGHT_AGROMETEOROLOGY = 2.0 # [m]
+# FAO minimum wind speed for computation aerodynamic resistance to consider vapour exchange
+# on the surface induced by air buoyancy and layer instability effects.
+const FAO_MINIMUM_WIND_SPEED = 0.5 # [m s⁻¹]
 
 mutable struct Clock{T}
     time::T
@@ -203,6 +210,7 @@ include("glacier/glacier.jl")
 include("surfacewater/runoff.jl")
 include("soil/soil.jl")
 include("soil/soil_process.jl")
+include("land_surface_temperature.jl")
 include("sbm.jl")
 include("routing/utils.jl")
 include("routing/timestepping.jl")

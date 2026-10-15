@@ -52,7 +52,7 @@ atmosphere_air__temperature = "temp"
 land_surface__slope = "Slope"
 land_surface__elevation = "wflow_dem"
 river__length = "wflow_riverlength"
-river__slope = "RiverSlope"
+river_bottom_surface__slope = "RiverSlope"
 river_water_flow__manning_n_parameter = "N_River"
 river__width = "wflow_riverwidth"
 river_bank_water__depth = "RiverDepth"
@@ -96,6 +96,7 @@ soil_layer_water__vertical_saturated_hydraulic_conductivity_factor = "kvfrac"
 irrigated_paddy_area__count = "paddy_irrigation_areas"
 irrigated_non_paddy_area__count = "nonpaddy_irrigation_areas"
 subsurface_water__horizontal_to_vertical_saturated_hydraulic_conductivity_ratio.value = 100
+subsurface_bottom_surface__slope = "Slope"
 
 [input.cyclic]
 vegetation__leaf_area_index = "LAI"

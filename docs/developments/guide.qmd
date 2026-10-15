@@ -34,7 +34,9 @@ pixi run download-test-data
 ```
 
 Maintainers can update the data using the `write-testdata` DVC remote. Configure MinIO
-credentials locally or through the standard AWS environment variables; never commit credentials.
+credentials in the root `.env` file. Copy `.env.default` to `.env` and fill in
+`AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`. Pixi loads these variables when it activates, so
+run DVC and publishing commands through `pixi run`. The `.env` file is ignored by Git; never commit credentials.
 After changing files under `Wflow/test/data/input`, update and publish the DVC state with:
 
 ```sh

@@ -485,7 +485,9 @@ end
     using TOML
     @testset "NetCDF creation" begin
         path = Base.Filesystem.tempname()
-        _ = Wflow.create_tracked_netcdf(path)
+        ds = Wflow.create_tracked_netcdf(path)
+        @test ds.attrib["Conventions"] == "CF-1.12"
+        @test ds.attrib["wflow_version"] == string(Wflow.VERSION)
         # safe to open the same path twice
         ds = Wflow.create_tracked_netcdf(path)
         close(ds)  # path is removed on process exit
@@ -493,17 +495,17 @@ end
 
     @testset "NetCDF read variants" begin
         NCDataset(normpath("data/input/staticmaps-moselle.nc")) do ds
-            @test Wflow.is_increasing(ds[:lon])
-            @test !Wflow.is_increasing(ds[:lat])
+            @test Wflow.is_increasing(ds[:longitude])
+            @test !Wflow.is_increasing(ds[:latitude])
 
             @test Wflow.nc_dim_name(ds, :time) == :time
             @test Wflow.nc_dim_name([:longitude], :x) == :longitude
             @test Wflow.nc_dim_name([:lat], :y) == :lat
             @test_throws ErrorException Wflow.nc_dim_name(ds, :not_present)
 
-            x = collect(Wflow.nc_dim(ds, :lon))
+            x = collect(Wflow.nc_dim(ds, :longitude))
             @test length(x) == 291
-            @test x isa Vector{Union{Missing, Float64}}
+            @test x isa Vector{Float64}
 
             @test Wflow.internal_dim_name(:lon) == :x
             @test Wflow.internal_dim_name(:latitude) == :y
@@ -569,7 +571,7 @@ end
         @test isfile(path_log)
         rm(tomlpath_temp)
         lines = readlines(path_log)
-        @test count(startswith(line, "[ Info: ") for line in lines) == 63
+        @test count(startswith(line, "[ Info: ") for line in lines) == 64
         @test count(startswith(line, "┌ Debug: ") for line in lines) == 0
 
         # Another run with debug log level and a non-default path_log.
@@ -608,4 +610,32 @@ end
         @test_throws ErrorException Wflow.run(tomlpath_error)
         rm(tomlpath_error)
     end
+end
+
+@testitem "NetCDF scalar output of layered variables" begin
+    using NCDatasets: dimnames
+    tomlpath = joinpath(@__DIR__, "sbm_config.toml")
+    config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
+    # a single layer, and all layers of a layered variable
+    for (name, layer) in (("vwc_layer_2", 2), ("vwc", nothing))
+        push!(
+            config.output.netcdf_scalar.variable,
+            Wflow.NetCDFScalarVariable(;
+                name,
+                parameter = "soil_layer_water__volume_fraction",
+                layer,
+                map = "river_gauge__count",
+                _location_dim = "river_gauge__count",
+            ),
+        )
+    end
+    model = Wflow.Model(config)
+    Wflow.run_timestep!(model)
+    ds = model.writer.scalar_writer.output_dataset
+    @test dimnames(ds["vwc_layer_2"]) == ("river_gauge__count", "time")
+    @test dimnames(ds["vwc"]) == ("river_gauge__count", "layer", "time")
+    @test ds["vwc"][:, 2, 1] == ds["vwc_layer_2"][:, 1]
+    @test ds["vwc"][:, 1, 1] != ds["vwc"][:, 2, 1]
+    Wflow.close_files(model; delete_output = false)
 end

@@ -39,7 +39,9 @@ function collect_dependency_licenses(
         project_dir::AbstractString,
         license_dir::AbstractString,
     )::Nothing
-    ctx = PackageCompiler.create_pkg_context(project_dir)
+    project_file = Pkg.Types.projectfile_path(project_dir; strict = true)
+    isnothing(project_file) && error("Could not find a project at $(repr(project_dir))")
+    ctx = Pkg.Types.Context(; env = Pkg.Types.EnvCache(project_file))
     visited_uuids = Set{Base.UUID}()
     for package_uuid in values(ctx.env.project.deps)
         collect_dependency_license(ctx, license_dir, visited_uuids, package_uuid)
