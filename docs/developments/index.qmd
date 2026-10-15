@@ -8,18 +8,48 @@ title: "Developments"
 
 <ul id="index-chooser" class="nav nav-tabs" role="tablist">
   <li class="nav-item" role="presentation">
-    <a class="nav-link" href="../changelog.html">
-      <i class="bi bi-code-slash"></i>Changelog
-    </a>
-  </li>
-  <li class="nav-item" role="presentation">
     <a class="nav-link" href="guide.html">
       <i class="bi bi-journal-bookmark"></i>Developers guide
     </a>
   </li>
   <li class="nav-item" role="presentation">
+    <a class="nav-link" href="modular_setup.html">
+      <i class="bi bi-bricks"></i>Modular setup
+    </a>
+  </li>
+  <li class="nav-item" role="presentation">
     <a class="nav-link" href="model_struct.html">
       <i class="bi bi-bricks"></i>Model structure
+    </a>
+  </li>
+  <li class="nav-item" role="presentation">
+    <a class="nav-link" href="NetCDF.html">
+      <i class="bi bi-bricks"></i>NetCDF
+    </a>
+  </li>
+  <li class="nav-item" role="presentation">
+    <a class="nav-link" href="units.html">
+      <i class="bi bi-bricks"></i>Unit administration in Wflow
+    </a>
+  </li>
+  <li class="nav-item" role="presentation">
+    <a class="nav-link" href="BMI.html">
+      <i class="bi bi-bricks"></i>Basic Modelling Interface
+    </a>
+  </li>
+  <li class="nav-item" role="presentation">
+    <a class="nav-link" href="building.html">
+      <i class="bi bi-bricks"></i>Building from source and testing
+    </a>
+  </li>
+  <li class="nav-item" role="presentation">
+    <a class="nav-link" href="release.html">
+      <i class="bi bi-bricks"></i>Release procedure
+    </a>
+  </li>
+  <li class="nav-item" role="presentation">
+    <a class="nav-link" href="../changelog.html">
+      <i class="bi bi-code-slash"></i>Changelog
     </a>
   </li>
 </ul>

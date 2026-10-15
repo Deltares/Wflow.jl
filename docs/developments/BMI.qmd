@@ -1,0 +1,134 @@
+---
+title: Basic Modelling Interface
+---
+
+This page summarizes the functions implemented in the module `Wflow/src/bmi.jl`
+according to the Basic Model Interface (BMI) conventions defined by
+[BasicModelInterface.jl](https://github.com/Deltares/BasicModelInterface.jl).
+Wflow uses BMI as the model-coupling layer for initialization, time stepping, variable access,
+and spatial metadata exchange. The implementation covers the functions that are practically required for coupled execution and
+variable exchange in Wflow.
+
+## 1. Model lifecycle functions
+
+These are the main BMI lifecycle methods.
+
+| Function | Purpose |
+|---|---|
+| `initialize(::Type{<:Model}, config_file)` | Reads the TOML configuration, determines the model type (`sbm`, `sbm_gwf`, or `sediment`), constructs the `Model`, and loads fixed forcing. This is the initialization entry point for external drivers. |
+| `update(model)` | Advances the model by one time step by calling `run_timestep!(model)`. |
+| `update_until(model, time)` | Runs the model forward until a target time, checking that the requested time is an integer multiple of the model timestep. |
+| `finalize(model)` | Writes the final state when needed, resets the model clock, and closes open files. |
+
+These correspond to the standard BMI phases: initialize, update, and finalize.
+
+## 2. Model metadata and component identity
+
+| Function | Purpose |
+|---|---|
+| `get_component_name(model)` | Returns the model type name as a string, e.g. `"sbm"`, `"sbm_gwf"`, or `"sediment"`. |
+| `get_input_item_count(model)` | Counts the variables exposed for model input. |
+| `get_output_item_count(model)` | Counts the variables exposed for model output. |
+
+These functions tell external software which model is active and how many variables can be
+exchanged.
+
+## 3. Variable discovery and naming
+
+| Function | Purpose |
+|---|---|
+| `get_input_var_names(model)` | Reads the `[API]` section of the TOML configuration and filters it to variables known through Wflow's metadata system. It also resolves layered soil names like `soil_layer_1_x` to their standard base names. |
+| `get_output_var_names(model)` | Returns the same list as input in Wflow, because the implementation does not distinguish between input and output variables in the public BMI API. |
+
+This is the step that exposes model variables by standard name so that an external coupling tool can
+query them in a stable way.
+
+## 4. Variable metadata
+
+These functions describe the variable interface.
+
+| Function | Purpose |
+|---|---|
+| `get_var_grid(model, name)` | Maps a variable name to a BMI grid ID. Wflow uses grid IDs for reservoir, drain, river, and land domains. |
+| `get_var_type(model, name)` | Determines the runtime type of the variable array by inspecting the underlying pointer and returning the element type as a string. |
+| `get_var_units(model, name)` | Resolves the metadata unit for the variable and returns BMI-compatible units. |
+| `get_var_itemsize(model, name)` | Reports the byte size of each element in the variable's underlying array. |
+| `get_var_nbytes(model, name)` | Reports the total memory size of the variable array. |
+| `get_var_location(model, name)` | Returns the variable location (`node` or `edge`) by inspecting the relevant lens and routing type. |
+
+These methods let clients discover how each variable is represented without needing to know the
+internal Wflow data structures.
+
+## 5. Time metadata
+
+| Function | Purpose |
+|---|---|
+| `get_current_time(model)` | Returns the current model time in seconds relative to the model start time. |
+| `get_start_time(model)` | Returns the relative start time. In Wflow, this is `0.0`. |
+| `get_end_time(model)` | Returns the end time of the configured simulation period in seconds. |
+| `get_time_units(model)` | Returns `"s"` for seconds. |
+| `get_time_step(model)` | Returns the configured timestep in seconds. |
+
+This is the standard BMI time interface used by forcing and coupling frameworks.
+
+## 6. Variable get/set operations
+
+These are the actual data exchange methods.
+
+| Function | Purpose |
+|---|---|
+| `get_value(model, name, dest)` | Copies a variable's current values into a destination vector. |
+| `get_value_ptr(model, name)` | Returns a view into the model's actual internal array for the requested variable. It resolves the nested model field using standard-name metadata and property lenses. |
+| `get_value_at_indices(model, name, dest, inds)` | Returns the selected values at specific indices. |
+| `set_value(model, name, src)` | Writes the provided vector into the internal model variable in place. |
+| `set_value_at_indices(model, name, inds, src)` | Writes only the selected indices of a variable. |
+
+This is the key BMI exchange point: variables are addressed by name, while the internal model
+structure remains hidden from the coupling layer.
+
+## 7. Grid topology and geometry
+
+| Function | Purpose |
+|---|---|
+| `get_grid_type(model, grid)` | Returns the grid type. For Wflow, node-based grids are reported as `"points"` and land/edge-based grids as `"unstructured"`. |
+| `get_grid_rank(model, grid)` | Returns the grid rank. Wflow uses 2D grids for the modeled domains. |
+| `get_grid_x(model, grid, x)` | Returns the x-coordinates for active grid cells/node positions. |
+| `get_grid_y(model, grid, y)` | Returns the y-coordinates for active grid cells/node positions. |
+| `get_grid_node_count(model, grid)` | Returns the number of active nodes or cells in the grid. |
+| `get_grid_size(model, grid)` | Returns the size of the active grid for BMI consumption. |
+| `get_grid_edge_count(model, grid)` | Returns the count of edges for the applicable routing or land grid. |
+| `get_grid_edge_nodes(model, grid, edge_nodes)` | Returns the node-pairs defining each edge, using `-999` for inactive or boundary points. |
+
+These functions allow an external model to reconstruct the model geometry and connectivity used by the
+Wflow grid.
+
+## 8. State persistence helpers (Wflow extension)
+
+These are not strictly part of the minimal BMI standard, but they are useful for state recovery and
+coupled-model workflows.
+
+| Function | Purpose |
+|---|---|
+| `load_state(model)` | Restores model state using `set_states!(model)`. |
+| `save_state(model)` | Writes the end-state NetCDF output and closes the dataset. |
+| `get_start_unix_time(model)` | Returns the Unix timestamp of the model start time. |
+
+These support warm starts and external data-assimilation use cases. They are especially useful in
+Wflow because the model may need to save or restore internal state between runs.
+
+## 9. Helper functions used by the BMI layer
+
+These helper functions make the BMI layer compatible with Wflow's nested structure.
+
+| Function | Purpose |
+|---|---|
+| `soil_layer_standard_name(name)` | Maps names such as `soil_layer_3_water_table_depth` to the corresponding base variable and layer index. |
+| `grid_element_type(model, lens)` | Determines if a variable belongs to a node or an edge based on the nested lens path. |
+| `grid_element_type(model, var::PropertyLens)` | Default classification for node-based variables. |
+| `grid_element_type(::T, var::PropertyLens)` | Special handling for local inertial routing variables (`qx`, `qy`, discharge-related quantities) that are edge-based. |
+
+These helpers allow the BMI API to work cleanly with Wflow's nested routing and land models without
+exposing their full internal structure to couplers.
+
+This is the typical BMI adapter shape expected by coupled modeling frameworks, and it is exactly the
+kind of interface needed for Wflow to participate in external or component-based model orchestration.

@@ -1,0 +1,214 @@
+---
+title: Modular code setup
+---
+
+# Physical components in the code
+This section sums up the primary physical processes and roughly indicates where they can be found in the code.
+
+## Irrigation
+In `demand/water_demand.jl`
+This provides types `AllocationLandModel`,`AllocationRiverModel`, `PaddyModel` and `DemandModel` and related functionality.
+## Glaciers
+In `glacier`
+The HBV behaviour of the glacier storage is found in `glacier_process.jl`,
+while `glacier.jl` wraps this functionality in a `GlacierHBVmodel` type.
+## Routing
+### Surface water
+In `routing/surface`
+This involves routing of
+* rivers
+* floodplains
+* reservoirs
+* lateral snow transport
+For rivers and floodplains a kinematic wave or local inertial is used, for reservoirs a variety of reservoir models is available (inflow, outflow versus stage). Lateral snow transport is dependent on terrain slope and local snow accumulation.
+
+### Subsurface water
+In `routing/subsurface`
+This contains the time-forward groundwater model (explicit evaluation of groundwater levels in time)
+The wflow model type determines the type of subsurface model:
+* sbm models use the  `LateralSSFModel` (kinematic wave approach)
+* sbm_gwf models use the `GroundwaterFlowModel` (time-explicit Darcy)
+
+## Sediment
+### Erosion
+In `sediment/erosion`<br>
+Local erosion of the soil.
+
+### Sediment transport
+In `sediment/transport` <br>
+Transport, exchange of sediment from one domain to another (i.e. land to river) ánd deposition (the inverse of erosion).
+
+## Snow
+In `snow`<br>
+This implements the `SnowHbvModel`.
+The physics of the HBV snow model is found in `snow_process.jl`
+
+
+## Soil (top)
+In `soil`<br>
+Describes the top processes like infiltration, which also encompasses the
+unsaturated zone (Brooks-Corey approach).
+
+## Runoff
+In `surfacewater`<br>
+Delivers the river runoff given the net runoff from surface to river, taking into account the open water evaoration at land and river.
+
+## Vegetation
+In `vegetation`<br>
+Canopy processes in `canopy.jl`:
+The interception of rainfall, evaporation from interception and transpiration implemented in `rainfall_interception.jl` and wrapped for models in `canopy.jl`
+
+<br>
+<br>
+<br>
+<br>
+
+# Model components in the code
+## BMI adapter
+
+See `Wflow/src/bmi.jl` for the implementation. Key responsibilities:
+
+- Initialization and lifecycle
+- Time-stepping helpers
+- Variable and grid interface
+- State I/O helpers
+- Utility helpers
+
+A more elaborate description can be found under the section Basic Modelling Interface
+
+## Core model composition
+
+The model instance `Model` composite type (`Wflow/src/Wflow.jl`) aggregates the following elements:
+
+- `Config` *complete configuration of the model*
+- `Domain` *topology of the domain*
+- `Routing` *routing model; latereal fluxes*
+- `Land` *land model; vertical processes*
+- `MassBalance` *book keeping of water volumes and fluxes*
+- `Clock` *keeping track of simulation time; time stepping*
+- `Reader` *input forcing data*
+- `Writer` *output result data*
+
+Three types of models are based on this template:
+* `sbm` in structure `SbmModel` in `sbm_model.jl`
+* `sbm_gwf` in structure `SbmGwfModel` in `sbm_gwf_model.jl`
+* `sediment` in structure `SedimentModel` in `sediment_model.jl`
+
+The `sbm` and `sbm_gwf` differ only in their approach of the subsurface transport treatment, `sbm_gwf` has a full time-dependent Darcy model, `sbm` uses the kinematic-wave approach, based on elevation. The `sediment`model has no subsurface component and does not keep track of mass balances, but in addition implements overland sediment transport.
+`
+## Domain, network and indices
+
+- `Wflow/src/domain.jl`
+  - Defines `Domain` and helpers such as `active_indices(domain, key)` and index maps between 1D internal arrays and 2D spatial coordinates.
+  - BMI relies on `active_indices(...)` to compute node counts and to slice internal arrays for BMI exchange. See `bmi.jl`.
+
+- `Wflow/src/network.jl` and routing submodules
+  - Graph-based connectivity, adjacent-node tables, and edge indices used by BMI `get_grid_edge_nodes` and routing code.
+
+
+## Routing and land models
+
+- Routing core: `Wflow/src/routing/routing.jl` and many `routing/*` submodules
+  - Implements `Routing` abstract and concrete routing models (river, overland, subsurface). Routing exposes property lenses used by BMI `grid_element_type` logic.
+
+- Land and hydrology: `Wflow/src/sbm.jl`, `Wflow/src/sbm_model.jl`
+  - Soil/land vertical processes and `LandHydrologySBM` implementations; standard-name mappings for soil-layer variables that BMI recognizes.
+
+
+## Standard-name metadata and variable lenses
+
+- Standard-name modules under `Wflow/src/standard_name/`
+  - Provide mappings from human/standard names to `PropertyLens` accessors into `Model` fields.
+  - BMI uses `get_metadata(name; model)` and lenses to obtain references to internal arrays for `get_value_ptr` and `set_value`.
+
+
+## State, mass-balance, and output
+
+- `Wflow/src/states.jl` — state extraction/restoration and `set_states!`/`extract_required_states` helpers used by `load_state`/`save_state`.
+- `Wflow/src/mass_balance.jl` — mass balance bookkeeping used during `run_timestep!`.
+- `Wflow/src/io.jl` — output NetCDF writing helpers.
+
+<br>
+<br>
+<br>
+<br>
+
+# Source file overview
+The following gives a categorisation of the files in the Wflow code base.
+The hierarchy follows the actual directory structure of the code.
+
+- **demand**
+	- `water_demand.jl` *crop irrigation model; calculates the water demand for irrigation*
+- **glacier**
+	- `glacier_process.jl` *HBV-light glacier modelling*
+	- `glacier.jl` *wraps glacier_process (plus data structure) into a glacier model*
+- **routing**
+	- **subsurface** *groundwater flow*
+		- `boundary_conditions.jl`  (*well, river, drain, constant head, recharge ...*)
+		- `connectivity.jl` *two-dimensional structured (row,col) connectivity matrix*
+		- `groundwater.jl` *Time-explicit (instationary) Darcy equation in two dimensions*
+		- `lateral_subsurface_flow.jl` *Misc. data structures for lateral subsurface flow and forcing*
+		- `subsurface_process.jl` *kinematic wave model model for lateral subsurface flow including lateral snow transport*
+	- **surface**
+		- `floodplain.jl` *Floodplain flow model for river sections*
+		- `reservoir.jl` *Reservoir model and data structures (storage and outflow etc.)*
+		- `surface_flow.jl` *high-level data structures for river and overland flow model)*
+		- `surface_kinwave.jl` *Kinematic wave model for rivers, floodplains and reservoirs, initialization and time stepping*
+		- `surface_process.jl`
+		- `surface_routing.jl`
+		- `surface_staggered_scheme.jl` *Support for staggered spatial discretisation of rivers (flows on edges)*
+	- `initialize_routing.jl` *initialize a routing model for lateral subsurface flow*
+	- `routing.jl` *generic struct for routing model components, overland, river and subsurface*
+  - `timestepping.jl` *struct and initialization of timestepping for the kinematic wave equation*
+  - `utils.jl` *utility converting gridded drainage direction to a graph*
+- **sediment**
+	- **erosion**
+      - `erosion_process.jl`  *implementation rainfall and overland flow erosion models and combined effect*
+      - `overland_flow_erosion.jl` *wraps overland flow erosion models in erosion_process*
+      - `rainfall_erosion.jl` *wraps rainfall erosion models in erosion_process*
+      - `soil_erosion.jl` *wraps soil erosion models (combined flow and rainfall) in erosion_process*
+	- **sediment_transport**
+      - `deposition.jl` *deposition of sediment in reservoirs*
+      - `land_to_river.jl` *sediment flux from land to river*
+      - `river_transport.jl` *river sediment transport model*
+      - `overland_flow_transport.jl` *overland sediment transport model*
+      - `transport_capacity.jl` *sediment transport capacity model*
+      - `transport_capacity_process.jl` *wraps transport_capacity (plus data structure)*
+- **snow**
+	- `snow_process.jl` *HBV implementation of snow processes (melt and precipitation etc.)*
+	- `snow.jl` *wraps snow_process (plus data structure) into a snow_model*
+- **soil**
+	- `soil_process.jl` *infiltration model*
+	- `soil.jl` *wraps soil_process (plus data structure) intol a soil model*
+- **standard_name**   *records of parameter metadata for variables, indexed by CDMS standard names*
+	- `standard_name_domain.jl`
+	- `standard_name_routing.jl`
+	- `standard_name_sbm.jl`
+	- `standard_name_sediment.jl`
+	- `standard_name_utils.jl` *utilities to retrieve metadata fields by CDMS standard name*
+- **surfacewater**
+	- `runoff.jl` *open water runoff model, water flux from atmospheric forcing*
+- **vegetation** *canopy rainfall interception model*
+	- `parameters.jl` *analyze vegetation parameters*
+	- `rainfall_interception.jl` *different interception models from literature (Gash, modified Rutter)*
+	- `canopy.jl` *wraps rainfall interception models (plus data structure)*
+- `bmi.jl` *basic model interface (API) for the library*
+- `config_init.jl` *initialize config section with dict and NetCDF input*
+- `config_structure.jl` *input and output of config data*
+- `config_utils.jl`
+- `domain.jl` *defines and initializes different domains (Land, River, Reservoir)*
+- `erosion.jl` *SoilLossModel composed from the different erosion types and atmospheric and hydrologic forcings*
+- `forcing.jl` *data structures for atmospheric and hydrologic forcing*
+- `io.jl` *NetCDF I/O functionality (forcing, writing results)*
+- `logging.jl` *everything related to log messages I/O*
+- `mass_balance.jl` *storages and net fluxes for establishing the water balance*
+- `network.jl` *definition of the Land-, River and Drain Network type plus utility functions*
+- `sbm_gwf_model.jl` *constructor and update function of subsurface sbm_gwf model instance*
+- `sbm_model.jl`  *constructor and update functions of sbm model instance*
+- `sediment_flux.jl` *sediment transport model (river and overland flow) using implementations in **sediment_transport***
+- `sediment_model.jl` *complete sediment model, erosion and sediment transport*
+- `states.jl` *retrieval of the state of various model components*
+- `subdomains.jl` *topology (graph) and ordering of subbasins, preparation of kinematic wave*
+- `units.jl` *administration of variable units and conversions expressed in powers of elementary SI units and conversion factors*
+- `utils.jl` *miscellaneous utility functions*
+- `Wflow.jl` *comprehensive Wflow module encompassing all above elements and generic Model factory returning one of SbmModel, SbmGwfModel or SedimentModel*

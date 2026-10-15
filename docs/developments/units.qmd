@@ -1,0 +1,329 @@
+---
+title: Unit administration in Wflow
+---
+
+Due to the complexity and diversity of the variables used in Wflow models, the registration and conversion of units deserves special attention. The logic in [Wflow/src/units.jl](../../Wflow/src/units.jl) is the central layer that keeps model variables, forcing data, and parameters physically consistent.
+
+## Overview
+
+The system is built around a custom `Unit` type. It does not merely store strings such as `"mm/day"`; instead, it represents units as a structured combination of dimensional powers and converts them to SI units automatically.
+
+This is important in a hydrological model because values are commonly expressed in units such as:
+
+- mm/day
+- m/s
+- °C
+- t/Δt
+- kg/min
+- percentage
+
+without any ambiguity about what the quantity actually means.
+
+## The `Unit` type
+
+At the heart of the implementation is a `struct Unit` that stores a power for each supported dimension:
+
+```julia
+struct Unit
+    absolute_temperature::Bool
+    K::PowersType
+    degC::PowersType
+    s::PowersType
+    ms::PowersType
+    min::PowersType
+    h::PowersType
+    d::PowersType
+    dt::PowersType
+    m::PowersType
+    cm::PowersType
+    mm::PowersType
+    μm::PowersType
+    L::PowersType
+    kg::PowersType
+    g::PowersType
+    t::PowersType
+    J::PowersType
+    percentage::PowersType
+    ppm::PowersType
+    to_SI_factor_without_dt::Float64
+end
+```
+
+The `PowersType` is a two-entry rational vector:
+
+```julia
+const PowersType = SVector{2, Rational{Int}}
+```
+
+That means each unit is represented as a pair of positive and negative powers. For example:
+
+- `m/s` becomes `m = 1, s = -1`
+- `m² / s` is represented by rational powers
+- dimensionless quantities are stored as zero powers in all dimensions
+
+This design allows exact symbolic handling of units, which is much cleaner than using approximate floats for all conversions.
+
+## Why the representation matters
+
+Wflow often needs to work with variables that are not expressed in SI units by default. A rainfall flux may be in `mm/day`, a flow may be in `m³/s`, and temperature may be in `°C`. The unit system makes these conversions explicit and safe.
+
+The conversion logic is based on a standard reference set:
+
+```julia
+const STANDARD_UNITS = [:K, :s, :m, :kg, :J]
+```
+
+All other units are converted relative to these base dimensions. The file then builds a conversion factor using `to_SI_data`.
+
+## SI conversion database
+
+The file contains `to_SI_data`, a table describing how each unit maps to SI:
+
+```julia
+const to_SI_data = @NamedTuple{factor::Float64, unit_SI::Unit}[
+    (factor = 1.0, unit_SI = Unit(; K = 1)), # K
+    (factor = 1.0, unit_SI = Unit(; K = 1)), # degC
+    (factor = 1.0, unit_SI = Unit(; s = 1)), # s
+    (factor = 1e-3, unit_SI = Unit(; s = 1)), # ms
+    (factor = 60.0, unit_SI = Unit(; s = 1)), # min
+    (factor = 3600, unit_SI = Unit(; s = 1)), # h
+    (factor = 86400.0, unit_SI = Unit(; s = 1)), # d
+    (factor = NaN, unit_SI = Unit(; s = 1)), # dt
+    (factor = 1.0, unit_SI = Unit(; m = 1)), # m
+    (factor = 1e-2, unit_SI = Unit(; m = 1)), # cm
+    (factor = 1e-3, unit_SI = Unit(; m = 1)), # mm
+    (factor = 1e-6, unit_SI = Unit(; m = 1)), # μm
+    (factor = 1e-3, unit_SI = Unit(; m = 3)), # L
+    (factor = 1.0, unit_SI = Unit(; kg = 1)), # kg
+    (factor = 1e-3, unit_SI = Unit(; kg = 1)), # g
+    (factor = 1e3, unit_SI = Unit(; kg = 1)), # t
+    (factor = 1.0, unit_SI = Unit(; kg = 1, m = 2, s = -2)), # J
+    (factor = 1e-2, unit_SI = Unit()), # percentage
+    (factor = 1e-6, unit_SI = Unit()), # ppm
+]
+```
+
+Examples from this data:
+
+- `mm -> m` uses a factor of `1e-3`
+- `h -> s` uses `3600`
+- `t -> kg` uses `1e3`
+- `% -> fraction` uses `1e-2`
+
+This allows conversions like:
+
+```julia
+to_SI(25.0, Unit(; mm = 1)) == 0.025
+```
+
+or, more generally, a value expressed in any supported unit can be converted to its corresponding SI value.
+
+## Temperature handling
+
+The file treats temperature specially because Celsius is not a direct SI unit for an absolute thermodynamic quantity. For a value in `°C`, the conversion to Kelvin includes an offset:
+
+```julia
+function to_SI(x::AbstractFloat, unit::Unit; dt_val::Union{Nothing, Number} = nothing)
+    return if unit == ABSOLUTE_DEGREES
+        x + 273.15
+    else
+        x * to_SI_factor(unit; dt_val)
+    end
+end
+```
+
+The same special case applies to `from_SI`:
+
+```julia
+function from_SI(x::AbstractFloat, unit::Unit; kwargs...)
+    return if unit == ABSOLUTE_DEGREES
+        x - 273.15
+    else
+        x / to_SI_factor(unit; kwargs...)
+    end
+end
+```
+
+This is a good example of how the unit system is not only algebraic but also physically meaningful.
+
+## Time-step dependent units
+
+A key feature of Wflow is that some variables are evaluated per model timestep, not per second or per day. That is why the file includes a dedicated `dt` unit.
+
+```julia
+const MM_PER_DT = Unit(; mm = 1, dt = -1)
+```
+
+The conversion factor includes the actual model timestep value when needed:
+
+```julia
+function to_SI_factor(unit::Unit; dt_val::Union{Nothing, Number} = nothing)
+    powers_dt = unit.dt
+    net_power_dt = powers_dt[2] - powers_dt[1]
+    factor = unit.to_SI_factor_without_dt
+    if !iszero(net_power_dt)
+        isnothing(dt_val) &&
+            throw(error("Unit $unit depends on dt but dt_val was not supplied."))
+        factor *= dt_val^net_power_dt
+    end
+    return factor
+end
+```
+
+This is essential in hydrological modeling, where a rate might be expressed as `mm per timestep` and the actual timestep length varies from model to model.
+
+## Common predefined units
+
+The file defines a number of shorthand constants that are commonly used across Wflow:
+
+```julia
+const ABSOLUTE_DEGREES = Unit(; degC = 1, absolute_temperature = true)
+const EMPTY_UNIT = Unit()
+const MM_PER_MIN = Unit(; mm = 1, min = -1)
+const MM_PER_DAY = Unit(; mm = 1, d = -1)
+const MM_PER_HOUR = Unit(; mm = 1, h = -1)
+const MM_PER_DT = Unit(; mm = 1, dt = -1)
+const DAY = Unit(; d = 1)
+const HOUR = Unit(; h = 1)
+const MM = Unit(; mm = 1)
+const KG_PER_MIN = Unit(; kg = 1, min = -1)
+const M3_PER_MIN = Unit(; m = 3, min = -1)
+const TON_PER_DT = Unit(; t = 1, dt = -1)
+const GRAM_PER_L = Unit(; g = 1, L = -1)
+const CM_PER_S = Unit(; cm = 1, s = -1)
+const TON_PER_M = Unit(; t = 1, m = -1)
+const TON_PER_M3 = Unit(; t = 1, m = -3)
+const PPM = Unit(; ppm = 1)
+const M3_PER_DAY = Unit(; m = 3, d = -1)
+const PERCENTAGE = Unit(; percentage = 1)
+const MS = Unit(; ms = 1)
+```
+
+These constants make the code much more readable than using raw symbolic expressions everywhere.
+
+## Unit multiplication and powers
+
+The file also implements algebraic behavior for units themselves:
+
+```julia
+function Base.:*(u1::Unit, u2::Unit)
+    absolute_temperature_new = u1.absolute_temperature || u2.absolute_temperature
+    powers1 = get_powers_tuple(u1)
+    powers2 = get_powers_tuple(u2)
+    powers_new = ntuple(i -> powers1[i] + powers2[i], N_UNITS)
+    return Unit(absolute_temperature_new, powers_new...)
+end
+```
+
+and powers of a unit:
+
+```julia
+function Base.:^(u::Unit, n::Rational{Int})
+    powers = get_powers_tuple(u)
+    powers_new = if (n > 0)
+        ntuple(i -> powers[i] * n, N_UNITS)
+    else
+        ntuple(i -> reverse(powers[i] * -n), N_UNITS)
+    end
+    return Unit(u.absolute_temperature, powers_new...)
+end
+```
+
+This means Wflow can build compound units programmatically, such as:
+
+- `m * m = m^2`
+- `kg / s = kg s^-1`
+- `(mm / d)^2` and so on
+
+without having to manually encode each one.
+
+## String formatting for human-readable output
+
+The conversion system is complemented by a nice display layer. The file defines `to_string(unit; BMI_standard = false)` to produce a readable unit string.
+
+```julia
+function to_string(unit::Unit; BMI_standard = false)
+    n_units = length(Units)
+    symbols = ntuple(i -> get(UnitStrings, Units[i], String(Units[i])), Val(n_units))
+    powers = ntuple(i -> getfield(unit, Units[i]), Val(n_units))
+    out = String[]
+
+    for (symbol, powers_) in zip(symbols, powers)
+        power = powers_[2]
+        if !iszero(power)
+            term = isone(power) ? symbol : "$symbol$(power_string(power, BMI_standard))"
+            push!(out, term)
+        end
+    end
+
+    for (symbol, powers_) in zip(symbols, powers)
+        power = powers_[1]
+        if !iszero(power)
+            push!(out, "$symbol$(power_string(-power, BMI_standard))")
+        end
+    end
+
+    out = join(out, " ")
+    return isempty(out) ? "-" : out
+end
+```
+
+A few display aliases are used:
+
+```julia
+const UnitStrings = Dict{Symbol, String}(
+    :degC => "°C",
+    :percentage => "%",
+    :d => "day",
+    :dt => "Δt",
+    :t => "ton",
+)
+```
+
+This makes unit output readable both for code and for user-facing model metadata.
+
+## Why this is important in Wflow
+
+This unit system is central to the model’s correctness because hydrological model variables often combine several physical dimensions at once.
+
+For example:
+
+- runoff can be in `mm/day`
+- precipitation can be in `mm/timestep`
+- lateral transport can involve `m³/s`
+- temperature can be in `°C` but stored internally in `K`
+- precipitation fraction can be in `%` or `ppm`
+
+Without this layer, it would be far too easy to mix incompatible quantities or silently use incorrect scaling factors.
+
+## How units are used across Wflow
+
+`units.jl` is included by [`Wflow/src/Wflow.jl`](../../Wflow/src/Wflow.jl), making its unit types and conversion functions available throughout the package. The unit system is connected to model variables through their standard-name metadata:
+
+- [`standard_name_utils.jl`](../../Wflow/src/standard_name/standard_name_utils.jl) defines `ParameterMetadata`, including the declared unit, and applies unit and type conversions.
+- Standard-name maps, such as [`standard_name_sbm.jl`](../../Wflow/src/standard_name/standard_name_sbm.jl), specify units for individual parameters and variables. For example, precipitation is declared in `mm/Δt`, while absolute air temperature is declared in `°C` with the absolute-temperature flag.
+- [`io.jl`](../../Wflow/src/io.jl) uses this metadata to convert input data and defaults to SI, then converts output values back to the declared units when writing NetCDF files. Timestep-dependent units use the configured timestep duration.
+- [`bmi.jl`](../../Wflow/src/bmi.jl) reports variables in standardized SI units using the BMI unit-string format.
+
+The repository documents the overall convention as SI for internal computations (`m`, `s`, `kg`, `J`, `K`), with conversions at I/O boundaries; see the [changelog](../changelog.qmd). Model code can also convert hard-coded constants with `to_SI` when those constants are written in a non-SI unit.
+
+`Unit` tracks dimensions and conversion factors, but it does not attach a unit type to each numeric value or validate arbitrary arithmetic. Model values remain ordinary numbers, so dimensional consistency depends on declaring metadata correctly and using the conversion helpers at the appropriate boundaries.
+
+## Summary
+
+The file [Wflow/src/units.jl](../../Wflow/src/units.jl) is Wflow’s dimensional analysis and conversion framework. In practice, it provides:
+
+- explicit symbolic unit representation
+- conversion to SI units
+- time-step-aware handling via `dt`
+- special temperature conversion rules
+- readable unit strings for metadata and display
+- standardized constants for common hydrological units
+
+This is a foundational infrastructure file: it does not compute hydrology itself, but it ensures that the quantities entering those computations are physically consistent and correctly interpreted.
+
+## Related source and documentation
+
+- [Wflow/src/units.jl](../../Wflow/src/units.jl)
+- [docs/developments/index.qmd](index.qmd)
+- [docs/developments/model_representation.qmd](model_representation.qmd)
