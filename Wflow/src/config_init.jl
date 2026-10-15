@@ -25,8 +25,8 @@ end
 
 convert_value(::Type{Union{Nothing, DateTime}}, s::AbstractString) = DateTime(s)
 
-function convert_value(::Type{LogLevel}, level::String)
-    level = get(log_level_map, lowercase(level), missing)
+function convert_value(::Type{LogLevel}, input_string::String)
+    level = get(log_level_map, lowercase(input_string), missing)
     ismissing(level) && argument_error(
         "Invalid loglevel = $input_string in the [logging] section of the TOML, must be one of $(keys(log_level_map)).",
     )
@@ -211,7 +211,7 @@ function init_config_section(::Type{NetCDFScalarVariable}, dict::AbstractDict{St
     else
         throw(
             ArgumentError(
-                "The variable in the [[output.netcdf_scalar.variable]] section with name = '$name'" *
+                "The variable in the [[output.netcdf_scalar.variable]] section with name = '$(dict["name"])'" *
                     " is missing either a 'location' or a 'map' field.",
             ),
         )
