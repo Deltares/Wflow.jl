@@ -23,8 +23,7 @@ using Dates:
     DateTime,
     now,
     isleapyear,
-    datetime2unix,
-    canonicalize
+    datetime2unix
 using FillArrays: Zeros
 using EnumX: @enumx, EnumX
 using Graphs:
@@ -411,7 +410,7 @@ function run!(model::Model; close_files = true)
         @debug "Starting timestep." time i now()
         run_timestep!(model)
     end
-    @info "Simulation duration: $(canonicalize(now() - runstart_time))"
+    @info "Simulation duration: $(format_duration(now() - runstart_time))"
 
     # write output state netCDF
     if !isnothing(writer.endstate_writer.output_path)

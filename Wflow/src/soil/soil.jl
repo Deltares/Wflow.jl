@@ -359,7 +359,7 @@ function SbmSoilParameters(
     cum_depth_layers = pushfirst(cumsum(soil_layer_thickness), 0.0)
     maximum_number_of_layers = N # max number of soil layers
 
-    @info "Using `$(maximum_number_of_layers - 1)` soil layers with the following thickness: `$config_soil_layer_thickness`"
+    @info "Using `$(maximum_number_of_layers - 1)` soil layers with the following thickness: `$(vector_string(config_soil_layer_thickness))`"
 
     w_soil = ncread(
         dataset,

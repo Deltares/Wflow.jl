@@ -1264,23 +1264,26 @@ function reducer(col, rev_inds, indices, x_nc, y_nc, config, dataset)::Reducer
             parameter reducer_name = string(reducer_type)
         return Reducer(ReducerKind.all, reducer_type)
     elseif do_index(index)
-        if !isnothing(index.i)
+        # local variables such that the log keyword arguments have concrete types
+        linear_index = index.i
+        if !isnothing(linear_index)
             # linear index into the internal vector of active cells
             # this one mostly makes sense for debugging, or for vectors of only a few elements
             @info "Adding scalar output for linear index." fileformat param = parameter index =
-                index.i
-            return Reducer(index.i)
+                linear_index
+            return Reducer(linear_index)
         else
             # index into the 2D input/output arrays
             # the first always corresponds to the x dimension, then the y dimension
             # this is 1-based
-            ind = rev_inds[something(index.x), something(index.y)]
+            x = something(index.x)
+            y = something(index.y)
+            ind = rev_inds[x, y]
             if iszero(ind)
                 @warn "Inactive index specified for output, skipping" fileformat param =
-                    parameter x = index.x y = index.y
+                    parameter x y
             else
-                @info "Adding scalar output for linear index." fileformat param = parameter x =
-                    index.x y = index.y
+                @info "Adding scalar output for linear index." fileformat param = parameter x y
             end
             return Reducer(ind)
         end

@@ -52,23 +52,30 @@ function error_message(@nospecialize(e))::String
     end
 end
 
+include("trim_logging.jl")
+
 function (@main)(args::Vector{String})::Cint
     if length(args) != 1
         println(Core.stdout, "Usage: wflow_trim path/to/config.toml")
         return 1
     end
     toml_path = only(args)
-    # Logging macros are disabled in trimmed binaries, and the Wflow logger setup
-    # (TerminalLoggers, LoggingExtras) is not trim compatible, so it is bypassed here.
-    println(Core.stdout, "Wflow v", Wflow.VERSION, " (trimmed build), running ", toml_path)
+    # The Wflow logger setup (TerminalLoggers, LoggingExtras) is not trim compatible, it is
+    # replaced by the `TrimLogger`, see trim_logging.jl.
     start = time()
     try
         config = Wflow.Config(toml_path)
+        init_trim_logger(config)
+        @info "Wflow version `v$(Wflow.VERSION)` (trimmed build)"
         Wflow.run(config, (Wflow.SbmModel{PROFILE}(),))
     catch e
-        println(Core.stderr, "Wflow simulation failed: ", error_message(e))
+        message = error_message(e)
+        @error "Wflow simulation failed" exception = message _id = :wflow_run
+        println(Core.stderr, "Wflow simulation failed: ", message)
+        close_trim_logger()
         return 1
     end
+    close_trim_logger()
     println(Core.stdout, "Simulation finished in ", round(time() - start; digits = 2), " s")
     return 0
 end

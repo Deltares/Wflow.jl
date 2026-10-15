@@ -28,6 +28,27 @@ function scurve(x::Real, a::Real, b::Real, c::Real)::Real
     return s
 end
 
+"Format a vector as `[1, 2]`, without the dynamic dispatch of array `show`."
+vector_string(v::AbstractVector) = string("[", join(v, ", "), "]")
+
+"Format a duration like `Dates.canonicalize`, which is not trim compatible."
+function format_duration(duration::Dates.Millisecond)::String
+    remaining = Dates.value(duration)
+    parts = String[]
+    for (unit_ms, name) in (
+            (86_400_000, "day"),
+            (3_600_000, "hour"),
+            (60_000, "minute"),
+            (1000, "second"),
+            (1, "millisecond"),
+        )
+        count, remaining = divrem(remaining, unit_ms)
+        iszero(count) && continue
+        push!(parts, string(count, " ", name, isone(count) ? "" : "s"))
+    end
+    return isempty(parts) ? "empty period" : join(parts, ", ")
+end
+
 function to_enumx(::Type{T}, i::Int) where {T}
     options = instances(T)
     n_options = length(options)
