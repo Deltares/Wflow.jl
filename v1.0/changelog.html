@@ -492,7 +492,8 @@ window.Quarto = {
 <ul>
 <li>BMI functions <code>get_var_units</code> and <code>get_var_location</code> for layered soil variables.</li>
 <li>netCDF scalar output of layered variables (<code>[[output.netcdf_scalar.variable]]</code>) failed at model initialization.</li>
-<li>BMI function <code>get_grid_edge_nodes</code> for grids 4 and 5 modified the edge connectivity of the model, which is used by local inertial land routing.</li>
+<li>BMI function <code>get_grid_edge_nodes</code> for the land x- and y-edge grids modified the edge connectivity of the model, which is used by local inertial land routing.</li>
+<li>BMI functions <code>get_grid_type</code>, <code>get_grid_rank</code>, <code>get_grid_edge_count</code> and <code>get_grid_edge_nodes</code> used outdated grid identifiers (river 3, land x-edges 4, land y-edges 5, land 6), inconsistent with <code>get_var_grid</code> and the other grid functions (river 2, land x-edges 3, land y-edges 4, land 5).</li>
 <li>Error messages for an invalid <code>loglevel</code> and for a netCDF scalar variable without a <code>location</code> or <code>map</code> field.</li>
 </ul>
 </section>
