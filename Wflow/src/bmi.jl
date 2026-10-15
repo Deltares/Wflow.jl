@@ -255,9 +255,9 @@ function BMI.set_value_at_indices(
 end
 
 function BMI.get_grid_type(model::Model, grid::Int)
-    if grid in 0:2
+    if grid in 0:1
         "points"
-    elseif grid in 3:6
+    elseif grid in 2:5
         "unstructured"
     else
         error("unknown grid type $grid")
@@ -265,7 +265,7 @@ function BMI.get_grid_type(model::Model, grid::Int)
 end
 
 function BMI.get_grid_rank(model::Model, grid::Int)
-    if grid in 0:6
+    if grid in 0:5
         2
     else
         error("unknown grid type $grid")
@@ -302,13 +302,13 @@ end
 
 function BMI.get_grid_edge_count(model::Model, grid::Int)
     (; domain) = model
-    if grid == 3
+    if grid == 2
         return ne(domain.river.network.graph)
-    elseif grid == 4
+    elseif grid == 3
         return length(domain.land.network.edge_indices.xu)
-    elseif grid == 5
+    elseif grid == 4
         return length(domain.land.network.edge_indices.yu)
-    elseif grid in 0:2 || grid == 6
+    elseif grid in (0, 1, 5)
         @warn("edges are not provided for grid type $grid (variables are located at nodes)")
     else
         error("unknown grid type $grid")
@@ -320,25 +320,25 @@ function BMI.get_grid_edge_nodes(model::Model, grid::Int, edge_nodes::Vector{Int
     n = length(edge_nodes)
     m = div(n, 2)
     # inactive nodes (boundary/ghost points) are set at -999
-    if grid == 3
+    if grid == 2
         nodes_at_edge = adjacent_nodes_at_edge(domain.river.network.graph)
         nodes_at_edge.dst[nodes_at_edge.dst .== m + 1] .= -999
         edge_nodes[range(1, n; step = 2)] = nodes_at_edge.src
         edge_nodes[range(2, n; step = 2)] = nodes_at_edge.dst
         return edge_nodes
-    elseif grid == 4
+    elseif grid == 3
         xu = copy(domain.land.network.edge_indices.xu)
         edge_nodes[range(1, n; step = 2)] = 1:m
         xu[xu .== m + 1] .= -999
         edge_nodes[range(2, n; step = 2)] = xu
         return edge_nodes
-    elseif grid == 5
+    elseif grid == 4
         yu = copy(domain.land.network.edge_indices.yu)
         edge_nodes[range(1, n; step = 2)] = 1:m
         yu[yu .== m + 1] .= -999
         edge_nodes[range(2, n; step = 2)] = yu
         return edge_nodes
-    elseif grid in 0:2 || grid == 6
+    elseif grid in (0, 1, 5)
         @warn("edges are not provided for grid type $grid (variables are located at nodes)")
     else
         error("unknown grid type $grid")
