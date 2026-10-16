@@ -11,7 +11,7 @@ Wflow — Julia hydrological modeling framework (Julia ≥ 1.10). Installation v
 - `data/`, `utils/` — test data and utility scripts
 
 ## Key dependencies
-NCDatasets, BasicModelInterface, Graphs, Polyester, StaticArrays, CFTime, Accessors, Parameters, EnumX, OrderedCollections
+NCDatasets, BasicModelInterface, Graphs, ThreadTeams, StaticArrays, CFTime, Accessors, Parameters, EnumX, OrderedCollections
 
 ## Internal systems (do not reimplement)
 - **Unit system** (`units.jl`): `Unit` struct for dimensional analysis, `to_SI`/`from_SI`, timestep-dependent `dt` units
@@ -19,7 +19,7 @@ NCDatasets, BasicModelInterface, Graphs, Polyester, StaticArrays, CFTime, Access
 - **Config system** (`config_structure.jl`, `config_init.jl`, `config_utils.jl`): `Config` wraps TOML as typed `AbstractConfigSection` structs. `InputEntry` handles netCDF ref / uniform value / external name
 - **NetCDF I/O** (`io.jl`): `NCReader`/`Writer`; `ncread` combines config lookup + reading + defaults + unit conversion
 - **Network/graph** (`network.jl`, `routing/utils.jl`, `subdomains.jl`): `flowgraph` converts LDD → DiGraph; `NetworkLand`/`NetworkRiver` store 1D↔2D index maps, edge connectivity, subdomain decomposition
-- **Threading** (`utils.jl`): `threaded_foreach` — `Threads.@spawn` (≤8 threads) or `Polyester.@batch`
+- **Threading** (`utils.jl`): `threaded_foreach` (contiguous chunks of at least `basesize`) and `threaded_minimum`, both on the persistent worker team of ThreadTeams.jl (`TeamScheduler`)
 - **Numeric helpers** (`utils.jl`): `scurve`, `pow`, `tosecond`, `bounded_divide`, `lattometres`, `svectorscopy`, etc.
 
 ## Architecture

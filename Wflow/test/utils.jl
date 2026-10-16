@@ -37,6 +37,35 @@ end
     @test Wflow.bounded_divide(1.0, 2.0) == 0.5
 end
 
+@testitem "unit: threaded_foreach" begin
+    # lengths with a serial loop (< 2 * basesize) and with one or more chunks per thread
+    for len in (0, 1, 999, 1999, 2000, 100_003)
+        values = collect(1:len)
+        result = zeros(Int, len)
+        Wflow.threaded_foreach(eachindex(values); basesize = 1000) do value_idx
+            result[value_idx] += 2 * values[value_idx]
+        end
+        @test result == 2 .* values
+    end
+    # `f` is applied to the elements of `x`, not to its indices
+    active_idx = collect(100_000:-2:2)
+    result = zeros(Int, 100_000)
+    Wflow.threaded_foreach(active_idx; basesize = 1000) do idx
+        result[idx] += 1
+    end
+    @test findall(isone, result) == reverse(active_idx)
+    @test count(iszero, result) == 50_000
+end
+
+@testitem "unit: threaded_minimum" begin
+    values = [sin(0.1 * value_idx) for value_idx in 1:100_003]
+    @test Wflow.threaded_minimum(value_idx -> values[value_idx], eachindex(values)) ==
+        minimum(values)
+    @test Wflow.threaded_minimum(value -> 2.0 * value, values) == 2.0 * minimum(values)
+    @test Wflow.threaded_minimum(identity, Float64[]) == Inf
+    @test Wflow.threaded_minimum(value -> Inf, values) == Inf
+end
+
 @testitem "unit: Units" begin
     using Wflow: Unit, to_SI_factor, to_SI, to_string, ABSOLUTE_DEGREES
 
