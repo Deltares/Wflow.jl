@@ -33,14 +33,14 @@ function ManningFlowParameters(
         mannings_n::Vector{Float64},
         slope::Vector{Float64},
         wetted_perimeter::Vector{Float64},
-        ponding_depth::Vector{Float64} = zeros(length(mannings_n)),
+        max_depression_depth::Vector{Float64} = zeros(length(mannings_n)),
     )
     hydraulic_radius_pow = 2.0 / 3.0
     alpha_term = @. pow(mannings_n / sqrt(slope), BETA_KINWAVE)
     alpha_pow = hydraulic_radius_pow * BETA_KINWAVE
     alpha = @. alpha_term * pow(wetted_perimeter, alpha_pow)
 
-    parameters = ManningFlowParameters(; slope, mannings_n, alpha_pow, alpha_term, alpha, ponding_depth)
+    parameters = ManningFlowParameters(; slope, mannings_n, alpha_pow, alpha_term, alpha, max_depression_depth)
     return parameters
 end
 
@@ -181,8 +181,6 @@ end
     reinfiltration_cumulative::Vector{Float64} = zeros(n)
     # Average reinfiltration flow rate [m³ s⁻¹] for model timestep dt
     reinfiltration_average::Vector{Float64} = zeros(n)
-    # Water stored on surface (due to ponding depth parameter) [m³]
-    ponding_storage::Vector{Float64} = zeros(n)
 end
 
 "Struct for storing overland flow model boundary conditions"
@@ -933,19 +931,8 @@ function update_overland_flow_and_depth!(
     # Scale reinfiltration depth by the land fraction to reverse the same scaling applied
     # when `potential_infiltration_surfacewater` was derived from overland flow `h` in
     # `update_available_for_infiltration!`, keeping the water balance consistent.
-    reinfiltration_depth = infilt_surfacewater * dt / (1.0 - river_fraction[i])
-
-    # Reinfiltration draws from stagnant ponded water first (in direct contact with the
-    # soil) and only the remainder reduces the kinematic (flowable) depth. Discharge is
-    # recomputed from the kinematic depth alone so that ponded water does not spuriously
-    # contribute to overland flow.
-    cell_area = flow_length[i] * surface_flow_width[i]
-    actual_pond_depth = ponding_storage[i] / cell_area
-    reinfiltration_from_pond = min(reinfiltration_depth, actual_pond_depth)
-    ponding_storage[i] -= reinfiltration_from_pond * cell_area
-    reinfiltration_from_flow = reinfiltration_depth - reinfiltration_from_pond
-
-    h_kin = max(0.0, (overland_flow_model.variables.h[i] - actual_pond_depth) - reinfiltration_from_flow)
+    delta_h = infilt_surfacewater * dt / (1.0 - river_fraction[i])
+    h = overland_flow_model.variables.h[i] - delta_h
 
     # only the water depth above `max_depression_depth` contributes to overland flow
     h_flow = max(h - max_depression_depth[i], 0.0)
@@ -958,9 +945,9 @@ function update_overland_flow_and_depth!(
 
     # accumulate reinfiltration volume [m³] so it can be reported as routing outflow
     overland_flow_model.variables.reinfiltration_cumulative[i] +=
-        reinfiltration_depth * surface_flow_width[i] * flow_length[i]
+        delta_h * surface_flow_width[i] * flow_length[i]
 
-    overland_flow_model.variables.h[i] = h_kin + ponding_storage[i] / cell_area
+    overland_flow_model.variables.h[i] = h
     overland_flow_model.variables.q[i] = q
     return nothing
 end

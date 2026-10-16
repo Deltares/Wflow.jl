@@ -341,6 +341,7 @@ end
                 alpha_pow = 0.4,
                 alpha_term = [0.41038937516728013, 0.4113871693777356],
                 alpha = [2.544585458995107, 2.5507721996678145],
+                max_depression_depth = [0.0, 0.0],
             ),
             bankfull_depth,
             bankfull_storage,
@@ -883,6 +884,7 @@ end
                 alpha_pow = 0.4,
                 alpha_term = [3.8572052304976667, 3.8572052304976667],
                 alpha = [34.0789466790827, 34.0789466790827],
+                max_depression_depth = [0.0, 0.0],
             ),
             bankfull_depth = [2.1051321029663086, 2.1051321029663086],
             bankfull_storage = [363469.04651181493, 412286.02275520907],
@@ -1513,14 +1515,6 @@ end
             qx = [0.0, -3.63341089804407, -0.7526187151790501, 0.0],
             h = [0.0, 1.3754708010382453, 0.11735139800699446],
             storage = [0.0, 783157.9568615163, 237954.47204911432],
-            # pond storage in nodes 2 and 3 fills up to `min(h, ponding_depth) * cell_area`,
-            # so `h_eff = h - ponding_storage / cell_area` is zero at both nodes and no
-            # flow occurs across the edge.
-            ponding_storage = [
-                0.0,
-                1.3754708010382453 * 614.4202561305977 * 926.6857061478484,
-                0.11735139800699446 * 614.4202561305977 * 926.6857061478484,
-            ],
         ),
     )
     domain = Wflow.Domain(;

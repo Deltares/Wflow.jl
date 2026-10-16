@@ -31,7 +31,7 @@ end
     alpha_pow::Float64          # Used in the power part of alpha [-]
     alpha_term::Vector{Float64} # Term used in computation of alpha [-]
     alpha::Vector{Float64}      # Constant in momentum equation A = alpha*Q^beta, based on Manning's equation [s3/5 m1/5]
-    ponding_depth::Vector{Float64} = zeros(length(slope)) # Ponding depth [m]
+    max_depression_depth::Vector{Float64} # Maximum depth of surface depression storage [m]
 end
 
 "River flow model"
