@@ -665,7 +665,7 @@ function update_bc_soil_model!(
     (; potential_transpiration, water_flux_surface, potential_soilevaporation) =
         soil_model.boundary_conditions
 
-    potential_transpiration .= get_potential_transpiration(interception)
+    potential_transpiration!(potential_transpiration, interception)
 
     @. potential_soilevaporation =
         soil_model.parameters.soil_fraction * atmospheric_forcing.potential_evaporation
@@ -991,26 +991,28 @@ function actual_infiltration!(soil_model::SbmSoilModel, dt::Float64)
     n = length(v.actual_infiltration)
     threaded_foreach(1:n; basesize = 1000) do i
         # check soil moisture balance per layer
+        unsaturated_layer_depth = v.unsaturated_layer_depth[i]
         ustoredepth_excess = 0.0
         for k in v.n_unsatlayers[i]:-1:1
             ustoredepth_excess = max(
                 0.0,
-                v.unsaturated_layer_depth[i][k] -
+                unsaturated_layer_depth[k] -
                     v.unsaturated_layer_thickness[i][k] * (p.theta_s[i] - p.theta_r[i]),
             )
-            v.unsaturated_layer_depth[i] = setindex(
-                v.unsaturated_layer_depth[i],
-                v.unsaturated_layer_depth[i][k] - ustoredepth_excess,
+            unsaturated_layer_depth = setindex(
+                unsaturated_layer_depth,
+                unsaturated_layer_depth[k] - ustoredepth_excess,
                 k,
             )
             if k > 1
-                v.unsaturated_layer_depth[i] = setindex(
-                    v.unsaturated_layer_depth[i],
-                    v.unsaturated_layer_depth[i][k - 1] + ustoredepth_excess,
+                unsaturated_layer_depth = setindex(
+                    unsaturated_layer_depth,
+                    unsaturated_layer_depth[k - 1] + ustoredepth_excess,
                     k - 1,
                 )
             end
         end
+        v.unsaturated_layer_depth[i] = unsaturated_layer_depth
         v.actual_infiltration[i] = v.infiltration[i] - ustoredepth_excess / dt
     end
     return nothing
@@ -1342,7 +1344,7 @@ function update_soil_water_storage!(
             )
         end
 
-        rootstore_unsat = 0
+        rootstore_unsat = 0.0
         for k in 1:(v.n_unsatlayers[i])
             rootstore_unsat +=
                 min(
