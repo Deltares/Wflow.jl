@@ -62,12 +62,13 @@ using NCDatasets:
     NCDatasets, NCDataset, CFVariable, dimnames, dimsize, nomissing, defDim, defVar, path
 using OrderedCollections: OrderedDict
 using Parameters: @with_kw
-using Polyester: @batch
 using ProgressLogging: @progress
 using PropertyDicts: PropertyDict
 using StaticArrays: SVector, pushfirst, setindex
 using Statistics: mean, median, quantile!
 using TerminalLoggers: TerminalLogger
+using ThreadTeams:
+    ThreadTeams, TeamScheduler, GreedyTeamScheduler, index_chunks, tforeach, tmapreduce
 using TOML: TOML
 
 const VERSION =

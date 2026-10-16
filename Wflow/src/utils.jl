@@ -676,43 +676,48 @@ function julian_day(time::TimeType)::Int
     return day
 end
 
-"Partition indices with at least size `basesize`"
-function _partition(xs::Integer, basesize::Integer)
-    n = Int(max(1, xs ÷ basesize))
-    return (Int(1 + ((i - 1) * xs) ÷ n):Int((i * xs) ÷ n) for i in 1:n)
-end
+const TEAM_SCHEDULER = TeamScheduler()
+const GREEDY_TEAM_SCHEDULER = GreedyTeamScheduler(; chunksize = 1)
 
 """
     threaded_foreach(f, x::AbstractArray; basesize::Integer)
 
-Run function `f` in parallel by spawning tasks (nthreads <= 8), each task iterates over a
-chunk of size `basesize`. For nthreads > 8 run function `f` in parallel with
-`Polyester@batch` with `minbatch` equal to `basesize`.
+Run function `f` on each element of `x` in parallel on the persistent worker team of
+ThreadTeams.jl. `x` is split into `length(x) ÷ basesize` contiguous chunks (at least
+`basesize` elements each) that the threads take one by one until none are left, which
+balances iterations of unequal cost (e.g. kinematic wave subdomains). Runs serially when `x`
+holds fewer than `2 * basesize` elements.
 """
-function threaded_foreach(f::Function, x::AbstractArray; basesize::Integer)::Nothing
-    if Threads.nthreads() <= 8
-        len = length(x)
-        partitions = _partition(len, basesize)
-        if length(partitions) > 1 && Threads.nthreads() > 1
-            @sync for p in partitions
-                Threads.@spawn begin
-                    for i in p
-                        f(@inbounds x[i])
-                    end
-                end
-            end
-        else
-            for i in eachindex(x)
-                f(@inbounds x[i])
-            end
-        end
+function threaded_foreach(f::F, x::AbstractArray; basesize::Integer)::Nothing where {F}
+    n_chunks = length(x) ÷ basesize
+    if n_chunks <= 1 || ThreadTeams.nworkers() == 1
+        foreach_inlined(f, x, eachindex(x))
     else
-        @batch per = thread minbatch = basesize for i in eachindex(x)
-            f(@inbounds x[i])
+        chunks = index_chunks(x; n = n_chunks)
+        tforeach(chunks; scheduler = GREEDY_TEAM_SCHEDULER) do chunk
+            foreach_inlined(f, x, chunk)
         end
     end
     return nothing
 end
+
+# Call `f` on `x[x_idx]` for `x_idx` in `indices`, with `f` inlined into the loop so that
+# loads of the arrays captured by `f` are hoisted out of the loop (as with `Polyester.@batch`)
+function foreach_inlined(f::F, x::AbstractArray, indices)::Nothing where {F}
+    for x_idx in indices
+        @inline f(@inbounds x[x_idx])
+    end
+    return nothing
+end
+
+"""
+    threaded_minimum(f, x::AbstractArray)
+
+Return the minimum of `f` applied to each element of `x`, computed in parallel on the
+persistent worker team of ThreadTeams.jl. Returns `Inf` for an empty `x`.
+"""
+threaded_minimum(f::F, x::AbstractArray) where {F} =
+    tmapreduce(f, min, x; scheduler = TEAM_SCHEDULER, init = Inf)
 
 """
     hydraulic_conductivity_at_depth(p::KvExponential, vertical_hydraulic_conductivity_factor, z, i, n)
