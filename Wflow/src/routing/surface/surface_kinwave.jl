@@ -350,9 +350,9 @@ function kinwave_land_update!(
                         (max_depression_depth[v] - depression_water_depth) * cell_area
                     inflow_rate = qin[v] + qlat[v] * flow_length[v]
                     if remaining_capacity > 0.0 && inflow_rate > 0.0
-                        absorbed_rate = min(inflow_rate, remaining_capacity / dt)
-                        depression_water_depth += absorbed_rate * dt / cell_area
-                        factor = 1.0 - absorbed_rate / inflow_rate
+                        filling_rate = min(inflow_rate, remaining_capacity / dt)
+                        depression_water_depth += filling_rate * dt / cell_area
+                        factor = 1.0 - filling_rate / inflow_rate
                         qin_eff = qin[v] * factor
                         qlat_eff = qlat[v] * factor
                     end
