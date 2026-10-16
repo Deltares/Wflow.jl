@@ -67,7 +67,7 @@ floodplain_bottom_surface__slope = "floodplain_slope"
   `BETA_KINWAVE` ([#898](https://github.com/Deltares/Wflow.jl/pull/898)).
 - Improved performance of the vertical `SBM` concept (interception, unsaturated zone flow
   and actual infiltration), and removed per-timestep allocation of potential transpiration.
-  Model results are unchanged.
+  Model results are unchanged ([#1134](https://github.com/Deltares/Wflow.jl/pull/1134)).
 - Drainable porosity or specific yield, defined as the difference between `theta_s`
   (saturated water content) and `theta_fc` (water content at field capacity) is now used to
   compute the change of a falling water table for subsurface flow concepts `LateralSSF` and
