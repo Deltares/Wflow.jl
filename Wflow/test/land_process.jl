@@ -608,7 +608,7 @@ end
         alpha_pow = 0.4,
         alpha_term = [0.41038937516728013],
         alpha = [2.544585458995107],
-        ponding_depth = [0.0],
+        max_depression_depth = [0.0],
     )
 
     boundary_conditions = LandFlowBC(; n)
@@ -624,8 +624,9 @@ end
         flow_length = [flow_length],
     )
 
-    # Test with positive infiltration and no ponding: reinfiltration draws entirely from
-    # the kinematic depth and discharge is recomputed from the reduced depth.
+    # Test with positive infiltration and no surface depression storage: reinfiltration
+    # draws entirely from the kinematic depth and discharge is recomputed from the reduced
+    # depth.
     Wflow.update_overland_flow_and_depth!(
         overland_flow_model,
         infilt_surfacewater,
@@ -646,7 +647,7 @@ end
     @test overland_flow_model.variables.h[1] == original_depth
 end
 
-@testitem "unit: update_overland_flow_and_depth! with ponding" begin
+@testitem "unit: update_overland_flow_and_depth! with surface depression storage" begin
     using Wflow:
         OverlandFlowModel,
         ManningFlowParameters,
@@ -656,20 +657,18 @@ end
         BETA_KINWAVE,
         pow
 
-    # Setup: single cell with both a ponded volume and a kinematic flow depth. The total
-    # water depth `h` (as stored in the overland flow model) equals the kinematic depth
-    # plus the pond averaged over the cell footprint.
+    # Setup: single cell with a water depth `h` above `max_depression_depth`. Only the water
+    # depth above `max_depression_depth` contributes to overland flow; reinfiltration
+    # reduces the total water depth `h`.
     n = 1
     dt = 900.0 # s
     river_fraction = 0.2
     flow_length = 100.0
     surface_flow_width = 10.0
-    cell_area = flow_length * surface_flow_width
     alpha = 2.544585458995107
-
-    h_kin_initial = 0.02
-    pond_initial = 0.005 * cell_area # 0.005 m averaged over the cell
-    pond_depth_initial = pond_initial / cell_area
+    max_depression_depth = 0.01
+    h_flow_initial = 0.02
+    h_initial = max_depression_depth + h_flow_initial
 
     parameters = ManningFlowParameters(;
         slope = [0.01],
@@ -677,7 +676,7 @@ end
         alpha_pow = 0.4,
         alpha_term = [0.41038937516728013],
         alpha = [alpha],
-        ponding_depth = [0.01],
+        max_depression_depth = [max_depression_depth],
     )
     boundary_conditions = LandFlowBC(; n)
     timestepping =
@@ -688,53 +687,53 @@ end
         flow_length = [flow_length],
     )
 
-    # Case 1: reinfiltration is smaller than the ponded depth → drained entirely from the
-    # pond, kinematic depth unchanged and discharge computed from the kinematic depth only.
+    # Case 1: reinfiltration is smaller than the water depth above `max_depression_depth`
+    # → the depression storage remains full and discharge is computed from the reduced
+    # depth above `max_depression_depth`.
     variables = OverLandFlowVariables(; n)
-    variables.h[1] = h_kin_initial + pond_depth_initial
-    variables.ponding_storage[1] = pond_initial
+    variables.h[1] = h_initial
     overland_flow_model = OverlandFlowModel(;
         routing_method = Wflow.KinematicWave(),
         timestepping, boundary_conditions, parameters, variables,
     )
 
-    infilt_pond_only = 2.0e-6 # m s⁻¹, gives reinfiltration_depth < pond_depth_initial
-    reinfiltration_depth = infilt_pond_only * dt / (1.0 - river_fraction)
-    @test reinfiltration_depth < pond_depth_initial
+    infilt_small = 2.0e-6 # m s⁻¹
+    reinfiltration_depth = infilt_small * dt / (1.0 - river_fraction)
+    @test reinfiltration_depth < h_flow_initial
 
     Wflow.update_overland_flow_and_depth!(
-        overland_flow_model, infilt_pond_only, land_parameters, 1, dt,
+        overland_flow_model, infilt_small, land_parameters, 1, dt,
     )
 
-    expected_pond = pond_initial - reinfiltration_depth * cell_area
-    expected_h = h_kin_initial + expected_pond / cell_area
-    expected_q =
-        pow((h_kin_initial * surface_flow_width) / alpha, 1.0 / BETA_KINWAVE)
-    @test overland_flow_model.variables.ponding_storage[1] ≈ expected_pond
+    expected_h = h_initial - reinfiltration_depth
+    expected_q = pow(
+        ((expected_h - max_depression_depth) * surface_flow_width) / alpha,
+        1.0 / BETA_KINWAVE,
+    )
     @test overland_flow_model.variables.h[1] ≈ expected_h
     @test overland_flow_model.variables.q[1] ≈ expected_q
+    @test overland_flow_model.variables.reinfiltration_cumulative[1] ≈
+        reinfiltration_depth * surface_flow_width * flow_length
 
-    # Case 2: reinfiltration exceeds the pond → pond fully drained and the remainder is
-    # taken from the kinematic depth; discharge is recomputed from the reduced depth.
+    # Case 2: reinfiltration exceeds the water depth above `max_depression_depth` → the
+    # water depth drops below `max_depression_depth` and overland flow stops.
     variables = OverLandFlowVariables(; n)
-    variables.h[1] = h_kin_initial + pond_depth_initial
-    variables.ponding_storage[1] = pond_initial
+    variables.h[1] = h_initial
     overland_flow_model = OverlandFlowModel(;
         routing_method = Wflow.KinematicWave(),
         timestepping, boundary_conditions, parameters, variables,
     )
 
-    infilt_beyond_pond = 1.0e-5 # m s⁻¹
-    reinfiltration_depth = infilt_beyond_pond * dt / (1.0 - river_fraction)
-    @test reinfiltration_depth > pond_depth_initial
+    infilt_large = 2.0e-5 # m s⁻¹
+    reinfiltration_depth = infilt_large * dt / (1.0 - river_fraction)
+    @test h_flow_initial < reinfiltration_depth < h_initial
 
     Wflow.update_overland_flow_and_depth!(
-        overland_flow_model, infilt_beyond_pond, land_parameters, 1, dt,
+        overland_flow_model, infilt_large, land_parameters, 1, dt,
     )
 
-    expected_h_kin = h_kin_initial - (reinfiltration_depth - pond_depth_initial)
-    expected_q = pow((expected_h_kin * surface_flow_width) / alpha, 1.0 / BETA_KINWAVE)
-    @test overland_flow_model.variables.ponding_storage[1] ≈ 0.0 atol = 1.0e-12
-    @test overland_flow_model.variables.h[1] ≈ expected_h_kin
-    @test overland_flow_model.variables.q[1] ≈ expected_q
+    expected_h = h_initial - reinfiltration_depth
+    @test expected_h < max_depression_depth
+    @test overland_flow_model.variables.h[1] ≈ expected_h
+    @test overland_flow_model.variables.q[1] == 0.0
 end

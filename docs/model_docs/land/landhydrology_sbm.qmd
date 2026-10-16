@@ -1027,11 +1027,12 @@ Finally, `actual_infiltration`, `infiltexcess` and `water_flux_surface` are corr
 $\subtext{i}{pot, sw}^{t}$ to avoid double counting of water already originating from
 surface water.
 
-When a positive [surface ponding depth](../routing/kinwave.qmd#surface-ponding) is
-configured, reinfiltration is drawn from the pond storage before reducing the flowable share
-of the overland flow depth. This applies to both [kinematic wave overland
-flow](../routing/kinwave.qmd#surface-ponding) and [2D local inertial overland
-flow](../routing/staggered-grid.qmd#surface-ponding).
+When a positive [maximum surface depression storage
+depth](../routing/kinwave.qmd#surface-depression-storage) is configured, reinfiltration
+reduces the total overland flow depth $h$, and only the remaining water depth above the
+maximum surface depression storage depth contributes to overland flow. This applies to both
+[kinematic wave overland flow](../routing/kinwave.qmd#surface-depression-storage) and [2D
+local inertial overland flow](../routing/staggered-grid.qmd#surface-depression-storage).
 
 ### Capillary rise
 
