@@ -76,6 +76,41 @@ kinematic_wave__adaptive_time_step_flag = true    # optional, default is false
 [Reservoir](./reservoirs.qmd) models representing reservoirs, (natural) lakes or other water
 storage features can be included as part of the river kinematic wave network.
 
+## Surface depression storage {#surface-depression-storage}
+A maximum surface depression storage depth $\SIb{\subtext{h}{dep,max}}{m}$ can be provided
+as a static parameter to represent retention of water on the land surface in depressions.
+The parameter defaults to $\SI{0}{m}$ (no retention) and can be provided as follows in the
+TOML configuration file:
+
+```toml
+[input.static]
+land_surface_depression__max_depth = "max_depression_depth"
+```
+
+For kinematic wave overland flow, water depth up to $\subtext{h}{dep,max}$ is retained in
+surface depressions and only the water depth above $\subtext{h}{dep,max}$ contributes to
+overland flow. The depression water depth $\SIb{\subtext{h}{dep}}{m}$ and flowing water depth
+$\SIb{\subtext{h}{f}}{m}$ follow from the total surface water depth $\SIb{h}{m}$:
+
+$$
+\subtext{h}{dep} = \min(h, \subtext{h}{dep,max}), \quad \subtext{h}{f} = \max(h - \subtext{h}{dep,max}, 0).
+$$
+
+Incoming lateral and upstream inflow is first used to fill the remaining depression storage
+$(\subtext{h}{dep,max} - \subtext{h}{dep}) \subtext{L}{flow} \subtext{w}{flow}$
+$\SIb{}{m^3}$, where $\SIb{\subtext{L}{flow}}{m}$ is the flow length and
+$\SIb{\subtext{w}{flow}}{m}$ is the surface flow width. Only the inflow in excess of this
+remaining storage is passed on to the kinematic wave. The surface water depth $h$ is the sum
+of the depression water depth and the flowing water depth, and only the flowing water depth
+drives the downstream discharge $\SIb{Q}{m^3\ s^{-1}}$. As the depression water depth is
+derived from $h$, no additional state is required.
+
+The same `land_surface_depression__max_depth` parameter is used by the [local inertial
+overland flow (2D) routing](./staggered-grid.qmd#surface-depression-storage). When [land
+surface water reinfiltration](../land/landhydrology_sbm.qmd#land-surface-water-infiltration)
+is enabled, reinfiltration reduces the surface water depth $h$, and discharge is computed
+from the remaining water depth above $\subtext{h}{dep,max}$.
+
 ## Floodplain routing
 It is possible to include a [floodplain
 schematization](./staggered-grid.qmd#floodplain-schematization) as part of the kinematic

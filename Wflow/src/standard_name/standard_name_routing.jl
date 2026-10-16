@@ -302,6 +302,13 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
         description = "Manning's roughness",
         tags = [:kinematic_wave_overland_input, :local_inertial_overland_input],
     ),
+    "land_surface_depression__max_depth" => ParameterMetadata(;
+        lens = @optic(_.routing.overland_flow.parameters.max_depression_depth),
+        unit = Unit(; m = 1),
+        default = 0.0,
+        description = "Maximum depth of surface depression storage on the land surface",
+        tags = [:kinematic_wave_overland_input, :local_inertial_overland_input],
+    ),
     #### States
     "land_surface_water__instantaneous_volume_flow_rate" => ParameterMetadata(;
         lens = @optic(_.routing.overland_flow.variables.q),
