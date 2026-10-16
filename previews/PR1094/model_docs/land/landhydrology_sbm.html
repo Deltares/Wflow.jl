@@ -1374,7 +1374,7 @@ T_\mathrm{soil}^t = T_\mathrm{soil}^{t-1} + w_\mathrm{soil}  (T_\mathrm{air} - T
   \subtext{i}{sw}^{t} = \subtext{i}{pot, sw}^{t} \cdot \frac{\subtext{i}{act}^{t}}{\subtext{i}{pot}^{t}}.
 \]</span></p>
 <p>Finally, <code>actual_infiltration</code>, <code>infiltexcess</code> and <code>water_flux_surface</code> are corrected by <span class="math inline">\(\subtext{i}{pot, sw}^{t}\)</span> to avoid double counting of water already originating from surface water.</p>
-<p>When a positive <a href="../../model_docs/routing/kinwave.html#surface-ponding">surface ponding depth</a> is configured, reinfiltration is drawn from the pond storage before reducing the flowable share of the overland flow depth. This applies to both <a href="../../model_docs/routing/kinwave.html#surface-ponding">kinematic wave overland flow</a> and <a href="../../model_docs/routing/staggered-grid.html#surface-ponding">2D local inertial overland flow</a>.</p>
+<p>When a positive <a href="../../model_docs/routing/kinwave.html#surface-depression-storage">maximum surface depression storage depth</a> is configured, reinfiltration reduces the total overland flow depth <span class="math inline">\(h\)</span>, and only the remaining water depth above the maximum surface depression storage depth contributes to overland flow. This applies to both <a href="../../model_docs/routing/kinwave.html#surface-depression-storage">kinematic wave overland flow</a> and <a href="../../model_docs/routing/staggered-grid.html#surface-depression-storage">2D local inertial overland flow</a>.</p>
 </section>
 </section>
 <section id="capillary-rise" class="level3">
