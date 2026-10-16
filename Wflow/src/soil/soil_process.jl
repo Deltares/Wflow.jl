@@ -64,7 +64,9 @@ function unsatzone_flow_layer(
 
     st_sat = max(0.0, unsaturated_layer_depth - l_sat)
 
-    st = kv_z * bounded_power(unsaturated_layer_depth / l_sat, brooks_corey_exponent)
+    relative_conductivity =
+        bounded_power(unsaturated_layer_depth / l_sat, brooks_corey_exponent)
+    st = kv_z * relative_conductivity
     sum_ast = min(st, st_sat / dt)
     unsaturated_layer_depth -= sum_ast * dt
 
@@ -73,16 +75,20 @@ function unsatzone_flow_layer(
     remainder = min((st - sum_ast) * dt, unsaturated_layer_depth)
     its = Int(cld(remainder, 2.0e-4))
     for _ in 1:its
-        st =
-            (kv_z / its) *
-            bounded_power(unsaturated_layer_depth / l_sat, brooks_corey_exponent)
+        # unsaturated_layer_depth only changed if sum_ast > 0, otherwise the relative
+        # conductivity can be reused
+        if sum_ast > 0.0
+            relative_conductivity =
+                bounded_power(unsaturated_layer_depth / l_sat, brooks_corey_exponent)
+        end
+        st = (kv_z / its) * relative_conductivity
         st_max = unsaturated_layer_depth / dt
 
         if st < st_max
             unsaturated_layer_depth -= st * dt
             sum_ast += st
         else
-            unsaturated_layer_depth = 0
+            unsaturated_layer_depth = 0.0
             sum_ast += st_max
             break
         end

@@ -66,6 +66,7 @@ function update_interception_model!(
     n = length(precipitation)
     if !isnothing(leaf_area_index)
         update_canopy_parameters!(interception_model.parameters.vegetation_parameter_set)
+        min_precipitation = to_SI(1.0e-4, MM_PER_DT; dt_val = dt)
         threaded_foreach(1:n; basesize = 1000) do i
             canopyfraction = 1.0 - canopy_gap_fraction[i]
             ewet = canopyfraction * potential_evaporation[i] * crop_coefficient[i]
@@ -73,10 +74,7 @@ function update_interception_model!(
                 precipitation[i] > 0.0 ?
                 min(
                     0.25,
-                    ewet / max(
-                        to_SI(1.0e-4, MM_PER_DT; dt_val = dt),
-                        canopyfraction * precipitation[i],
-                    ),
+                    ewet / max(min_precipitation, canopyfraction * precipitation[i]),
                 ) : 0.0
         end
     end
@@ -162,9 +160,12 @@ function update_canopy_parameters!(parameters::VegetationParameters)
     return nothing
 end
 
-"Return potential transpiration rate based on the interception rate"
-get_potential_transpiration(interception_model::AbstractInterceptionModel) = @. max(
-    0.0,
-    interception_model.variables.canopy_potevap -
-        interception_model.variables.interception_rate,
-)
+"Update potential transpiration rate based on the interception rate"
+function potential_transpiration!(
+        potential_transpiration::Vector{Float64},
+        interception_model::AbstractInterceptionModel,
+    )
+    (; canopy_potevap, interception_rate) = interception_model.variables
+    @. potential_transpiration = max(0.0, canopy_potevap - interception_rate)
+    return nothing
+end
