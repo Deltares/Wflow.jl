@@ -53,6 +53,12 @@ floodplain_bottom_surface__slope = "floodplain_slope"
   ([#1052](https://github.com/Deltares/Wflow.jl/pull/1052)).
 
 ### Changed
+- Replaced `Polyester.@batch` and the spawning of tasks with `Threads.@spawn` (for up to 8
+  threads) by the persistent worker team of
+  [ThreadTeams.jl](https://github.com/vchuravy/ThreadTeams.jl), for any number of threads.
+  `threaded_foreach` splits a loop into chunks of at least `basesize` iterations that the
+  threads take one by one (load balancing), and the stable time step of the local inertial
+  model is computed with a parallel `min` reduction. Results are unchanged.
 - All internal computations now use standardized SI units (m, s, kg, J, K) consistently
   throughout the codebase. Units are converted to/from the old units at I/O
   boundaries. This generally does not change model results (units are converted back before
