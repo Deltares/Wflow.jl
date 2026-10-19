@@ -29,9 +29,6 @@ TOML = "fa267f1f-6049-4f14-aa54-33bafae1ed76"
 TerminalLoggers = "5d786b92-1e48-4d6f-9151-6b4477ca9bed"
 ThreadTeams = "100744f9-5cbb-42a9-938e-f15a20f71997"
 
-[sources]
-ThreadTeams = {url = "https://github.com/vchuravy/ThreadTeams.jl"}
-
 [compat]
 Accessors = "0.1"
 BasicModelInterface = "0.1"

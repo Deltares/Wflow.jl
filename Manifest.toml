@@ -2,7 +2,7 @@
 
 julia_version = "1.13.1"
 manifest_format = "2.1"
-project_hash = "f5fca260f40ba191bc42481234baef2afdc4c70c"
+project_hash = "69c067b26df2d10f1e34f676aabfa5f1c0d98304"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -2336,8 +2336,7 @@ version = "1.1.0"
 [[deps.ThreadTeams]]
 deps = ["ChunkSplitters", "OhMyThreads", "ScopedValues"]
 git-tree-sha1 = "ae2f9226565d1a10fda0af07b42f674f4b988e2f"
-repo-rev = "main"
-repo-url = "https://github.com/vchuravy/ThreadTeams.jl"
+registries = "General"
 uuid = "100744f9-5cbb-42a9-938e-f15a20f71997"
 version = "1.0.0"
 

@@ -41,7 +41,6 @@ ThreadTeams = "100744f9-5cbb-42a9-938e-f15a20f71997"
 Wflow = "d48b7d99-76e7-47ae-b1d5-ff0c1cf9a818"
 
 [sources]
-ThreadTeams = {rev = "main", url = "https://github.com/vchuravy/ThreadTeams.jl"}
 Wflow = {path = "Wflow"}
 
 [compat]
