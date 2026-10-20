@@ -56,7 +56,7 @@ Delivers the river runoff given the net runoff from surface to river, taking int
 ## Vegetation
 In `vegetation`<br>
 Canopy processes in `canopy.jl`:
-The interception of rainfall, evaporation from interception and transpiration implemented in `rainfall_interception.jl` and wrapped for models in `canopy.jl`
+Rainfall interception and vegetation parameters.
 
 <br>
 <br>

@@ -74,5 +74,3 @@ updated JSON files.
   structs, functions and macros. Using the non-ASCII character for built-in operators is still
   allowed. This change in naming convention is now in effect and all invalid uses of non-ASCII
   characters have been replaced by ASCII equivalents.
-
-{{< include wflow_src_structure.qmd >}}

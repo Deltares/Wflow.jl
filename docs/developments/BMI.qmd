@@ -2,21 +2,21 @@
 title: Basic Modelling Interface
 ---
 
-This page summarizes the functions implemented in the module `Wflow/src/bmi.jl`
+This page summarizes the functions implemented in `Wflow/src/bmi.jl`
 according to the Basic Model Interface (BMI) conventions defined by
 [BasicModelInterface.jl](https://github.com/Deltares/BasicModelInterface.jl).
 Wflow uses BMI as the model-coupling layer for initialization, time stepping, variable access,
 and spatial metadata exchange. The implementation covers the functions that are practically required for coupled execution and
 variable exchange in Wflow.
 
-## 1. Model lifecycle functions
+## 1. Model control functions
 
-These are the main BMI lifecycle methods.
+These are the main BMI model control functions.
 
 | Function | Purpose |
 |---|---|
 | `initialize(::Type{<:Model}, config_file)` | Reads the TOML configuration, determines the model type (`sbm`, `sbm_gwf`, or `sediment`), constructs the `Model`, and loads fixed forcing. This is the initialization entry point for external drivers. |
-| `update(model)` | Advances the model by one time step by calling `run_timestep!(model)`. |
+| `update(model)` | Advances the model by a single time step by calling `run_timestep!(model)`. |
 | `update_until(model, time)` | Runs the model forward until a target time, checking that the requested time is an integer multiple of the model timestep. |
 | `finalize(model)` | Writes the final state when needed, resets the model clock, and closes open files. |
 
