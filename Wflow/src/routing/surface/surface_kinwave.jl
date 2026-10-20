@@ -33,13 +33,14 @@ function ManningFlowParameters(
         mannings_n::Vector{Float64},
         slope::Vector{Float64},
         wetted_perimeter::Vector{Float64},
+        max_depression_depth::Vector{Float64} = zeros(length(mannings_n)),
     )
     hydraulic_radius_pow = 2.0 / 3.0
     alpha_term = @. pow(mannings_n / sqrt(slope), BETA_KINWAVE)
     alpha_pow = hydraulic_radius_pow * BETA_KINWAVE
     alpha = @. alpha_term * pow(wetted_perimeter, alpha_pow)
 
-    parameters = ManningFlowParameters(; slope, mannings_n, alpha_pow, alpha_term, alpha)
+    parameters = ManningFlowParameters(; slope, mannings_n, alpha_pow, alpha_term, alpha, max_depression_depth)
     return parameters
 end
 
@@ -204,12 +205,19 @@ function init_kinematic_wave_overland_flow(
         Routing;
         sel = indices,
     )
+    max_depression_depth = ncread(
+        dataset,
+        config,
+        "land_surface_depression__max_depth",
+        Routing;
+        sel = indices,
+    )
 
     n = length(indices)
     timestepping = init_kinematic_wave_timestepping(config, n; domain = "land")
 
     variables = OverLandFlowVariables(; n)
-    parameters = ManningFlowParameters(mannings_n, slope, surface_flow_width)
+    parameters = ManningFlowParameters(mannings_n, slope, surface_flow_width, max_depression_depth)
     boundary_conditions = LandFlowBC(; n)
     routing_method = KinematicWave()
 
@@ -303,7 +311,7 @@ function kinwave_land_update!(
     (; order_of_subdomains, order_subdomain, subdomain_indices, upstream_nodes) =
         domain.network
 
-    (; alpha) = overland_flow_model.parameters
+    (; alpha, max_depression_depth) = overland_flow_model.parameters
     (; h, q, q_cumulative, storage, qin, qin_cumulative, qlat, to_river_cumulative) =
         overland_flow_model.variables
     (; surface_flow_width, flow_length, flow_fraction_to_river) = domain.parameters
@@ -328,13 +336,37 @@ function kinwave_land_update!(
                     )
                 end
 
-                q[v], flow_area =
-                    kinematic_wave(qin[v], q[v], qlat[v], alpha[v], dt, flow_length[v])
-
-                # update h, only if flow width > 0.0
-                if surface_flow_width[v] > 0.0
-                    h[v] = flow_area / surface_flow_width[v]
+                # surface depression storage: water depth `h` up to `max_depression_depth` is
+                # retained in surface depressions (depression water depth =
+                # min(h, max_depression_depth)), only water above this depth contributes to
+                # overland flow. Incoming water first fills the remaining depression storage.
+                qin_eff = qin[v]
+                qlat_eff = qlat[v]
+                depression_water_depth = 0.0
+                if max_depression_depth[v] > 0.0 && surface_flow_width[v] > 0.0
+                    depression_water_depth = min(h[v], max_depression_depth[v])
+                    cell_area = flow_length[v] * surface_flow_width[v]
+                    remaining_capacity =
+                        (max_depression_depth[v] - depression_water_depth) * cell_area
+                    inflow_rate = qin[v] + qlat[v] * flow_length[v]
+                    if remaining_capacity > 0.0 && inflow_rate > 0.0
+                        filling_rate = min(inflow_rate, remaining_capacity / dt)
+                        depression_water_depth += filling_rate * dt / cell_area
+                        factor = 1.0 - filling_rate / inflow_rate
+                        qin_eff = qin[v] * factor
+                        qlat_eff = qlat[v] * factor
+                    end
                 end
+
+                q[v], flow_area =
+                    kinematic_wave(qin_eff, q[v], qlat_eff, alpha[v], dt, flow_length[v])
+
+                # update h (flowing water depth and depression water depth), only if flow
+                # width > 0.0
+                if surface_flow_width[v] > 0.0
+                    h[v] = flow_area / surface_flow_width[v] + depression_water_depth
+                end
+
                 storage[v] = flow_length[v] * surface_flow_width[v] * h[v]
 
                 # average flow
@@ -856,8 +888,10 @@ function update_overland_flow_and_depth!(
     )
     infilt_surfacewater > 0.0 || return nothing
 
-    (; alpha) = overland_flow_model.parameters
+    (; alpha, max_depression_depth) = overland_flow_model.parameters
     (; river_fraction, surface_flow_width, flow_length) = land_parameters
+
+    surface_flow_width[i] > 0.0 || return nothing
 
     # Scale reinfiltration depth by the land fraction to reverse the same scaling applied
     # when `potential_infiltration_surfacewater` was derived from overland flow `h` in
@@ -865,9 +899,11 @@ function update_overland_flow_and_depth!(
     delta_h = infilt_surfacewater * dt / (1.0 - river_fraction[i])
     h = overland_flow_model.variables.h[i] - delta_h
 
+    # only the water depth above `max_depression_depth` contributes to overland flow
+    h_flow = max(h - max_depression_depth[i], 0.0)
     q = ifelse(
-        surface_flow_width[i] > 0.0 && h > 0.0,
-        pow((h * surface_flow_width[i]) / alpha[i], 1.0 / BETA_KINWAVE),
+        h_flow > 0.0,
+        pow((h_flow * surface_flow_width[i]) / alpha[i], 1.0 / BETA_KINWAVE),
         0.0,
     )
     q = ifelse(q < KIN_WAVE_MIN_FLOW, 0.0, q)

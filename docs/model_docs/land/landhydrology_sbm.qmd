@@ -1027,6 +1027,13 @@ Finally, `actual_infiltration`, `infiltexcess` and `water_flux_surface` are corr
 $\subtext{i}{pot, sw}^{t}$ to avoid double counting of water already originating from
 surface water.
 
+When a positive [maximum surface depression storage
+depth](../routing/kinwave.qmd#surface-depression-storage) is configured, reinfiltration
+reduces the total overland flow depth $h$, and only the remaining water depth above the
+maximum surface depression storage depth contributes to overland flow. This applies to both
+[kinematic wave overland flow](../routing/kinwave.qmd#surface-depression-storage) and [2D
+local inertial overland flow](../routing/staggered-grid.qmd#surface-depression-storage).
+
 ### Capillary rise
 
 Capillary rise is determined when an unsaturated zone occurs in the soil column, using the
