@@ -31,8 +31,8 @@ function rainfall_interception_gash(
             end
         else
             fraction_stemflow = 1.0 - canopy_gap_fraction
-            fraction_interception = 0
-            precipitation_saturation = 0
+            fraction_interception = 0.0
+            precipitation_saturation = 0.0
         end
 
         # large storms P > P_sat
