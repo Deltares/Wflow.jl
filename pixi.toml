@@ -26,7 +26,7 @@ check = "prek run --all-files"
 # First one can fix issues, second one is to check if all are fixed
 fix-check = "prek run --all-files || prek run --all-files"
 update-manifest-julia = "julia --startup-file=no --project utils/update-manifest.jl"
-install = { depends-on = ["install-prek"] }
+install = { depends-on = ["install-prek", "install-julialint"] }
 # Test data
 download-test-data = { cmd = "dvc pull", cwd = ".", env = { CRYPTOGRAPHY_OPENSSL_NO_LEGACY = "1" } }
 # Build
@@ -60,6 +60,10 @@ test-wflow-server = { cmd = "julia --startup-file=no --project=server --eval 'us
 quarto-check = { cmd = "quarto check all" }
 quarto-render = { cmd = "quarto render docs --to html --execute" }
 quarto-preview = { cmd = "quarto preview docs" }
+# Lint (julialint, configured by JuliaLint.toml)
+install-julialint = { cmd = "julia --startup-file=no --eval 'using Pkg; Pkg.Registry.update(); Pkg.Apps.add(\"LintApp\")'" }
+lint = { cmd = "julialint --no-progress .", env = { PATH = "$HOME/.julia/bin:$PATH" } }
+lint-sarif = { cmd = "julialint --no-progress --format sarif --output-file julialint-results.sarif .", env = { PATH = "$HOME/.julia/bin:$PATH" } }
 # Parameter metadata JSON generation
 parameter_metadata_json_gen = { cmd = "julia --startup-file=no --project=utils/export_parameter_data utils/export_parameter_data/export_parameter_data.jl" }
 
