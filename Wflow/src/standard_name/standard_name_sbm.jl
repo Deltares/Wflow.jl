@@ -85,7 +85,7 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
         tags = [:soil_input],
     ),
     "compacted_soil_surface_water__excess_volume_flux" => ParameterMetadata(;
-        lens = @optic(_.land.soil.variables.excess_water_soil),
+        lens = @optic(_.land.soil.variables.excess_water_compacted_soil),
         unit = Unit(; mm = 1, dt = -1),
         description = "Excess water for compacted soil fraction",
         tags = [:soil_output],
@@ -350,7 +350,7 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
         tags = [:demand_non_irrigation_static_cyclic_forcing_input],
     ),
     "non_compacted_soil_surface_water__excess_volume_flux" => ParameterMetadata(;
-        lens = @optic(_.land.soil.variables.excess_water_compacted_soil),
+        lens = @optic(_.land.soil.variables.excess_water_soil),
         unit = Unit(; mm = 1, dt = -1),
         description = "Excess water for non-compacted soil fraction",
         tags = [:soil_output],
