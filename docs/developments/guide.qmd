@@ -15,11 +15,24 @@ contributors should make sure to read that guide.
 
 To get started with local development, install Julia and [prek](https://github.com/j178/prek) (a
 fast, Rust-based Git hooks manager and drop-in replacement for pre-commit) by running the command
-below.
+below. This also installs `julialint` from
+[LintApp.jl](https://github.com/julia-vscode/LintApp.jl), the static analyzer behind the VS Code
+Julia extension.
 
 ```sh
 pixi run install
 ```
+
+The prek hooks format Julia code with Runic. Julia code is linted with `julialint`, configured by
+`JuliaLint.toml` in the repository root. The VS Code Julia extension shows the same diagnostics
+while you edit. To lint the whole repository from the command line, run:
+
+```sh
+pixi run lint
+```
+
+On CI, the `Julia Lint` workflow fails when `julialint` reports an error and uploads all findings
+to the GitHub Security tab.
 
 ## Test and example data
 
