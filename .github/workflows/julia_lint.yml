@@ -22,18 +22,25 @@ jobs:
           pixi-version: "latest"
       - name: Install julialint (LintApp.jl)
         run: pixi run install-julialint
+      # julialint writes all findings to the SARIF file and exits 1 on errors (2 if it
+      # crashes), so print errors and warnings as annotations before passing the exit code on
       - name: Run julialint
-        run: pixi run lint-sarif
+        run: |
+          status=0
+          pixi run lint-sarif || status=$?
+          if [ -f julialint-results.sarif ]; then
+            jq -r '.runs[].results[] | select(.level == "error" or .level == "warning")
+              | .locations[0].physicalLocation as $loc
+              | "::\(.level) file=\($loc.artifactLocation.uri),line=\($loc.region.startLine),col=\($loc.region.startColumn),title=\(.ruleId)::\(.message.text | gsub("%"; "%25") | gsub("\r"; "%0D") | gsub("\n"; "%0A"))"' \
+              julialint-results.sarif
+            jq -r '[.runs[].results[].level] | group_by(.) | map("\(length) \(.[0])") | join(", ")
+              | "julialint findings: \(if . == "" then "none" else . end) (all findings are in the Security tab)"' \
+              julialint-results.sarif
+          fi
+          exit $status
       - name: Upload julialint results to GitHub Security tab
-        if: always()
+        if: always() && hashFiles('julialint-results.sarif') != ''
         uses: github/codeql-action/upload-sarif@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4.38.2
         with:
           sarif_file: "julialint-results.sarif"
           category: "julialint"
-      # SARIF output always exits 0, so fail on error-level findings explicitly
-      - name: Fail on julialint errors
-        run: |
-          jq -r '.runs[].results[] | select(.level == "error")
-            | "::error file=\(.locations[0].physicalLocation.artifactLocation.uri),line=\(.locations[0].physicalLocation.region.startLine)::\(.message.text) [\(.ruleId)]"' \
-            julialint-results.sarif
-          jq -e '[.runs[].results[] | select(.level == "error")] | length == 0' julialint-results.sarif > /dev/null
