@@ -1136,7 +1136,7 @@ function leakage!(soil_model::SbmSoilModel, dt::Float64)
 end
 
 """
-    update_soil_water_flow!(
+    update_soil_water_model!(
         soil_model::SbmSoilModel,
         atmospheric_forcing::AtmosphericForcing,
         external_models::NamedTuple,
@@ -1147,7 +1147,7 @@ end
 Update the SBM soil model (infiltration, unsaturated zone flow, soil evaporation and
 transpiration, capillary flux and leakage) for a single timestep.
 """
-function update_soil_water_flow!(
+function update_soil_water_model!(
         soil_model::SbmSoilModel,
         atmospheric_forcing::AtmosphericForcing,
         external_models::NamedTuple,
