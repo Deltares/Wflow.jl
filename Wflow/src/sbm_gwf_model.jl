@@ -66,8 +66,6 @@ function update_subsurface_flow_model!(model::AbstractModel{<:SbmGwfModel})
     (; soil, allocation) = land
     (; boundary_conditions) = routing.subsurface_flow
 
-    dt = tosecond(clock.dt)
-
     # set river stage and storage (groundwater boundary)
     update_river_storage_stage!(boundary_conditions.river, routing.river_flow)
     # determine stable time step for groundwater flow
@@ -84,7 +82,7 @@ function update_subsurface_flow_model!(model::AbstractModel{<:SbmGwfModel})
         routing.subsurface_flow,
         soil,
         domain,
-        dt,
+        clock.dt,
         config.model.conductivity_profile,
     )
     return nothing

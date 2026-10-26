@@ -75,56 +75,43 @@ end
 
 function update_interception_model!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
     (; land, clock) = model
-
-    dt = tosecond(clock.dt)
-    update_interception_model!(land, dt)
+    update_interception_model!(land, clock.dt)
     return nothing
 end
 
 function update_snow_model!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
     (; land, domain, config, clock) = model
-
-    dt = tosecond(clock.dt)
-    update_snow_model!(land, domain, config, dt)
+    update_snow_model!(land, domain, config, clock.dt)
     return nothing
 end
 
 function update_glacier_model!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
     (; land, clock) = model
-
-    dt = tosecond(clock.dt)
-    update_glacier_model!(land, dt)
+    update_glacier_model!(land, clock.dt)
     return nothing
 end
 
 function update_open_water_runoff_model!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
     (; land, routing, domain, clock) = model
-
-    dt = tosecond(clock.dt)
-    update_open_water_runoff_model!(land, routing, domain, dt)
+    update_open_water_runoff_model!(land, routing, domain, clock.dt)
     return nothing
 end
 
 function update_water_demand_model!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
     (; land, config, clock) = model
-
-    dt = tosecond(clock.dt)
-    update_water_demand_model!(land, config, dt)
+    update_water_demand_model!(land, config, clock.dt)
     return nothing
 end
 
 function update_water_allocation_model!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
     (; land, routing, domain, clock) = model
-
-    dt = tosecond(clock.dt)
-    update_water_allocation_model!(land, routing, domain, dt)
+    update_water_allocation_model!(land, routing, domain, clock.dt)
     return nothing
 end
 
 function update_soil_water_model!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
     (; land, domain, config, clock) = model
-    dt = tosecond(clock.dt)
-    update_soil_water_model!(land, domain, config, dt)
+    update_soil_water_model!(land, domain, config, clock.dt)
     return nothing
 end
 
@@ -141,8 +128,6 @@ function update_subsurface_flow_model!(model::AbstractModel{<:SbmModel})
     (; kv_profile) = soil.parameters
     (; boundary_conditions) = routing.subsurface_flow
 
-    dt = tosecond(clock.dt)
-
     # set river stage and storage (subsurface flow boundary)
     update_river_storage_stage!(boundary_conditions.river, routing.river_flow)
 
@@ -158,15 +143,14 @@ function update_subsurface_flow_model!(model::AbstractModel{<:SbmModel})
 
     # update lateral subsurface flow domain (kinematic wave)
     kh_layered_profile!(soil, routing.subsurface_flow, kv_profile)
-    update_subsurface_flow_model!(routing.subsurface_flow, soil, domain, dt)
+    update_subsurface_flow_model!(routing.subsurface_flow, soil, domain, clock.dt)
 
     return nothing
 end
 
 function update_soil_water_storage!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
     (; land, routing, clock) = model
-    dt = tosecond(clock.dt)
-    update_soil_water_storage!(land, routing, dt)
+    update_soil_water_storage!(land, routing, clock.dt)
     return nothing
 end
 

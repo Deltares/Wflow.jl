@@ -6,7 +6,6 @@
     config.dir_output = mktempdir()
 
     model = Wflow.Model(config)
-    dt = Wflow.tosecond(model.clock.dt)
     (; domain) = model
 
     @testset "initial states and depending variables" begin
@@ -124,7 +123,6 @@ end
     config.input.static["river_bank_water__depth"] = "bankfull_depth"
 
     model = Wflow.Model(config)
-    dt = Wflow.tosecond(model.clock.dt)
 
     Wflow.run_timestep!(model)
     Wflow.run_timestep!(model)

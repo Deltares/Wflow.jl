@@ -10,24 +10,23 @@ function surface_routing!(model)
     (; overland_flow, river_flow, subsurface_flow) = routing
     (; reservoir) = river_flow.boundary_conditions
 
-    dt = tosecond(clock.dt)
     # update lateral inflow for kinematic wave overland flow
     update_lateral_inflow!(
         overland_flow,
         (; soil, allocation, subsurface_flow),
         domain,
         config,
-        dt,
+        clock.dt,
     )
     # run kinematic wave overland flow
-    update_overland_flow_model!(overland_flow, domain.land, dt)
+    update_overland_flow_model!(overland_flow, domain.land, clock.dt)
 
     # update lateral inflow river flow
     update_lateral_inflow!(
         river_flow,
         (; allocation = river_flow.allocation, runoff, overland_flow, subsurface_flow),
         domain,
-        dt,
+        clock.dt,
     )
     # update reservoir inflow (overland and subsurface flow), inflow from river flow is
     # added within the river routing scheme
@@ -41,7 +40,7 @@ function surface_routing!(model)
         @debug log_message_observed_outflow(reservoir)
     end
     # update river flow
-    update_river_flow_model!(river_flow, domain, clock, dt)
+    update_river_flow_model!(river_flow, domain, clock)
     return nothing
 end
 
@@ -69,12 +68,11 @@ function surface_routing!(
     (; overland_flow, river_flow, subsurface_flow) = routing
     (; reservoir) = river_flow.boundary_conditions
 
-    dt = tosecond(clock.dt)
     update_bc_overland_flow_model!(
         overland_flow,
         (; soil, runoff, subsurface_flow),
         domain,
-        dt,
+        clock.dt,
     )
     # update reservoir inflow (subsurface flow), inflow from river and overland flow is
     # added within the river and overland routing schemes
@@ -83,7 +81,7 @@ function surface_routing!(
         @debug log_message_observed_outflow(reservoir)
     end
     # update overland and river flow
-    update_overland_flow_model!(overland_flow, river_flow, domain, clock, dt)
+    update_overland_flow_model!(overland_flow, river_flow, domain, clock)
 
     return nothing
 end

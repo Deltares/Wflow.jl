@@ -619,13 +619,13 @@ function update_river_flow_model!(
         river_flow_model::RiverFlowModel{<:KinematicWave},
         domain::Domain,
         clock::Clock,
-        dt::Float64,
     )
     (; floodplain) = river_flow_model
     (; reservoir, inwater) = river_flow_model.boundary_conditions
     (; flow_length) = domain.river.parameters
     (; qlat, qin_average, qin_cumulative) = river_flow_model.variables
     (; adaptive) = river_flow_model.timestepping
+    (; dt) = clock
 
     @. qlat = inwater / flow_length
     set_flow_vars!(river_flow_model)
