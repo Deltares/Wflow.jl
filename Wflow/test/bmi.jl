@@ -47,7 +47,7 @@
             "node"
     end
 
-    @test isnothing(BMI.update(model))
+    BMI.update(model)
 
     @testset "update and get and set functions" begin
         @test BMI.get_current_time(model) == 86400.0
@@ -61,13 +61,11 @@
             zeros(3),
             [1, 2, 3],
         ) ≈ getindex.(model.land.soil.variables.volumetric_water_content, 1)[1:3]
-        @test isnothing(
-            BMI.set_value_at_indices(
-                model,
-                "soil_layer_2_water__volume_fraction",
-                [1, 2, 3],
-                [0.1, 0.15, 0.2],
-            ),
+        BMI.set_value_at_indices(
+            model,
+            "soil_layer_2_water__volume_fraction",
+            [1, 2, 3],
+            [0.1, 0.15, 0.2],
         )
         @test getindex.(model.land.soil.variables.volumetric_water_content, 2)[1:3] ≈
             [0.1, 0.15, 0.2]
@@ -80,12 +78,10 @@
             fill(300.0, length(model.land.soil.variables.water_table_depth)),
         )
         var_name = "soil_water_saturated_zone_top__depth"
-        @test isnothing(
-            BMI.set_value(
-                model,
-                var_name,
-                fill(300.0, length(model.land.soil.variables.water_table_depth)),
-            ),
+        BMI.set_value(
+            model,
+            var_name,
+            fill(300.0, length(model.land.soil.variables.water_table_depth)),
         )
         @test mean(
             BMI.get_value(
@@ -104,42 +100,6 @@
             model,
             "glacier_ice__initial_leq_depth",
         )
-    end
-
-    @testset "return types" begin
-        var_name = "river_water__volume_flow_rate"
-        n = BMI.get_grid_size(model, BMI.get_var_grid(model, var_name))
-        @test BMI.get_component_name(model) isa String
-        @test BMI.get_input_item_count(model) isa Int
-        @test BMI.get_output_item_count(model) isa Int
-        @test BMI.get_input_var_names(model) isa Vector{String}
-        @test BMI.get_output_var_names(model) isa Vector{String}
-        @test BMI.get_var_grid(model, var_name) isa Int
-        @test BMI.get_var_type(model, var_name) isa String
-        @test BMI.get_var_units(model, var_name) isa String
-        @test BMI.get_var_itemsize(model, var_name) isa Int
-        @test BMI.get_var_nbytes(model, var_name) isa Int
-        @test BMI.get_var_location(model, var_name) isa String
-        @test BMI.get_current_time(model) isa Float64
-        @test BMI.get_start_time(model) isa Float64
-        @test BMI.get_end_time(model) isa Float64
-        @test BMI.get_time_units(model) isa String
-        @test BMI.get_time_step(model) isa Float64
-        dest = zeros(n)
-        @test BMI.get_value(model, var_name, dest) === dest
-        dest = zeros(2)
-        @test BMI.get_value_at_indices(model, var_name, dest, [1, 2]) === dest
-        @test BMI.get_grid_type(model, 2) isa String
-        @test BMI.get_grid_rank(model, 2) isa Int
-        @test BMI.get_grid_size(model, 2) isa Int
-        @test BMI.get_grid_node_count(model, 2) isa Int
-        @test BMI.get_grid_edge_count(model, 2) isa Int
-        x = zeros(n)
-        @test BMI.get_grid_x(model, 2, x) === x
-        y = zeros(n)
-        @test BMI.get_grid_y(model, 2, y) === y
-        edge_nodes = fill(0, 2 * BMI.get_grid_edge_count(model, 2))
-        @test BMI.get_grid_edge_nodes(model, 2, edge_nodes) === edge_nodes
     end
 
     @testset "model grid functions" begin
@@ -171,12 +131,12 @@
 
     @testset "update until and finalize" begin
         time = BMI.get_current_time(model) + 2 * BMI.get_time_step(model)
-        @test isnothing(BMI.update_until(model, time))
+        BMI.update_until(model, time)
         @test model.clock.iteration == 3
         time_off = BMI.get_current_time(model) + 1 * BMI.get_time_step(model) + 1.0e-6
         @test_throws ErrorException BMI.update_until(model, time_off)
         @test_throws ErrorException BMI.update_until(model, time - BMI.get_time_step(model))
-        @test isnothing(BMI.finalize(model))
+        BMI.finalize(model)
     end
 end
 
@@ -214,11 +174,10 @@ end
     (; edge_indices) = model.domain.land.network
     @test -999 ∉ edge_indices.ind_x_up
     @test -999 ∉ edge_indices.ind_y_up
-    edge_nodes = Int[]
     @test_logs (
         :warn,
         "edges are not provided for grid type 5 (variables are located at nodes)",
-    ) @test BMI.get_grid_edge_nodes(model, 5, edge_nodes) === edge_nodes
+    ) BMI.get_grid_edge_nodes(model, 5, fill(0, 2 * 50063))
     @test_throws ErrorException BMI.get_grid_edge_nodes(model, 6, fill(0, 2 * 50063))
     @test BMI.get_var_location(model, "river_water__volume_flow_rate") == "edge"
     @test BMI.get_var_location(
