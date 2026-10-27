@@ -191,7 +191,7 @@ function BMI.get_end_time(model::Model)::Float64
     return to_SI(Float64(Dates.value(endtime_ - starttime_)), MS)
 end
 
-function BMI.get_time_units(model::Model)::String
+function BMI.get_time_units(::Model)::String
     return "s"
 end
 
@@ -278,7 +278,7 @@ function BMI.set_value_at_indices(
     return nothing
 end
 
-function BMI.get_grid_type(model::Model, grid::Int)::String
+function BMI.get_grid_type(::Model, grid::Int)::String
     if grid in 0:1
         return "points"
     elseif grid in 2:5
@@ -288,7 +288,7 @@ function BMI.get_grid_type(model::Model, grid::Int)::String
     end
 end
 
-function BMI.get_grid_rank(model::Model, grid::Int)::Int
+function BMI.get_grid_rank(::Model, grid::Int)::Int
     if grid in 0:5
         return 2
     else
