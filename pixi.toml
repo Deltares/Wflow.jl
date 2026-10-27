@@ -60,6 +60,14 @@ test-wflow-server = { cmd = "julia --startup-file=no --project=server --eval 'us
 quarto-check = { cmd = "quarto check all" }
 quarto-render = { cmd = "quarto render docs --to html --execute" }
 quarto-preview = { cmd = "quarto preview docs" }
+# Lint (LintApp.jl, configured by JuliaLint.toml)
+instantiate-linting = { cmd = "julia --startup-file=no --project=utils/linting --eval 'using Pkg; Pkg.instantiate()'" }
+lint = { cmd = "julia --startup-file=no --project=utils/linting --module LintApp --no-progress .", depends-on = [
+    "instantiate-linting",
+] }
+lint-sarif = { cmd = "julia --startup-file=no --project=utils/linting --module LintApp --no-progress --format sarif --output-file julialint-results.sarif .", depends-on = [
+    "instantiate-linting",
+] }
 # Parameter metadata JSON generation
 parameter_metadata_json_gen = { cmd = "julia --startup-file=no --project=utils/export_parameter_data utils/export_parameter_data/export_parameter_data.jl" }
 
