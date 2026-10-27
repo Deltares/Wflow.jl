@@ -2,26 +2,10 @@
 title: Unit administration in Wflow
 ---
 
-Due to the complexity and diversity of the variables used in Wflow models, the registration and conversion of units deserves special attention. The logic in [Wflow/src/units.jl](../../Wflow/src/units.jl) is the central layer that keeps model variables, forcing data, and parameters physically consistent.
-
-## Overview
-
-The system is built around a custom `Unit` type. It does not merely store strings such as `"mm/day"`; instead, it represents units as a structured combination of dimensional powers and converts them to SI units automatically.
-
-This is important in a hydrological model because values are commonly expressed in units such as:
-
-- mm/day
-- m/s
-- °C
-- t/Δt
-- kg/min
-- percentage
-
-without any ambiguity about what the quantity actually means.
-
-## The `Unit` type
-
-At the heart of the implementation is a `struct Unit` that stores a power for each supported dimension:
+Due to the complexity and diversity of the variables used in Wflow models, the registration and conversion of units deserves special attention.
+The logic in `units.jl` keeps model variables, forcing data, and parameters physically consistent.
+The system is built around a custom `Unit` type.
+Units as a structured combination of dimensional powers that can be converted into SI units automatically:
 
 ```julia
 struct Unit
@@ -55,29 +39,28 @@ The `PowersType` is a two-entry rational vector:
 const PowersType = SVector{2, Rational{Int}}
 ```
 
-That means each unit is represented as a pair of positive and negative powers. For example:
+Each unit is represented as a pair of positive and negative powers. For example:
 
-- `m/s` becomes `m = 1, s = -1`
-- `m² / s` is represented by rational powers
-- dimensionless quantities are stored as zero powers in all dimensions
+- `m/s` becomes `m = (0,1), s = (1,0)`
+- `m² / s` is represented by rational powers `m = (0,2), s = (1,0)`
+- dimensionless quantities can be stored as zero powers in all dimensions, but sometimes it can be informative
+to represent them in terms of equal positive and negative powers (e.g. `m = (1,1)`), in reference to their
+physical meaning.
 
-This design allows exact symbolic handling of units, which is much cleaner than using approximate floats for all conversions.
-
-## Why the representation matters
-
-Wflow often needs to work with variables that are not expressed in SI units by default. A rainfall flux may be in `mm/day`, a flow may be in `m³/s`, and temperature may be in `°C`. The unit system makes these conversions explicit and safe.
-
+This design supports the exact symbolic handling of units.
+Variables are often not by default expressed in SI units. A rainfall flux may be in `mm/day`, a temperature may be in `°C`.
+The unit system enforces consistency and makes conversions to and from SI explicit.
 The conversion logic is based on a standard reference set:
 
 ```julia
 const STANDARD_UNITS = [:K, :s, :m, :kg, :J]
 ```
 
-All other units are converted relative to these base dimensions. The file then builds a conversion factor using `to_SI_data`.
+Other units are converted relative to these base dimensions. The file then builds a conversion factor using `to_SI_data`.
 
 ## SI conversion database
 
-The file contains `to_SI_data`, a table describing how each unit maps to SI:
+The table `to_SI_data` describes how each unit maps to SI:
 
 ```julia
 const to_SI_data = @NamedTuple{factor::Float64, unit_SI::Unit}[
@@ -144,11 +127,10 @@ function from_SI(x::AbstractFloat, unit::Unit; kwargs...)
 end
 ```
 
-This is a good example of how the unit system is not only algebraic but also physically meaningful.
-
 ## Time-step dependent units
 
-A key feature of Wflow is that some variables are evaluated per model timestep, not per second or per day. That is why the file includes a dedicated `dt` unit.
+A key feature of Wflow is that some variables, like rates, are evaluated and expressed per model timestep,
+For this a dedicated `dt` unit is used, as the actual timestep length varies from model to model.
 
 ```julia
 const MM_PER_DT = Unit(; mm = 1, dt = -1)
@@ -170,11 +152,11 @@ function to_SI_factor(unit::Unit; dt_val::Union{Nothing, Number} = nothing)
 end
 ```
 
-This is essential in hydrological modeling, where a rate might be expressed as `mm per timestep` and the actual timestep length varies from model to model.
 
 ## Common predefined units
 
-The file defines a number of shorthand constants that are commonly used across Wflow:
+The file defines a number of shorthand constants that are commonly used across Wflow,
+to increase of the code.
 
 ```julia
 const ABSOLUTE_DEGREES = Unit(; degC = 1, absolute_temperature = true)
@@ -199,11 +181,10 @@ const PERCENTAGE = Unit(; percentage = 1)
 const MS = Unit(; ms = 1)
 ```
 
-These constants make the code much more readable than using raw symbolic expressions everywhere.
 
-## Unit multiplication and powers
+## Unit arithmetic
 
-The file also implements algebraic behavior for units themselves:
+Multiplication and powers of units are also supported:
 
 ```julia
 function Base.:*(u1::Unit, u2::Unit)
@@ -239,7 +220,7 @@ without having to manually encode each one.
 
 ## String formatting for human-readable output
 
-The conversion system is complemented by a nice display layer. The file defines `to_string(unit; BMI_standard = false)` to produce a readable unit string.
+The function `to_string(unit; BMI_standard = false)` produces a readable unit string.
 
 ```julia
 function to_string(unit::Unit; BMI_standard = false)
@@ -280,50 +261,10 @@ const UnitStrings = Dict{Symbol, String}(
 )
 ```
 
-This makes unit output readable both for code and for user-facing model metadata.
+The connection between model variables and their units is uniquely defined by their standard-name metadata:
 
-## Why this is important in Wflow
-
-This unit system is central to the model’s correctness because hydrological model variables often combine several physical dimensions at once.
-
-For example:
-
-- runoff can be in `mm/day`
-- precipitation can be in `mm/timestep`
-- lateral transport can involve `m³/s`
-- temperature can be in `°C` but stored internally in `K`
-- precipitation fraction can be in `%` or `ppm`
-
-Without this layer, it would be far too easy to mix incompatible quantities or silently use incorrect scaling factors.
-
-## How units are used across Wflow
-
-`units.jl` is included by [`Wflow/src/Wflow.jl`](../../Wflow/src/Wflow.jl), making its unit types and conversion functions available throughout the package. The unit system is connected to model variables through their standard-name metadata:
-
-- [`standard_name_utils.jl`](../../Wflow/src/standard_name/standard_name_utils.jl) defines `ParameterMetadata`, including the declared unit, and applies unit and type conversions.
-- Standard-name maps, such as [`standard_name_sbm.jl`](../../Wflow/src/standard_name/standard_name_sbm.jl), specify units for individual parameters and variables. For example, precipitation is declared in `mm/Δt`, while absolute air temperature is declared in `°C` with the absolute-temperature flag.
-- [`io.jl`](../../Wflow/src/io.jl) uses this metadata to convert input data and defaults to SI, then converts output values back to the declared units when writing NetCDF files. Timestep-dependent units use the configured timestep duration.
-- [`bmi.jl`](../../Wflow/src/bmi.jl) reports variables in standardized SI units using the BMI unit-string format.
-
-The repository documents the overall convention as SI for internal computations (`m`, `s`, `kg`, `J`, `K`), with conversions at I/O boundaries; see the [changelog](../changelog.qmd). Model code can also convert hard-coded constants with `to_SI` when those constants are written in a non-SI unit.
-
-`Unit` tracks dimensions and conversion factors, but it does not attach a unit type to each numeric value or validate arbitrary arithmetic. Model values remain ordinary numbers, so dimensional consistency depends on declaring metadata correctly and using the conversion helpers at the appropriate boundaries.
-
-## Summary
-
-The file [Wflow/src/units.jl](../../Wflow/src/units.jl) is Wflow’s dimensional analysis and conversion framework. In practice, it provides:
-
-- explicit symbolic unit representation
-- conversion to SI units
-- time-step-aware handling via `dt`
-- special temperature conversion rules
-- readable unit strings for metadata and display
-- standardized constants for common hydrological units
-
-This is a foundational infrastructure file: it does not compute hydrology itself, but it ensures that the quantities entering those computations are physically consistent and correctly interpreted.
-
-## Related source and documentation
-
-- [Wflow/src/units.jl](../../Wflow/src/units.jl)
-- [docs/developments/index.qmd](index.qmd)
-- [docs/developments/model_representation.qmd](model_representation.qmd)
+- `units.jl` is the dimensional analysis and conversion framework.
+- `standard_name_utils.jl` defines `ParameterMetadata`, including the declared unit, and applies unit and type conversions.
+- `standard_name_sbm.jl` specifies units for individual parameters and variables by standard name.
+- `io.jl` uses this metadata to convert input data and defaults to SI, then converts output values back to the declared units when writing NetCDF files. Timestep-dependent units use the configured timestep duration.
+- `bmi.jl` reports variables in standardized SI units using the BMI unit-string format.

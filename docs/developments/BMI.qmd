@@ -27,8 +27,8 @@ These correspond to the standard BMI phases: initialize, update, and finalize.
 | Function | Purpose |
 |---|---|
 | `get_component_name(model)` | Returns the model type name as a string, e.g. `"sbm"`, `"sbm_gwf"`, or `"sediment"`. |
-| `get_input_item_count(model)` | Counts the variables exposed for model input. |
-| `get_output_item_count(model)` | Counts the variables exposed for model output. |
+| `get_input_item_count(model)` | The number of exposed model input variables. |
+| `get_output_item_count(model)` | The number of exposed model output variables. |
 
 These functions tell external software which model is active and how many variables can be
 exchanged.
@@ -90,7 +90,7 @@ structure remains hidden from the coupling layer.
 
 | Function | Purpose |
 |---|---|
-| `get_grid_type(model, grid)` | Returns the grid type. For Wflow, node-based grids are reported as `"points"` and land/edge-based grids as `"unstructured"`. |
+| `get_grid_type(model, grid)` | Returns the grid type. For Wflow, reservoirs and drains are reported as `"points"`, all other grids as `"unstructured"`. |
 | `get_grid_rank(model, grid)` | Returns the grid rank. Wflow uses 2D grids for the modeled domains. |
 | `get_grid_x(model, grid, x)` | Returns the x-coordinates for active grid cells/node positions. |
 | `get_grid_y(model, grid, y)` | Returns the y-coordinates for active grid cells/node positions. |
@@ -122,7 +122,7 @@ These helper functions make the BMI layer compatible with Wflow's nested structu
 
 | Function | Purpose |
 |---|---|
-| `soil_layer_standard_name(name)` | Maps names such as `soil_layer_3_water_table_depth` to the corresponding base variable and layer index. |
+| `soil_layer_standard_name(name)` | Maps standard names such as `soil_layer_3_water_table_depth` to the corresponding base variable and layer index. |
 | `grid_element_type(model, lens)` | Determines if a variable belongs to a node or an edge based on the nested lens path. |
 | `grid_element_type(model, var::PropertyLens)` | Default classification for node-based variables. |
 | `grid_element_type(::T, var::PropertyLens)` | Special handling for local inertial routing variables (`qx`, `qy`, discharge-related quantities) that are edge-based. |
