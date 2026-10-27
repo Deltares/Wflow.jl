@@ -1,0 +1,5 @@
+[deps]
+LintApp = "0ca8a2e7-ee8a-47e9-8624-e03a53d93e73"
+
+[compat]
+LintApp = "1.0"
