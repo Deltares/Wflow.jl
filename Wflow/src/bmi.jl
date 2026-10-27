@@ -103,7 +103,7 @@ function BMI.get_input_var_names(model::Model)
     (; config, land) = model
     if do_api(config)
         var_names = config.API.variables
-        idx = []
+        idx = Int[]
         for (i, var) in enumerate(var_names)
             var = get_standard_name(var)
             if isnothing(get_metadata(var, land; model))
@@ -117,7 +117,7 @@ function BMI.get_input_var_names(model::Model)
         return var_names
     else
         @warn("TOML file does not contain section [API] to extract model var names")
-        return []
+        return String[]
     end
 end
 
@@ -204,6 +204,18 @@ function BMI.get_value(model::Model, name::String, dest::Vector{Float64})
     return dest
 end
 
+"""
+    BMI.get_value_ptr(model::Model, name::String)
+
+Return a reference to the values of model variable `name`, limited to the active elements
+of its grid.
+
+Unlike the `DenseVector` return type in the BasicModelInterface.jl specification, this
+returns a view (`SubArray`) into the model's internal array, since some internal arrays are
+longer than the grid size (e.g. boundary or ghost points) and layered soil variables are
+stored as a vector of `SVector`s, from which a single layer is a strided view. Changes to
+the returned values modify the model state.
+"""
 function BMI.get_value_ptr(model::Model, name::String)
     (; domain) = model
     n = length(active_indices(domain, name))
@@ -243,13 +255,14 @@ Set a model variable `name` to the values in vector `src`, overwriting the curre
 The type and size of `src` must match the model's internal array.
 """
 function BMI.set_value(model::Model, name::String, src::Vector{Float64})
-    return BMI.get_value_ptr(model, name) .= src
+    BMI.get_value_ptr(model, name) .= src
+    return nothing
 end
 
 """
     BMI.set_value_at_indices(model::Model, name::String, inds::Vector{Int}, src::Vector{Float64})
 
-    Set a model variable `name` to the values in vector `src`, at indices `inds`.
+Set a model variable `name` to the values in vector `src`, at indices `inds`.
 """
 function BMI.set_value_at_indices(
         model::Model,
@@ -257,7 +270,8 @@ function BMI.set_value_at_indices(
         inds::Vector{Int},
         src::Vector{Float64},
     )
-    return BMI.get_value_ptr(model, name)[inds] .= src
+    BMI.get_value_ptr(model, name)[inds] .= src
+    return nothing
 end
 
 function BMI.get_grid_type(model::Model, grid::Int)
@@ -316,6 +330,7 @@ function BMI.get_grid_edge_count(model::Model, grid::Int)
         return length(domain.land.network.edge_indices.ind_y_up)
     elseif grid in (0, 1, 5)
         @warn("edges are not provided for grid type $grid (variables are located at nodes)")
+        return 0
     else
         error("unknown grid type $grid")
     end
@@ -346,6 +361,7 @@ function BMI.get_grid_edge_nodes(model::Model, grid::Int, edge_nodes::Vector{Int
         return edge_nodes
     elseif grid in (0, 1, 5)
         @warn("edges are not provided for grid type $grid (variables are located at nodes)")
+        return edge_nodes
     else
         error("unknown grid type $grid")
     end
