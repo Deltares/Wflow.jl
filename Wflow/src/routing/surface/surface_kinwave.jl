@@ -33,14 +33,13 @@ function ManningFlowParameters(
         mannings_n::Vector{Float64},
         slope::Vector{Float64},
         wetted_perimeter::Vector{Float64},
-        max_depression_depth::Vector{Float64} = zeros(length(mannings_n)),
     )
     hydraulic_radius_pow = 2.0 / 3.0
     alpha_term = @. pow(mannings_n / sqrt(slope), BETA_KINWAVE)
     alpha_pow = hydraulic_radius_pow * BETA_KINWAVE
     alpha = @. alpha_term * pow(wetted_perimeter, alpha_pow)
 
-    parameters = ManningFlowParameters(; slope, mannings_n, alpha_pow, alpha_term, alpha, max_depression_depth)
+    parameters = ManningFlowParameters(; slope, mannings_n, alpha_pow, alpha_term, alpha)
     return parameters
 end
 
