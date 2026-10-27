@@ -1,7 +1,7 @@
 schema: '2.0'
 stages:
   publish-example-models:
-    cmd: python utils/publish_example_models.py examples/v1.1
+    cmd: python utils/publish_example_models.py examples/dev
     deps:
     - path: Wflow/test/data/input
       hash: md5
@@ -29,16 +29,15 @@ stages:
       md5: 066718c1103b91e94b28e802b7203dba
       size: 2699
     outs:
-    - path: https://s3.deltares.nl/wflow/examples/v1.1/wflow-sbm-example.zip
+    - path: https://s3.deltares.nl/wflow/examples/dev/wflow-sbm-example.zip
       hash: md5
       checksum: '"9c8f6c9726272c8b9be7e8d7402270fb-33"'
       size: 270574192
-    - path: https://s3.deltares.nl/wflow/examples/v1.1/wflow-sbm-gwf-example.zip
+    - path: https://s3.deltares.nl/wflow/examples/dev/wflow-sbm-gwf-example.zip
       hash: md5
       checksum: '"8b70f6ced3d6b5cb2ae818d0d3ffda75-4"'
       size: 32758610
-    - path:
-        https://s3.deltares.nl/wflow/examples/v1.1/wflow-sediment-example.zip
+    - path: https://s3.deltares.nl/wflow/examples/dev/wflow-sediment-example.zip
       hash: md5
       checksum: '"d2ca0ea1881eadbb7951f23a29eb9c98-15"'
       size: 124843725
