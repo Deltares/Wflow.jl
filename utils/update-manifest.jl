@@ -21,11 +21,8 @@ function (@main)(_)
         println("__Changed packages__\n```")
         Pkg.Registry.update()
         Pkg.update(; workspace = true)
-        # The linting environment is not part of the workspace, see pixi.toml
-        Pkg.activate(() -> Pkg.update(), normpath(@__DIR__, "linting"))
         println("```\n\n__Packages still outdated after update__\n```")
         Pkg.status(; outdated = true, workspace = true)
-        Pkg.activate(() -> Pkg.status(; outdated = true), normpath(@__DIR__, "linting"))
         println("```")
     end
 

@@ -61,7 +61,6 @@ quarto-check = { cmd = "quarto check all" }
 quarto-render = { cmd = "quarto render docs --to html --execute" }
 quarto-preview = { cmd = "quarto preview docs" }
 # Lint (LintApp.jl, configured by JuliaLint.toml)
-# utils/linting has its own Manifest.toml, since LintApp's dependencies conflict with the workspace
 instantiate-linting = { cmd = "julia --startup-file=no --project=utils/linting --eval 'using Pkg; Pkg.instantiate()'" }
 lint = { cmd = "julia --startup-file=no --project=utils/linting --module LintApp --no-progress .", depends-on = [
     "instantiate-linting",

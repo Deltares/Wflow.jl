@@ -3,7 +3,7 @@ authors = ["Deltares and contributors"]
 description = "Meta-project used to share the Manifest of Wflow and its developer environment"
 
 [workspace]
-projects = ["Wflow", "docs", "server", "build/create_binaries", "build/wflow_cli", "utils/export_parameter_data", "utils/formatting"]
+projects = ["Wflow", "docs", "server", "build/create_binaries", "build/wflow_cli", "utils/export_parameter_data", "utils/formatting", "utils/linting"]
 
 [deps]
 Accessors = "7d9f7c33-5ae7-4f3b-8dc6-eff91059b697"
