@@ -211,10 +211,14 @@ Return a reference to the values of model variable `name`, limited to the active
 of its grid.
 
 Unlike the `DenseVector` return type in the BasicModelInterface.jl specification, this
-returns a view (`SubArray`) into the model's internal array, since some internal arrays are
-longer than the grid size (e.g. boundary or ghost points) and layered soil variables are
-stored as a vector of `SVector`s, from which a single layer is a strided view. Changes to
-the returned values modify the model state.
+always returns a view (`SubArray`) into the model's internal array. For most variables the
+view is contiguous and covers the whole internal array, but it is required for:
+- variables with an internal array that is longer than the grid size, e.g. the land x- and
+  y-component of flow for local inertial routing, that include a boundary point;
+- a single layer of a layered soil variable, stored as a vector of `SVector`s, which is a
+  strided (non-contiguous) view.
+
+Changes to the returned values modify the model state.
 """
 function BMI.get_value_ptr(model::Model, name::String)
     (; domain) = model
