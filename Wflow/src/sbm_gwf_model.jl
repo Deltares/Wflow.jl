@@ -61,7 +61,7 @@ function Model(config::Config, type::SbmGwfModel)
 end
 
 "update the `sbm_gwf` model type for a single timestep"
-function update_model!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
+function update_model!(model::AbstractModel{<:SbmGwfModel})
     (; routing, land, domain, clock, config) = model
     (; soil, runoff, demand) = land
     (; boundary_conditions) = routing.subsurface_flow
