@@ -26,6 +26,41 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -47,9 +82,9 @@ ul.task-list li input[type="checkbox"] {
 <link href="site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-79f1939679fe495079f91b0ef5ddc2c4.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="site_libs/bootstrap/bootstrap-dark-ca1f93ad525f954820e5ab1b06dd819c.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="site_libs/bootstrap/bootstrap-79f1939679fe495079f91b0ef5ddc2c4.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-1a90557b20ddfbeb632a884965a3687f.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-dark-c0c6361848b679af7274bc8b8c68fe25.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="site_libs/bootstrap/bootstrap-1a90557b20ddfbeb632a884965a3687f.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -487,6 +522,9 @@ window.Quarto = {
 <p>The format is based on <a href="https://keepachangelog.com/en/1.0.0/">Keep a Changelog</a>, and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semantic Versioning</a>.</p>
 <section id="unreleased" class="level2">
 <h2 class="anchored" data-anchor-id="unreleased">Unreleased</h2>
+<p>Fixing output of <code>land_surface_water__abstraction_volume_flux</code> (<a href="https://github.com/Deltares/Wflow.jl/pull/1148">#1148</a>), as part of water demand and allocation computations, requires renaming of this standard name to <code>river_water__abstraction_volume_flux</code> in the TOML configuration file, e.g.:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[output.netcdf_grid.variables]</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dt">river_water__abstraction_volume_flux</span> <span class="op">=</span> <span class="st">"abstraction_river"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <section id="fixed" class="level3">
 <h3 class="anchored" data-anchor-id="fixed">Fixed</h3>
 <ul>
@@ -496,7 +534,7 @@ window.Quarto = {
 <li>BMI functions <code>get_grid_type</code>, <code>get_grid_rank</code>, <code>get_grid_edge_count</code> and <code>get_grid_edge_nodes</code> used outdated grid identifiers (river 3, land x-edges 4, land y-edges 5, land 6), inconsistent with <code>get_var_grid</code> and the other grid functions (river 2, land x-edges 3, land y-edges 4, land 5).</li>
 <li>Error messages for an invalid <code>loglevel</code> and for a netCDF scalar variable without a <code>location</code> or <code>map</code> field.</li>
 <li>Variables <code>excesswatersoil</code> and <code>excesswaterpath</code> were mapped to standard names <code>compacted_soil_surface_water__excess_volume_flux</code> and <code>non_compacted_soil_surface_water__excess_volume_flux</code> respectively (interchanged).</li>
-<li>Output of <code>land_surface_water__abstraction_volume_flux</code> throws an error because of incorrect mapping to active indices. This is fixed by renaming <code>land_surface_water__abstraction_volume_flux</code> to <code>river_water__abstraction_volume_flux</code>. This standard name is also consistent with other standard names that refer to the river domain.</li>
+<li>Output of <code>land_surface_water__abstraction_volume_flux</code> throws an error because of incorrect mapping to active indices. This is fixed by renaming <code>land_surface_water__abstraction_volume_flux</code> to <code>river_water__abstraction_volume_flux</code> (<a href="https://github.com/Deltares/Wflow.jl/pull/1148">#1148</a>). This standard name is also consistent with other standard names that refer to the river domain.</li>
 </ul>
 </section>
 </section>
