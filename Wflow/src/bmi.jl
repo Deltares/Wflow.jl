@@ -13,13 +13,13 @@ const GRIDS = Dict{Int, String}(
 )
 
 """
-    BMI.initialize(::Type{<:Wflow.Model}, config_file)
+    BMI.initialize(::Type{<:Wflow.Model}, config_file)::Model
 
 Initialize the model. Reads the input settings and data as defined in the Config object
 generated from the configuration file `config_file`. Will return a Model that is ready to
 run.
 """
-function BMI.initialize(::Type{<:Model}, config_file::AbstractString)
+function BMI.initialize(::Type{<:Model}, config_file::AbstractString)::Model
     config = Config(config_file)
     model_type = config.model.type
 
@@ -39,16 +39,16 @@ function BMI.initialize(::Type{<:Model}, config_file::AbstractString)
 end
 
 """
-    BMI.update(model::Model)
+    BMI.update(model::Model)::Nothing
 
 Update the model for a single timestep.
 """
-function BMI.update(model::Model)
+function BMI.update(model::Model)::Nothing
     run_timestep!(model)
     return nothing
 end
 
-function BMI.update_until(model::Model, time::Float64)
+function BMI.update_until(model::Model, time::Float64)::Nothing
     t = BMI.get_current_time(model)
     _div, _rem = divrem(time - t, model.clock.dt.value)
     steps = Int(_div)
@@ -68,7 +68,7 @@ function BMI.update_until(model::Model, time::Float64)
 end
 
 "Write state output to netCDF and close files."
-function BMI.finalize(model::Model)
+function BMI.finalize(model::Model)::Nothing
     (; config, writer) = model
     (; endstate_writer) = writer
     # it is possible that the state dataset has been closed by `save_state`
@@ -80,26 +80,26 @@ function BMI.finalize(model::Model)
     return nothing
 end
 
-function BMI.get_component_name(model::Model)
+function BMI.get_component_name(model::Model)::String
     return string(model.config.model.type)
 end
 
-function BMI.get_input_item_count(model::Model)
+function BMI.get_input_item_count(model::Model)::Int
     return length(BMI.get_input_var_names(model))
 end
 
-function BMI.get_output_item_count(model::Model)
+function BMI.get_output_item_count(model::Model)::Int
     return length(BMI.get_output_var_names(model))
 end
 
 """
-    BMI.get_input_var_names(model::Model)
+    BMI.get_input_var_names(model::Model)::Vector{String}
 
 Returns model input variables, based on the `API` section in the model configuration file.
 This `API` sections contains a list of `Model` components for which variables can be
 exchanged.
 """
-function BMI.get_input_var_names(model::Model)
+function BMI.get_input_var_names(model::Model)::Vector{String}
     (; config, land) = model
     if do_api(config)
         var_names = config.API.variables
@@ -123,11 +123,11 @@ end
 
 "Returns input variables from `BMI.get_input_var_names(model::Model)`, there is no
 distinction between input - and output variables."
-function BMI.get_output_var_names(model::Model)
+function BMI.get_output_var_names(model::Model)::Vector{String}
     return BMI.get_input_var_names(model)
 end
 
-function BMI.get_var_grid(::Model, name::String)
+function BMI.get_var_grid(::Model, name::String)::Int
     return if occursin("reservoir", name)
         0
     elseif occursin("drain", name)
@@ -143,35 +143,35 @@ function BMI.get_var_grid(::Model, name::String)
     end
 end
 
-function BMI.get_var_type(model::Model, name::String)
+function BMI.get_var_type(model::Model, name::String)::String
     value = BMI.get_value_ptr(model, name)
     return repr(eltype(first(value)))
 end
 
-function BMI.get_var_units(model::Model, name::String)
+function BMI.get_var_units(model::Model, name::String)::String
     (; land) = model
     name = get_standard_name(name)
     metadata = get_metadata(name, land; model)
     return to_string(to_SI(metadata.unit); BMI_standard = true)
 end
 
-function BMI.get_var_itemsize(model::Model, name::String)
+function BMI.get_var_itemsize(model::Model, name::String)::Int
     value = BMI.get_value_ptr(model, name)
     return sizeof(eltype(first(value)))
 end
 
-function BMI.get_var_nbytes(model::Model, name::String)
+function BMI.get_var_nbytes(model::Model, name::String)::Int
     return sizeof(BMI.get_value_ptr(model, name))
 end
 
-function BMI.get_var_location(model::Model, name::String)
+function BMI.get_var_location(model::Model, name::String)::String
     name = get_standard_name(name)
     (; lens) = get_metadata(name; model)
     element_type = grid_element_type(model, lens)
     return element_type
 end
 
-function BMI.get_current_time(model::Model)
+function BMI.get_current_time(model::Model)::Float64
     (; config, clock) = model
     (; starttime, calendar) = config.time
     starttime = cftime(starttime, calendar)
@@ -179,11 +179,11 @@ function BMI.get_current_time(model::Model)
     return to_SI(Float64(Dates.value(clock.time - starttime)), MS)
 end
 
-function BMI.get_start_time(::Model)
+function BMI.get_start_time(::Model)::Float64
     return 0.0
 end
 
-function BMI.get_end_time(model::Model)
+function BMI.get_end_time(model::Model)::Float64
     (; starttime, endtime, calendar) = model.config.time
     starttime_ = cftime(starttime, calendar)
     endtime_ = cftime(endtime, calendar)
@@ -191,21 +191,21 @@ function BMI.get_end_time(model::Model)
     return to_SI(Float64(Dates.value(endtime_ - starttime_)), MS)
 end
 
-function BMI.get_time_units(model::Model)
+function BMI.get_time_units(model::Model)::String
     return "s"
 end
 
-function BMI.get_time_step(model::Model)
+function BMI.get_time_step(model::Model)::Float64
     return model.config.time.timestepsecs
 end
 
-function BMI.get_value(model::Model, name::String, dest::Vector{Float64})
+function BMI.get_value(model::Model, name::String, dest::Vector{Float64})::Vector{Float64}
     dest .= copy(BMI.get_value_ptr(model, name))
     return dest
 end
 
 """
-    BMI.get_value_ptr(model::Model, name::String)
+    BMI.get_value_ptr(model::Model, name::String)::SubArray
 
 Return a reference to the values of model variable `name`, limited to the active elements
 of its grid.
@@ -220,7 +220,7 @@ view is contiguous and covers the whole internal array, but it is required for:
 
 Changes to the returned values modify the model state.
 """
-function BMI.get_value_ptr(model::Model, name::String)
+function BMI.get_value_ptr(model::Model, name::String)::SubArray
     (; domain) = model
     n = length(active_indices(domain, name))
 
@@ -247,24 +247,24 @@ function BMI.get_value_at_indices(
         name::String,
         dest::Vector{Float64},
         inds::Vector{Int},
-    )
+    )::Vector{Float64}
     dest .= BMI.get_value_ptr(model, name)[inds]
     return dest
 end
 
 """
-    BMI.set_value(model::Model, name::String, src::Vector{Float64})
+    BMI.set_value(model::Model, name::String, src::Vector{Float64})::Nothing
 
 Set a model variable `name` to the values in vector `src`, overwriting the current contents.
 The type and size of `src` must match the model's internal array.
 """
-function BMI.set_value(model::Model, name::String, src::Vector{Float64})
+function BMI.set_value(model::Model, name::String, src::Vector{Float64})::Nothing
     BMI.get_value_ptr(model, name) .= src
     return nothing
 end
 
 """
-    BMI.set_value_at_indices(model::Model, name::String, inds::Vector{Int}, src::Vector{Float64})
+    BMI.set_value_at_indices(model::Model, name::String, inds::Vector{Int}, src::Vector{Float64})::Nothing
 
 Set a model variable `name` to the values in vector `src`, at indices `inds`.
 """
@@ -273,12 +273,12 @@ function BMI.set_value_at_indices(
         name::String,
         inds::Vector{Int},
         src::Vector{Float64},
-    )
+    )::Nothing
     BMI.get_value_ptr(model, name)[inds] .= src
     return nothing
 end
 
-function BMI.get_grid_type(model::Model, grid::Int)
+function BMI.get_grid_type(model::Model, grid::Int)::String
     if grid in 0:1
         return "points"
     elseif grid in 2:5
@@ -288,7 +288,7 @@ function BMI.get_grid_type(model::Model, grid::Int)
     end
 end
 
-function BMI.get_grid_rank(model::Model, grid::Int)
+function BMI.get_grid_rank(model::Model, grid::Int)::Int
     if grid in 0:5
         return 2
     else
@@ -296,7 +296,7 @@ function BMI.get_grid_rank(model::Model, grid::Int)
     end
 end
 
-function BMI.get_grid_x(model::Model, grid::Int, x::Vector{Float64})
+function BMI.get_grid_x(model::Model, grid::Int, x::Vector{Float64})::Vector{Float64}
     (; reader, domain) = model
     (; dataset) = reader
     sel = active_indices(domain, GRIDS[grid])
@@ -306,7 +306,7 @@ function BMI.get_grid_x(model::Model, grid::Int, x::Vector{Float64})
     return x
 end
 
-function BMI.get_grid_y(model::Model, grid::Int, y::Vector{Float64})
+function BMI.get_grid_y(model::Model, grid::Int, y::Vector{Float64})::Vector{Float64}
     (; reader, domain) = model
     (; dataset) = reader
     sel = active_indices(domain, GRIDS[grid])
@@ -316,15 +316,15 @@ function BMI.get_grid_y(model::Model, grid::Int, y::Vector{Float64})
     return y
 end
 
-function BMI.get_grid_node_count(model::Model, grid::Int)
+function BMI.get_grid_node_count(model::Model, grid::Int)::Int
     return length(active_indices(model.domain, GRIDS[grid]))
 end
 
-function BMI.get_grid_size(model::Model, grid::Int)
+function BMI.get_grid_size(model::Model, grid::Int)::Int
     return length(active_indices(model.domain, GRIDS[grid]))
 end
 
-function BMI.get_grid_edge_count(model::Model, grid::Int)
+function BMI.get_grid_edge_count(model::Model, grid::Int)::Int
     (; domain) = model
     if grid == 2
         return ne(domain.river.network.graph)
@@ -340,7 +340,7 @@ function BMI.get_grid_edge_count(model::Model, grid::Int)
     end
 end
 
-function BMI.get_grid_edge_nodes(model::Model, grid::Int, edge_nodes::Vector{Int})
+function BMI.get_grid_edge_nodes(model::Model, grid::Int, edge_nodes::Vector{Int})::Vector{Int}
     (; domain) = model
     n = length(edge_nodes)
     m = div(n, 2)
@@ -373,12 +373,12 @@ end
 
 # Extension of BMI functions (state handling and start time), required for OpenDA coupling.
 # May also be useful for other external software packages.
-function load_state(model::Model)
+function load_state(model::Model)::Nothing
     set_states!(model)
     return nothing
 end
 
-function save_state(model::Model)
+function save_state(model::Model)::Nothing
     (; endstate_writer) = model.writer
     (; output_path, output_dataset) = endstate_writer
     if !isnothing(output_path)
@@ -389,7 +389,7 @@ function save_state(model::Model)
     return nothing
 end
 
-function get_start_unix_time(model::Model)
+function get_start_unix_time(model::Model)::Float64
     return datetime2unix(model.config.time.starttime)
 end
 
