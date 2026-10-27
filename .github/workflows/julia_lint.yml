@@ -1,0 +1,50 @@
+name: Julia Lint
+on:
+  push:
+    branches:
+      - main
+      - release/*
+  pull_request:
+  workflow_dispatch:
+jobs:
+  julia_lint:
+    name: Julia Lint
+    runs-on: ubuntu-24.04
+    permissions:
+      actions: write # Required to allow julia-actions/cache to delete old caches
+      contents: read # Required to checkout and read repo files
+      security-events: write # Required to upload SARIF files to Security tab
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: prefix-dev/setup-pixi@d3f436a425481402e6a95a1d1fc10331c708cd9e # v0.10.2
+        with:
+          pixi-version: "latest"
+          activate-environment: true
+      - uses: julia-actions/cache@a7bed9df697e5d7309d68afe7542a87621a8b6c8 # v3.3.0
+      # julialint writes all findings to the SARIF file and exits 1 on errors (2 if it
+      # crashes), so print errors and warnings as annotations before passing the exit code on.
+      # A partial or malformed SARIF file must not hide that exit code, hence the jq fallbacks.
+      - name: Run julialint
+        run: |
+          status=0
+          pixi run lint-sarif || status=$?
+          if [ -f julialint-results.sarif ]; then
+            jq -r '.runs[]?.results[]? | select(.level == "error" or .level == "warning")
+              | (.locations[0].physicalLocation // {}) as $loc
+              | "::\(.level) file=\($loc.artifactLocation.uri // ""),line=\($loc.region.startLine // 1),col=\($loc.region.startColumn // 1),title=\(.ruleId)::\(.message.text | gsub("%"; "%25") | gsub("\r"; "%0D") | gsub("\n"; "%0A"))"' \
+              julialint-results.sarif || echo "::warning::Could not read annotations from julialint-results.sarif"
+            jq -r '[.runs[]?.results[]?.level] | group_by(.) | map("\(length) \(.[0])") | join(", ")
+              | "julialint findings: \(if . == "" then "none" else . end) (all findings are in the Security tab)"' \
+              julialint-results.sarif || echo "::warning::Could not read a summary from julialint-results.sarif"
+          fi
+          exit $status
+      # PRs from forks get a read-only token that cannot upload to the Security tab
+      - name: Upload julialint results to GitHub Security tab
+        if: >-
+          always() && hashFiles('julialint-results.sarif') != '' &&
+          (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+        uses: github/codeql-action/upload-sarif@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4.38.2
+        with:
+          sarif_file: "julialint-results.sarif"
+          category: "julialint"

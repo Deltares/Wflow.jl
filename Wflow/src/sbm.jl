@@ -133,7 +133,7 @@ function update_land_hydrology_model!(
     if do_water_demand(config)
         (; potential_transpiration) = soil.boundary_conditions
         (; h3_high, h3_low) = soil.parameters
-        potential_transpiration .= get_potential_transpiration(interception)
+        potential_transpiration!(potential_transpiration, interception)
         @. soil.variables.h3 = feddes_h3(h3_high, h3_low, potential_transpiration)
     end
     update_water_demand_model!(demand, soil, dt)
@@ -152,16 +152,14 @@ function update_land_hydrology_model!(
     @. soil.variables.actual_evapotranspiration += interception.variables.interception_rate
 
     # Update land surface temperature if enabled
-    if config.model.land_surface_temperature__flag
-        wind_measurement_height = config.model.land_surface_wind__speed_reference_height
-        update_land_surface_temperature!(
-            land_surface_temperature,
-            soil,
-            atmospheric_forcing,
-            parameters,
-            wind_measurement_height,
-        )
-    end
+    wind_measurement_height = config.model.land_surface_wind__speed_reference_height
+    update_land_surface_temperature!(
+        land_surface_temperature,
+        soil,
+        atmospheric_forcing,
+        parameters,
+        wind_measurement_height,
+    )
     return nothing
 end
 

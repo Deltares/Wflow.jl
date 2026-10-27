@@ -99,6 +99,7 @@ pixi run julia --project=Wflow -e 'using Pkg; Pkg.test(test_args=[\"unit\"])'
 - Integration: init model → run 1–2 steps → assert values with `≈`
 - State restart test: continuous run == cold-start + warm-start split
 - `Aqua.jl` for code quality checks
+- Static analysis: `pixi run lint` (LintApp.jl from the `utils/linting` workspace environment, configured by `JuliaLint.toml`). Runs in the `Julia Lint` workflow (SARIF upload); errors fail the job
 
 ## Code style (mandatory)
 - Multiple dispatch; prefer immutable structs; `@kwdef` for defaults
