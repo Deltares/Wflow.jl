@@ -602,12 +602,14 @@ end
     variables = OverLandFlowVariables(; n)
     variables.h[1] = original_depth
 
-    parameters = ManningFlowParameters(;
-        slope = [0.01],
-        mannings_n = [0.072],
-        alpha_pow = 0.4,
-        alpha_term = [0.41038937516728013],
-        alpha = [2.544585458995107],
+    parameters = OverlandFlowParameters(
+        flow = ManningFlowParameters(;
+            slope = [0.01],
+            mannings_n = [0.072],
+            alpha_pow = 0.4,
+            alpha_term = [0.41038937516728013],
+            alpha = [2.544585458995107],
+        ),
         max_depression_depth = [0.0],
     )
 
@@ -670,12 +672,14 @@ end
     h_flow_initial = 0.02
     h_initial = max_depression_depth + h_flow_initial
 
-    parameters = ManningFlowParameters(;
-        slope = [0.01],
-        mannings_n = [0.072],
-        alpha_pow = 0.4,
-        alpha_term = [0.41038937516728013],
-        alpha = [alpha],
+    parameters = OverlandFlowParameters(
+        flow = ManningFlowParameters(;
+            slope = [0.01],
+            mannings_n = [0.072],
+            alpha_pow = 0.4,
+            alpha_term = [0.41038937516728013],
+            alpha = [alpha],
+        ),
         max_depression_depth = [max_depression_depth],
     )
     boundary_conditions = LandFlowBC(; n)

@@ -341,7 +341,6 @@ end
                 alpha_pow = 0.4,
                 alpha_term = [0.41038937516728013, 0.4113871693777356],
                 alpha = [2.544585458995107, 2.5507721996678145],
-                max_depression_depth = [0.0, 0.0],
             ),
             bankfull_depth,
             bankfull_storage,
@@ -884,7 +883,6 @@ end
                 alpha_pow = 0.4,
                 alpha_term = [3.8572052304976667, 3.8572052304976667],
                 alpha = [34.0789466790827, 34.0789466790827],
-                max_depression_depth = [0.0, 0.0],
             ),
             bankfull_depth = [2.1051321029663086, 2.1051321029663086],
             bankfull_storage = [363469.04651181493, 412286.02275520907],
@@ -1392,12 +1390,14 @@ end
     surface_flow_width = 10.0
     cell_area = flow_length * surface_flow_width
 
-    parameters = Wflow.ManningFlowParameters(;
-        slope = [0.01],
-        mannings_n = [0.072],
-        alpha_pow = 0.4,
-        alpha_term = [0.41038937516728013],
-        alpha = [2.544585458995107],
+    parameters = Wflow.OverlandFlowParameters(
+        flow = Wflow.ManningFlowParameters(;
+            slope = [0.01],
+            mannings_n = [0.072],
+            alpha_pow = 0.4,
+            alpha_term = [0.41038937516728013],
+            alpha = [2.544585458995107],
+        ),
         max_depression_depth = [max_depression_depth],
     )
     boundary_conditions = Wflow.LandFlowBC(; n)
@@ -1456,6 +1456,24 @@ end
     # `h` is the total depth (flowing water depth + depression water depth), which must
     # exceed `max_depression_depth` once the kinematic wave activates.
     @test overland_flow_model.variables.h[1] > max_depression_depth
+
+    # Negative lateral inflow (open water evaporation exceeding runoff) with a partially
+    # filled depression storage: the loss is taken from the depression storage and
+    # discharge stays zero.
+    h_initial = 0.5 * max_depression_depth
+    qlat_loss = -1.0e-6
+    variables = Wflow.OverLandFlowVariables(; n)
+    variables.qlat[1] = qlat_loss
+    variables.h[1] = h_initial
+    overland_flow_model = Wflow.OverlandFlowModel(;
+        routing_method = Wflow.KinematicWave(),
+        timestepping, boundary_conditions, parameters, variables,
+    )
+    Wflow.kinwave_land_update!(overland_flow_model, domain, dt)
+
+    @test overland_flow_model.variables.h[1] ≈
+        h_initial + qlat_loss * flow_length * dt / cell_area
+    @test overland_flow_model.variables.q[1] == 0.0
 end
 
 @testitem "unit: local inertial surface depression storage" begin

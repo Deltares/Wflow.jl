@@ -33,14 +33,13 @@ function ManningFlowParameters(
         mannings_n::Vector{Float64},
         slope::Vector{Float64},
         wetted_perimeter::Vector{Float64},
-        max_depression_depth::Vector{Float64} = zeros(length(mannings_n)),
     )
     hydraulic_radius_pow = 2.0 / 3.0
     alpha_term = @. pow(mannings_n / sqrt(slope), BETA_KINWAVE)
     alpha_pow = hydraulic_radius_pow * BETA_KINWAVE
     alpha = @. alpha_term * pow(wetted_perimeter, alpha_pow)
 
-    parameters = ManningFlowParameters(; slope, mannings_n, alpha_pow, alpha_term, alpha, max_depression_depth)
+    parameters = ManningFlowParameters(; slope, mannings_n, alpha_pow, alpha_term, alpha)
     return parameters
 end
 
@@ -190,12 +189,26 @@ end
     inwater::Vector{Float64} = zeros(n)
 end
 
-"Initialize kinematic wave overland flow model"
-function init_kinematic_wave_overland_flow(
-        dataset::NCDataset,
-        config::Config,
-        domain::DomainLand,
-    )
+"Struct for storing river flow model parameters"
+@with_kw struct OverlandFlowParameters <: AbstractOverlandFlowParameters
+    flow::ManningFlowParameters
+    max_depression_depth::Vector{Float64} # Maximum depth of surface depression storage [m]
+end
+
+"Overload `getproperty` for overland flow model parameters"
+function Base.getproperty(v::OverlandFlowParameters, s::Symbol)
+    field = if s === :max_depression_depth
+        getfield(v, s)
+    elseif s === :flow
+        getfield(v, :flow)
+    else
+        getfield(getfield(v, :flow), s)
+    end
+    return field
+end
+
+"Initialize river flow model parameters"
+function OverlandFlowParameters(dataset::NCDataset, config::Config, domain::DomainLand)
     (; indices) = domain.network
     (; slope, surface_flow_width) = domain.parameters
     mannings_n = ncread(
@@ -212,12 +225,24 @@ function init_kinematic_wave_overland_flow(
         Routing;
         sel = indices,
     )
+    flow_params = ManningFlowParameters(mannings_n, slope, surface_flow_width)
+    parameters = OverlandFlowParameters(; flow = flow_params, max_depression_depth = max_depression_depth)
+    return parameters
+end
+
+"Initialize kinematic wave overland flow model"
+function init_kinematic_wave_overland_flow(
+        dataset::NCDataset,
+        config::Config,
+        domain::DomainLand,
+    )
+    (; indices) = domain.network
 
     n = length(indices)
     timestepping = init_kinematic_wave_timestepping(config, n; domain = "land")
 
     variables = OverLandFlowVariables(; n)
-    parameters = ManningFlowParameters(mannings_n, slope, surface_flow_width, max_depression_depth)
+    parameters = OverlandFlowParameters(dataset, config, domain)
     boundary_conditions = LandFlowBC(; n)
     routing_method = KinematicWave()
 
@@ -339,7 +364,9 @@ function kinwave_land_update!(
                 # surface depression storage: water depth `h` up to `max_depression_depth` is
                 # retained in surface depressions (depression water depth =
                 # min(h, max_depression_depth)), only water above this depth contributes to
-                # overland flow. Incoming water first fills the remaining depression storage.
+                # overland flow. A net inflow first fills the remaining depression storage, a
+                # net loss (open water evaporation exceeding inflow) is first taken from the
+                # depression storage.
                 qin_eff = qin[v]
                 qlat_eff = qlat[v]
                 depression_water_depth = 0.0
@@ -353,6 +380,13 @@ function kinwave_land_update!(
                         filling_rate = min(inflow_rate, remaining_capacity / dt)
                         depression_water_depth += filling_rate * dt / cell_area
                         factor = 1.0 - filling_rate / inflow_rate
+                        qin_eff = qin[v] * factor
+                        qlat_eff = qlat[v] * factor
+                    elseif depression_water_depth > 0.0 && inflow_rate < 0.0
+                        depletion_rate =
+                            min(-inflow_rate, depression_water_depth * cell_area / dt)
+                        depression_water_depth -= depletion_rate * dt / cell_area
+                        factor = 1.0 - depletion_rate / -inflow_rate
                         qin_eff = qin[v] * factor
                         qlat_eff = qlat[v] * factor
                     end

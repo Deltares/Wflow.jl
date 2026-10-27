@@ -1184,6 +1184,14 @@ $\SIb{f_{\mathrm{Kv,} n}}{-}$ (default is 1.0) applied to each soil layer $n$.
 
 ![Schematic diagram of a paddy field with water balance components and soil profile](../../images/paddy_profile.png)
 
+::: {.callout-important}
+The paddy water depth `h` is stored in the land hydrology model and is separate from the
+optional [surface depression storage](../routing/kinwave.qmd#surface-depression-storage) of
+overland flow routing. To avoid retaining water twice, it is recommended to set the maximum
+surface depression storage depth `land_surface_depression__max_depth` to $\SI{0}{m}$ for
+paddy irrigation cells.
+:::
+
 The list of input parameters for paddy irrigation that can be provided through the TOML file
 can be found [here](../parameters_landhydrology_sbm.qmd#paddy-irrigation).
 

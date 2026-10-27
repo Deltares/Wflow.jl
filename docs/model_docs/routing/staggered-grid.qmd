@@ -212,7 +212,9 @@ $$
 Only water above $\subtext{h}{dep,max}$ contributes to flow. This setting, together with
 enabling [land surface water
 reinfiltration](../land/landhydrology_sbm.qmd#land-surface-water-infiltration) can be used
-to store water on the land surface and allow for infiltration.
+to store water on the land surface and allow for infiltration. See the [kinematic wave
+overland flow](./kinwave.qmd#surface-depression-storage) section for the relation with the
+surface water storage of paddy fields.
 
 ## External inflows
 External inflows $\SIb{}{m^3\ s^{-1}}$ for example water supply or abstractions can to added
