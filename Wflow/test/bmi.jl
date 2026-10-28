@@ -36,6 +36,8 @@
         @test BMI.get_var_grid(model, "reservoir_water__outgoing_volume_flow_rate") == 0
         @test BMI.get_var_type(model, "reservoir_water__incoming_volume_flow_rate") ==
             "Float64"
+        @test BMI.get_var_type(model, "reservoir_location__count") == "Int64"
+        @test BMI.get_var_itemsize(model, "reservoir_location__count") == sizeof(Int64)
         @test BMI.get_var_units(model, "river_water__volume_flow_rate") == "m3 s-1"
         @test BMI.get_var_units(model, "soil_layer_1_water_unsaturated_zone__depth") == "m"
         @test BMI.get_var_itemsize(model, "subsurface_water__volume_flow_rate") ==
@@ -66,7 +68,9 @@
             "soil_layer_2_water__volume_fraction",
             [1, 2, 3],
             [0.1, 0.15, 0.2],
-        ) ≈ getindex.(model.land.soil.variables.volumetric_water_content, 2)[1:3]
+        )
+        @test getindex.(model.land.soil.variables.volumetric_water_content, 2)[1:3] ≈
+            [0.1, 0.15, 0.2]
         var_name = "river_water__instantaneous_volume_flow_rate"
         @test BMI.get_value_at_indices(model, var_name, zeros(3), [1, 100, 5617]) ≈
             [0.5310990487057508, 7.196755768938445, 0.023139100812763765]
@@ -91,6 +95,17 @@
         BMI.set_value_at_indices(model, var_name, [1], [250.0])
         @test BMI.get_value_at_indices(model, var_name, zeros(Float64, 2), [1, 2]) ==
             [250.0, 300.0]
+        # values are converted to the element type of the model variable
+        BMI.set_value_at_indices(model, var_name, [2], [350])
+        @test BMI.get_value_at_indices(model, var_name, zeros(Float64, 2), [1, 2]) ==
+            [250.0, 350.0]
+        # model variable with a non-Float64 element type
+        var_name = "reservoir_location__count"
+        reservoir_locations = collect(BMI.get_value_ptr(model, var_name))
+        @test eltype(reservoir_locations) == Int64
+        @test BMI.get_value(model, var_name, zeros(Int64, 2)) == reservoir_locations
+        @test BMI.get_value_at_indices(model, var_name, zeros(Int64, 1), [2]) ==
+            reservoir_locations[2:2]
     end
 
     @testset "Request invalid variable" begin
@@ -164,7 +179,7 @@ end
     @test_logs (
         :warn,
         "edges are not provided for grid type 5 (variables are located at nodes)",
-    ) BMI.get_grid_edge_count(model, 5)
+    ) @test BMI.get_grid_edge_count(model, 5) == 0
     @test_throws ErrorException BMI.get_grid_edge_count(model, 6)
     @test BMI.get_grid_edge_nodes(model, 3, fill(0, 2 * 50063))[1:4] == [1, -999, 2, 3]
     @test BMI.get_grid_edge_nodes(model, 4, fill(0, 2 * 50063))[1:4] == [1, 4, 2, 10]
