@@ -26,5 +26,8 @@ Wflow/test/sbm_simple_temp.toml
 # Server test files
 /server/test/data/
 
+# julialint output
+/julialint-results.sarif
+
 # pixi environments
 .pixi

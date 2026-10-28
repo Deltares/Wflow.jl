@@ -138,9 +138,6 @@ function update_subsurface_flow_model!(model::AbstractModel{<:SbmModel})
             allocation.variables.actual_groundwater_abstraction
     end
 
-    routing.subsurface_flow.variables.water_table_depth .=
-        soil.variables.water_table_depth
-
     # update lateral subsurface flow domain (kinematic wave)
     kh_layered_profile!(soil, routing.subsurface_flow, kv_profile)
     update_subsurface_flow_model!(routing.subsurface_flow, soil, domain, clock.dt)

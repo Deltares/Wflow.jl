@@ -1,0 +1,9 @@
+[deps]
+LintApp = "0ca8a2e7-ee8a-47e9-8624-e03a53d93e73"
+
+[sources]
+# Until https://github.com/julia-vscode/LintApp.jl/pull/12 (JSON v1 compat) is released
+LintApp = {url = "https://github.com/visr/LintApp.jl", rev = "json-v1"}
+
+[compat]
+LintApp = "1.0"

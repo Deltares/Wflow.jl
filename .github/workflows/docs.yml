@@ -1,7 +1,7 @@
 name: Quarto documentation
 on:
   push:
-    branches: [main, release/v1.0]
+    branches: [main, "release/*"]
     tags: [v*]
   pull_request:
 
@@ -22,10 +22,12 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: julia-actions/cache@a7bed9df697e5d7309d68afe7542a87621a8b6c8 # v3.3.0
       - uses: prefix-dev/setup-pixi@d3f436a425481402e6a95a1d1fc10331c708cd9e # v0.10.2
         with:
           pixi-version: "latest"
+          # Put the pixi environment, including julia, on the PATH for later steps
+          activate-environment: true
+      - uses: julia-actions/cache@a7bed9df697e5d7309d68afe7542a87621a8b6c8 # v3.3.0
       - name: Instantiate Julia project
         run: pixi run instantiate-julia docs
 
@@ -55,13 +57,19 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Publish Quarto Project as v1.0
-        if: github.event_name == 'push' && github.ref == 'refs/heads/release/v1.0'
+      # Branch release/v1.1 is published as v1.1
+      - name: Get release version from branch name
+        id: release
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release/')
+        run: echo "version=${GITHUB_REF_NAME#release/}" >> "$GITHUB_OUTPUT"
+
+      - name: Publish Quarto Project as release version
+        if: steps.release.outputs.version != ''
         uses: peaceiris/actions-gh-pages@84c30a85c19949d7eee79c4ff27748b70285e453 # v4.1.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./docs/_site
-          destination_dir: v1.0
+          destination_dir: ${{ steps.release.outputs.version }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
