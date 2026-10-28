@@ -145,7 +145,7 @@ end
 
 function BMI.get_var_type(model::Model, name::String)::String
     value = BMI.get_value_ptr(model, name)
-    return repr(eltype(eltype(value)))
+    return repr(eltype(value))
 end
 
 function BMI.get_var_units(model::Model, name::String)::String
@@ -157,7 +157,7 @@ end
 
 function BMI.get_var_itemsize(model::Model, name::String)::Int
     value = BMI.get_value_ptr(model, name)
-    return sizeof(eltype(eltype(value)))
+    return sizeof(eltype(value))
 end
 
 function BMI.get_var_nbytes(model::Model, name::String)::Int
