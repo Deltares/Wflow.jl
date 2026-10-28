@@ -19,6 +19,7 @@ function Model(config::Config, type::SbmModel)
         reservoirs = config.model.reservoir__flag,
         pits = config.model.pit__flag,
         water_demand = do_water_demand(config),
+        surface_water_reinfiltration = config.model.land_surface_water_reinfiltration__flag,
     )...
 
     domain = Domain(dataset, config, type)

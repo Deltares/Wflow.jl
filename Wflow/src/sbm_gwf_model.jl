@@ -24,6 +24,7 @@ function Model(config::Config, type::SbmGwfModel)
         drains = config.model.drain__flag,
         constanthead = config.model.constanthead__flag,
         water_demand = do_water_demand(config),
+        surface_water_reinfiltration = config.model.land_surface_water_reinfiltration__flag,
     )...
 
     domain = Domain(dataset, config, type)
