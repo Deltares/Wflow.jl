@@ -9,6 +9,16 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
 
+Fixing output of `land_surface_water__abstraction_volume_flux`
+([#1148](https://github.com/Deltares/Wflow.jl/pull/1148)), as part of water demand and
+allocation computations, requires renaming of this standard name to
+`river_water__abstraction_volume_flux` in the TOML configuration file, e.g.:
+
+```toml
+[output.netcdf_grid.variables]
+river_water__abstraction_volume_flux = "abstraction_river"
+```
+
 ### Fixed
 - BMI functions `get_var_units` and `get_var_location` for layered soil variables.
 - netCDF scalar output of layered variables (`[[output.netcdf_scalar.variable]]`) failed
@@ -24,6 +34,11 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Variables `excesswatersoil` and `excesswaterpath` were mapped to standard names
   `compacted_soil_surface_water__excess_volume_flux` and
   `non_compacted_soil_surface_water__excess_volume_flux` respectively (interchanged).
+- Output of `land_surface_water__abstraction_volume_flux` throws an error because of
+  incorrect mapping to active indices. This is fixed by renaming
+  `land_surface_water__abstraction_volume_flux` to `river_water__abstraction_volume_flux`
+  ([#1148](https://github.com/Deltares/Wflow.jl/pull/1148)). This standard name is also
+  consistent with other standard names that refer to the river domain.
 
 ## v1.0.4 - 2026-07-24
 
