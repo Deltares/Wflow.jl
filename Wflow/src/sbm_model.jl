@@ -166,16 +166,16 @@ end
 
 function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
     (; routing, land, domain, config) = model
-    land_v = routing.overland_flow.variables
-    river_v = routing.river_flow.variables
-
     (;
         river_routing,
         land_routing,
         cold_start__flag,
         reservoir__flag,
         floodplain_1d__flag,
+        river_routing__flag,
     ) = config.model
+
+    land_v = routing.overland_flow.variables
 
     # read and set states in model object if cold_start=false
     if !cold_start__flag
@@ -229,10 +229,14 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
                 saturated_thickness(subsurface_flow) .* subsurface_flow.parameters.area .*
                 storativity(subsurface_flow)
         end
-        # only set active cells for river (ignore boundary conditions/ghost points)
-        (; flow_width, flow_length) = domain.river.parameters
-        river_v.storage[1:nriv] .=
-            river_v.h[1:nriv] .* flow_width[1:nriv] .* flow_length[1:nriv]
+
+        if river_routing__flag
+            river_v = routing.river_flow.variables
+            # only set active cells for river (ignore boundary conditions/ghost points)
+            (; flow_width, flow_length) = domain.river.parameters
+            river_v.storage[1:nriv] .=
+                river_v.h[1:nriv] .* flow_width[1:nriv] .* flow_length[1:nriv]
+        end
 
         if floodplain_1d__flag && river_routing != RoutingType.kinematic_wave
             initialize_storage!(routing.river_flow, domain, nriv)

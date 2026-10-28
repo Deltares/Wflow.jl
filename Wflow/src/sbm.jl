@@ -161,7 +161,7 @@ function update_open_water_runoff_model!(
         routing,
         domain.river.network,
     )
-    update_open_water_runoff_model!(runoff, atmospheric_forcing, parameters, dt)
+    update_open_water_runoff_model!(runoff, atmospheric_forcing, routing, parameters, dt)
     return nothing
 end
 
@@ -268,6 +268,30 @@ function update_soil_water_storage!(
     return nothing
 end
 
+function map_river_storage_to_land_domain!(
+        total_storage::Vector{Float64},
+        domain::Domain,
+        river_flow_model::NoRiverFlow,
+    )
+    return nothing
+end
+
+function map_river_storage_to_land_domain!(
+        total_storage::Vector{Float64},
+        domain::Domain,
+        river_flow_model::AbstractRiverFlowModel,
+    )
+    (; flow_width, flow_length) = domain.river.parameters
+    (; area) = domain.land.parameters
+    for (i, index_river) in enumerate(domain.river.network.land_indices)
+        total_storage[index_river] = (
+            (river_flow_model.variables.h[i] * flow_width[i] * flow_length[i]) /
+                (area[index_river])
+        )
+    end
+    return nothing
+end
+
 """
 Update the total water storage per cell at the end of a timestep.
 
@@ -286,19 +310,13 @@ function update_total_water_storage!(
     (; interception, snow, glacier, soil, demand) = land_hydrology_model
     (; total_storage, unsaturated_store_depth, saturated_water_depth) = soil.variables
 
-    (; river_fraction, area) = domain.land.parameters
-    (; flow_width, flow_length) = domain.river.parameters
+    (; river_fraction) = domain.land.parameters
 
     # Set the total storage to zero
     fill!(total_storage, 0)
 
     # Burn the river routing values
-    for (i, index_river) in enumerate(domain.river.network.land_indices)
-        total_storage[index_river] = (
-            (river_flow.variables.h[i] * flow_width[i] * flow_length[i]) /
-                (area[index_river])
-        )
-    end
+    map_river_storage_to_land_domain!(total_storage, domain, river_flow)
 
     # Add storage from interception, snow and glacier models
     total_storage .+=
