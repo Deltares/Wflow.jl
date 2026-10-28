@@ -270,7 +270,7 @@ end
 function map_river_storage_to_land_domain!(
         total_storage::Vector{Float64},
         domain::Domain,
-        river_flow_model::NoRiverFlow,
+        river_flow_model::NoRiverFlowModel,
     )
     return nothing
 end

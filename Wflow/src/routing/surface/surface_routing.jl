@@ -87,5 +87,5 @@ function surface_routing!(
     return nothing
 end
 
-get_reservoir_model(river_flow_model::NoRiverFlow) = nothing
+get_reservoir_model(river_flow_model::NoRiverFlowModel) = nothing
 get_reservoir_model(river_flow_model::AbstractRiverFlowModel) = river_flow_model.boundary_conditions.reservoir

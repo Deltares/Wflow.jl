@@ -72,7 +72,7 @@ end
 function update_river_water_depth!(
         waterdepth_river::Vector{Float64},
         land_indices::Vector{Int},
-        river_flow_model::NoRiverFlow,
+        river_flow_model::NoRiverFlowModel,
     )
     return nothing
 end
@@ -125,7 +125,7 @@ end
 
 function update_river_runoff_model!(
         open_water_runoff_model::OpenWaterRunoff,
-        river_flow_model::NoRiverFlow,
+        river_flow_model::NoRiverFlowModel,
         potential_evaporation::Vector{Float64},
         river_fraction::Vector{Float64},
         dt::Float64,
