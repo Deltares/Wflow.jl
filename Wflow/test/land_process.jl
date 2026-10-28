@@ -584,6 +584,7 @@ end
 @testitem "unit: update_overland_flow_and_depth!" begin
     using Wflow:
         OverlandFlowModel,
+        OverlandFlowParameters,
         ManningFlowParameters,
         OverLandFlowVariables,
         LandFlowBC,
@@ -652,6 +653,7 @@ end
 @testitem "unit: update_overland_flow_and_depth! with surface depression storage" begin
     using Wflow:
         OverlandFlowModel,
+        OverlandFlowParameters,
         ManningFlowParameters,
         OverLandFlowVariables,
         LandFlowBC,
