@@ -65,6 +65,7 @@ end
     cold_start__flag::Bool = true
     cell_length_in_meter__flag::Bool = false
     reservoir__flag::Bool = false
+    river_routing__flag::Bool = true
     # Model types sbm and sbm_gwf
     snow__flag::Bool = false
     snow_gravitational_transport__flag::Bool = false
