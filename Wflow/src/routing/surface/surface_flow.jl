@@ -65,7 +65,7 @@ end
 end
 
 function update_river_flow_model!(
-        river_flow_model::NoRiverFlow,
+        river_flow_model::NoRiverFlowModel,
         domain::Domain,
         clock::Clock,
     )
@@ -73,7 +73,7 @@ function update_river_flow_model!(
 end
 
 function update_lateral_inflow!(
-        river_flow_model::NoRiverFlow,
+        river_flow_model::NoRiverFlowModel,
         external_models::NamedTuple,
         domain::Domain,
         dt::Float64,
@@ -83,7 +83,7 @@ end
 
 function update_inflow!(
         reservoir_model::Nothing,
-        river_flow_model::NoRiverFlow,
+        river_flow_model::NoRiverFlowModel,
         external_models::NamedTuple,
         network::NetworkReservoir,
     )
