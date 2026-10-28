@@ -26,12 +26,14 @@ jobs:
           - x64
     steps:
       - uses: actions/checkout@v6
-      - uses: julia-actions/cache@v2
       - uses: prefix-dev/setup-pixi@v0.9.3
         with:
           pixi-version: "latest"
+          # Put the pixi environment, including julia, on the PATH for later steps
+          activate-environment: true
       - name: Prepare pixi
         run: pixi run install-julia
+      - uses: julia-actions/cache@v2
       - name: Test WflowServer
         run: |
           pixi run test-wflow-server
