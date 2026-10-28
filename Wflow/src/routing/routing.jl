@@ -10,9 +10,9 @@ struct KinematicWave <: AbstractRoutingMethod end
 struct ManningStaggered <: AbstractStaggeredRoutingMethod end
 struct LocalInertial <: AbstractStaggeredRoutingMethod end
 
-struct NoSubsurfaceFlow <: AbstractSubsurfaceFlowModel end
-struct NoOverlandFlow <: AbstractOverlandFlowModel end
-struct NoRiverFlow <: AbstractRiverFlowModel end
+struct NoSubsurfaceFlowModel <: AbstractSubsurfaceFlowModel end
+struct NoOverlandFlowModel <: AbstractOverlandFlowModel end
+struct NoRiverFlowModel <: AbstractRiverFlowModel end
 
 """
 Struct for storing routing model components overland flow `overland_flow`, river flow
@@ -23,7 +23,7 @@ Struct for storing routing model components overland flow `overland_flow`, river
         R <: AbstractRiverFlowModel,
         S <: AbstractSubsurfaceFlowModel,
     }
-    overland_flow::O = NoOverlandFlow()
-    river_flow::R = NoRiverFlow()
-    subsurface_flow::S = NoSubsurfaceFlow()
+    overland_flow::O = NoOverlandFlowModel()
+    river_flow::R = NoRiverFlowModel()
+    subsurface_flow::S = NoSubsurfaceFlowModel()
 end

@@ -6,7 +6,6 @@
     tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     config = Wflow.Config(tomlpath)
     config.dir_output = mktempdir()
-    dt = Float64(config.time.timestepsecs)
 
     model = Wflow.Model(config)
     (; domain) = model
@@ -678,7 +677,6 @@ end
     config = Wflow.Config(tomlpath)
     config.dir_output = mktempdir()
     model = Wflow.Model(config)
-    dt = Wflow.tosecond(model.clock.dt)
 
     Wflow.run_timestep!(model)
     Wflow.run_timestep!(model)
@@ -793,7 +791,6 @@ end
     config.dir_output = mktempdir()
     config.input.forcing["atmosphere_water__precipitation_volume_flux"] = 2.5
     model = Wflow.Model(config)
-    dt = Wflow.tosecond(model.clock.dt)
     Wflow.load_fixed_forcing!(model)
 
     @testset "fixed precipitation forcing (initialize)" begin

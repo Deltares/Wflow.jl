@@ -89,15 +89,17 @@ const FAO_MINIMUM_WIND_SPEED = 0.5 # [m s⁻¹]
 mutable struct Clock{T}
     time::T
     iteration::Int
-    dt::Second
+    dt_sec::Second
+    dt::Float64
 end
 
 function Clock(config)
     # this constructor is used by reset_clock!, since if the Clock has already
     # been constructed before, the config is complete
     starttime = cftime(config.time.starttime, config.time.calendar)
-    dt = Second(config.time.timestepsecs)
-    return Clock(starttime, 0, dt)
+    dt = config.time.timestepsecs
+    dt_sec = Second(dt)
+    return Clock(starttime, 0, dt_sec, dt)
 end
 
 function Clock(config, reader)
@@ -108,12 +110,13 @@ function Clock(config, reader)
         timestepsecs = Dates.value(Second(nctimes[2] - nctimes[1]))
         config.time.timestepsecs = timestepsecs
     end
-    dt = Second(config.time.timestepsecs)
+    dt = config.time.timestepsecs
+    dt_sec = Second(dt)
 
     # if the config file does not have a start or endtime, follow the netCDF times
     # and add them to the config
     if isnothing(config.time.starttime)
-        starttime = first(nctimes) - dt
+        starttime = first(nctimes) - dt_sec
         config.time.starttime = starttime
     end
     if isnothing(config.time.endtime)
@@ -122,11 +125,11 @@ function Clock(config, reader)
     end
 
     if config.fews_run__flag
-        config.time.starttime += dt
+        config.time.starttime += dt_sec
     end
     starttime = cftime(config.time.starttime, config.time.calendar)
 
-    return Clock(starttime, 0, dt)
+    return Clock(starttime, 0, dt_sec, dt)
 end
 
 abstract type AbstractModel{T} end
@@ -337,7 +340,7 @@ function run!(model::Model; close_files = true)
 
     # determine timesteps to run
     starttime = clock.time
-    dt = clock.dt
+    dt = clock.dt_sec
     endtime = cftime(config.time.endtime, config.time.calendar)
     times = range(starttime + dt, endtime; step = dt)
 
