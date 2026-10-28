@@ -64,6 +64,32 @@ end
     variables::V
 end
 
+function update_river_flow_model!(
+        river_flow_model::NoRiverFlow,
+        domain::Domain,
+        clock::Clock,
+    )
+    return nothing
+end
+
+function update_lateral_inflow!(
+        river_flow_model::NoRiverFlow,
+        external_models::NamedTuple,
+        domain::Domain,
+        dt::Float64,
+    )
+    return nothing
+end
+
+function update_inflow!(
+        reservoir_model::Nothing,
+        river_flow_model::NoRiverFlow,
+        external_models::NamedTuple,
+        network::NetworkReservoir,
+    )
+    return nothing
+end
+
 "Compute wetted perimeter for a rectangular river channel "
 function wetted_perimeter_channel(h::Float64, flow_width::Float64)
     channel_perimeter = 2.0 * h + flow_width

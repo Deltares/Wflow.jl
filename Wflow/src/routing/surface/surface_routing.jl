@@ -8,7 +8,8 @@ function surface_routing!(model)
     (; land, routing, domain, config, clock) = model
     (; soil, runoff, allocation) = land
     (; overland_flow, river_flow, subsurface_flow) = routing
-    (; reservoir) = river_flow.boundary_conditions
+
+    reservoir = get_reservoir_model(river_flow)
 
     dt = tosecond(clock.dt)
     # correct overland flow water levels in case of reinfiltration
@@ -30,7 +31,7 @@ function surface_routing!(model)
     # update lateral inflow river flow
     update_lateral_inflow!(
         river_flow,
-        (; allocation = river_flow.allocation, runoff, overland_flow, subsurface_flow),
+        (; runoff, overland_flow, subsurface_flow),
         domain,
         dt,
     )
@@ -92,3 +93,6 @@ function surface_routing!(
 
     return nothing
 end
+
+get_reservoir_model(river_flow_model::NoRiverFlow) = nothing
+get_reservoir_model(river_flow_model::AbstractRiverFlowModel) = river_flow_model.boundary_conditions.reservoir
