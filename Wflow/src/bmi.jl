@@ -145,7 +145,7 @@ end
 
 function BMI.get_var_type(model::Model, name::String)::String
     value = BMI.get_value_ptr(model, name)
-    return repr(eltype(first(value)))
+    return repr(eltype(eltype(value)))
 end
 
 function BMI.get_var_units(model::Model, name::String)::String
@@ -157,7 +157,7 @@ end
 
 function BMI.get_var_itemsize(model::Model, name::String)::Int
     value = BMI.get_value_ptr(model, name)
-    return sizeof(eltype(first(value)))
+    return sizeof(eltype(eltype(value)))
 end
 
 function BMI.get_var_nbytes(model::Model, name::String)::Int
@@ -199,7 +199,11 @@ function BMI.get_time_step(model::Model)::Float64
     return model.config.time.timestepsecs
 end
 
-function BMI.get_value(model::Model, name::String, dest::Vector{Float64})::Vector{Float64}
+function BMI.get_value(
+        model::Model,
+        name::String,
+        dest::Vector{T},
+    )::Vector{T} where {T}
     dest .= copy(BMI.get_value_ptr(model, name))
     return dest
 end
@@ -245,34 +249,36 @@ end
 function BMI.get_value_at_indices(
         model::Model,
         name::String,
-        dest::Vector{Float64},
+        dest::Vector{T},
         inds::Vector{Int},
-    )::Vector{Float64}
+    )::Vector{T} where {T}
     dest .= BMI.get_value_ptr(model, name)[inds]
     return dest
 end
 
 """
-    BMI.set_value(model::Model, name::String, src::Vector{Float64})::Nothing
+    BMI.set_value(model::Model, name::String, src::AbstractVector)::Nothing
 
 Set a model variable `name` to the values in vector `src`, overwriting the current contents.
-The type and size of `src` must match the model's internal array.
+The size of `src` must match the model's internal array, and the values of `src` are
+converted to the element type of the model variable (see `BMI.get_var_type`).
 """
-function BMI.set_value(model::Model, name::String, src::Vector{Float64})::Nothing
+function BMI.set_value(model::Model, name::String, src::AbstractVector)::Nothing
     BMI.get_value_ptr(model, name) .= src
     return nothing
 end
 
 """
-    BMI.set_value_at_indices(model::Model, name::String, inds::Vector{Int}, src::Vector{Float64})::Nothing
+    BMI.set_value_at_indices(model::Model, name::String, inds::Vector{Int}, src::AbstractVector)::Nothing
 
-Set a model variable `name` to the values in vector `src`, at indices `inds`.
+Set a model variable `name` to the values in vector `src`, at indices `inds`. The values of
+`src` are converted to the element type of the model variable (see `BMI.get_var_type`).
 """
 function BMI.set_value_at_indices(
         model::Model,
         name::String,
         inds::Vector{Int},
-        src::Vector{Float64},
+        src::AbstractVector,
     )::Nothing
     BMI.get_value_ptr(model, name)[inds] .= src
     return nothing
