@@ -65,7 +65,7 @@ end
 function update_model!(model::AbstractModel{<:SbmGwfModel})
     (; routing, land, domain, clock, config) = model
     (; soil, runoff, demand) = land
-    (; subsurface_flow, overland_flow) = routing
+    (; subsurface_flow) = routing
     (; boundary_conditions) = subsurface_flow
 
     dt = tosecond(clock.dt)

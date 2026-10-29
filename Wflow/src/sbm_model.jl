@@ -62,7 +62,7 @@ function update_model!(model::AbstractModel{<:SbmModel})
     (; routing, land, domain, clock, config) = model
     (; soil, runoff, demand) = land
     (; kv_profile) = land.soil.parameters
-    (; subsurface_flow, overland_flow) = routing
+    (; subsurface_flow) = routing
     (; boundary_conditions) = routing.subsurface_flow
 
     dt = tosecond(clock.dt)
