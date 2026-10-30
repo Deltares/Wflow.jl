@@ -638,8 +638,8 @@ window.Quarto = {
 <table class="caption-top table">
 <caption>Formulation of the components of interception loss according to Gash:</caption>
 <colgroup>
-<col style="width: 66%">
-<col style="width: 33%">
+<col style="width: 56%">
+<col style="width: 43%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -1354,6 +1354,28 @@ T_\mathrm{soil}^t = T_\mathrm{soil}^{t-1} + w_\mathrm{soil}  (T_\mathrm{air} - T
 </div>
 </div>
 </section>
+<section id="land-surface-water-infiltration" class="level4">
+<h4 class="anchored" data-anchor-id="land-surface-water-infiltration">Land surface water infiltration</h4>
+<p>Infiltration from land surface water (overland flow) is supported when enabling the following setting in the TOML file:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_water_reinfiltration__flag</span> <span class="op">=</span> <span class="cn">true</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>This can be done with both <code>kinematic_wave</code> and <code>local_inertial</code> land routing settings. When enabling this process, part of the overland flow depth is added to the water available for infiltration. To keep some water in the overland flow (and avoid draining a cell completely in one time step), the potential infiltration from surface water <code>potential_infiltration_surfacewater</code> <span class="math inline">\(\SIb{}{mm\ t^{-1}}\)</span> is computed from the overland flow variable <code>h</code>, the water depth at the end of the previous time step <span class="math inline">\(\SIb{\subtext{h}{land}^{t-1}}{mm}\)</span>, as:</p>
+<p><span class="math display">\[
+  \subtext{i}{pot, sw}^{t} = \max\left(\frac{\subtext{h}{land}^{t-1}}{\Delta t} (1 - \subtext{f}{river}) - \subtext{E}{land, water}^{t}, 0\right) \subtext{f}{reinfilt, max},
+\]</span></p>
+<p>where <span class="math inline">\(t\)</span> denotes the current time step, <span class="math inline">\(\Delta t\)</span> is its duration, <span class="math inline">\(\SIb{\subtext{f}{river}}{-}\)</span> is the river fraction of the cell, <span class="math inline">\(\SIb{\subtext{E}{land, water}^{t}}{mm\ t^{-1}}\)</span> is the actual land open water evaporation rate (<code>actual_open_water_evaporation_land</code>) computed by the open water runoff model, and <span class="math inline">\(\SIb{\subtext{f}{reinfilt, max}}{-}\)</span> is the maximum reinfiltration fraction (fixed at <span class="math inline">\(0.95\)</span>). The stored water rate is first scaled by the non-river fraction to express it on the same cell-area basis as the evaporation rate. Evaporation is then subtracted before applying the reinfiltration fraction, with a lower bound of zero. This reserves water for evaporation so that evaporation and reinfiltration do not use the same stored water.</p>
+<p>This amount is added to the water flux at the soil surface <code>water_flux_surface</code> <span class="math inline">\(\SIb{}{mm\ t^{-1}}\)</span>, so that the total water available for infiltration <code>potential_infiltration</code> <span class="math inline">\(\SIb{}{mm\ t^{-1}}\)</span> becomes:</p>
+<p><span class="math display">\[
+  \subtext{i}{pot}^{t} = \subtext{q}{surface}^{t} + \subtext{i}{pot, sw}^{t}.
+\]</span></p>
+<p>Open water evaporation is not subtracted from the incoming soil-surface flux <span class="math inline">\(\subtext{q}{surface}^{t}\)</span>. Its actual loss is accounted for separately in net runoff; the subtraction above only limits the stored surface water available for reinfiltration.</p>
+<p>The regular infiltration routine then computes the actual infiltration <code>actual_infiltration</code> <span class="math inline">\(\SIb{}{mm\ t^{-1}}\)</span> and infiltration excess <code>infiltexcess</code> <span class="math inline">\(\SIb{}{mm\ t^{-1}}\)</span>. After infiltration, the share originating from overland flow is tracked with the ratio <code>infilt_ratio</code> = <code>actual_infiltration</code> / <code>potential_infiltration</code>, giving the infiltration from surface water:</p>
+<p><span class="math display">\[
+  \subtext{i}{sw}^{t} = \subtext{i}{pot, sw}^{t} \cdot \frac{\subtext{i}{act}^{t}}{\subtext{i}{pot}^{t}}.
+\]</span></p>
+<p>Finally, <code>actual_infiltration</code>, <code>infiltexcess</code> and <code>water_flux_surface</code> are corrected by <span class="math inline">\(\subtext{i}{pot, sw}^{t}\)</span> to avoid double counting of water already originating from surface water.</p>
+<p>When a positive <a href="../../model_docs/routing/kinwave.html#surface-depression-storage">maximum surface depression storage depth</a> is configured, reinfiltration reduces the total overland flow depth <span class="math inline">\(h\)</span>, and only the remaining water depth above the maximum surface depression storage depth contributes to overland flow. This applies to both <a href="../../model_docs/routing/kinwave.html#surface-depression-storage">kinematic wave overland flow</a> and <a href="../../model_docs/routing/staggered-grid.html#surface-depression-storage">2D local inertial overland flow</a>.</p>
+</section>
 </section>
 <section id="capillary-rise" class="level3">
 <h3 class="anchored" data-anchor-id="capillary-rise">Capillary rise</h3>
@@ -1368,8 +1390,8 @@ maxdepth}}{mm}\)</span> is the critical water depth beyond which capillary rise 
 <section id="leakage" class="level3">
 <h3 class="anchored" data-anchor-id="leakage">Leakage</h3>
 <p>If the maximum leakage <span class="math inline">\(\SIb{}{mm\ d^{-1}}\)</span> input model parameter is set &gt; 0, water is lost from the saturated zone and runs out of the model. Leakage can be enabled by specifying the following in the TOML file:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="dt">soil_water_saturated_zone_bottom__max_leakage_volume_flux</span> <span class="op">=</span> <span class="st">"maxleakage"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="dt">soil_water_saturated_zone_bottom__max_leakage_volume_flux</span> <span class="op">=</span> <span class="st">"maxleakage"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="water-table-change" class="level3">
 <h3 class="anchored" data-anchor-id="water-table-change">Water table change</h3>
@@ -1383,10 +1405,10 @@ maxdepth}}{mm}\)</span> is the critical water depth beyond which capillary rise 
 <section id="non-irrigation" class="level2">
 <h2 class="anchored" data-anchor-id="non-irrigation">Non-irrigation</h2>
 <p>Non-irrigation water demand and allocation computations are supported for the sectors domestic, industry and livestock. These computations can be enabled by specifying the following in the TOML file:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model.water_demand]</span></span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="dt">domestic__flag</span> <span class="op">=</span> <span class="cn">true</span></span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="dt">industry__flag</span> <span class="op">=</span> <span class="cn">true</span></span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="dt">livestock__flag</span> <span class="op">=</span> <span class="cn">true</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model.water_demand]</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="dt">domestic__flag</span> <span class="op">=</span> <span class="cn">true</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="dt">industry__flag</span> <span class="op">=</span> <span class="cn">true</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="dt">livestock__flag</span> <span class="op">=</span> <span class="cn">true</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>For these non-irrigation sectors the gross demand (<span class="math inline">\(d_\mathrm{gross}\)</span> <span class="math inline">\(\SIb{}{mm\ t^{-1}}\)</span>) and net demand (<span class="math inline">\(d_\mathrm{net}\)</span> <span class="math inline">\(\SIb{}{mm\ t^{-1}}\)</span>) are provided to the model (input through cyclic <span class="math inline">\(\SIb{}{mm\ d^{-1}}\)</span> or forcing data <span class="math inline">\(\SIb{}{mm\ t^{-1}}\)</span>). Gross demand represents the total demand and hence the total abstraction from surface water or groundwater when sufficient water is available. Net demand represents water consumption. The portion of total abstracted water that is not consumed is returned as surface water. The return flow fraction (<span class="math inline">\(\SIb{f_\mathrm{return}}{-}\)</span>) is calculated as follows:</p>
 <p><span class="math display">\[
     \subtext{f}{return} = 1.0 - \frac{\subtext{d}{net}}{\subtext{d}{gross}},
@@ -1396,8 +1418,8 @@ maxdepth}}{mm}\)</span> is the critical water depth beyond which capillary rise 
 <section id="non-paddy-irrigation" class="level2">
 <h2 class="anchored" data-anchor-id="non-paddy-irrigation">Non-paddy irrigation</h2>
 <p>Non-paddy (other crops than flooded rice) water demand and allocation computations are supported. These computations can be enabled by specifying the following in the TOML file:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model.water_demand]</span></span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="dt">nonpaddy__flag</span> <span class="op">=</span> <span class="cn">true</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model.water_demand]</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="dt">nonpaddy__flag</span> <span class="op">=</span> <span class="cn">true</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Irrigation is applied during the growing season when input parameter irrigation trigger <span class="math inline">\(\SIb{}{-}\)</span> for non-paddy irrigation is <code>true</code> (or <code>on</code>) and when water depletion exceeds the readily available water:</p>
 <p><span class="math display">\[
     (\subtext{S}{root-unsat, fc} - \subtext{S}{root-unsat}) \ge (\subtext{S}{root-unsat, fc} - \subtext{S}{root-unsat, h3}),
@@ -1407,14 +1429,27 @@ maxdepth}}{mm}\)</span> is the critical water depth beyond which capillary rise 
 <section id="paddy-irrigation" class="level2">
 <h2 class="anchored" data-anchor-id="paddy-irrigation">Paddy irrigation</h2>
 <p>Paddy (flooded rice) water demand and allocation computations are supported. These computations can be enabled by specifying the following in the TOML file:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model.water_demand]</span></span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="dt">paddy__flag</span> <span class="op">=</span> <span class="cn">true</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model.water_demand]</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="dt">paddy__flag</span> <span class="op">=</span> <span class="cn">true</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Irrigation is applied during the growing season when input parameter irrigation trigger <span class="math inline">\(\SIb{}{-}\)</span> is <code>true</code> (or <code>on</code>) and when the paddy water depth <code>h</code> <span class="math inline">\(\SIb{}{mm}\)</span> reaches below the minimum water depth <code>h_min</code> <span class="math inline">\(\SIb{}{mm}\)</span> (see also the figure below). The net irrigation demand <span class="math inline">\(\SIb{}{mm\ t^{-1}}\)</span> is the irrigation rate required to reach the optimal paddy water depth <code>h_opt</code> <span class="math inline">\(\SIb{}{mm}\)</span>, an approach similar to Xie and Cui (2011). To account for limited irrigation efficiency the net irrigation demand is divided by the irrigation efficiency for paddy fields (<span class="math inline">\(\SIb{}{-}\)</span>, default is 1.0), resulting in gross irrigation demand <span class="math inline">\(\SIb{}{mm t^{-1}}\)</span>. Finally, the gross irrigation demand is limited by the maximum irrigation rate (<span class="math inline">\(\SIb{}{mm\ t^{-1}}\)</span>, default is <span class="math inline">\(\SIb{25}{mm\ d^{-1}}\)</span>). If the maximum irrigation rate is applied, irrigation continues at subsequent time steps until the optimal paddy water depth <code>h_opt</code> is reached. Irrigation is added to the amount of water available for infiltration. When the paddy water depth <code>h</code> exceeds <code>h_max</code> <span class="math inline">\(\SIb{}{mm}\)</span> runoff occurs, and this amount is added to the runoff routing scheme for overland flow. The figure below shows a typical vertical soil profile of a puddled rice soil with a muddy layer of about 15 cm (in this case represented by two soil layers of <span class="math inline">\(\SI{5}{cm}\)</span> and <span class="math inline">\(\SI{10}{cm}\)</span> thickness), a plow soil layer of 5 cm with relative low permeability (vertical hydraulic conductivity <span class="math inline">\(\subtext{K}{vz}\)</span> of about <span class="math inline">\(\SI{5}{mm\ d^{-1}}\)</span>), and a non-puddled soil below the plow soil layer. The low vertical hydraulic conductivity of the plow soil layer can be realized by making use of the optional multiplication factor <span class="math inline">\(\SIb{f_{\mathrm{Kv,} n}}{-}\)</span> (default is 1.0) applied to each soil layer <span class="math inline">\(n\)</span>.</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="../../images/paddy_profile.png" class="img-fluid figure-img"></p>
 <figcaption>Schematic diagram of a paddy field with water balance components and soil profile</figcaption>
 </figure>
+</div>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Important
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The paddy water depth <code>h</code> is stored in the land hydrology model and is separate from the optional <a href="../../model_docs/routing/kinwave.html#surface-depression-storage">surface depression storage</a> of overland flow routing. To avoid retaining water twice, it is recommended to set the maximum surface depression storage depth <code>land_surface_depression__max_depth</code> to <span class="math inline">\(\SI{0}{m}\)</span> for paddy irrigation cells.</p>
+</div>
 </div>
 <p>The list of input parameters for paddy irrigation that can be provided through the TOML file can be found <a href="../../model_docs/parameters_landhydrology_sbm.html#paddy-irrigation">here</a>.</p>
 </section>
@@ -1427,8 +1462,8 @@ maxdepth}}{mm}\)</span> is the critical water depth beyond which capillary rise 
 <li>groundwater (max <span class="math inline">\(\SI{75}{\%}\)</span> of total available water)</li>
 </ul>
 <p>The model parameter fraction surface water used (default is <span class="math inline">\(1.0\)</span>) determines how much water is supplied by available surface water and groundwater, and can be specified in the TOML file as follows:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_water__withdrawal_fraction</span> <span class="op">=</span> <span class="st">"SurfaceWaterFrac"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_water__withdrawal_fraction</span> <span class="op">=</span> <span class="st">"SurfaceWaterFrac"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <section id="local" class="level3">
 <h3 class="anchored" data-anchor-id="local">Local</h3>
 <p>First, surface water abstraction (excluding reservoir locations) is computed to satisfy local (same grid cell) water demand. The available surface water volume is limited by a fixed scaling factor of <span class="math inline">\(0.8\)</span> to prevent rivers from completely drying out. It is assumed that the water demand cannot be satisfied completely from local surface water and groundwater. The next step is to satisfy the remaining water demand for allocation areas <span class="math inline">\(\SIb{}{-}\)</span>, described in the next sub-section.</p>
@@ -1436,8 +1471,8 @@ maxdepth}}{mm}\)</span> is the critical water depth beyond which capillary rise 
 <section id="allocation-areas" class="level3">
 <h3 class="anchored" data-anchor-id="allocation-areas">Allocation areas</h3>
 <p>Allocation areas can be specified as follows in the TOML file:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="dt">land_water_allocation_area__count</span> <span class="op">=</span> <span class="st">"allocation_areas"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="dt">land_water_allocation_area__count</span> <span class="op">=</span> <span class="st">"allocation_areas"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>For allocation areas the water demand <span class="math inline">\(\SIb{\subtext{V}{sw, demand}}{m^3}\)</span> and availability <span class="math inline">\(\SIb{\subtext{V}{sw, availability}}{m^3}\)</span> are summed (including reservoir locations limited by a fixed scaling factor of <span class="math inline">\(0.98\)</span>), and the total surface water abstraction is then:</p>
 <p><span class="math display">\[
     \subtext{V}{sw, abstraction} = \min (\subtext{V}{sw, demand}, \subtext{V}{sw, availability}).
@@ -1470,8 +1505,8 @@ maxdepth}}{mm}\)</span> is the critical water depth beyond which capillary rise 
 <h2 class="anchored" data-anchor-id="land-surface-temperature">Land surface temperature</h2>
 <p>This optional module estimates the land surface temperature (LST) <span class="math inline">\(\SIb{T_\mathrm{s}}{\degree C}\)</span> based on evapotranspiration <span class="math inline">\(\SIb{ET}{mm\ t^{-1}}\)</span> simulated by the Land Hydrology <code>SBM</code> model and wind speed, air temperature and net radiation as input. The approach used to estimate <span class="math inline">\(T_\mathrm{s}\)</span> is based on work by Zink et al.&nbsp;(2018) and Purnamasari et al.&nbsp;(2025).</p>
 <p>This module can be enabled by specifying the following in the TOML file:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_temperature__flag</span> <span class="op">=</span> <span class="cn">true</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_temperature__flag</span> <span class="op">=</span> <span class="cn">true</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>The energy balance of the land surface is computed as follows:</p>
 <p><span class="math display">\[
     R_\mathrm{n} =  LE + H + G
@@ -1494,8 +1529,8 @@ kg^{-1}\ K^{-1}}\)</span> is the specific heat of air (<span class="math inline"
 <p>where <span class="math inline">\(\SIb{d}{m}\)</span> is the zero plane displacement height, <span class="math inline">\(\SIb{z_\mathrm{m}}{m}\)</span> is the height of wind measurement, <span class="math inline">\(\SIb{z_\mathrm{h}}{m}\)</span> is the height of humidity measurement, <span class="math inline">\(\SIb{z_\mathrm{0m}}{m}\)</span> is the roughness length for momentum transfer, <span class="math inline">\(\SIb{z_\mathrm{0h}}{m}\)</span> is the roughness length for heat transfer, <span class="math inline">\(\SIb{u_\mathrm{z}}{m\
 s^{-1}}\)</span> is the wind speed at the wind speed measurement height <span class="math inline">\(z_\mathrm{m}\)</span> and <span class="math inline">\(k\)</span> is the von Kármán constant (<span class="math inline">\(k = 0.41\)</span>). It is assumed that the heights of measurements for wind and humidity are equal. The wind speed is constrained to a minimum value of <span class="math inline">\(\SI{0.5}{m\ s^{-1}}\)</span> to account for vapour exchange on the surface induced by air buoyancy and boundary layer instability effects during low wind conditions (Allen et al., 1998).</p>
 <p>It is assumed that the input wind speed is consistent with <span class="math inline">\(z_\mathrm{0m}\)</span> and <span class="math inline">\(d\)</span> of the surface terrain (and not based on “open-terrain” (short grass) as observed typically by meteorological stations). The input wind speed reference height <code>land_surface_wind__speed_reference_height</code> should be set in the TOML file as follows:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_wind__speed_reference_height</span> <span class="op">=</span> <span class="fl">100.0</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb22"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_wind__speed_reference_height</span> <span class="op">=</span> <span class="fl">100.0</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>This reference height should be greater than the sum of <span class="math inline">\(d\)</span> and <span class="math inline">\(z_\mathrm{0m}\)</span> to convert the wind speed (assuming a logarithmic profile) properly to the reference height <span class="math inline">\(z\)</span> (<span class="math inline">\(z =
 z_\mathrm{m} = z_\mathrm{h}\)</span>) used for the computation of <span class="math inline">\(r_\mathrm{air}\)</span>. The reference height <span class="math inline">\(z\)</span> is set equal the input parameter <code>atmosphere_bottom_air__above_ground_height</code> (land surface “skin” layer height above the ground), with a minimum of 2 m, consistent with the FAO (Allen et al., 1998) standardized height for wind speed, temperature and humidity.</p>
 <p>The list of input parameters for LST that can be provided through the TOML file can be found <a href="../../model_docs/parameters_landhydrology_sbm.html#land-surface-temperature">here</a>. The required wind speed, air temperature and net radiation forcing inputs are listed <a href="../../model_docs/parameters_landhydrology_sbm.html#atmospheric-forcing">here</a>.</p>

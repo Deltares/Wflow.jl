@@ -559,6 +559,8 @@ window.Quarto = {
 <li>Added an optional <code>wflow_version</code> field to the config .toml file. This setting is used by the wflow model builder <code>hydromt_wflow</code> for incremental Wflow.jl version upgrading.</li>
 <li>Support using different slopes for overland and subsurface kinematic wave flow routing (<a href="https://github.com/Deltares/Wflow.jl/pull/1102">#1102</a>). For example this can be useful to simulate surface terrain changes that have less or no impact on the subsurface flow slope. A new standard name <code>subsurface_bottom_surface__slope</code> has been added for the subsurface flow slope.</li>
 <li>Support land surface temperature computations.</li>
+<li>Optional reinfiltration of overland flow into the soil, enabled by setting <code>model.land_surface_water_reinfiltration__flag = true</code> in the TOML file. When enabled, up to 95% of the overland flow depth is added to the water available for infiltration, and overland flow water depths and discharges are corrected accordingly.</li>
+<li>Support surface depression storage on the land surface for both kinematic wave and 2D local inertial overland flow, through an optional per-cell parameter <code>land_surface_depression__max_depth</code>. Only the water depth above the maximum surface depression storage depth contributes to overland flow.</li>
 </ul>
 </section>
 </section>
