@@ -189,7 +189,7 @@ end
     inwater::Vector{Float64} = zeros(n)
 end
 
-"Struct for storing river flow model parameters"
+"Struct for storing overland flow model parameters"
 @with_kw struct OverlandFlowParameters <: AbstractOverlandFlowParameters
     flow::ManningFlowParameters
     max_depression_depth::Vector{Float64} # Maximum depth of surface depression storage [m]
@@ -207,7 +207,7 @@ function Base.getproperty(v::OverlandFlowParameters, s::Symbol)
     return field
 end
 
-"Initialize river flow model parameters"
+"Initialize overland flow model parameters"
 function OverlandFlowParameters(dataset::NCDataset, config::Config, domain::DomainLand)
     (; indices) = domain.network
     (; slope, surface_flow_width) = domain.parameters
