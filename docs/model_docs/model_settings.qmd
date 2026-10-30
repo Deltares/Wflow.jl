@@ -36,6 +36,7 @@ The Tables in this subsection show the available models settings for the model t
 | `land_surface_temperature__flag` | Include land surface temperature modelling | - | `false` |
 | `land_surface_wind__speed_reference_height` | Wind speed (forcing) reference height | m | 100 |
 : {.striped .hover}
+| `land_surface_water_reinfiltration__flag` | Include reinfiltration from overland flow | - | `false` |
 
 ### Routing method
 | Setting | Description | Unit | Default |
