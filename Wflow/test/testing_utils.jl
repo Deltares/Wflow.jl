@@ -218,7 +218,7 @@ end
 function test_means(obj::Any, means::Dict{Symbol})
     failed = Symbol[]
     for (s, v) in means
-        v_obj = get_mean(getfield(obj, s))
+        v_obj = get_mean(getproperty(obj, s))
         if !(v_obj ≈ v)
             push!(failed, s)
             err = v - v_obj

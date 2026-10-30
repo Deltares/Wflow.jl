@@ -59,12 +59,15 @@
         routing_method = Wflow.KinematicWave(),
         timestepping = Wflow.TimeStepping(),
         boundary_conditions = Wflow.LandFlowBC(; n),
-        parameters = Wflow.ManningFlowParameters(;
-            slope = [0.01],
-            mannings_n = [0.072],
-            alpha_pow = 0.4,
-            alpha_term = [0.41038937516728013],
-            alpha = [2.544585458995107],
+        parameters = Wflow.OverlandFlowParameters(
+            flow = Wflow.ManningFlowParameters(;
+                slope = [0.01],
+                mannings_n = [0.072],
+                alpha_pow = 0.4,
+                alpha_term = [0.41038937516728013],
+                alpha = [2.544585458995107],
+            ),
+            max_depression_depth = [0.0],
         ),
         variables = Wflow.OverLandFlowVariables(; n, h = [0.01]),
     )

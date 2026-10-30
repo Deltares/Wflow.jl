@@ -198,6 +198,24 @@ The alpha coefficient, flow limitation according to the Froude number, and the a
 model time step $\Delta t$ are explained in more detail in the [River and floodplain
 routing](#river-and-floodplain-routing) section of the local inertial model.
 
+### Surface depression storage {#surface-depression-storage}
+The maximum surface depression storage depth $\SIb{\subtext{h}{dep,max}}{m}$ introduced for
+[kinematic wave overland flow](./kinwave.qmd#surface-depression-storage) is also used by the
+2D local inertial overland flow scheme. Water below $\subtext{h}{dep,max}$ is retained in
+the cell and cannot flow towards neighboring cells. The effective water depth
+$\SIb{\subtext{h}{eff}}{m}$ used to compute the water surface elevation at each edge is:
+
+$$
+\subtext{h}{eff} = \max(0, h - \subtext{h}{dep,max}).
+$$
+
+Only water above $\subtext{h}{dep,max}$ contributes to flow. This setting, together with
+enabling [land surface water
+reinfiltration](../land/landhydrology_sbm.qmd#land-surface-water-infiltration) can be used
+to store water on the land surface and allow for infiltration. See the [kinematic wave
+overland flow](./kinwave.qmd#surface-depression-storage) section for the relation with the
+surface water storage of paddy fields.
+
 ## External inflows
 External inflows $\SIb{}{m^3\ s^{-1}}$ for example water supply or abstractions can to added
 the 1D river flow model on a staggered grid and local inertial river and overland flow
