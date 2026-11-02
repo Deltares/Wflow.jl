@@ -72,15 +72,6 @@ function update_river_flow_model!(
     return nothing
 end
 
-function update_lateral_inflow!(
-        river_flow_model::NoRiverFlowModel,
-        external_models::NamedTuple,
-        domain::Domain,
-        dt::Float64,
-    )
-    return nothing
-end
-
 function update_inflow!(
         reservoir_model::Nothing,
         river_flow_model::NoRiverFlowModel,

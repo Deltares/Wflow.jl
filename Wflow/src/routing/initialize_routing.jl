@@ -76,7 +76,9 @@ function initialize_river_flow(dataset::NCDataset, config::Config, domain::Domai
             river_flow = init_staggered_river_flow(dataset, config, domain.river, reservoir)
         end
     else
-        river_flow = NoRiverFlowModel()
+        n = length(domain.river.network.indices)
+        boundary_conditions = NoRiverFlowBC(; n)
+        river_flow = NoRiverFlowModel(; boundary_conditions, allocation = NoAllocationRiverModel(n))
     end
     return river_flow
 end
