@@ -142,6 +142,9 @@ struct SbmModel <: AbstractModelType end         # "sbm" type / sbm_model.jl
 struct SbmGwfModel <: AbstractModelType end      # "sbm_gwf" type / sbm_gwf_model.jl
 struct SedimentModel <: AbstractModelType end    # "sediment" type / sediment_model.jl
 
+abstract type AbstractDemandModel end
+abstract type AbstractAllocationModel end
+
 include("units.jl")
 include("config_structure.jl")
 include("config_utils.jl")

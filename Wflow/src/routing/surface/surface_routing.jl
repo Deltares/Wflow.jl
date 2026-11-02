@@ -8,8 +8,7 @@ function surface_routing!(model)
     (; land, routing, domain, config, clock) = model
     (; soil, runoff, allocation) = land
     (; overland_flow, river_flow, subsurface_flow) = routing
-
-    reservoir = get_reservoir_model(river_flow)
+    (; reservoir) = river_flow.boundary_conditions
 
     # update lateral inflow for kinematic wave overland flow
     update_lateral_inflow!(
@@ -86,6 +85,3 @@ function surface_routing!(
 
     return nothing
 end
-
-get_reservoir_model(river_flow_model::NoRiverFlowModel) = nothing
-get_reservoir_model(river_flow_model::AbstractRiverFlowModel) = river_flow_model.boundary_conditions.reservoir

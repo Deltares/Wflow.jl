@@ -12,9 +12,6 @@ end
 struct NoAllocationLandModel <: AbstractAllocationModel
     n::Int
 end
-struct NoAllocationRiverModel <: AbstractAllocationModel
-    n::Int
-end
 
 "Struct to store non-irrigation water demand variables"
 @with_kw struct NonIrrigationDemandVariables
