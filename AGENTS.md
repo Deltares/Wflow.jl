@@ -95,7 +95,9 @@ pixi run julia --project=Wflow -e 'using Pkg; Pkg.test(test_args=[\"unit\"])'
 ```
 
 - `TestItemRunner.jl` with `@testitem` (not `@testset`); unit tests prefixed `"unit: "`
-- Test data: `utils/download_test_data.jl` → Moselle/Piave datasets
+- Test data (Moselle/Piave datasets) is DVC-tracked (`Wflow/test/data/input.dvc`); fetch it
+  with `pixi run download-test-data`. A fresh git worktree does not contain it: run that task,
+  or symlink `Wflow/test/data/input` from the main checkout (the path is gitignored)
 - Integration: init model → run 1–2 steps → assert values with `≈`
 - State restart test: continuous run == cold-start + warm-start split
 - `Aqua.jl` for code quality checks
