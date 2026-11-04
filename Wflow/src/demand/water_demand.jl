@@ -574,6 +574,21 @@ end
     variables::AllocationLandVariables = AllocationLandVariables(; n)
 end
 
+"Struct to store external land allocation model variables"
+@with_kw struct AllocationLandExternalVariables
+    n::Int
+    # actual groundwater abstraction [m s⁻¹]
+    actual_groundwater_abstraction::Vector{Float64} = zeros(n)
+    # allocated water for irrigation [m s⁻¹]
+    irrigation_allocation::Vector{Float64} = zeros(n)
+end
+
+"External land allocation model"
+@with_kw struct AllocationLandExternalModel <: AbstractAllocationModel
+    n::Int
+    variables::AllocationLandVariables = AllocationLandExternalVariables(; n)
+end
+
 "Initialize water allocation for the land domain"
 function AllocationLandModel(
         dataset::NCDataset,
