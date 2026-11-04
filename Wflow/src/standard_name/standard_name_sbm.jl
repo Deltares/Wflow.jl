@@ -306,14 +306,6 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
         description = "Total actual evapotranspiration",
         tags = [:soil_output],
     ),
-    "land_surface_water__abstraction_volume_flux" => ParameterMetadata(;
-        lens = @optic(
-            _.routing.river_flow.allocation.variables.actual_surfacewater_abstraction
-        ),
-        unit = Unit(; mm = 1, dt = -1),
-        description = "Actual surface water abstraction",
-        tags = [:demand_allocation_output],
-    ),
     "land_water_mass_balance_error__volume_flux" => ParameterMetadata(;
         lens = @optic(_.mass_balance.land_water_balance.error),
         unit = Unit(; mm = 1, dt = -1),
