@@ -116,6 +116,8 @@ end
     river_transport::RiverTransportType.T = RiverTransportType.bagnold
     # Water demand
     water_demand::WaterDemandSubSection = WaterDemandSubSection(; _was_specified = false)
+    # Water allocation (external)
+    external_water_allocation__flag::Bool = false
 end
 
 ###
