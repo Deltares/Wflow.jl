@@ -19,6 +19,7 @@ function Model(config::Config, type::SbmModel)
         reservoirs = config.model.reservoir__flag,
         pits = config.model.pit__flag,
         water_demand = do_water_demand(config),
+        surface_water_reinfiltration = config.model.land_surface_water_reinfiltration__flag,
     )...
 
     domain = Domain(dataset, config, type)
@@ -61,6 +62,7 @@ function update_model!(model::AbstractModel{<:SbmModel})
     (; routing, land, domain, clock, config) = model
     (; soil, runoff, demand) = land
     (; kv_profile) = land.soil.parameters
+    (; subsurface_flow) = routing
     (; boundary_conditions) = routing.subsurface_flow
 
     dt = tosecond(clock.dt)
@@ -81,7 +83,7 @@ function update_model!(model::AbstractModel{<:SbmModel})
     kh_layered_profile!(land.soil, routing.subsurface_flow, kv_profile)
     update_subsurface_flow_model!(routing.subsurface_flow, land.soil, domain, dt)
     # update SBM soil model (runoff, unsaturated_layer_depth and saturated_water_depth)
-    update_soil_water_storage!(soil, (; runoff, demand, routing.subsurface_flow), dt)
+    update_soil_water_storage!(soil, (; runoff, demand, subsurface_flow), dt)
 
     surface_routing!(model)
     update_total_water_storage!(model)

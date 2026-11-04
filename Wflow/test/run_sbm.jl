@@ -1408,3 +1408,208 @@ end
     end
     Wflow.close_files(model; delete_output = false)
 end
+
+
+@testitem "reinfiltration" begin
+    @testset "Kinematic wave overland flow" begin
+        tomlpath = joinpath(@__DIR__, "sbm_config.toml")
+        config = Wflow.Config(tomlpath)
+        config.dir_output = mktempdir()
+        config.model.land_surface_water_reinfiltration__flag = true
+
+        idxs = [53, 54, 55]
+
+        model = Wflow.Model(config)
+        Wflow.run_timestep!(model)
+        Wflow.run_timestep!(model)
+
+        (; soil) = model.land
+        # get total available infiltration
+        @test soil.boundary_conditions.potential_infiltration[idxs] ≈
+            [8.290954048774218e-10, 1.8193309401321751e-7, 9.71627171868268e-10]
+        @test soil.boundary_conditions.potential_infiltration_surfacewater[idxs] ≈
+            [0.0, 1.8112574239337292e-7, 1.555963155960821e-10]
+        # get actual infiltration
+        @test soil.variables.actual_infiltration[idxs] ≈
+            [8.290954048774218e-10, 8.073516198445915e-10, 8.160308562721859e-10]
+        # there is a lot of infiltration coming from overland flow in cell 54
+        @test soil.variables.infilt_surfacewater[idxs] ≈
+            [0.0, 1.8112574239337292e-7, 1.555963155960821e-10]
+
+        Wflow.close_files(model; delete_output = false)
+    end
+
+    @testset "Local inertial overland flow" begin
+        tomlpath = joinpath(@__DIR__, "sbm_river-land-local-inertial_config.toml")
+        config = Wflow.Config(tomlpath)
+        config.dir_output = mktempdir()
+        config.model.land_surface_water_reinfiltration__flag = true
+
+        idxs = [13929, 13930, 13931]
+
+        model = Wflow.Model(config)
+        Wflow.run_timestep!(model)
+        Wflow.run_timestep!(model)
+
+        (; soil) = model.land
+        # get total available infiltration
+        @test soil.boundary_conditions.potential_infiltration[idxs] ≈
+            [1.8843819035186123e-9, 1.7024378589647516e-8, 1.8938754180606866e-9]
+        @test soil.boundary_conditions.potential_infiltration_surfacewater[idxs] ≈
+            [8.65749466839408e-11, 1.7024378589647516e-8, 0.0]
+        # get actual infiltration
+        @test soil.variables.actual_infiltration[idxs] ≈
+            [1.7978069568346715e-9, 0.0, 1.8938754180606866e-9]
+        # the second item (index 13930) has a infiltration flux only originating from overland flow
+        @test soil.variables.infilt_surfacewater[idxs] ≈
+            [8.65749466839408e-11, 1.7024378589647516e-8, 0.0]
+
+        Wflow.close_files(model; delete_output = false)
+    end
+end
+
+@testitem "water balance sbm with reinfiltration (kinematic wave routing)" begin
+    tomlpath = joinpath(@__DIR__, "sbm_config.toml")
+    config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
+    config.model.water_mass_balance__flag = true
+    config.model.land_surface_water_reinfiltration__flag = true
+    model = Wflow.Model(config)
+    (; overland_water_balance) = model.mass_balance.routing
+    (; reinfiltration_average) = model.routing.overland_flow.variables
+    (; infilt_surfacewater) = model.land.soil.variables
+    (; area) = model.domain.land.parameters
+
+    Wflow.run_timestep!(model)
+    Wflow.run_timestep!(model)
+
+    # `reinfiltration_average` must equal the soil-side overland flow infiltration flux
+    # (`infilt_surfacewater * area`), i.e. the routing outflow matches the soil inflow.
+    @test reinfiltration_average ≈ infilt_surfacewater .* area
+
+    # relative mass-balance error must be tight at flowing cells, including where
+    # reinfiltration is active.
+    inds = findall(x -> x > 1.0e-3, model.routing.overland_flow.variables.q_average)
+    @test all(re -> abs(re) < 1.0e-9, overland_water_balance.relative_error[inds])
+    reinf_inds = findall(x -> x > 0.0, reinfiltration_average)
+    @test !isempty(reinf_inds)
+    @test all(
+        re -> abs(re) < 1.0e-9,
+        overland_water_balance.relative_error[intersect(reinf_inds, inds)],
+    )
+
+    Wflow.close_files(model; delete_output = false)
+end
+
+@testitem "surface depression storage" begin
+    # Run a model without (reference) and with a uniform maximum surface depression storage
+    # depth for two timesteps
+    function run_depression_model(
+            tomlpath;
+            max_depression_depth = nothing,
+            reinfiltration = false,
+        )
+        config = Wflow.Config(tomlpath)
+        config.dir_output = mktempdir()
+        config.model.water_mass_balance__flag = true
+        config.model.land_surface_water_reinfiltration__flag = reinfiltration
+        if !isnothing(max_depression_depth)
+            config.input.static["land_surface_depression__max_depth"] = max_depression_depth
+        end
+        model = Wflow.Model(config)
+        Wflow.run_timestep!(model)
+        Wflow.run_timestep!(model)
+        Wflow.close_files(model; delete_output = false)
+        return model
+    end
+
+    @testset "Kinematic wave overland flow" begin
+        tomlpath = joinpath(@__DIR__, "sbm_config.toml")
+        model_ref = run_depression_model(tomlpath)
+        model = run_depression_model(tomlpath; max_depression_depth = 0.005)
+
+        (; max_depression_depth) = model.routing.overland_flow.parameters
+        (; h, q, q_average, storage) = model.routing.overland_flow.variables
+        v_ref = model_ref.routing.overland_flow.variables
+        @test all(==(0.005), max_depression_depth)
+
+        # water is retained in surface depressions: less overland and river flow, and more
+        # overland storage
+        @test sum(q_average) ≈ 226.70225501955693
+        @test sum(v_ref.q_average) ≈ 269.9564550105785
+        @test sum(storage) ≈ 5.018622877927941e6
+        @test sum(v_ref.storage) ≈ 4.418622801949545e6
+        @test sum(model.routing.river_flow.variables.q_average) ≈ 3374.0972889560676
+        @test sum(model_ref.routing.river_flow.variables.q_average) ≈ 3689.1128090152934
+
+        # no overland flow below the maximum depression storage depth
+        @test all(i -> q[i] == 0.0, findall(h .<= max_depression_depth))
+        @test all(i -> h[i] > max_depression_depth[i], findall(q .> 0.0))
+
+        # cell 95: depression storage partially filled (no flow), cell 26: depression
+        # storage filled and the water depth above `max_depression_depth` drives overland
+        # flow, cell 2114: depression storage depleted by open water evaporation (negative
+        # lateral inflow)
+        idxs = [95, 26, 2114]
+        @test h[idxs] ≈ [6.852710395276734e-5, 0.02155852262853285, 0.0013401913278209762]
+        @test q[idxs] ≈ [0.0, 0.5949636390586919, 0.0]
+        @test v_ref.h[idxs] ≈
+            [0.004324419883415282, 0.016556149897813573, 0.0004626661793530196]
+        @test model.routing.overland_flow.variables.qlat[2114] < 0.0
+
+        (; error) = model.mass_balance.routing.overland_water_balance
+        @test all(err -> abs(err) < 1.0e-9, error)
+    end
+
+    @testset "Kinematic wave overland flow with reinfiltration" begin
+        tomlpath = joinpath(@__DIR__, "sbm_config.toml")
+        model = run_depression_model(
+            tomlpath;
+            max_depression_depth = 0.005,
+            reinfiltration = true,
+        )
+        (; max_depression_depth) = model.routing.overland_flow.parameters
+        (; h, reinfiltration_average) = model.routing.overland_flow.variables
+        (; infilt_surfacewater) = model.land.soil.variables
+        (; area) = model.domain.land.parameters
+
+        @test reinfiltration_average ≈ infilt_surfacewater .* area
+        @test sum(reinfiltration_average) ≈ 5.796706944280937
+        # reinfiltration from partially filled surface depression storage
+        @test any(
+            i -> 0.0 < h[i] < max_depression_depth[i] && reinfiltration_average[i] > 0.0,
+            eachindex(h),
+        )
+
+        (; error) = model.mass_balance.routing.overland_water_balance
+        @test all(err -> abs(err) < 1.0e-9, error)
+    end
+
+    @testset "Local inertial overland flow" begin
+        tomlpath = joinpath(@__DIR__, "sbm_river-land-local-inertial_config.toml")
+        model_ref = run_depression_model(tomlpath)
+        model = run_depression_model(tomlpath; max_depression_depth = 0.005)
+
+        (; max_depression_depth) = model.routing.overland_flow.parameters
+        (; h, qx_average, qy_average) = model.routing.overland_flow.variables
+        v_ref = model_ref.routing.overland_flow.variables
+        @test all(==(0.005), max_depression_depth)
+
+        # water is retained in surface depressions: less overland and river flow
+        @test sum(abs, qx_average) + sum(abs, qy_average) ≈ 79.72253328633904
+        @test sum(abs, v_ref.qx_average) + sum(abs, v_ref.qy_average) ≈ 94.71765020205166
+        @test sum(model.routing.river_flow.variables.q_average) ≈ 2295.3941122307147
+        @test sum(model_ref.routing.river_flow.variables.q_average) ≈ 2415.8565080487274
+
+        # cell 38: depression storage partially filled, cell 11: water depth above
+        # `max_depression_depth`
+        idxs = [38, 11]
+        @test h[idxs] ≈ [0.004194821101109486, 0.18534998024570165]
+        @test v_ref.h[idxs] ≈ [0.00564793299362166, 0.18183877216527222]
+        @test qx_average[38] ≈ -0.028052676006709663
+        @test qy_average[11] ≈ 0.8026527953955205
+
+        (; error) = model.mass_balance.routing.overland_water_balance
+        @test all(err -> abs(err) < 1.0e-9, error)
+    end
+end

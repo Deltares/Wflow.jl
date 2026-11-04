@@ -143,12 +143,13 @@ function update_land_hydrology_model!(
     update_bc_soil_model!(
         soil,
         atmospheric_forcing,
-        (; interception, runoff, demand, allocation),
+        (; interception, runoff, demand, allocation, overland_flow = routing.overland_flow),
+        domain,
+        config,
         dt,
     )
 
     update_soil_water_flow!(soil, atmospheric_forcing, (; snow, runoff, demand), config, dt)
-
     @. soil.variables.actual_evapotranspiration += interception.variables.interception_rate
 
     # Update land surface temperature if enabled

@@ -11,6 +11,11 @@ function surface_routing!(model)
     (; reservoir) = river_flow.boundary_conditions
 
     dt = tosecond(clock.dt)
+    # correct overland flow water levels in case of reinfiltration
+    if config.model.land_surface_water_reinfiltration__flag
+        update_overland_flow_and_depth!(overland_flow, soil, domain, dt)
+    end
+
     # update lateral inflow for kinematic wave overland flow
     update_lateral_inflow!(
         overland_flow,

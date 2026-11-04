@@ -111,6 +111,14 @@ floodplain_bottom_surface__slope = "floodplain_slope"
   slope. A new standard name `subsurface_bottom_surface__slope` has been added for the
   subsurface flow slope.
 - Support land surface temperature computations.
+- Optional reinfiltration of overland flow into the soil, enabled by setting
+  `model.land_surface_water_reinfiltration__flag = true` in the TOML file. When enabled, up
+  to 95% of the overland flow depth is added to the water available for infiltration, and
+  overland flow water depths and discharges are corrected accordingly.
+- Support surface depression storage on the land surface for both kinematic wave and 2D
+  local inertial overland flow, through an optional per-cell parameter
+  `land_surface_depression__max_depth`. Only the water depth above the maximum surface
+  depression storage depth contributes to overland flow.
 
 ## v1.0.4 - 2026-07-24
 

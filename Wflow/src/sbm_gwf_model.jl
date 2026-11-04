@@ -24,6 +24,7 @@ function Model(config::Config, type::SbmGwfModel)
         drains = config.model.drain__flag,
         constanthead = config.model.constanthead__flag,
         water_demand = do_water_demand(config),
+        surface_water_reinfiltration = config.model.land_surface_water_reinfiltration__flag,
     )...
 
     domain = Domain(dataset, config, type)
@@ -64,7 +65,8 @@ end
 function update_model!(model::AbstractModel{<:SbmGwfModel})
     (; routing, land, domain, clock, config) = model
     (; soil, runoff, demand) = land
-    (; boundary_conditions) = routing.subsurface_flow
+    (; subsurface_flow) = routing
+    (; boundary_conditions) = subsurface_flow
 
     dt = tosecond(clock.dt)
 
@@ -84,7 +86,7 @@ function update_model!(model::AbstractModel{<:SbmGwfModel})
     end
     # update groundwater domain
     update_subsurface_flow_model!(
-        routing.subsurface_flow,
+        subsurface_flow,
         soil,
         domain,
         dt,
@@ -93,7 +95,7 @@ function update_model!(model::AbstractModel{<:SbmGwfModel})
     # update SBM soil model (runoff, unsaturated_layer_depth and saturated_water_depth)
     update_soil_water_storage!(
         soil,
-        (; runoff, demand, subsurface_flow = routing.subsurface_flow),
+        (; runoff, demand, subsurface_flow),
         dt,
     )
 

@@ -878,6 +878,9 @@ end
     theta::Float64
     # depth threshold for calculating flow [m]
     h_thresh::Float64
+    # maximum depth of surface depression storage, water below this depth does not drive
+    # overland flow [m]
+    max_depression_depth::Vector{Float64}
     # maximum cell elevation at edge [m] (x direction)
     zx_max_at_edge::Vector{Float64}
     # maximum cell elevation at edge [m] (y direction)
@@ -917,6 +920,13 @@ function LocalInertialOverlandFlowParameters(
         Routing;
         sel = indices,
     )
+    max_depression_depth = ncread(
+        dataset,
+        config,
+        "land_surface_depression__max_depth",
+        Routing;
+        sel = indices,
+    )
     elevation = ncread(
         dataset,
         config,
@@ -951,6 +961,7 @@ function LocalInertialOverlandFlowParameters(
         ywidth_at_edge = we_y,
         theta,
         h_thresh = waterdepth_threshold,
+        max_depression_depth,
         zx_max_at_edge,
         zy_max_at_edge,
         mannings_n_sq_at_edge = mannings_n .* mannings_n,
@@ -965,6 +976,8 @@ end
     n::Int
     # runoff from hydrological model [m³ s⁻¹]
     runoff::Vector{Float64} = zeros(n)
+    # amount of infiltration from overland flow [m³]
+    infiltration_volume::Vector{Float64} = zeros(n)
 end
 
 "Initialize local inertial overland flow model"
@@ -1093,6 +1106,10 @@ function update_bc_overland_flow_model!(
         (net_runoff + net_runoff_river) * area
     overland_flow_model.boundary_conditions.runoff[river_indices] .+=
         get_flux_to_river(subsurface_flow, river_indices)
+
+    # infiltration volume [m³] from overland flow, applied in `local_inertial_update_water_depth!`
+    @. overland_flow_model.boundary_conditions.infiltration_volume =
+        soil.variables.infilt_surfacewater * area * dt
     return nothing
 end
 
@@ -1231,11 +1248,16 @@ Update flow for the local inertial overland flow model at edge `i` in a single d
         q_cumulative = land_v.qy_cumulative
     end
 
+    # effective water depth: only the water depth above `max_depression_depth` drives overland flow
+    h_eff_current = max(0.0, land_v.h[i] - land_p.max_depression_depth[i])
+
     # the effective flow width is zero when the river width exceeds the cell width and
     # floodplain flow is not calculated.
     if upstream_idx <= land_p.n && width_at_edge != 0.0
-        zs_current = land_p.z[i] + land_v.h[i]
-        zs_upstream = land_p.z[upstream_idx] + land_v.h[upstream_idx]
+        h_eff_upstream =
+            max(0.0, land_v.h[upstream_idx] - land_p.max_depression_depth[upstream_idx])
+        zs_current = land_p.z[i] + h_eff_current
+        zs_upstream = land_p.z[upstream_idx] + h_eff_upstream
         zs_max_at_edge = max(zs_current, zs_upstream)
         water_depth_at_edge = (zs_max_at_edge - z_max_at_edge)
 
@@ -1256,10 +1278,10 @@ Update flow for the local inertial overland flow model at edge `i` in a single d
                 dt,
             )
             # limit q in case water is not available
-            if land_v.h[i] <= 0.0
+            if h_eff_current <= 0.0
                 q_current[i] = min(q_current[i], 0.0)
             end
-            if land_v.h[upstream_idx] <= 0.0
+            if h_eff_upstream <= 0.0
                 q_current[i] = max(q_current[i], 0.0)
             end
         else
@@ -1346,7 +1368,7 @@ fluxes of the local inertial river and overland flow model.
     net_flow =
         net_river_flow + net_land_flow + overland_flow_model.boundary_conditions.runoff[i] -
         river_flow_model.boundary_conditions.abstraction[river_idx]
-    storage_change = net_flow * dt
+    storage_change = net_flow * dt - overland_flow_model.boundary_conditions.infiltration_volume[i]
 
     return storage_change
 end
@@ -1433,7 +1455,7 @@ from horizontal fluxes and runoff.
         overland_flow_model.variables.qx[ind_x_down] - overland_flow_model.variables.qx[i] +
             overland_flow_model.variables.qy[ind_y_down] - overland_flow_model.variables.qy[i] +
             overland_flow_model.boundary_conditions.runoff[i]
-    ) * dt
+    ) * dt - overland_flow_model.boundary_conditions.infiltration_volume[i]
 end
 
 """
@@ -1544,3 +1566,15 @@ function local_inertial_update_water_depth!(
     end
     return nothing
 end
+
+"""
+No-op for the `OverlandFlowModel{<:LocalInertial}`. Overland flow infiltration is applied via
+the `infiltration_volume` boundary condition set in `update_bc_overland_flow_model!` and
+subtracted from land storage in `local_inertial_update_water_depth!`.
+"""
+update_overland_flow_and_depth!(
+    ::OverlandFlowModel{<:LocalInertial},
+    ::SbmSoilModel,
+    ::Domain,
+    ::Float64,
+) = nothing

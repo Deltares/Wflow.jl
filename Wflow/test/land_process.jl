@@ -499,3 +499,247 @@ end
     @test actual_infiltration_soil == 0.0
     @test actual_infiltration_compacted_soil == 0.0
 end
+
+
+@testitem "unit: update_infiltration_fluxes" begin
+    # Test with infiltration from surface water and precipitation
+    potential_infiltration = 10.0
+    potential_infiltration_surfacewater = 2.0
+    water_flux_surface_input = 10.0
+    actual_infiltration_input = 6.0 # this includes the infiltration from surface water
+    infiltration_excess_input = 1.0
+
+    infilt_surfacewater,
+        actual_infiltration,
+        infiltration_excess,
+        saturation_excess_water,
+        water_flux_surface = Wflow.update_infiltration_fluxes(
+        potential_infiltration,
+        potential_infiltration_surfacewater,
+        water_flux_surface_input,
+        actual_infiltration_input,
+        infiltration_excess_input,
+    )
+
+    @test infilt_surfacewater == 1.2 # this is the infiltration from surface water
+    @test actual_infiltration ≈ 4.8 # this excludes the infiltration from surface water
+    @test infilt_surfacewater + actual_infiltration ≈ actual_infiltration_input
+    @test infiltration_excess == 0.8
+    @test water_flux_surface == 8.0
+    @test saturation_excess_water ≈ 2.4
+
+    # Test with infiltration from only precipitation, no infiltration from surface water
+    potential_infiltration = 10.0
+    potential_infiltration_surfacewater = 0.0
+    water_flux_surface_input = 10.0
+    actual_infiltration_input = 6.0
+    infiltration_excess_input = 1.0
+
+    infilt_surfacewater,
+        actual_infiltration,
+        infiltration_excess,
+        saturation_excess_water,
+        water_flux_surface = Wflow.update_infiltration_fluxes(
+        potential_infiltration,
+        potential_infiltration_surfacewater,
+        water_flux_surface_input,
+        actual_infiltration_input,
+        infiltration_excess_input,
+    )
+
+    @test infilt_surfacewater == 0.0
+    @test actual_infiltration == actual_infiltration_input
+    @test infilt_surfacewater + actual_infiltration == actual_infiltration_input
+    @test infiltration_excess == infiltration_excess_input
+    @test water_flux_surface == water_flux_surface_input
+    @test saturation_excess_water == 3.0
+
+    # Test with infiltration from only surface water, no infiltration from precipitation
+    potential_infiltration = 10.0
+    potential_infiltration_surfacewater = 10.0
+    water_flux_surface_input = 10.0
+    actual_infiltration_input = 6.0
+    infiltration_excess_input = 1.0
+
+    infilt_surfacewater,
+        actual_infiltration,
+        infiltration_excess,
+        saturation_excess_water,
+        water_flux_surface = Wflow.update_infiltration_fluxes(
+        potential_infiltration,
+        potential_infiltration_surfacewater,
+        water_flux_surface_input,
+        actual_infiltration_input,
+        infiltration_excess_input,
+    )
+
+    @test infilt_surfacewater == 6.0
+    @test actual_infiltration == 0.0
+    @test infilt_surfacewater + actual_infiltration == 6.0
+    @test infiltration_excess == 0.0
+    @test water_flux_surface == 0.0
+    @test saturation_excess_water == 0.0
+end
+
+@testitem "unit: update_overland_flow_and_depth!" begin
+    using Wflow:
+        OverlandFlowModel,
+        OverlandFlowParameters,
+        ManningFlowParameters,
+        OverLandFlowVariables,
+        LandFlowBC,
+        TimeStepping
+
+    n = 1
+    infilt_surfacewater = 5.0e-6 # m s⁻¹
+    dt = 900.0 # s
+    original_depth = 0.02 # m
+    river_fraction = 0.2
+    flow_length = 100.0
+    surface_flow_width = 10.0
+    expected_water_depth =
+        original_depth - (infilt_surfacewater * dt) / (1 - river_fraction)
+
+    variables = OverLandFlowVariables(; n)
+    variables.h[1] = original_depth
+
+    parameters = OverlandFlowParameters(
+        flow = ManningFlowParameters(;
+            slope = [0.01],
+            mannings_n = [0.072],
+            alpha_pow = 0.4,
+            alpha_term = [0.41038937516728013],
+            alpha = [2.544585458995107],
+        ),
+        max_depression_depth = [0.0],
+    )
+
+    boundary_conditions = LandFlowBC(; n)
+    timestepping =
+        TimeStepping(; adaptive = false, dt_fixed = dt, stable_timesteps = zeros(n))
+
+    overland_flow_model =
+        OverlandFlowModel(; routing_method = Wflow.KinematicWave(), timestepping, boundary_conditions, parameters, variables)
+
+    land_parameters = (;
+        river_fraction = [river_fraction],
+        surface_flow_width = [surface_flow_width],
+        flow_length = [flow_length],
+    )
+
+    # Test with positive infiltration and no surface depression storage: reinfiltration
+    # draws entirely from the kinematic depth and discharge is recomputed from the reduced
+    # depth.
+    Wflow.update_overland_flow_and_depth!(
+        overland_flow_model,
+        infilt_surfacewater,
+        land_parameters,
+        1,
+        dt,
+    )
+    @test overland_flow_model.variables.h[1] ≈ expected_water_depth
+    @test overland_flow_model.variables.h[1] ≈ 0.014375
+
+    # Test with zero infiltration (no update should occur)
+    overland_flow_model.variables.h[1] = original_depth
+    overland_flow_model.variables.q[1] = 0.1
+    Wflow.update_overland_flow_and_depth!(
+        overland_flow_model, 0.0, land_parameters, 1, dt,
+    )
+    @test overland_flow_model.variables.q[1] == 0.1
+    @test overland_flow_model.variables.h[1] == original_depth
+end
+
+@testitem "unit: update_overland_flow_and_depth! with surface depression storage" begin
+    using Wflow:
+        OverlandFlowModel,
+        OverlandFlowParameters,
+        ManningFlowParameters,
+        OverLandFlowVariables,
+        LandFlowBC,
+        TimeStepping,
+        BETA_KINWAVE,
+        pow
+
+    # Setup: single cell with a water depth `h` above `max_depression_depth`. Only the water
+    # depth above `max_depression_depth` contributes to overland flow; reinfiltration
+    # reduces the total water depth `h`.
+    n = 1
+    dt = 900.0 # s
+    river_fraction = 0.2
+    flow_length = 100.0
+    surface_flow_width = 10.0
+    alpha = 2.544585458995107
+    max_depression_depth = 0.01
+    h_flow_initial = 0.02
+    h_initial = max_depression_depth + h_flow_initial
+
+    parameters = OverlandFlowParameters(
+        flow = ManningFlowParameters(;
+            slope = [0.01],
+            mannings_n = [0.072],
+            alpha_pow = 0.4,
+            alpha_term = [0.41038937516728013],
+            alpha = [alpha],
+        ),
+        max_depression_depth = [max_depression_depth],
+    )
+    boundary_conditions = LandFlowBC(; n)
+    timestepping =
+        TimeStepping(; adaptive = false, dt_fixed = dt, stable_timesteps = zeros(n))
+    land_parameters = (;
+        river_fraction = [river_fraction],
+        surface_flow_width = [surface_flow_width],
+        flow_length = [flow_length],
+    )
+
+    # Case 1: reinfiltration is smaller than the water depth above `max_depression_depth`
+    # → the depression storage remains full and discharge is computed from the reduced
+    # depth above `max_depression_depth`.
+    variables = OverLandFlowVariables(; n)
+    variables.h[1] = h_initial
+    overland_flow_model = OverlandFlowModel(;
+        routing_method = Wflow.KinematicWave(),
+        timestepping, boundary_conditions, parameters, variables,
+    )
+
+    infilt_small = 2.0e-6 # m s⁻¹
+    reinfiltration_depth = infilt_small * dt / (1.0 - river_fraction)
+    @test reinfiltration_depth < h_flow_initial
+
+    Wflow.update_overland_flow_and_depth!(
+        overland_flow_model, infilt_small, land_parameters, 1, dt,
+    )
+
+    expected_h = h_initial - reinfiltration_depth
+    expected_q = pow(
+        ((expected_h - max_depression_depth) * surface_flow_width) / alpha,
+        1.0 / BETA_KINWAVE,
+    )
+    @test overland_flow_model.variables.h[1] ≈ expected_h
+    @test overland_flow_model.variables.q[1] ≈ expected_q
+    @test overland_flow_model.variables.reinfiltration_cumulative[1] ≈
+        reinfiltration_depth * surface_flow_width * flow_length
+
+    # Case 2: reinfiltration exceeds the water depth above `max_depression_depth` → the
+    # water depth drops below `max_depression_depth` and overland flow stops.
+    variables = OverLandFlowVariables(; n)
+    variables.h[1] = h_initial
+    overland_flow_model = OverlandFlowModel(;
+        routing_method = Wflow.KinematicWave(),
+        timestepping, boundary_conditions, parameters, variables,
+    )
+
+    infilt_large = 2.0e-5 # m s⁻¹
+    reinfiltration_depth = infilt_large * dt / (1.0 - river_fraction)
+    @test h_flow_initial < reinfiltration_depth < h_initial
+
+    Wflow.update_overland_flow_and_depth!(
+        overland_flow_model, infilt_large, land_parameters, 1, dt,
+    )
+
+    expected_h = h_initial - reinfiltration_depth
+    @test expected_h < max_depression_depth
+    @test overland_flow_model.variables.h[1] ≈ expected_h
+    @test overland_flow_model.variables.q[1] == 0.0
+end
