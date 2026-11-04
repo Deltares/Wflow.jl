@@ -34,6 +34,8 @@ river_water__abstraction_volume_flux = "abstraction_river"
 - Variables `excesswatersoil` and `excesswaterpath` were mapped to standard names
   `compacted_soil_surface_water__excess_volume_flux` and
   `non_compacted_soil_surface_water__excess_volume_flux` respectively (interchanged).
+- Reduce memory use and improve performance of reading forcing split over multiple netCDF
+  files, by keeping only one forcing file open at a time (#1037).
 - Output of `land_surface_water__abstraction_volume_flux` throws an error because of
   incorrect mapping to active indices. This is fixed by renaming
   `land_surface_water__abstraction_volume_flux` to `river_water__abstraction_volume_flux`
