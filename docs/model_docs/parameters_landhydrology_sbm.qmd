@@ -255,7 +255,7 @@ td, th {
 #### Output
 | Standard Name | Description | Unit |
 | --- | --- | - |
-| `land_surface_water__abstraction_volume_flux` | Actual surface water abstraction | mm Δt⁻¹ |
+| `river_water__abstraction_volume_flux` | Actual river water abstraction | mm Δt⁻¹ |
 | `subsurface_water__abstraction_volume_flux` | Actual groundwater abstraction | mm Δt⁻¹ |
 | `land__allocated_irrigation_water_volume_flux` | Allocated water for irrigation | mm Δt⁻¹ |
 | `land__allocated_non_irrigation_water_volume_flux` | Allocated water for non-irrigation | mm Δt⁻¹ |

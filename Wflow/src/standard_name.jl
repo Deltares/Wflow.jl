@@ -67,7 +67,7 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
         lens = @optic(_.mass_balance.routing.river_water_balance.relative_error),
         unit = "-",
     ),
-    "land_surface_water__abstraction_volume_flux" => (
+    "river_water__abstraction_volume_flux" => (
         lens = @optic(_.routing.river_flow.allocation.variables.act_surfacewater_abst),
         unit = "mm dt-1",
     ),

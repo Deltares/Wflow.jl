@@ -141,6 +141,11 @@ map = "river_gauge__count"
 parameter = "river_water__volume_flow_rate"
 
 [[output.csv.column]]
+header = "Q_abstraction"
+map = "river_gauge__count"
+parameter = "river_water__abstraction_volume_flux"
+
+[[output.csv.column]]
 header = "Q"
 map = "river_gauge_grdc__count"
 parameter = "river_water__volume_flow_rate"
