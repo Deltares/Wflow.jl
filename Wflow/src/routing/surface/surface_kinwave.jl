@@ -119,7 +119,7 @@ function init_kinematic_wave_river_flow(
     timestepping = init_kinematic_wave_timestepping(config, n; domain = "river")
 
     allocation =
-        do_water_demand(config) ? AllocationRiverModel(; n) : NoAllocationRiverModel(n)
+        do_water_demand_allocation(config) ? AllocationRiverModel(; n) : NoAllocationRiverModel(n)
 
     variables = if config.model.floodplain_1d__flag
         # When floodplain is enabled, q_channel fields must be separate from q fields

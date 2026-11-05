@@ -160,7 +160,7 @@ function Domain(dataset::NCDataset, config::Config, ::Union{SbmModel, SbmGwfMode
         end
     end
 
-    if do_water_demand(config)
+    if do_water_demand_allocation(config)
         allocation_area_indices, river_allocation_indices =
             get_allocation_area_indices(dataset, config, domain)
         @reset domain.land.network.allocation_area_indices = allocation_area_indices

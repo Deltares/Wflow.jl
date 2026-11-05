@@ -133,7 +133,7 @@ function update_subsurface_flow_model!(model::AbstractModel{<:SbmModel})
 
     # exchange of recharge [m s⁻¹] between SBM soil model and subsurface flow domain
     boundary_conditions.recharge.variables.rate .= soil.variables.recharge
-    if do_water_demand(config)
+    if do_water_allocation(config)
         @. boundary_conditions.recharge.variables.rate -=
             allocation.variables.actual_groundwater_abstraction
     end

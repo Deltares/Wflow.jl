@@ -60,12 +60,16 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
     @. vegetation_parameters.rooting_depth =
         min(soil.parameters.soil_thickness * 0.99, vegetation_parameters.rooting_depth)
 
-    if do_water_demand(config)
-        allocation = AllocationLandModel(dataset, config, indices)
+    if do_water_demand_allocation(config)
         demand = DemandModel(dataset, config, indices)
+        allocation = AllocationLandModel(dataset, config, indices)
+    elseif do_water_demand_external_allocation(config)
+        demand = DemandModel(dataset, config, indices)
+        allocation = AllocationLandExternalModel(; n)
     else
         allocation = NoAllocationLandModel(n)
         demand = NoDemandModel(; n)
+
     end
     if do_land_surface_temperature
         land_surface_temperature = LandSurfaceTemperatureModel(n)
@@ -172,7 +176,7 @@ function update_water_demand_model!(
         soil,
         demand,
     ) = land_hydrology_model
-    if do_water_demand(config)
+    if do_irrigation(config)
         (; potential_transpiration) = soil.boundary_conditions
         (; h3_high, h3_low) = soil.parameters
         potential_transpiration!(potential_transpiration, interception)
