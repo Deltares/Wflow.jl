@@ -586,7 +586,7 @@ end
 "External land allocation model"
 @with_kw struct AllocationLandExternalModel <: AbstractAllocationModel
     n::Int
-    variables::AllocationLandVariables = AllocationLandExternalVariables(; n)
+    variables::AllocationLandExternalVariables = AllocationLandExternalVariables(; n)
 end
 
 "Initialize water allocation for the land domain"
