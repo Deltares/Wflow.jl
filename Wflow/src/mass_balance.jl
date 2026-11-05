@@ -220,7 +220,7 @@ function compute_land_hydrology_balance!(
     (; snow) = model.land
     (; area) = model.domain.land.parameters
     (; subsurface_flow) = model.routing
-    dt = tosecond(model.clock.dt)
+    (; dt) = model.clock
 
     # exclude recharge from computing total incoming and outgoing boundary fluxes for
     # groundwaterflow, other boundaries are required for the total soil water balance.
@@ -503,7 +503,7 @@ function compute_flow_routing_balance!(model)
         overland_water_balance,
         subsurface_water_balance,
     ) = model.mass_balance.routing
-    dt = tosecond(model.clock.dt)
+    (; dt) = model.clock
 
     compute_flow_balance!(river_flow, river_water_balance, model.domain.river.network, dt)
     compute_flow_balance!(reservoir, reservoir_water_balance, dt)
@@ -521,7 +521,7 @@ function compute_flow_routing_balance!(
     (; reservoir) = river_flow.boundary_conditions
     (; overland_water_balance, reservoir_water_balance, subsurface_water_balance) =
         model.mass_balance.routing
-    dt = tosecond(model.clock.dt)
+    (; dt) = model.clock
 
     compute_flow_balance!(
         river_flow,
