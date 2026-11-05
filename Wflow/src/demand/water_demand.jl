@@ -581,6 +581,8 @@ end
     actual_groundwater_abstraction::Vector{Float64} = zeros(n)
     # allocated water for irrigation [m s⁻¹]
     irrigation_allocation::Vector{Float64} = zeros(n)
+    # return flow from non irrigation [m s⁻¹]
+    non_irrigation_returnflow::Vector{Float64} = zeros(n)
 end
 
 "External land allocation model"
@@ -635,11 +637,11 @@ function AllocationLandModel(
 end
 
 # wrapper methods
-get_irrigation_allocated(allocation_model::AllocationLandModel) =
+get_irrigation_allocated(allocation_model::Union{AllocationLandModel, AllocationLandExternalModel}) =
     allocation_model.variables.irrigation_allocation
 get_irrigation_allocated(allocation_model::NoAllocationLandModel) =
     Zeros(allocation_model.n)
-get_nonirrigation_returnflow(allocation_model::AllocationLandModel) =
+get_nonirrigation_returnflow(allocation_model::Union{AllocationLandModel, AllocationLandExternalModel}) =
     allocation_model.variables.non_irrigation_returnflow
 get_nonirrigation_returnflow(allocation_model::NoAllocationLandModel) =
     Zeros(allocation_model.n)
@@ -1088,6 +1090,14 @@ end
 update_water_allocation_model!(
     allocation_model::NoAllocationLandModel,
     demand_model::NoDemandModel,
+    routing::Routing,
+    domain::Domain,
+    dt::Float64,
+) = nothing
+
+update_water_allocation_model!(
+    allocation_model::AllocationLandExternalModel,
+    demand_model::DemandModel,
     routing::Routing,
     domain::Domain,
     dt::Float64,
