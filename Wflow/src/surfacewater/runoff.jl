@@ -130,6 +130,11 @@ function update_river_runoff_model!(
         river_fraction::Vector{Float64},
         dt::Float64,
     )
+    (; boundary_conditions, variables) = open_water_runoff_model
+    (; water_flux_surface) = boundary_conditions
+    (; runoff_river) = variables
+
+    @. runoff_river = min(1.0, river_fraction) * water_flux_surface
     return nothing
 end
 
