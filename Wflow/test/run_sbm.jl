@@ -642,6 +642,39 @@
     Wflow.close_files(model; delete_output = false)
 end
 
+@testitem "Run SBM without river routing" begin
+
+    using Statistics: mean
+
+    tomlpath = joinpath(@__DIR__, "sbm_no-river-routing_config.toml")
+    config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
+
+    model_river_off = Wflow.Model(config)
+
+    @testset "types of no river routing" begin
+        @test isa(model_river_off.routing.river_flow, Wflow.NoRiverFlowModel)
+        @test isa(model_river_off.routing.river_flow.boundary_conditions, Wflow.NoRiverFlowBC)
+        @test isnothing(model_river_off.routing.river_flow.boundary_conditions.reservoir)
+        @test isa(model_river_off.routing.river_flow.allocation, Wflow.NoAllocationRiverModel)
+    end
+
+    config.dir_output = mktempdir()
+    config.model.river_routing__flag = true
+    model_river_on = Wflow.Model(config)
+
+    Wflow.run_timestep!(model_river_off)
+    Wflow.run_timestep!(model_river_on)
+
+    @testset "check " begin
+        @test mean(model_river_off.land.soil.variables.net_runoff) ≈ mean(model_river_on.land.soil.variables.net_runoff)
+        @test mean(model_river_off.routing.overland_flow.variables.to_river_average) ≈ mean(model_river_on.routing.overland_flow.variables.to_river_average)
+        @test mean(model_river_off.routing.subsurface_flow.variables.to_river_average) ≈ mean(model_river_on.routing.subsurface_flow.variables.to_river_average)
+        @test mean(model_river_off.routing.overland_flow.boundary_conditions.inwater) ≈ mean(model_river_on.routing.overland_flow.boundary_conditions.inwater)
+        @test mean(model_river_off.routing.river_flow.boundary_conditions.inwater) ≠ mean(model_river_on.routing.river_flow.boundary_conditions.inwater)
+    end
+end
+
 @testitem "Set pit and multithreading multiple basins" begin
     using Dates
     # test for setting a pit and multithreading multiple basins (by setting 2 extra pits
