@@ -661,6 +661,7 @@ end
 
     config.dir_output = mktempdir()
     config.model.river_routing__flag = true
+    config.input.static["river_bottom_surface__slope"] = "RiverSlope"
     model_river_on = Wflow.Model(config)
 
     Wflow.run_timestep!(model_river_off)
