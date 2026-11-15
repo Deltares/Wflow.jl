@@ -96,6 +96,7 @@ pixi run julia --project=Wflow -e 'using Pkg; Pkg.test(test_args=[\"unit\"])'
 
 - `TestItemRunner.jl` with `@testitem` (not `@testset`); unit tests prefixed `"unit: "`
 - Test data: `utils/download_test_data.jl` → Moselle/Piave datasets
+- Test data provenance: `utils/hydromt_test_data/` rebuilds `Wflow/test/*.toml` and `Wflow/test/data/input` with HydroMT-Wflow (`pixi run -e hydromt build-test-data`, needs the Deltares data catalog); output is not identical to the existing test data
 - Integration: init model → run 1–2 steps → assert values with `≈`
 - State restart test: continuous run == cold-start + warm-start split
 - `Aqua.jl` for code quality checks

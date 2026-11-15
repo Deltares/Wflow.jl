@@ -1,0 +1,13 @@
+# Wflow sediment spin-up run (cold start) that produces instates-moselle-sed.nc.
+extends: sediment_config
+config:
+  dir_input: "{output}/test/data/input"
+  dir_output: "{output}/runs/moselle_sediment_spinup"
+  time.starttime: 1999-12-31T00:00:00
+  time.endtime: 2000-01-02T00:00:00
+  model.cold_start__flag: true
+  state.path_output: outstates.nc
+remove: [state.path_input, output]
+products:
+  - from: outstates.nc
+    to: instates-moselle-sed.nc

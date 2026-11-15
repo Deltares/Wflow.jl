@@ -1,0 +1,53 @@
+model: piave_sbm
+inputs:
+  input: [basin__local_drain_direction, river_location__mask, reservoir_area__count, reservoir_location__count, subbasin_location__count, river_gauge__count, river_gauge_grdc__count]
+  forcing: [atmosphere_water__precipitation_volume_flux, land_surface_water__potential_evaporation_volume_flux, atmosphere_air__temperature]
+  static: [land_surface__slope, land_surface__elevation, river__length, river_bottom_surface__slope, river_water_flow__manning_n_parameter, river__width, river_bank_water__depth, reservoir_water__max_volume, reservoir_surface__area, reservoir_water_demand__required_downstream_volume_flow_rate, reservoir_water_release_below_spillway__max_volume_flow_rate, reservoir_water__target_full_volume_fraction, reservoir_water__target_min_volume_fraction, reservoir_water_surface__initial_elevation, reservoir_water__rating_curve_coefficient, reservoir_water__rating_curve_exponent, reservoir_water__storage_curve_type_count, reservoir_water__rating_curve_type_count, reservoir_water_flow_threshold_level__elevation, glacier_ice__initial_leq_depth, glacier_surface__area_fraction, vegetation_canopy__light_extinction_coefficient, land_surface_water_flow__manning_n_parameter, compacted_soil__area_fraction, vegetation_root__depth, vegetation__specific_leaf_storage, vegetation_wood_water__storage_capacity, land_water_covered__area_fraction, vegetation__crop_factor, vegetation_root__feddes_critical_pressure_head_h1_reduction_coefficient, vegetation_root__feddes_critical_pressure_head_h1, vegetation_root__feddes_critical_pressure_head_h2, vegetation_root__feddes_critical_pressure_head_h3_high, vegetation_root__feddes_critical_pressure_head_h3_low, vegetation_root__feddes_critical_pressure_head_h4, soil_water__saturated_volume_fraction, soil_water__residual_volume_fraction, soil__thickness, soil_layer_water__brooks_corey_exponent, soil_surface_water__vertical_saturated_hydraulic_conductivity, soil_water__vertical_saturated_hydraulic_conductivity_scale_parameter, subsurface_bottom_surface__slope]
+  cyclic: [vegetation__leaf_area_index]
+config:
+  dir_input: data/input
+  dir_output: data/output
+  time.calendar: proleptic_gregorian
+  time.starttime: 2010-07-01T00:00:00
+  time.endtime: 2010-10-01T00:00:00
+  time.time_units: "days since 1900-01-01 00:00:00"
+  time.timestepsecs: 86400
+  logging.loglevel: info
+  state.path_input: instates-piave.nc
+  state.path_output: outstates-piave.nc
+  state.variables.vegetation_canopy_water__depth: canopystorage
+  state.variables.soil_water_saturated_zone__depth: satwaterdepth
+  state.variables.soil_layer_water_unsaturated_zone__depth: ustorelayerdepth
+  state.variables.soil_surface__temperature: tsoil
+  state.variables.snowpack_dry_snow__leq_depth: snow
+  state.variables.snowpack_liquid_water__depth: snowwater
+  state.variables.land_surface_water__instantaneous_volume_flow_rate: q_land
+  state.variables.land_surface_water__depth: h_land
+  state.variables.subsurface_water__instantaneous_volume_flow_rate: ssf
+  state.variables.river_water__instantaneous_volume_flow_rate: q_river
+  state.variables.river_water__depth: h_river
+  state.variables.reservoir_water_surface__elevation: waterlevel_reservoir
+  state.variables.glacier_ice__leq_depth: glacierstore
+  input.path_forcing: forcing-piave.nc
+  input.path_static: staticmaps-piave.nc
+  input.static.subsurface_water__horizontal_to_vertical_saturated_hydraulic_conductivity_ratio:
+    value: 100
+  model.type: sbm
+  model.snow_gravitational_transport__flag: true
+  model.snow__flag: true
+  model.cold_start__flag: false
+  model.reservoir__flag: true
+  model.glacier__flag: true
+  model.kinematic_wave__adaptive_time_step_flag: true
+  model.soil_layer__thickness: [50, 100, 50, 200, 800]
+  model.river_routing: kinematic_wave
+  output.netcdf_grid.path: output-piave.nc
+  output.netcdf_grid.variables.river_water__volume_flow_rate: q_av_river
+  output.csv.path: output-piave.csv
+  output.csv.column:
+    - header: Q
+      map: river_gauge__count
+      parameter: river_water__volume_flow_rate
+    - header: Q
+      map: river_gauge_grdc__count
+      parameter: river_water__volume_flow_rate

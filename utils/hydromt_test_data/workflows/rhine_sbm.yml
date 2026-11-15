@@ -1,0 +1,94 @@
+# HydroMT-Wflow workflow for the Rhine sbm model (upstream of Lobith).
+#
+# The model is only used for a short Wflow run that produces the overland flow kinematic
+# wave test data (staticmaps-rhine.nc), see ../runs/rhine_kinematic_wave.yml.
+model: wflow_sbm
+
+export: {}
+
+steps:
+  - setup_config:
+      data:
+        time.starttime: 1999-12-31T00:00:00
+        time.endtime: 2000-01-31T00:00:00
+        time.timestepsecs: 86400
+
+  - setup_basemaps:
+      region:
+        subbasin: [6.11, 51.84]  # Rhine at Lobith
+        uparea: 100000
+        bounds: [3.5, 45.5, 12.5, 52.5]
+      hydrography_fn: merit_hydro
+      basin_index_fn: merit_hydro_index
+      res: 0.008333333333333333
+      upscale_method: ihu
+
+  - setup_rivers:
+      hydrography_fn: merit_hydro
+      river_geom_fn: hydro_rivers_lin
+      river_upa: 30
+      rivdph_method: powlaw
+      min_rivdph: 1
+      min_rivwth: 30
+      slope_len: 2000
+      smooth_len: 5000
+      river_routing: kinematic_wave
+
+  - setup_river_roughness:
+
+  - setup_reservoirs_simple_control:
+      reservoirs_fn: hydro_reservoirs
+      min_area: 1.0
+
+  - setup_reservoirs_no_control:
+      reservoirs_fn: hydro_lakes
+      min_area: 10.0
+
+  - setup_glaciers:
+      glaciers_fn: rgi
+      min_area: 0.0
+
+  - setup_lulcmaps:
+      lulc_fn: globcover
+      lulc_mapping_fn: globcover_mapping_default
+
+  - setup_laimaps:
+      lai_fn: modis_lai
+
+  - setup_soilmaps:
+      soil_fn: soilgrids
+      ptf_ksatver: brakensiek
+      wflow_thicknesslayers: [100, 300, 800]
+
+  - setup_outlets:
+      river_only: true
+      toml_output: null
+
+  - setup_precip_forcing:
+      precip_fn: era5
+
+  - setup_temp_pet_forcing:
+      temp_pet_fn: era5
+      pet_method: debruin
+      press_correction: true
+      temp_correction: true
+      dem_forcing_fn: era5_orography
+
+  # same constants as the Moselle model (some have no default value in Wflow)
+  - pipeline.constant_maps:
+      atmosphere_air__snowfall_temperature_threshold: 0.0
+      atmosphere_air__snowfall_temperature_interval: 2.0
+      snowpack__melting_temperature_threshold: 0.0
+      snowpack__degree_day_coefficient: 3.75653
+      snowpack__liquid_water_holding_capacity: 0.1
+      soil_surface_water__infiltration_reduction_parameter: 0.038
+      vegetation_canopy_water__mean_evaporation_to_mean_precipitation_ratio: 0.11
+      compacted_soil_surface_water__infiltration_capacity: 5.0
+      soil_water_saturated_zone_bottom__max_leakage_volume_flux: 0.0
+      soil_wet_root__sigmoid_function_shape_parameter: -500.0
+      subsurface_water__horizontal_to_vertical_saturated_hydraulic_conductivity_ratio: 100.0
+
+  # the subsurface flow uses the land slope, as in the test models
+  - setup_config:
+      data:
+        input.static.subsurface_bottom_surface__slope: land_slope

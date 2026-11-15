@@ -1,0 +1,40 @@
+meta:
+  version: v2026.11
+  name: wflow_test_data
+  hydromt_version: ">=1.0,<2"
+  roots:
+    - p:/wflow_global/hydromt
+    - /p/wflow_global/hydromt
+    - /mnt/p/wflow_global/hydromt
+
+# Hourly ERA5 single levels on the Deltares P drive, chunked for regional time series
+# (1440 h x 103 x 120). Not part of the Deltares data catalog. Variables: cape, d2m, msl,
+# ssrd, t2m, tcwv, tisr, tp, u10, v10 (no net radiation, see era5_hourly for ssr).
+era5_hourly_zarr:
+  data_type: RasterDataset
+  uri: meteo/era5.zarr
+  driver:
+    name: raster_xarray
+  metadata:
+    category: meteo
+    notes: Extracted from Copernicus Climate Data Store; hourly, accumulations over the
+      hour ending at the time stamp
+    paper_doi: 10.1002/qj.3803
+    paper_ref: Hersbach et al. (2019)
+    url: https://doi.org/10.24381/cds.adbb2d47
+    license: https://cds.climate.copernicus.eu/cdsapp/#!/terms/licence-to-use-copernicus-products
+    crs: 4326
+  data_adapter:
+    unit_mult:
+      kin: 0.000277778
+      kout: 0.000277778
+    rename:
+      d2m: temp_dew
+      ssrd: kin
+      t2m: temp
+      tisr: kout
+      u10: wind10_u
+      v10: wind10_v
+    unit_add:
+      temp: -273.15
+      temp_dew: -273.15

@@ -1,0 +1,13 @@
+# Wflow spin-up run (cold start) that produces instates-piave-gwf.nc.
+extends: sbm_gwf_piave_demand_config
+config:
+  dir_input: "{output}/test/data/input"
+  dir_output: "{output}/runs/piave_gwf_spinup"
+  time.starttime: 2010-01-01T00:00:00
+  time.endtime: 2010-06-30T00:00:00
+  model.cold_start__flag: true
+  state.path_output: outstates.nc
+remove: [state.path_input, output]
+products:
+  - from: outstates.nc
+    to: instates-piave-gwf.nc

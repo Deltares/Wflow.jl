@@ -1,0 +1,71 @@
+# HydroMT-Wflow workflow for the Moselle sediment test model, an update of moselle_sbm.
+#
+# Produces staticmaps-moselle-sed.nc (export). The forcing (forcing-moselle-sed.nc) is
+# output of a Wflow sbm run, see ../runs/moselle_sediment_forcing.yml.
+model: wflow_sediment
+base: moselle_sbm
+
+export:
+  naming: moselle_sediment
+  staticmaps: staticmaps-moselle-sed.nc
+
+steps:
+  - config.read:
+      filename: "{hydromt_wflow_data}/wflow_sediment/wflow_sediment.toml"
+
+  # link the maps of the sbm model that are used by the sediment model
+  - setup_config:
+      data:
+        input.basin__local_drain_direction: local_drain_direction
+        input.subbasin_location__count: subcatchment
+        input.river_location__mask: river_mask
+        input.static.land_surface__slope: land_slope
+        input.static.river__length: river_length
+        input.static.river_bottom_surface__slope: river_slope
+        input.static.river__width: river_width
+
+  - setup_riverbedsed:
+
+  # the sbm model already has these reservoirs (same IDs), replace them by the sediment
+  # reservoir maps
+  - setup_reservoirs:
+      reservoirs_fn: hydro_reservoirs
+      min_area: 1.0
+      trapping_default: 1.0
+      overwrite_existing: true
+
+  - setup_lulcmaps:
+      lulc_fn: globcover
+      lulc_mapping_fn: globcover_mapping_default
+
+  - setup_canopymaps:
+      canopy_fn: simard
+
+  - setup_soilmaps:
+      soil_fn: soilgrids
+      usle_k_method: renard
+      add_aggregates: true
+
+  - setup_outlets:
+      river_only: true
+      toml_output: null
+
+  # the gauge with the lowest ID is kept when gauges share a cell, as in the original model
+  - pipeline.gauges:
+      gauges_fn: grdc
+      snap_to_river: true
+      derive_subcatch: false
+      toml_output: null
+
+  - pipeline.constant_maps:
+      river_water_sediment__bagnold_transport_capacity_coefficient: 1.75e-5
+      river_water_sediment__bagnold_transport_capacity_exponent: 1.4
+      soil_erosion__answers_overland_flow_factor: 0.9
+      soil_erosion__eurosem_exponent: 2.0
+      sediment__particle_density: 2650.0
+      clay__mean_diameter: 2.0
+      silt__mean_diameter: 10.0
+      sediment_small_aggregates__mean_diameter: 30.0
+      sand__mean_diameter: 200.0
+      sediment_large_aggregates__mean_diameter: 500.0
+      gravel__mean_diameter: 2000.0

@@ -1,0 +1,148 @@
+# HydroMT-Wflow workflow for the Piave sbm test model, including water demand and the
+# maps of the sbm_gwf model type.
+#
+# Produces staticmaps-piave.nc and forcing-piave.nc (export). The water demand example
+# data of HydroMT-Wflow (Piave region) is downloaded to the cache of the output folder.
+model: wflow_sbm
+data_libs:
+  - "{demand_catalog}"
+
+export:
+  naming: piave_sbm
+  staticmaps: staticmaps-piave.nc
+  forcing:
+    - path: forcing-piave.nc
+      start: 2010-01-02
+      end: 2010-12-31
+
+steps:
+  - setup_config:
+      data:
+        time.starttime: 2010-01-01T00:00:00
+        time.endtime: 2010-12-31T00:00:00
+        time.timestepsecs: 86400
+
+  # grid of the original test model, which is not aligned to multiples of `res`
+  - pipeline.basemaps:
+      grid_bounds: [11.778333333, 45.506666667, 12.836666667, 46.69]
+      region:
+        basin: [12.2051, 45.8331]
+      hydrography_fn: merit_hydro
+      basin_index_fn: merit_hydro_index
+      res: 0.008333333333333333
+      upscale_method: ihu
+
+  - setup_rivers:
+      hydrography_fn: merit_hydro
+      river_geom_fn: hydro_rivers_lin
+      river_upa: 30
+      rivdph_method: powlaw
+      min_rivdph: 1
+      min_rivwth: 30
+      slope_len: 2000
+      smooth_len: 5000
+      river_routing: kinematic_wave
+
+  - setup_river_roughness:
+
+  - setup_reservoirs_simple_control:
+      reservoirs_fn: hydro_reservoirs
+      min_area: 0.5  # includes Centro Cadore (3349, 0.59 km2) and Lago del Mis (3367, 0.62 km2)
+
+  - setup_reservoirs_no_control:
+      reservoirs_fn: hydro_lakes
+      min_area: 1.0  # includes Lago di Santa Croce (6.5 km2)
+
+  - setup_glaciers:
+      glaciers_fn: rgi
+      min_area: 0.0
+
+  - setup_laimaps:
+      lai_fn: modis_lai
+
+  - setup_soilmaps:
+      soil_fn: soilgrids
+      ptf_ksatver: brakensiek
+      wflow_thicknesslayers: [50, 100, 50, 200, 800]
+
+  - setup_outlets:
+      river_only: true
+      toml_output: null
+
+  - setup_gauges:
+      gauges_fn: grdc
+      snap_to_river: true
+      derive_subcatch: false
+      toml_output: null
+
+  - setup_precip_forcing:
+      precip_fn: era5
+
+  - setup_temp_pet_forcing:
+      temp_pet_fn: era5
+      pet_method: debruin
+      press_correction: true
+      temp_correction: true
+      dem_forcing_fn: era5_orography
+
+  # water demand
+  - setup_allocation_areas:
+      waterareas_fn: gadm_level2
+      priority_basins: true
+      output_name: allocation_areas_admin2
+
+  - setup_allocation_surfacewaterfrac:
+      gwfrac_fn: lisflood_gwfrac
+      gwbodies_fn: lisflood_gwbodies
+      ncfrac_fn: lisflood_ncfrac
+      # fills a cell at the coast without source data (otherwise left as nodata)
+      interpolate_nodata: true
+
+  - setup_lulcmaps_with_paddy:
+      lulc_fn: glcnmo
+      paddy_class: 12
+      soil_fn: soilgrids
+      wflow_thicknesslayers: [50, 100, 50, 200, 800]
+      target_conductivity: [null, null, 5, null, null]
+      paddy_waterlevels:
+        demand_paddy_h_min: 20
+        demand_paddy_h_opt: 50
+        demand_paddy_h_max: 80
+
+  - setup_domestic_demand:
+      domestic_fn: hydromt_wflow_example_pcr_globwb
+      population_fn: ghs_pop_2015
+      domestic_fn_original_res: 0.5
+
+  - setup_other_demand:
+      demand_fn: hydromt_wflow_example_pcr_globwb
+      variables: [industry_gross, industry_net, livestock_gross, livestock_net]
+      resampling_method: nearest
+
+  - setup_irrigation:
+      irrigated_area_fn: irrigated_area
+      irrigation_value: [1]
+      cropland_class: [11]
+      paddy_class: [12]
+      area_threshold: 0.6
+      lai_threshold: 0.2
+      lulcmap_name: meta_landuse
+
+  # sbm_gwf model type (sbm_gwf_piave_demand_config.toml)
+  - pipeline.groundwater_maps:
+
+  # reservoir inflow and observed outflow (Wflow/test/run_sbm_piave.jl)
+  - pipeline.point_timeseries:
+      std_name: reservoir_water__external_inflow_volume_flow_rate
+      x: 12.324167
+      y: 46.1275
+      snap_to: reservoir_outlet
+      values: [-1, -1, -1, -1, -2, -3, -3, -3, -2, -1, -1, -1]
+
+  - pipeline.point_timeseries:
+      std_name: reservoir_water__outgoing_observed_volume_flow_rate
+      x: 12.324167
+      y: 46.1275
+      snap_to: reservoir_outlet
+      background: nodata
+      values: [4, 4, 4, 4, 3, 3, 3, 3, 4, 4, 4, 4]

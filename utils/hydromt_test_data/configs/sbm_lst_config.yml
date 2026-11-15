@@ -1,0 +1,114 @@
+model: moselle_sbm
+inputs:
+  input: [basin__local_drain_direction, river_location__mask, reservoir_area__count, reservoir_location__count, subbasin_location__count, river_gauge__count]
+  forcing: [atmosphere_water__precipitation_volume_flux, land_surface_water__potential_evaporation_volume_flux, atmosphere_air__temperature, land_surface_air_flow__speed, land_surface_total_net_radiation__energy_flux]
+  static: [atmosphere_air__snowfall_temperature_threshold, atmosphere_air__snowfall_temperature_interval, atmosphere_bottom_air_flow__roughness_length, atmosphere_bottom_air_heat_flow__roughness_length, atmosphere_bottom_air_flow__zero_plane_displacement_length, atmosphere_bottom_air__above_ground_height, land_water_covered__area_fraction, snowpack__melting_temperature_threshold, snowpack__degree_day_coefficient, snowpack__liquid_water_holding_capacity, soil_layer_water__brooks_corey_exponent, soil_surface_water__infiltration_reduction_parameter, soil_water__vertical_saturated_hydraulic_conductivity_scale_parameter, compacted_soil_surface_water__infiltration_capacity, soil_water__residual_volume_fraction, soil_water__saturated_volume_fraction, soil_water_saturated_zone_bottom__max_leakage_volume_flux, compacted_soil__area_fraction, soil_wet_root__sigmoid_function_shape_parameter, soil__thickness, vegetation_canopy_water__mean_evaporation_to_mean_precipitation_ratio, vegetation_canopy__light_extinction_coefficient, vegetation__specific_leaf_storage, vegetation_wood_water__storage_capacity, vegetation_root__depth, river__length, river_water_flow__manning_n_parameter, river_bottom_surface__slope, river__width, river_bank_water__depth, river_bank_water__elevation, land_surface_water_flow__manning_n_parameter, land_surface__slope, land_surface__elevation, reservoir_surface__area, reservoir_water_demand__required_downstream_volume_flow_rate, reservoir_water_release_below_spillway__max_volume_flow_rate, reservoir_water__max_volume, reservoir_water__target_full_volume_fraction, reservoir_water__target_min_volume_fraction, reservoir_water_surface__initial_elevation, reservoir_water__rating_curve_type_count, reservoir_water__storage_curve_type_count, subsurface_water__horizontal_to_vertical_saturated_hydraulic_conductivity_ratio, subsurface_bottom_surface__slope]
+  cyclic: [vegetation__leaf_area_index]
+config:
+  dir_input: data/input
+  dir_output: data/output
+  wflow_version: "1.1"
+  logging.loglevel: info
+  time.calendar: proleptic_gregorian
+  time.endtime: "2000-02-01T00:00:00"
+  time.starttime: "2000-01-01T00:00:00"
+  time.time_units: "days since 1900-01-01 00:00:00"
+  time.timestepsecs: 86400
+  state.path_input: instates-moselle.nc
+  state.path_output: outstates-moselle.nc
+  state.variables.vegetation_canopy_water__depth: canopystorage
+  state.variables.soil_water_saturated_zone__depth: satwaterdepth
+  state.variables.soil_surface__temperature: tsoil
+  state.variables.soil_layer_water_unsaturated_zone__depth: ustorelayerdepth
+  state.variables.snowpack_dry_snow__leq_depth: snow
+  state.variables.snowpack_liquid_water__depth: snowwater
+  state.variables.river_water__depth: h_river
+  state.variables.river_water__instantaneous_volume_flow_rate: q_river
+  state.variables.reservoir_water_surface__elevation: waterlevel_reservoir
+  state.variables.subsurface_water__instantaneous_volume_flow_rate: ssf
+  state.variables.land_surface_water__instantaneous_volume_flow_rate: q_land
+  state.variables.land_surface_water__depth: h_land
+  input.path_forcing: forcing-moselle.nc
+  input.path_static: staticmaps-moselle.nc
+  input.static.soil_surface_water__vertical_saturated_hydraulic_conductivity:
+    netcdf_variable_name: KsatVer
+    scale: 1.0
+    offset: 0.0
+  model.kinematic_wave__adaptive_time_step_flag: true
+  model.snow_gravitational_transport__flag: true
+  model.land_surface_temperature__flag: true
+  model.land_surface_wind__speed_reference_height: 100.0
+  model.cold_start__flag: true
+  model.reservoir__flag: true
+  model.snow__flag: true
+  model.soil_layer__thickness: [100, 300, 800]
+  model.type: sbm
+  model.river_streamorder__min_count: 6
+  model.land_streamorder__min_count: 5
+  output.netcdf_grid.path: output_moselle.nc
+  output.netcdf_grid.variables.soil_water_saturated_zone__depth: satwaterdepth
+  output.netcdf_grid.variables.soil_surface__temperature: tsoil
+  output.netcdf_grid.variables.soil_layer_water_unsaturated_zone__depth: ustorelayerdepth
+  output.netcdf_grid.variables.snowpack_dry_snow__leq_depth: snow
+  output.netcdf_grid.variables.snowpack_liquid_water__depth: snowwater
+  output.netcdf_grid.variables.river_water__depth: h_river
+  output.netcdf_grid.variables.river_water__volume_flow_rate: q_av_river
+  output.netcdf_grid.variables.reservoir_water__volume: storage_reservoir
+  output.netcdf_grid.variables.subsurface_water__volume_flow_rate: ssf_av
+  output.netcdf_grid.variables.land_surface_water__volume_flow_rate: q_av_land
+  output.netcdf_grid.variables.land_surface_water__depth: h_land
+  output.netcdf_grid.variables.land.interception.variables.canopy_storage: canopystorage
+  output.netcdf_grid.variables.land_surface_water__to_river_volume_flow_rate: q_land_to_river
+  output.netcdf_grid.variables.subsurface_water__to_river_volume_flow_rate: ssf_to_river
+  output.netcdf_scalar.path: output_scalar_moselle.nc
+  output.netcdf_scalar.variable:
+    - name: Q
+      map: river_gauge__count
+      parameter: routing.river_flow.variables.q
+    - name: T
+      map: river_gauge__count
+      parameter: atmosphere_air__temperature
+    - coordinate:
+        x: 6.255
+        "y": 50.012
+      name: temp_coord
+      location: temp_bycoord
+      parameter: atmosphere_air__temperature
+    - location: temp_byindex
+      name: temp_index
+      index:
+        x: 100
+        "y": 264
+      parameter: atmosphere_air__temperature
+  output.csv.path: output_moselle.csv
+  output.csv.column:
+    - header: Q
+      parameter: river_water__volume_flow_rate
+      reducer: maximum
+    - header: storage
+      index: 1
+      parameter: reservoir_water__volume
+    - coordinate:
+        x: 6.255
+        "y": 50.012
+      header: temp_bycoord
+      parameter: atmosphere_air__temperature
+    - coordinate:
+        x: 6.255
+        "y": 50.012
+      header: vwc_layer2_bycoord
+      parameter: land.soil.variables.volumetric_water_content
+      layer: 2
+    - header: temp_byindex
+      index:
+        x: 100
+        "y": 264
+      parameter: atmosphere_air__temperature
+    - header: Q
+      map: river_gauge__count
+      parameter: river_water__volume_flow_rate
+    - header: recharge
+      map: subbasin_location__count
+      parameter: soil_water_saturated_zone_top__net_recharge_volume_flux
+      reducer: mean
+  API.variables: [river_water__volume_flow_rate, soil_water_unsaturated_zone__depth, soil_water__transpiration_volume_flux, soil_layer_1_water_unsaturated_zone__depth, soil_layer_2_water_unsaturated_zone__depth, soil_layer_3_water_unsaturated_zone__depth, soil_layer_4_water_unsaturated_zone__depth]

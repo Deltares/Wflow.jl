@@ -1,0 +1,17 @@
+# Wflow spin-up run (cold start, year 2000) that produces instates-moselle.nc.
+extends: sbm_config
+config:
+  dir_input: "{output}/test/data/input"
+  dir_output: "{output}/runs/moselle_spinup"
+  time.starttime: 2000-01-01T00:00:00
+  time.endtime: 2000-12-31T00:00:00
+  model.cold_start__flag: true
+  state.path_output: outstates.nc
+remove: [state.path_input, output, API]
+products:
+  - from: outstates.nc
+    to: instates-moselle.nc
+    # depths of the previous Wflow versions, used by some tests
+    duplicate:
+      h_av_land: h_land
+      h_av_river: h_river

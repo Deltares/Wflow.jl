@@ -1,0 +1,25 @@
+# Wflow run of the Rhine model (cold start, January 2000). The overland flow parameters
+# and the land discharge and water depth at the last time step, together with the
+# overland flow width and length computed like in Wflow, are the overland flow kinematic
+# wave test data (staticmaps-rhine.nc, Wflow/test/routing_process.jl).
+model: rhine_sbm
+inputs: all
+config:
+  dir_input: "{output}/models/rhine_sbm"
+  dir_output: "{output}/runs/rhine_kinematic_wave"
+  time.starttime: 2000-01-01T00:00:00
+  time.endtime: 2000-01-31T00:00:00
+  model.cold_start__flag: true
+  output.netcdf_grid.path: output.nc
+  # land_surface__slope points to the domain, which is not available for output
+  output.netcdf_grid.variables.routing.overland_flow.parameters.slope: slope
+  output.netcdf_grid.variables.land_surface_water_flow__manning_n_parameter: "N"
+  output.netcdf_grid.variables.land_surface_water__instantaneous_volume_flow_rate: Qold
+  output.netcdf_grid.variables.land_surface_water__depth: waterlevel
+remove: [state, output.csv, output.netcdf_scalar]
+# Bw and DCL (overland flow width and length) are computed from the static maps
+postprocess:
+  function: rhine_kinematic_wave_maps
+  output_grid: output.nc
+  target: staticmaps-rhine.nc
+  names: [slope, "N", Qold, waterlevel]

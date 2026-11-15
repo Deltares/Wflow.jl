@@ -1,0 +1,51 @@
+model: moselle_sediment
+inputs:
+  input: [basin__local_drain_direction, river_location__mask, subbasin_location__count, reservoir_location__count, reservoir_area__count]
+  forcing: [atmosphere_water__precipitation_volume_flux, land_surface_water__depth, river_water__depth, land_surface_water__volume_flow_rate, river_water__volume_flow_rate, vegetation_canopy_water__interception_volume_flux]
+  static: [land_surface__slope, river__length, river_bottom_surface__slope, river__width, reservoir_surface__area, reservoir_water_sediment__bedload_trapping_efficiency, vegetation_canopy__height, soil_erosion__rainfall_soil_detachability_factor, soil_erosion__eurosem_exponent, soil_erosion__usle_k_factor, soil_erosion__usle_c_factor, soil_erosion__answers_overland_flow_factor, compacted_soil__area_fraction, soil_clay__mass_fraction, soil_silt__mass_fraction, soil_sand__mass_fraction, soil_small_aggregates__mass_fraction, soil_large_aggregates__mass_fraction, land_surface_sediment__median_diameter, land_surface_water_sediment__govers_transport_capacity_coefficient, land_surface_water_sediment__govers_transport_capacity_exponent, river_sediment__median_diameter, river_water_sediment__bagnold_transport_capacity_coefficient, river_water_sediment__bagnold_transport_capacity_exponent, river_bottom_and_bank_sediment__median_diameter, river_bottom_and_bank_clay__mass_fraction, river_bottom_and_bank_silt__mass_fraction, river_bottom_and_bank_sand__mass_fraction, river_bottom_and_bank_gravel__mass_fraction, sediment__particle_density, clay__mean_diameter, silt__mean_diameter, sand__mean_diameter, sediment_small_aggregates__mean_diameter, sediment_large_aggregates__mean_diameter, gravel__mean_diameter]
+config:
+  dir_input: data/input
+  dir_output: data/output
+  time.calendar: proleptic_gregorian
+  time.endtime: 2000-01-03T00:00:00
+  time.starttime: 1999-12-31T00:00:00
+  time.time_units: "days since 1900-01-01 00:00:00"
+  time.timestepsecs: 86400
+  state.path_input: instates-moselle-sed.nc
+  state.path_output: outstates-moselle-sed.nc
+  state.variables.river_water_clay__mass: clayload
+  state.variables.river_bed_clay__mass: claystore
+  state.variables.river_water_gravel__mass: gravload
+  state.variables.river_bed_gravel__mass: gravstore
+  state.variables.river_water_large_aggregates__mass: laggload
+  state.variables.river_bed_large_aggregates__mass: laggstore
+  state.variables.river_water_clay__mass_flow_rate: outclay
+  state.variables.river_water_gravel__mass_flow_rate: outgrav
+  state.variables.river_water_large_aggregates__mass_flow_rate: outlagg
+  state.variables.river_water_small_aggregates__mass_flow_rate: outsagg
+  state.variables.river_water_sand__mass_flow_rate: outsand
+  state.variables.river_water_silt__mass_flow_rate: outsilt
+  state.variables.river_water_small_aggregates__mass: saggload
+  state.variables.river_bed_small_aggregates__mass: saggstore
+  state.variables.river_water_sand__mass: sandload
+  state.variables.river_bed_sand__mass: sandstore
+  state.variables.river_water_silt__mass: siltload
+  state.variables.river_bed_silt__mass: siltstore
+  input.path_forcing: forcing-moselle-sed.nc
+  input.path_static: staticmaps-moselle-sed.nc
+  input.static.river_water_sediment__kodatie_transport_capacity_a_coefficient:
+    value: 2829.6
+  input.static.river_water_sediment__kodatie_transport_capacity_b_coefficient:
+    value: 3.646
+  input.static.river_water_sediment__kodatie_transport_capacity_c_coefficient:
+    value: 0.406
+  input.static.river_water_sediment__kodatie_transport_capacity_d_coefficient:
+    value: 0.412
+  model.cold_start__flag: true
+  model.run_river_model__flag: true
+  model.reservoir__flag: true
+  model.rainfall_erosion: eurosem
+  model.overland_flow_erosion: answers
+  model.land_transport: yalinpart
+  model.river_transport: engelund
+  model.type: sediment
