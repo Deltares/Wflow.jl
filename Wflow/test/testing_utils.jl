@@ -204,17 +204,6 @@ get_mean(f::Vector{SVector{N, Float64}}) where {N} = no_nan.(
     SVector{N}([mean(filter(!isnan, [v[i] for v in f])) for i in 1:length(first(f))]),
 )
 
-function get_means(obj)
-    d = Dict{Symbol, Union{Float64, SVector{N, Float64} where {N}}}()
-    for s in propertynames(obj)
-        f = getfield(obj, s)
-        if f isa Union{Vector{Float64}, Vector{SVector{N, Float64}} where {N}}
-            d[s] = get_mean(f)
-        end
-    end
-    return d
-end
-
 function test_means(obj::Any, means::Dict{Symbol})
     failed = Symbol[]
     for (s, v) in means

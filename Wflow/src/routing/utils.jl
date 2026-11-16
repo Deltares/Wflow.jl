@@ -62,17 +62,6 @@ function accucapacitystate!(material, network, capacity, dt)
 end
 
 """
-    accucapacitystate!(material, network, capacity, dt) -> material
-
-Non mutating version of `accucapacitystate!`.
-"""
-function accucapacitystate(material, network, capacity, dt)
-    material = copy(material)
-    accucapacitystate!(material, network, capacity, dt)
-    return material
-end
-
-"""
     accucapacityflux!(flux, material, network, capacity)
 
 Transport of material downstream with a limited transport capacity over a directed graph.
@@ -147,18 +136,6 @@ function accucapacityflux(material, network, capacity, dt)
     flux = zero(material)
     accucapacityflux!(flux, material, network, capacity, dt)
     return flux
-end
-
-"""
-    accucapacityflux_state(material, network, capacity) -> flux, material
-
-Non mutating version of combined `accucapacityflux!` and `accucapacitystate!`.
-"""
-function accucapacityflux_state(material, network, capacity, dt)
-    flux = zero(material)
-    material = copy(material)
-    accucapacityflux!(flux, material, network, capacity, dt)
-    return flux, material
 end
 
 function flux_in!(flux_in, flux, network)

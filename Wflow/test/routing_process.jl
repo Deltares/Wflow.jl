@@ -49,7 +49,7 @@ end
 
 @testitem "kinematic wave overland flow" begin
     using NCDatasets: NCDataset
-    using Graphs: topological_sort_by_dfs
+    using Graphs: topological_sort_by_dfs, inneighbors
 
     dt_sec = 86400.0
     ldd_MISSING_VALUE = 255
@@ -89,7 +89,17 @@ end
     alpha = AlpTermR .* P .^ AlpPow
 
     Q = zeros(n)
-    Q = Wflow.kin_wave!(Q, graph, toposort, Qold, q, alpha, DCL, dt_sec)
+    for node_idx in toposort
+        q_in = Wflow.sum_at(Q, inneighbors(graph, node_idx))
+        Q[node_idx], _ = Wflow.kinematic_wave(
+            q_in,
+            Qold[node_idx],
+            q,
+            alpha[node_idx],
+            dt_sec,
+            DCL[node_idx],
+        )
+    end
 
     @test sum(Q) ≈ 2.957806043289641e6
     @test Q[toposort[1]] ≈ 0.007260052312634069
@@ -269,7 +279,9 @@ end
     dt = 86400.0
     material = dt .* [0.5, 2.0, 2.0, 0.5, 2.0, 0.5]
     capacity = fill(1.5, 6)
-    flux, new_material = Wflow.accucapacityflux_state(material, network, capacity, dt)
+    flux = zero(material)
+    new_material = copy(material)
+    Wflow.accucapacityflux!(flux, new_material, network, capacity, dt)
     @test new_material != material
     @test new_material == dt .* [0.0, 0.5, 0.5, 0.0, 3.5, 1.5]
     @test flux == Float64[0.5, 1.5, 1.5, 1, 1.5, 1.5]
@@ -279,7 +291,9 @@ end
     # example 2, accucapacityflux
     material = dt .* fill(10.0, 6)
     capacity = Float64[2, 30, 30, 2, 30, 2]
-    flux, new_material = Wflow.accucapacityflux_state(material, network, capacity, dt)
+    flux = zero(material)
+    new_material = copy(material)
+    Wflow.accucapacityflux!(flux, new_material, network, capacity, dt)
     @test new_material != material
     @test new_material == dt .* [8.0, 0.0, 0.0, 10.0, 0.0, 40.0]
     @test flux == Float64[2, 10, 10, 2, 30, 2]
