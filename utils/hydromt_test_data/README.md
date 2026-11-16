@@ -21,12 +21,7 @@ requires updating the reference values of the tests.
   and estimated net longwave radiation, because ERA5 net thermal radiation is not
   available on the P drive (see `era5_lst_forcing` in `steps.py`). ERA5 net solar
   radiation can be used with `ssr_source: era5_hourly`, but those files are unchunked
-  global arrays, which makes reading a regional time series slow. To use ERA5 net
-  radiation (ssr + str), set
-  `source: earthdatahub` ([DestinE Earth Data Hub](https://earthdatahub.destine.eu),
-  requires a free API key in `~/.netrc`) or `source: arco` (Google ARCO-ERA5, no key,
-  but chunked per hour for the whole globe, ~70 GB for a year, so limit the period with
-  `start` and `end`) for `pipeline.era5_lst_forcing` in `workflows/moselle_sbm.yml`.
+  global arrays, which makes reading a regional time series slow.
 - Internet access for the HydroMT-Wflow water demand example data (Piave region).
 - The `hydromt` pixi environment (Python, HydroMT and HydroMT-Wflow) and the default
   pixi environment (Julia) for the Wflow runs.
@@ -50,15 +45,18 @@ The output is written to `utils/hydromt_test_data/output` (or `--output DIR`):
 
 ## Stages
 
-1. `build`: HydroMT-Wflow builds the models in `workflows/*.yml` (`moselle_sbm`,
-   `moselle_sediment` as an update of `moselle_sbm`, `piave_sbm` and `rhine_sbm`). Steps
-   prefixed with `pipeline.` are defined in `steps.py` and add data that HydroMT-Wflow
-   does not provide, e.g. constant parameter maps, land surface temperature parameters and
-   forcing, the maps of the `sbm_gwf` model type and the test-specific maps used in
-   `Wflow/test/*.jl`.
+1. `build`: HydroMT builds the models (`moselle_sbm`, `moselle_sediment` as an update of
+   `moselle_sbm`, `piave_sbm` and `rhine_sbm`) with `Model.build` / `Model.update`.
+   - `hydromt/*.yml` are plain HydroMT workflow files. Steps prefixed with `testdata.`
+     are custom steps of the `testdata` model component (`testdata.py`, implemented in
+     `steps.py`) for data that HydroMT-Wflow does not provide: land surface
+     temperature parameters and forcing, the `sbm_gwf` maps and test-specific maps used
+     in `Wflow/test/*.jl`. All other steps are HydroMT-Wflow methods.
+   - `models.yml` holds the pipeline settings per model: the workflow, the model it
+     updates (`base`), extra data catalogs and the export settings.
 2. `export`: renames the HydroMT-Wflow variables to the netCDF variable names of the tests
-   (`naming/*.yml`) and writes the static maps and forcing (`export` section of the
-   workflows). It also writes the data that is not built with HydroMT:
+   (`naming/*.yml`) and writes the static maps and forcing (`export` in
+   `models.yml`). It also writes the data that is not built with HydroMT:
    - the synthetic `sbm_gwf` test case (`synthetic.py`, `synthetic_sbm_gwf_forcing.csv`),
    - `forcing-calendar-noleap.nc`, a subset of the Moselle forcing with a noleap calendar,
    - the reservoir storage and rating curve tables (`reservoir_curves/`).
@@ -75,11 +73,11 @@ The output is written to `utils/hydromt_test_data/output` (or `--output DIR`):
 
 | File | Source |
 | --- | --- |
-| `staticmaps-moselle.nc`, `forcing-moselle.nc` | `workflows/moselle_sbm.yml` |
-| `staticmaps-moselle-sed.nc` | `workflows/moselle_sediment.yml` |
+| `staticmaps-moselle.nc`, `forcing-moselle.nc` | `hydromt/moselle_sbm.yml` |
+| `staticmaps-moselle-sed.nc` | `hydromt/moselle_sediment.yml` |
 | `forcing-moselle-sed.nc` | `runs/moselle_sediment_forcing.yml` |
-| `staticmaps-piave.nc`, `forcing-piave.nc` | `workflows/piave_sbm.yml` |
-| `staticmaps-rhine.nc` | `workflows/rhine_sbm.yml`, `runs/rhine_kinematic_wave.yml` |
+| `staticmaps-piave.nc`, `forcing-piave.nc` | `hydromt/piave_sbm.yml` |
+| `staticmaps-rhine.nc` | `hydromt/rhine_sbm.yml`, `runs/rhine_kinematic_wave.yml` |
 | `instates-*.nc` | `runs/*_spinup.yml` |
 | `forcing-calendar-noleap.nc` | subset of `forcing-moselle.nc` |
 | `staticmaps-sbm-groundwater.nc`, `forcing-sbm-groundwater-part*.nc` | `synthetic.py` |
@@ -96,18 +94,14 @@ The output is written to `utils/hydromt_test_data/output` (or `--output DIR`):
   classes of the Moselle model (`lst_mapping.csv`).
 - Net radiation in `forcing-moselle.nc` is the FAO-56 net radiation instead of ERA5 net
   solar plus net thermal radiation (`ssr + str`), see above.
-- Constant parameters are written as maps (`pipeline.constant_maps`), because HydroMT-Wflow
-  v1 writes them as values in the TOML file, while the tests read them from the static maps.
+- Constant parameters are set as values in the TOML files (`setup_constant_pars`)
+  instead of maps in the static maps.
 - The reservoir areas in the current Deltares reservoir database are smaller than in the
   existing test data (Piave: 0.59 and 0.62 km2 instead of 1.79 and 1.31 km2), which
   affects the derived reservoir parameters.
-- The Moselle sbm and Piave models were built with an older HydroMT version, whose model
-  grid is not aligned to multiples of the model resolution. `pipeline.basemaps` reproduces
-  these grids (`grid_bounds`): the hydrography is clipped to these bounds extended by whole
-  model cells, and border rows or columns without active cells are padded.
-  The sediment model is an update of the Moselle sbm model
-  and shares its grid, while the existing sediment test data is on the aligned grid
-  (shifted by 3 and 4 hydrography cells in x and y).
+- The model grids follow current HydroMT (aligned to multiples of the resolution). The
+  existing Moselle sbm and Piave grids were not aligned, so cell counts, cell indices
+  and the GRDC gauges kept in shared cells differ from the existing test data.
 - The Rhine model (`staticmaps-rhine.nc`) covers a smaller domain (774 x 678 instead of
   927 x 700 cells); the existing file has no coordinates to reproduce its extent.
 - The Piave land use (GLCNMO from the HydroMT-Wflow water demand example data) differs

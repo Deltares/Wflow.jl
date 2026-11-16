@@ -1,17 +1,13 @@
 # HydroMT-Wflow workflow for the Moselle sediment test model, an update of moselle_sbm.
 #
-# Produces staticmaps-moselle-sed.nc (export). The forcing (forcing-moselle-sed.nc) is
+# Exported to staticmaps-moselle-sed.nc. The forcing (forcing-moselle-sed.nc) is
 # output of a Wflow sbm run, see ../runs/moselle_sediment_forcing.yml.
-model: wflow_sediment
-base: moselle_sbm
-
-export:
-  naming: moselle_sediment
-  staticmaps: staticmaps-moselle-sed.nc
+modeltype: wflow_sediment
+global:
+  config_filename: wflow_sbm.toml  # the sbm model that is updated
 
 steps:
-  - config.read:
-      filename: "{hydromt_wflow_data}/wflow_sediment/wflow_sediment.toml"
+  - testdata.read_default_config:
 
   # link the maps of the sbm model that are used by the sediment model
   - setup_config:
@@ -50,14 +46,13 @@ steps:
       river_only: true
       toml_output: null
 
-  # the gauge with the lowest ID is kept when gauges share a cell, as in the original model
-  - pipeline.gauges:
+  - setup_gauges:
       gauges_fn: grdc
       snap_to_river: true
       derive_subcatch: false
       toml_output: null
 
-  - pipeline.constant_maps:
+  - setup_constant_pars:
       river_water_sediment__bagnold_transport_capacity_coefficient: 1.75e-5
       river_water_sediment__bagnold_transport_capacity_exponent: 1.4
       soil_erosion__answers_overland_flow_factor: 0.9

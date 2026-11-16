@@ -2,9 +2,7 @@
 #
 # The model is only used for a short Wflow run that produces the overland flow kinematic
 # wave test data (staticmaps-rhine.nc), see ../runs/rhine_kinematic_wave.yml.
-model: wflow_sbm
-
-export: {}
+modeltype: wflow_sbm
 
 steps:
   - setup_config:
@@ -75,7 +73,7 @@ steps:
       dem_forcing_fn: era5_orography
 
   # same constants as the Moselle model (some have no default value in Wflow)
-  - pipeline.constant_maps:
+  - setup_constant_pars:
       atmosphere_air__snowfall_temperature_threshold: 0.0
       atmosphere_air__snowfall_temperature_interval: 2.0
       snowpack__melting_temperature_threshold: 0.0

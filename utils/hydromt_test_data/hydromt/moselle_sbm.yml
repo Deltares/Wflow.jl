@@ -1,25 +1,12 @@
 # HydroMT-Wflow workflow for the Moselle sbm test model.
 #
-# Produces staticmaps-moselle.nc and forcing-moselle.nc (export), and the forcing of the
+# Exported to staticmaps-moselle.nc and forcing-moselle.nc, and the forcing of the
 # Wflow run that produces the sediment model forcing (see ../runs). Steps prefixed with
-# `pipeline.` are defined in ../steps.py, all other steps are HydroMT-Wflow methods.
-model: wflow_sbm
-data_libs:
-  - "{here}/data_catalog.yml"
-
-export:
-  naming: moselle_sbm
-  staticmaps: staticmaps-moselle.nc
-  # land surface temperature forcing (pipeline.era5_lst_forcing), NaN outside its period
-  extra_forcing: [forcing_lst.nc]
-  forcing:
-    # right-labeled forcing for the model year 2000
-    - path: forcing-moselle.nc
-      start: 2000-01-02
-      end: 2001-01-01
-    - path: "{output}/runs/data/forcing-moselle-sediment-run.nc"
-      start: 2000-01-01
-      end: 2000-02-01
+# `testdata.` are custom steps (../testdata.py), all other steps are HydroMT-Wflow methods.
+modeltype: wflow_sbm
+global:
+  data_libs:
+    - ../data_catalog.yml
 
 steps:
   - setup_config:
@@ -28,9 +15,7 @@ steps:
         time.endtime: 2001-01-01T00:00:00
         time.timestepsecs: 86400
 
-  # grid of the original test model, which is not aligned to multiples of `res`
-  - pipeline.basemaps:
-      grid_bounds: [5.4225, 47.813333333, 7.8475, 50.421666667]
+  - setup_basemaps:
       region:
         subbasin: [7.585, 50.3675]  # Moselle at Koblenz
         uparea: 20000
@@ -98,8 +83,7 @@ steps:
       river_only: true
       toml_output: null
 
-  # the gauge with the lowest ID is kept when gauges share a cell, as in the original model
-  - pipeline.gauges:
+  - setup_gauges:
       gauges_fn: grdc
       snap_to_river: true
       derive_subcatch: false
@@ -115,18 +99,14 @@ steps:
       temp_correction: true
       dem_forcing_fn: era5_orography
 
-  # land surface temperature (sbm_lst_config.toml) for the model period, from hourly ERA5
-  # on the Deltares P drive (../data_catalog.yml) with FAO-56 net radiation. Alternatives
-  # with ERA5 net radiation (ssr + str): `source: earthdatahub` (API key) or
-  # `source: arco` (global chunks per hour, set a short period with `start` and `end`),
-  # see era5_lst_forcing in ../steps.py.
-  - pipeline.era5_lst_forcing:
-      source: catalog
+  # wind and net radiation forcing for the land surface temperature model (sbm_lst_config.toml),
+  # from hourly ERA5 on the Deltares P drive (../data_catalog.yml), FAO-56 net radiation
+  - testdata.setup_lst_forcing:
 
-  - pipeline.lst_parameters:
+  - testdata.setup_lst_parameters:
       mapping_fn: ../lst_mapping.csv
 
-  - pipeline.constant_maps:
+  - setup_constant_pars:
       atmosphere_air__snowfall_temperature_threshold: 0.0
       atmosphere_air__snowfall_temperature_interval: 2.0
       snowpack__melting_temperature_threshold: 0.0
@@ -140,12 +120,13 @@ steps:
       subsurface_water__horizontal_to_vertical_saturated_hydraulic_conductivity_ratio: 100.0
 
   # river boundary condition at the outlet for local inertial routing (Wflow/test/run_sbm.jl)
-  - pipeline.outlet_maps:
-      model_boundary_condition_river__length: 1000.0
-      model_boundary_condition_river_bank_water__depth: 2.0
+  - setup_config:
+      data:
+        input.static.model_boundary_condition_river__length.value: 1000.0
+        input.static.model_boundary_condition_river_bank_water__depth.value: 2.0
 
   # layered vertical saturated hydraulic conductivity (soil layers [100, 300, 800] mm)
-  - pipeline.stack_layers:
+  - testdata.setup_layered_map:
       std_name: soil_layer_water__vertical_saturated_hydraulic_conductivity
       sources:
         - meta_soilgrids_ksat_vertical_15.0cm
@@ -154,7 +135,7 @@ steps:
         - meta_soilgrids_ksat_vertical_200.0cm
 
   # additional pits that split the basin (Wflow/test/run_sbm.jl)
-  - pipeline.point_map:
+  - testdata.setup_point_map:
       std_name: basin_pit_location__mask
       snap_to: river
       points:
@@ -162,7 +143,7 @@ steps:
         - [6.201667, 49.1425, 1]
 
   # external inflow (Wflow/test/run_sbm.jl)
-  - pipeline.point_timeseries:
+  - testdata.setup_point_timeseries:
       std_name: river_water__external_inflow_volume_flow_rate
       x: 6.818333
       y: 47.959167
@@ -170,7 +151,7 @@ steps:
       length: 366
       segments: [[0, 0.75], [31, 0.5], [91, 0.0], [121, 1.5], [305, 0.5]]
 
-  - pipeline.point_timeseries:
+  - testdata.setup_point_timeseries:
       std_name: reservoir_water__external_inflow_volume_flow_rate
       x: 5.918333
       y: 49.909167

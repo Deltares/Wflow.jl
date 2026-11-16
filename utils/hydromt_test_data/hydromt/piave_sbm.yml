@@ -1,19 +1,9 @@
 # HydroMT-Wflow workflow for the Piave sbm test model, including water demand and the
 # maps of the sbm_gwf model type.
 #
-# Produces staticmaps-piave.nc and forcing-piave.nc (export). The water demand example
+# Exported to staticmaps-piave.nc and forcing-piave.nc. The water demand example
 # data of HydroMT-Wflow (Piave region) is downloaded to the cache of the output folder.
-model: wflow_sbm
-data_libs:
-  - "{demand_catalog}"
-
-export:
-  naming: piave_sbm
-  staticmaps: staticmaps-piave.nc
-  forcing:
-    - path: forcing-piave.nc
-      start: 2010-01-02
-      end: 2010-12-31
+modeltype: wflow_sbm
 
 steps:
   - setup_config:
@@ -22,9 +12,7 @@ steps:
         time.endtime: 2010-12-31T00:00:00
         time.timestepsecs: 86400
 
-  # grid of the original test model, which is not aligned to multiples of `res`
-  - pipeline.basemaps:
-      grid_bounds: [11.778333333, 45.506666667, 12.836666667, 46.69]
+  - setup_basemaps:
       region:
         basin: [12.2051, 45.8331]
       hydrography_fn: merit_hydro
@@ -129,17 +117,17 @@ steps:
       lulcmap_name: meta_landuse
 
   # sbm_gwf model type (sbm_gwf_piave_demand_config.toml)
-  - pipeline.groundwater_maps:
+  - testdata.setup_groundwater_maps:
 
   # reservoir inflow and observed outflow (Wflow/test/run_sbm_piave.jl)
-  - pipeline.point_timeseries:
+  - testdata.setup_point_timeseries:
       std_name: reservoir_water__external_inflow_volume_flow_rate
       x: 12.324167
       y: 46.1275
       snap_to: reservoir_outlet
       values: [-1, -1, -1, -1, -2, -3, -3, -3, -2, -1, -1, -1]
 
-  - pipeline.point_timeseries:
+  - testdata.setup_point_timeseries:
       std_name: reservoir_water__outgoing_observed_volume_flow_rate
       x: 12.324167
       y: 46.1275

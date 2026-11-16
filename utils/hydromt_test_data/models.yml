@@ -1,0 +1,44 @@
+# Models of the pipeline: the HydroMT workflow (hydromt/), the model it updates (`base`),
+# extra data catalogs and how the model is exported to the Wflow test data. This file is
+# pipeline configuration; the workflow files themselves are plain HydroMT workflows.
+#
+# export:
+#   naming: legacy netCDF variable names of the tests (naming/<name>.yml)
+#   staticmaps: static maps file name in Wflow/test/data/input
+#   forcing: forcing files with their period (right-labeled time stamps)
+# data_libs: `demand` is the HydroMT-Wflow water demand example data (downloaded)
+
+moselle_sbm:
+  workflow: moselle_sbm.yml
+  export:
+    naming: moselle_sbm
+    staticmaps: staticmaps-moselle.nc
+    forcing:
+      - path: forcing-moselle.nc
+        start: 2000-01-02
+        end: 2001-01-01
+      - path: "{output}/runs/data/forcing-moselle-sediment-run.nc"
+        start: 2000-01-01
+        end: 2000-02-01
+
+moselle_sediment:
+  workflow: moselle_sediment.yml
+  base: moselle_sbm
+  export:
+    naming: moselle_sediment
+    staticmaps: staticmaps-moselle-sed.nc
+
+piave_sbm:
+  workflow: piave_sbm.yml
+  data_libs: [demand]
+  export:
+    naming: piave_sbm
+    staticmaps: staticmaps-piave.nc
+    forcing:
+      - path: forcing-piave.nc
+        start: 2010-01-02
+        end: 2010-12-31
+
+rhine_sbm:
+  workflow: rhine_sbm.yml
+  export: {}

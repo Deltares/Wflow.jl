@@ -11,7 +11,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import xarray as xr
-from hydromt_wflow.utils import get_wflow_var_fullname, set_config
+from hydromt_wflow.utils import get_config, get_wflow_var_fullname, set_config
 
 logger = logging.getLogger("hydromt_test_data")
 
@@ -74,137 +74,6 @@ def _snap_candidates(model, snap_to):
         outlets = _grid(model, "reservoir_location__count")
         return ((outlets != outlets.raster.nodata) & (outlets > 0)).values
     raise ValueError(f"Unknown snap_to option `{snap_to}`")
-
-
-def basemaps(model, grid_bounds: list[float] | None = None, **kwargs):
-    """Run ``setup_basemaps``, optionally on a model grid with a fixed extent.
-
-    HydroMT aligns the model grid to multiples of the model resolution. Some test models
-    were built with an older HydroMT version that did not, so their grid is shifted by a
-    fraction of a cell. With ``grid_bounds`` ([west, south, east, north], on the
-    hydrography grid) the hydrography is clipped to these bounds, extended by whole model
-    cells to contain the basin, before upscaling. HydroMT clips the upscaled grid to the
-    active cells, which is extended to ``grid_bounds`` afterwards (``_pad_staticmaps``).
-    """
-    if grid_bounds is None:
-        model.setup_basemaps(**kwargs)
-        return
-
-    from hydromt_wflow import workflows
-
-    parse_region = workflows.parse_region
-
-    def parse_region_fixed_extent(data_catalog, hydrography_fn, resolution, **region_kwargs):
-        geometries, xy, ds_aligned = parse_region(
-            data_catalog=data_catalog, hydrography_fn=hydrography_fn, resolution=resolution, **region_kwargs
-        )
-        if "meta_basins_highres" not in geometries:
-            raise ValueError("grid_bounds requires a model resolution coarser than the hydrography")
-        # extend grid_bounds by whole model cells (keeps the grid) to contain the basin
-        basin = ds_aligned.raster.clip_mask(ds_aligned["mask"])
-        bw, bs, be, bn = basin.raster.bounds
-        west, south, east, north = grid_bounds
-
-        def n_cells(overshoot):
-            return int(np.ceil(max(overshoot, 0.0) / resolution - 1e-6)) + 1
-
-        extent = (
-            west - n_cells(west - bw) * resolution,
-            south - n_cells(south - bs) * resolution,
-            east + n_cells(be - east) * resolution,
-            north + n_cells(bn - north) * resolution,
-        )
-        ds = data_catalog.get_rasterdataset(hydrography_fn)
-        margin = abs(ds.raster.res[0]) / 4
-        ds = ds.raster.clip_bbox((extent[0] + margin, extent[1] + margin, extent[2] - margin, extent[3] - margin))
-        ds.coords["mask"] = ds.raster.geometry_mask(geometries["meta_basins_highres"])
-        if int(ds["mask"].sum()) != int(ds_aligned["mask"].sum()):
-            raise ValueError(f"The hydrography extent {extent} does not contain the basin")
-        return geometries, xy, ds
-
-    workflows.parse_region = parse_region_fixed_extent
-    try:
-        model.setup_basemaps(**kwargs)
-    finally:
-        workflows.parse_region = parse_region
-    _pad_staticmaps(model, grid_bounds)
-
-
-def _pad_staticmaps(model, grid_bounds: list[float]):
-    """Extend the staticmaps to ``grid_bounds`` with nodata.
-
-    HydroMT clips the model grid to the active cells, which can remove border rows or
-    columns of the original grid.
-    """
-    ds = model.staticmaps.data
-    x_dim, y_dim = ds.raster.x_dim, ds.raster.y_dim
-    res = abs(ds.raster.res[0])
-    west, south, east, north = grid_bounds
-    xs = west + res * (np.arange(round((east - west) / res)) + 0.5)
-    ys = north - res * (np.arange(round((north - south) / res)) + 0.5)
-    if ds.raster.res[1] > 0:
-        ys = ys[::-1]
-    w, s, e, n = ds.raster.bounds
-    tolerance = res / 10
-    if w < west - tolerance or s < south - tolerance or e > east + tolerance or n > north + tolerance:
-        raise ValueError(
-            f"The model grid {ds.raster.bounds} exceeds grid_bounds {grid_bounds}: the "
-            "upscaled basin has active cells outside grid_bounds"
-        )
-    if ds.raster.shape == (ys.size, xs.size):
-        return
-
-    def fill_value(da):
-        if da.dtype == bool:
-            return False
-        if da.raster.nodata is not None:
-            return da.raster.nodata
-        return np.nan if np.issubdtype(da.dtype, np.floating) else 0
-
-    fill = {name: fill_value(da) for name, da in ds.data_vars.items()}
-    padded = ds.reindex({x_dim: xs, y_dim: ys}, method="nearest", tolerance=tolerance, fill_value=fill)
-    logger.info(f"Extending the model grid from {ds.raster.shape} to {padded.raster.shape} cells (grid_bounds)")
-    model.staticmaps._data = padded
-
-
-def gauges(model, gauges_fn: str, **kwargs):
-    """Run ``setup_gauges`` where the lowest gauge ID wins when gauges share a cell.
-
-    ``setup_gauges`` writes the gauges in the order of the data source, so the last gauge
-    of a cell is kept. The existing test models kept the gauge with the lowest ID.
-    """
-    from hydromt.error import NoDataStrategy
-
-    gdf = model.data_catalog.get_geodataframe(gauges_fn, geom=model.basins, handle_nodata=NoDataStrategy.IGNORE)
-    if gdf is None:
-        logger.info(f"No {gauges_fn} gauges found within the model domain")
-        return
-    kwargs.setdefault("basename", Path(gauges_fn).stem.replace("_", "-"))
-    model.setup_gauges(gauges_fn=gdf.sort_index(ascending=False), **kwargs)
-
-
-def constant_maps(model, **values):
-    """Add maps with a constant value on all active cells.
-
-    HydroMT-Wflow v1 ``setup_constant_pars`` writes constants as values in the TOML file,
-    while the Wflow tests read these parameters from the staticmaps. The maps are named
-    after the Wflow standard name and renamed on export (see ``naming/*.yml``).
-    """
-    mask = _active_cells(model)
-    for std_name, value in values.items():
-        da = xr.where(mask, np.float32(value), np.float32(np.nan)).astype(np.float32)
-        da.raster.set_nodata(np.nan)
-        _set_static(model, da, std_name, std_name)
-
-
-def outlet_maps(model, **values):
-    """Add maps with a constant value at the basin outlet(s) and nodata elsewhere."""
-    ldd = _grid(model, "basin__local_drain_direction")
-    outlets = _active_cells(model) & (ldd == 5)
-    for std_name, value in values.items():
-        da = xr.where(outlets, np.float32(value), np.float32(np.nan)).astype(np.float32)
-        da.raster.set_nodata(np.nan)
-        _set_static(model, da, std_name, std_name)
 
 
 def stack_layers(model, std_name: str, sources: list[str]):
@@ -304,76 +173,8 @@ def lst_parameters(model, mapping_fn: str, landuse_map: str = "meta_landuse"):
         _set_static(model, da, std_name, std_name)
 
 
-ERA5_CLOUD_SOURCES = {
-    # DestinE Earth Data Hub, chunks of 1080 h x 60 x 60 (45 days x 15 deg x 15 deg),
-    # authentication with an API key in ~/.netrc (https://earthdatahub.destine.eu)
-    "earthdatahub": {
-        "url": "https://data.earthdatahub.destine.eu/era5/era5-single-levels-atmosphere-v0.zarr",
-        "storage_options": {"client_kwargs": {"trust_env": True}},
-        "time": "valid_time",
-        "variables": {"u10": "u10", "v10": "v10", "ssr": "ssr", "str": "str"},
-    },
-    # Google ARCO-ERA5, chunks of 1 h x the whole globe (721 x 1440), no authentication
-    "arco": {
-        "url": "gs://gcp-public-data-arco-era5/ar/full_37-1h-0p25deg-chunk-1.zarr-v3",
-        "storage_options": {"token": "anon"},
-        "time": "time",
-        "variables": {
-            "u10": "10m_u_component_of_wind",
-            "v10": "10m_v_component_of_wind",
-            "ssr": "surface_net_solar_radiation",
-            "str": "surface_net_thermal_radiation",
-        },
-    },
-}
 STEFAN_BOLTZMANN = 5.670374419e-8  # [W m-2 K-4]
 DAILY_RIGHT_LABELED = {"time": "1D", "closed": "right", "label": "right"}
-
-
-def _era5_daily_cloud(model, start, end, source: str, url: str | None, buffer: float, num_workers: int):
-    """Daily wind speed and net radiation (ssr + str) from a cloud ERA5 Zarr store."""
-    import dask
-
-    settings = ERA5_CLOUD_SOURCES[source]
-    url = url or settings["url"]
-    names = settings["variables"]
-    xmin, ymin, xmax, ymax = model.staticmaps.data.raster.bounds
-    try:
-        ds = xr.open_zarr(url, storage_options=settings["storage_options"], chunks={})
-    except Exception as e:
-        hint = (
-            " Add your Earth Data Hub API key to ~/.netrc, see "
-            "https://earthdatahub.destine.eu/getting-started#configuring-netrc"
-            if source == "earthdatahub"
-            else ""
-        )
-        raise RuntimeError(f"Could not open {url}.{hint}") from e
-    ds = ds[list(names.values())].rename({v: k for k, v in names.items()})
-    ds = ds.rename({settings["time"]: "time"}) if settings["time"] != "time" else ds
-    # ERA5 longitudes are in [0, 360), select before converting to [-180, 180)
-    lon_min, lon_max = (xmin - buffer) % 360, (xmax + buffer) % 360
-    if lon_min <= lon_max:
-        ds = ds.sel(longitude=slice(lon_min, lon_max))
-    else:
-        ds = xr.concat(
-            [ds.sel(longitude=slice(lon_min, 360)), ds.sel(longitude=slice(0, lon_max))],
-            dim="longitude",
-        )
-    ds = ds.assign_coords(longitude=((ds.longitude + 180) % 360) - 180)
-    descending = bool(ds.latitude[0] > ds.latitude[-1])
-    lat_slice = slice(ymax + buffer, ymin - buffer) if descending else slice(ymin - buffer, ymax + buffer)
-    ds = ds.sel(time=slice(start - pd.Timedelta(hours=23), end), latitude=lat_slice)
-    wind = np.hypot(ds["u10"], ds["v10"]).resample(**DAILY_RIGHT_LABELED).mean()
-    radiation = (ds["ssr"] + ds["str"]).resample(**DAILY_RIGHT_LABELED).sum() / 86400.0
-    daily = xr.Dataset({"wind": wind, "net_radiation": radiation}).sel(time=slice(start, end))
-    n_chunks = sum(int(np.prod(ds[v].data.numblocks)) for v in names)
-    logger.info(f"Downloading {ds.sizes['time']} hours of ERA5 from {url} ({n_chunks} chunks)")
-    with dask.config.set(scheduler="threads", num_workers=num_workers):
-        daily = daily.load()
-    daily.raster.set_crs(4326)
-    daily = daily.raster.reproject_like(model.staticmaps.data, method="nearest_index")
-    daily["net_radiation"].attrs.update(long_name="Net radiation (ssr + str)")
-    return daily
 
 
 def _era5_daily_catalog(model, start, end, hourly_source: str, ssr_source: str | None, albedo: float):
@@ -446,76 +247,29 @@ def _era5_daily_catalog(model, start, end, hourly_source: str, ssr_source: str |
 
 def era5_lst_forcing(
     model,
-    start: str | None = None,
-    end: str | None = None,
-    source: str = "catalog",
     hourly_source: str = "era5_hourly_zarr",
     ssr_source: str | None = None,
     albedo: float = 0.23,
-    url: str | None = None,
-    filename: str = "forcing_lst.nc",
-    buffer: float = 0.5,
-    num_workers: int = 16,
 ):
-    """Add daily wind speed and net radiation forcing from hourly ERA5.
+    """Add daily wind speed and net radiation forcing from hourly ERA5 (model period).
 
     Daily values are right-labeled, consistent with the other Wflow forcing: the value at
     day D covers the hourly ERA5 values in (D - 1 day, D]. Wind speed is the daily mean
-    of the hourly 10 m wind speed [m s-1]. Net radiation is the daily mean net radiation
-    [W m-2]. By default the model period is used (``start``, ``end``).
-
-    Sources:
-
-    * ``catalog`` (default): hourly ERA5 from the HydroMT data catalog (``hourly_source``
-      for wind, temperature, dew point and shortwave radiation) with FAO-56 net radiation,
-      see ``_era5_daily_catalog``. Net shortwave radiation uses ``albedo``, or ERA5 ssr
-      from ``ssr_source`` (e.g. ``era5_hourly``, slow on the Deltares P drive). The
-      Deltares P drive has no ERA5 net thermal radiation.
-    * ``earthdatahub``: ERA5 ssr + str from the DestinE Earth Data Hub, chunked for
-      regional time series, requires an API key in ~/.netrc.
-    * ``arco``: ERA5 ssr + str from Google ARCO-ERA5 (no key). The store is chunked per
-      hour for the whole globe, so each hour costs four global chunks of ~4 MB regardless
-      of the model size (~70 GB for a year): use a short period with this source.
-
-    The result is written to ``<model root>/<filename>`` instead of the model forcing,
-    because HydroMT-Wflow does not write forcing with missing values (outside the period).
-    It is merged into the model forcing on export (``extra_forcing`` in the workflow
-    ``export`` section).
+    of the hourly 10 m wind speed [m s-1]. Net radiation is the daily mean FAO-56 net
+    radiation [W m-2], see ``_era5_daily_catalog``.
     """
-    start = pd.Timestamp(start or model.config.get_value("time.starttime"))
-    end = pd.Timestamp(end or model.config.get_value("time.endtime"))
-    if source == "catalog":
-        daily = _era5_daily_catalog(model, start, end, hourly_source, ssr_source, albedo)
-    else:
-        daily = _era5_daily_cloud(model, start, end, source, url, buffer, num_workers)
+    start = pd.Timestamp(model.config.get_value("time.starttime"))
+    end = pd.Timestamp(model.config.get_value("time.endtime"))
+    daily = _era5_daily_catalog(model, start, end, hourly_source, ssr_source, albedo)
     daily["wind"].attrs.update(unit="m s-1")
     daily["net_radiation"].attrs.update(unit="W m-2")
-    daily = daily.astype(np.float32)
-    path = Path(model.root.path, filename)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    daily.to_netcdf(path)
+    model.forcing.set(daily.astype(np.float32))
     std_names = {
         "wind": "land_surface_air_flow__speed",
         "net_radiation": "land_surface_total_net_radiation__energy_flux",
     }
     for name, std_name in std_names.items():
         model.config.set(f"input.forcing.{std_name}", name)
-
-
-def merge_forcing(forcing: xr.Dataset, path: Path) -> xr.Dataset:
-    """Add the variables of a forcing file on the same grid, NaN outside its period."""
-    with xr.open_dataset(path) as ds:
-        extra = ds.load()
-    if extra.raster.crs is None:
-        extra.raster.set_crs(4326)
-    renames = {extra.raster.x_dim: forcing.raster.x_dim, extra.raster.y_dim: forcing.raster.y_dim}
-    extra = extra.rename({k: v for k, v in renames.items() if k != v})
-    for dim in (forcing.raster.x_dim, forcing.raster.y_dim):
-        if extra.sizes[dim] != forcing.sizes[dim] or not np.allclose(extra[dim], forcing[dim]):
-            raise ValueError(f"{path} is not on the model forcing grid ({dim})")
-        extra[dim] = forcing[dim]
-    extra = extra.drop_vars("spatial_ref", errors="ignore").reindex(time=forcing["time"])
-    return forcing.assign({name: extra[name] for name in extra.data_vars})
 
 
 def groundwater_maps(
@@ -619,6 +373,8 @@ def apply_naming(config: dict, staticmaps: xr.Dataset, forcing: xr.Dataset, nami
             key = get_wflow_var_fullname(std_name, config)
             current = None
             if key != std_name:
+                if isinstance(get_config(config, key), dict) and "value" in get_config(config, key):
+                    continue  # constant value (setup_constant_pars), not a map
                 current = _pop(config, key)
                 if isinstance(current, dict):
                     current = current.get("netcdf_variable_name")
@@ -633,7 +389,8 @@ def apply_naming(config: dict, staticmaps: xr.Dataset, forcing: xr.Dataset, nami
         if section == "forcing" and len(data.data_vars) == 0:
             continue
         for std_name, new_name in naming.get(section, {}).items():
-            if new_name not in data:
+            value = get_config(config, get_wflow_var_fullname(std_name, config))
+            if new_name not in data and not (isinstance(value, dict) and "value" in value):
                 missing.append(f"{section}.{std_name} = {new_name}")
     referenced = set(_input_names(config))
     staticmaps = staticmaps.drop_vars([v for v in replaced if v in staticmaps and v not in referenced])

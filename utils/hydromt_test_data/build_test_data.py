@@ -6,7 +6,7 @@ Usage (from the repository root):
 
 Stages (default: all, in this order):
 
-    build    HydroMT model builds/updates from `workflows/*.yml` into `<output>/models`
+    build    HydroMT model builds/updates (`hydromt/*.yml`, `models.yml`) into `<output>/models`
     export   rename to the netCDF names of the tests and write `<output>/test/data/input`
     configs  write the test TOML files (`configs/*.yml`) and the Wflow run TOML files
     run      Wflow runs that produce the states, the sediment forcing and Rhine test data
@@ -32,15 +32,17 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 import yaml
+from hydromt.readers import read_workflow_yaml
 from hydromt.writers import write_nc, write_toml
 from hydromt_wflow import WflowSbmModel, WflowSedimentModel
-from hydromt_wflow.utils import DATA_DIR, get_config, get_wflow_var_fullname, set_config
+from hydromt_wflow.utils import get_config, get_wflow_var_fullname, set_config
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 
 import steps  # noqa: E402
 import synthetic  # noqa: E402
+from testdata import TestDataComponent  # noqa: E402
 
 REPO = HERE.parents[1]
 TEST_DIR = REPO / "Wflow" / "test"
@@ -73,7 +75,6 @@ DEMAND_FILES = [
     "lisflood_waterregions.tif",
     "pcr_globwb.nc",
 ]
-DEFAULT_CONFIG_FILENAME = "wflow_sbm.toml"
 DEFAULT_JULIA = [
     "pixi",
     "run",
@@ -98,12 +99,7 @@ class Paths:
         self.cache = output / "cache"
 
     def placeholders(self) -> dict[str, str]:
-        return {
-            "{output}": self.output.as_posix(),
-            "{here}": HERE.as_posix(),
-            "{hydromt_wflow_data}": DATA_DIR.as_posix(),
-            "{demand_catalog}": (self.cache / "hydromt_wflow_demand" / "data_catalog.yml").as_posix(),
-        }
+        return {"{output}": self.output.as_posix()}
 
 
 def load_yaml(path: Path) -> dict:
@@ -124,26 +120,9 @@ def resolve(obj, placeholders: dict[str, str]):
     return obj
 
 
-def absolute_paths(obj, workdir: Path):
-    """Make strings that refer to existing files relative to `workdir` absolute."""
-    if isinstance(obj, str):
-        candidate = workdir / obj
-        return candidate.resolve().as_posix() if candidate.is_file() else obj
-    if isinstance(obj, dict):
-        return {k: absolute_paths(v, workdir) for k, v in obj.items()}
-    if isinstance(obj, list):
-        return [absolute_paths(v, workdir) for v in obj]
-    return obj
-
-
-def load_workflow(name: str, paths: Paths) -> dict:
-    return resolve(load_yaml(HERE / "workflows" / f"{name}.yml"), paths.placeholders())
-
-
-def config_filename(workflow: dict, paths: Paths) -> str:
-    if "base" in workflow:
-        return config_filename(load_workflow(workflow["base"], paths), paths)
-    return workflow.get("config_filename", DEFAULT_CONFIG_FILENAME)
+def load_model_spec(name: str, paths: Paths) -> dict:
+    """Pipeline settings of a model (models.yml): workflow, base model, data, export."""
+    return resolve(load_yaml(HERE / "models.yml")[name], paths.placeholders())
 
 
 # Stage: build
@@ -164,53 +143,31 @@ def download_demand_catalog(paths: Paths):
         catalog["hydromt_wflow_example_pcr_globwb"] = catalog.pop("pcr_globwb")
         with open(folder / "data_catalog.yml", "w") as f:
             yaml.safe_dump(catalog, f, sort_keys=False)
-
-
-def run_steps(model, workflow_steps: list[dict], workdir: Path):
-    """Run HydroMT model methods and `pipeline.*` steps in order."""
-    for step in workflow_steps:
-        ((name, kwargs),) = step.items()
-        kwargs = kwargs or {}
-        if name != "setup_config":
-            kwargs = absolute_paths(kwargs, workdir)
-        logger.info(f"Step {name}")
-        if name.startswith("pipeline."):
-            getattr(steps, name.removeprefix("pipeline."))(model, **kwargs)
-        else:
-            method = model
-            for attr in name.split("."):
-                method = getattr(method, attr)
-            method(**kwargs)
+    return (folder / "data_catalog.yml").as_posix()
 
 
 def build(names: list[str], paths: Paths, data_libs: list[str]):
+    """Build or update the models with HydroMT (``Model.build`` / ``Model.update``).
+
+    The workflow files in ``hydromt/`` are plain HydroMT workflows. The custom steps
+    (``testdata.*``) are provided by the ``testdata`` component that is added to the model.
+    """
     for name in names:
-        workflow = load_workflow(name, paths)
-        if paths.placeholders()["{demand_catalog}"] in workflow.get("data_libs", []):
-            download_demand_catalog(paths)
-        model_cls = MODELS[workflow["model"]]
-        libs = data_libs + workflow.get("data_libs", [])
+        spec = load_model_spec(name, paths)
+        modeltype, model_init, steps_ = read_workflow_yaml(HERE / "hydromt" / spec["workflow"])
+        libs = data_libs + model_init.pop("data_libs", [])
+        if "demand" in spec.get("data_libs", []):
+            libs.append(download_demand_catalog(paths))
         root = paths.models / name
         logger.info(f"Building {name} in {root}")
-        if "base" in workflow:
-            model = model_cls(
-                root=str(paths.models / workflow["base"]),
-                mode="r",
-                config_filename=config_filename(workflow, paths),
-                data_libs=libs,
-            )
-            model.read()
-            model.root.set(str(root), mode="w+")
+        if "base" in spec:
+            model = MODELS[modeltype](root=str(paths.models / spec["base"]), mode="r", data_libs=libs, **model_init)
+            model.add_component("testdata", TestDataComponent(model))
+            model.update(model_out=root, steps=steps_, forceful_overwrite=True)
         else:
-            model = model_cls(
-                root=str(root),
-                mode="w+",
-                config_filename=config_filename(workflow, paths),
-                data_libs=libs,
-            )
-        run_steps(model, workflow["steps"], HERE / "workflows")
-        model.write()
-        model.close()
+            model = MODELS[modeltype](root=str(root), mode="w+", data_libs=libs, **model_init)
+            model.add_component("testdata", TestDataComponent(model))
+            model.build(steps=steps_)
 
 
 # Stage: export
@@ -240,19 +197,16 @@ def write_forcing(ds: xr.Dataset, path: Path):
 
 
 def export_model(name: str, paths: Paths):
-    workflow = load_workflow(name, paths)
-    settings = workflow.get("export", {})
-    model = MODELS[workflow["model"]](
-        root=str(paths.models / name), mode="r", config_filename=config_filename(workflow, paths)
-    )
+    settings = load_model_spec(name, paths).get("export", {})
+    modeltype, model_init, _ = read_workflow_yaml(HERE / "hydromt" / load_model_spec(name, paths)["workflow"])
+    model_init.pop("data_libs", None)
+    model = MODELS[modeltype](root=str(paths.models / name), mode="r", **model_init)
     model.config.read()
     model.staticmaps.read()
     forcing = xr.Dataset()
     if settings.get("forcing"):
         model.forcing.read()
         forcing = model.forcing.data
-        for filename in settings.get("extra_forcing", []):
-            forcing = steps.merge_forcing(forcing, paths.models / name / filename)
     config = steps.normalize_config(copy.deepcopy(model.config.data))
     staticmaps = model.staticmaps.data
     if "naming" in settings:
