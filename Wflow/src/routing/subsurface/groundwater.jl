@@ -192,20 +192,14 @@ end
         Re <: Union{Nothing, AbstractSubsurfaceFlowBC},
         Ri <: Union{Nothing, AbstractSubsurfaceFlowBC},
         D <: Union{Nothing, AbstractSubsurfaceFlowBC},
-        W <: Union{Nothing, AbstractSubsurfaceFlowBC},
     }
     recharge::Re = nothing
     river::Ri = nothing
     drain::D = nothing
-    well::W = nothing
 end
 
-get_boundaries(boundary_conditions::SubsurfaceFlowBC) = (
-    boundary_conditions.recharge,
-    boundary_conditions.river,
-    boundary_conditions.drain,
-    boundary_conditions.well,
-)
+get_boundaries(boundary_conditions::SubsurfaceFlowBC) =
+    (boundary_conditions.recharge, boundary_conditions.river, boundary_conditions.drain)
 
 @kwdef struct GroundwaterFlowModel{B <: SubsurfaceFlowBC} <: AbstractSubsurfaceFlowModel
     timestepping::TimeStepping
@@ -565,7 +559,6 @@ function stable_timestep(
 end
 
 minimum_head(gwf::GroundwaterFlowModel) = max.(gwf.variables.head, gwf.parameters.bottom)
-maximum_head(gwf::GroundwaterFlowModel) = min.(gwf.variables.head, gwf.parameters.top)
 
 function update_fluxes!(
         gwf::GroundwaterFlowModel,

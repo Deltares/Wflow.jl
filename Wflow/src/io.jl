@@ -1184,12 +1184,6 @@ function advance!(clock)
     return nothing
 end
 
-function rewind!(clock)
-    clock.iteration -= 1
-    clock.time -= clock.dt
-    return nothing
-end
-
 "Read a rating curve from CSV into a NamedTuple of vectors"
 function read_sh_csv(path)
     data, header = readdlm(path, ',', Float64; header = true)
