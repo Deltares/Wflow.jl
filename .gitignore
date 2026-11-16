@@ -31,3 +31,7 @@ Wflow/test/sbm_simple_temp.toml
 
 # pixi environments
 .pixi
+
+# HydroMT test data pipeline output
+/utils/hydromt_test_data/output/
+/utils/hydromt_test_data/__pycache__/

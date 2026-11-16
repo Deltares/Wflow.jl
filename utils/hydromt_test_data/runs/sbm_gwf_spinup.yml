@@ -1,0 +1,18 @@
+# Wflow spin-up run (cold start) of the synthetic sbm_gwf model that produces
+# instates-example-sbm-gwf.nc.
+extends: sbm_gwf_config
+config:
+  dir_input: "{output}/test/data/input"
+  dir_output: "{output}/runs/sbm_gwf_spinup"
+  time.starttime: 2000-05-31T00:00:00
+  time.endtime: 2000-06-29T00:00:00
+  model.cold_start__flag: true
+  state.path_output: outstates.nc
+remove: [state.path_input, output]
+products:
+  - from: outstates.nc
+    to: instates-example-sbm-gwf.nc
+    # depths of the previous Wflow versions, used by some tests
+    duplicate:
+      h_av_land: h_land
+      h_av_river: h_river
