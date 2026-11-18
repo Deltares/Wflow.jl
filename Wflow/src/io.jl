@@ -113,7 +113,6 @@ Get fixed netCDF forcing input."
 function load_fixed_forcing!(model)
     (; reader, domain, clock) = model
     (; forcing_parameters) = reader
-    dt = tosecond(clock.dt)
 
     do_reservoirs = routing_with_reservoirs(model)
 
@@ -128,7 +127,7 @@ function load_fixed_forcing!(model)
             val = only(ncvar.value) * only(ncvar.scale) + only(ncvar.offset)
 
             param, metadata = get_field_in_model(model, par)
-            val = apply_unit_and_type_transform!(val, metadata; dt_val = dt)
+            val = apply_unit_and_type_transform!(val, metadata; dt_val = clock.dt)
             param .= val
             # set fixed precipitation and evaporation over the reservoirs and put these into
             # the reservoir structs and set the precipitation and evaporation to 0 in the
@@ -157,8 +156,6 @@ function update_forcing!(model)
     (; clock, reader, domain, land) = model
     (; dataset, dataset_times, forcing_parameters) = reader
 
-    dt = tosecond(clock.dt)
-
     do_reservoirs = routing_with_reservoirs(model)
 
     if do_reservoirs
@@ -176,7 +173,7 @@ function update_forcing!(model)
         if !metadata.allow_dynamic_input
             error("Tried to update '$par' forcing from input, which is not allowed.")
         end
-        data = get_at(dataset, ncvar, metadata, dataset_times, time, dt)
+        data = get_at(dataset, ncvar, metadata, dataset_times, time, clock.dt)
 
         # calculate the mean precipitation and evaporation over reservoirs and put these
         # into the reservoir structs and set the precipitation and evaporation to 0 in the
@@ -236,10 +233,8 @@ function update_cyclic!(model)
     (; clock, reader, domain, land) = model
     (; cyclic_dataset, cyclic_times, cyclic_parameters) = reader
 
-    dt = tosecond(clock.dt)
-
     # pick up the data that is valid for the past model time step
-    month_day = monthday(clock.time - clock.dt)
+    month_day = monthday(clock.time - clock.dt_sec)
 
     is_first_timestep = clock.iteration == 1
 
@@ -254,7 +249,7 @@ function update_cyclic!(model)
             isnothing(i) &&
                 error("Could not find applicable cyclic timestep for $month_day")
             # load from netCDF into the model according to the mapping
-            data = get_at(cyclic_dataset, ncvar, metadata, i, dt)
+            data = get_at(cyclic_dataset, ncvar, metadata, i, clock.dt)
             sel = active_indices(domain, par)
             # missing data for observed reservoir outflow is allowed at reservoir
             # location(s)
@@ -877,7 +872,7 @@ end
 function write_netcdf_timestep(model::AbstractModel, writer::NCWriter{<:NCDataset, <:Dict})
     (; clock) = model
     (; output_dataset, output_map, reducer) = writer
-    dt_val = tosecond(clock.dt)
+    dt_val = clock.dt
     time_index = add_time(output_dataset, clock.time)
     for (var, reducer_) in reducer
         (; name, layer) = var
@@ -912,8 +907,6 @@ function write_netcdf_timestep(model::AbstractModel, writer::NCWriter{<:NCDatase
     (; clock, domain) = model
 
     time_index = add_time(output_dataset, clock.time)
-    dt = tosecond(clock.dt)
-
     buffer = zeros(Union{Float64, Missing}, domain.land.network.modelsize)
     for (key, val) in output_map
         (; par, vector, unit) = val
@@ -925,7 +918,7 @@ function write_netcdf_timestep(model::AbstractModel, writer::NCWriter{<:NCDatase
             fill!(buffer, missing)
             # cut off possible boundary conditions/ ghost points with [1:length(sel)]
             buffer[sel] .= view(vector, 1:length(sel))
-            from_SI!(buffer, unit; dt_val = dt)
+            from_SI!(buffer, unit; dt_val = clock.dt)
             output_dataset[key][:, :, time_index] = buffer
         elseif elemtype <: SVector
             nlayer = length(first(vector))
@@ -933,7 +926,7 @@ function write_netcdf_timestep(model::AbstractModel, writer::NCWriter{<:NCDatase
                 # ensure no other information is written
                 fill!(buffer, missing)
                 buffer[sel] .= getindex.(vector, i)
-                from_SI!(buffer, unit; dt_val = dt)
+                from_SI!(buffer, unit; dt_val = clock.dt)
                 output_dataset[key][:, :, i, time_index] = buffer
             end
         else
@@ -1132,7 +1125,6 @@ function write_csv_row(model::AbstractModel, csv_writer::CSVWriter)
     (; output_path, output_io, output_map, reducer) = csv_writer
     isnothing(output_path) && return nothing
     print(output_io, string(clock.time))
-    dt_val = tosecond(clock.dt)
     for (col, reducer_) in reducer
         (; header) = col
         (; vector, unit) = output_map[header]
@@ -1146,9 +1138,9 @@ function write_csv_row(model::AbstractModel, csv_writer::CSVWriter)
         end
         # Convert to proper unit
         v = if v isa Number
-            from_SI(v, unit; dt_val)
+            from_SI(v, unit; dt_val = clock.dt)
         else
-            from_SI(collect(v), unit; dt_val)
+            from_SI(collect(v), unit; dt_val = clock.dt)
         end
         # numbers are also iterable
         for el in v
@@ -1174,19 +1166,20 @@ function reset_clock!(clock::Clock, config)
     # we want this method to be mutating
     clock.time = new_clock.time
     clock.iteration = new_clock.iteration
+    clock.dt_sec = new_clock.dt_sec
     clock.dt = new_clock.dt
     return nothing
 end
 
 function advance!(clock)
     clock.iteration += 1
-    clock.time += clock.dt
+    clock.time += clock.dt_sec
     return nothing
 end
 
 function rewind!(clock)
     clock.iteration -= 1
-    clock.time -= clock.dt
+    clock.time -= clock.dt_sec
     return nothing
 end
 

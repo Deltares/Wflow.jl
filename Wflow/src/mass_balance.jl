@@ -47,21 +47,26 @@ end
 
 "Initialize `HydrologicalMassBalance` for storing water mass balance error results."
 function HydrologicalMassBalance(domain::Domain, subsurface_flow, config::Config)
-    (; river_routing, land_routing, water_mass_balance__flag) = config.model
+    (; river_routing, land_routing, water_mass_balance__flag, river_routing__flag, reservoir__flag) = config.model
     if water_mass_balance__flag
         n_land = length(domain.land.network.indices)
         n_river = length(domain.river.network.indices)
-        if config.model.reservoir__flag
-            n_reservoir = length(domain.reservoir.network.indices_outlet)
-            reservoir_water_balance = MassBalance(; n = n_reservoir)
+        if river_routing__flag
+            if reservoir__flag
+                n_reservoir = length(domain.reservoir.network.indices_outlet)
+                reservoir_water_balance = MassBalance(; n = n_reservoir)
+            else
+                reservoir_water_balance = NoMassBalance()
+            end
+            if land_routing == RoutingType.local_inertial &&
+                    river_routing == RoutingType.local_inertial
+                river_water_balance = NoMassBalance()
+            else
+                river_water_balance = MassBalance(; n = n_river)
+            end
         else
-            reservoir_water_balance = NoMassBalance()
-        end
-        if land_routing == RoutingType.local_inertial &&
-                river_routing == RoutingType.local_inertial
             river_water_balance = NoMassBalance()
-        else
-            river_water_balance = MassBalance(; n = n_river)
+            reservoir_water_balance = NoMassBalance()
         end
         routing = FlowRoutingMassBalance(;
             river_water_balance,
@@ -220,7 +225,7 @@ function compute_land_hydrology_balance!(
     (; snow) = model.land
     (; area) = model.domain.land.parameters
     (; subsurface_flow) = model.routing
-    dt = tosecond(model.clock.dt)
+    (; dt) = model.clock
 
     # exclude recharge from computing total incoming and outgoing boundary fluxes for
     # groundwaterflow, other boundaries are required for the total soil water balance.
@@ -503,7 +508,7 @@ function compute_flow_routing_balance!(model)
         overland_water_balance,
         subsurface_water_balance,
     ) = model.mass_balance.routing
-    dt = tosecond(model.clock.dt)
+    (; dt) = model.clock
 
     compute_flow_balance!(river_flow, river_water_balance, model.domain.river.network, dt)
     compute_flow_balance!(reservoir, reservoir_water_balance, dt)
@@ -521,7 +526,7 @@ function compute_flow_routing_balance!(
     (; reservoir) = river_flow.boundary_conditions
     (; overland_water_balance, reservoir_water_balance, subsurface_water_balance) =
         model.mass_balance.routing
-    dt = tosecond(model.clock.dt)
+    (; dt) = model.clock
 
     compute_flow_balance!(
         river_flow,

@@ -56,35 +56,108 @@ function Model(config::Config, type::SbmModel)
     return model
 end
 
-"update the `sbm` model type for a single timestep"
-function update_model!(model::AbstractModel{<:SbmModel})
-    (; routing, land, domain, clock, config) = model
-    (; soil, runoff, demand) = land
-    (; kv_profile) = land.soil.parameters
+"Update the `sbm` or `sbm_gwf` model type for a single timestep"
+function update_model!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
+    update_interception_model!(model)
+    update_snow_model!(model)
+    update_glacier_model!(model)
+    update_open_water_runoff_model!(model)
+    update_water_demand_model!(model)
+    update_water_allocation_model!(model)
+    update_soil_water_model!(model)
+    update_land_surface_temperature!(model)
+    update_subsurface_flow_model!(model)
+    update_soil_water_storage!(model)
+    surface_routing!(model)
+    update_total_water_storage!(model)
+    return nothing
+end
+
+"Update interception model component of model type `sbm` or `sbm_gwf for a single timestep"
+function update_interception_model!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
+    (; land, clock) = model
+    update_interception_model!(land, clock.dt)
+    return nothing
+end
+
+"Update snow model component of model type `sbm` or `sbm_gwf for a single timestep"
+function update_snow_model!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
+    (; land, domain, config, clock) = model
+    update_snow_model!(land, domain, config, clock.dt)
+    return nothing
+end
+
+"Update glacier model component of model type `sbm` or `sbm_gwf for a single timestep"
+function update_glacier_model!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
+    (; land, clock) = model
+    update_glacier_model!(land, clock.dt)
+    return nothing
+end
+
+"Update open water runoff model component of model type `sbm` or `sbm_gwf for a single timestep"
+function update_open_water_runoff_model!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
+    (; land, routing, domain, clock) = model
+    update_open_water_runoff_model!(land, routing, domain, clock.dt)
+    return nothing
+end
+
+"Update water demand model component of model type `sbm` or `sbm_gwf for a single timestep"
+function update_water_demand_model!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
+    (; land, config, clock) = model
+    update_water_demand_model!(land, config, clock.dt)
+    return nothing
+end
+
+"Update water allocation model component of model type `sbm` or `sbm_gwf for a single timestep"
+function update_water_allocation_model!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
+    (; land, routing, domain, clock) = model
+    update_water_allocation_model!(land, routing, domain, clock.dt)
+    return nothing
+end
+
+"Update soil water model component of model type `sbm` or `sbm_gwf for a single timestep"
+function update_soil_water_model!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
+    (; land, domain, config, clock) = model
+    update_soil_water_model!(land, domain, config, clock.dt)
+    return nothing
+end
+
+"Update land surface temperature model component of model type `sbm` or `sbm_gwf for a single timestep"
+function update_land_surface_temperature!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
+    (; land, domain, config) = model
+    update_land_surface_temperature!(land, domain, config)
+    return nothing
+end
+
+"Update subsurface flow model component of model type `sbm` for a single timestep"
+function update_subsurface_flow_model!(model::AbstractModel{<:SbmModel})
+
+    (; routing, land, domain, config, clock) = model
+    (; soil, allocation) = land
+    (; kv_profile) = soil.parameters
     (; boundary_conditions) = routing.subsurface_flow
-
-    dt = tosecond(clock.dt)
-
-    update_land_hydrology_model!(land, routing, domain, config, dt)
 
     # set river stage and storage (subsurface flow boundary)
     update_river_storage_stage!(boundary_conditions.river, routing.river_flow)
 
     # exchange of recharge [m s⁻¹] between SBM soil model and subsurface flow domain
-    boundary_conditions.recharge.variables.rate .= land.soil.variables.recharge
-    if do_water_demand(config)
+    boundary_conditions.recharge.variables.rate .= soil.variables.recharge
+    if do_water_allocation(config)
         @. boundary_conditions.recharge.variables.rate -=
-            land.allocation.variables.actual_groundwater_abstraction
+            allocation.variables.actual_groundwater_abstraction
     end
 
     # update lateral subsurface flow domain (kinematic wave)
-    kh_layered_profile!(land.soil, routing.subsurface_flow, kv_profile)
-    update_subsurface_flow_model!(routing.subsurface_flow, land.soil, domain, dt)
-    # update SBM soil model (runoff, unsaturated_layer_depth and saturated_water_depth)
-    update_soil_water_storage!(soil, (; runoff, demand, routing.subsurface_flow), dt)
+    kh_layered_profile!(soil, routing.subsurface_flow, kv_profile)
+    update_subsurface_flow_model!(routing.subsurface_flow, soil, domain, clock.dt)
 
-    surface_routing!(model)
-    update_total_water_storage!(model)
+    return nothing
+end
+
+"Update soil water storage of model type `sbm` for a single timestep"
+function update_soil_water_storage!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
+    (; land, routing, clock) = model
+    update_soil_water_storage!(land, routing, clock.dt)
     return nothing
 end
 
@@ -100,16 +173,16 @@ end
 
 function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
     (; routing, land, domain, config) = model
-    land_v = routing.overland_flow.variables
-    river_v = routing.river_flow.variables
-
     (;
         river_routing,
         land_routing,
         cold_start__flag,
         reservoir__flag,
         floodplain_1d__flag,
+        river_routing__flag,
     ) = config.model
+
+    land_v = routing.overland_flow.variables
 
     # read and set states in model object if cold_start=false
     if !cold_start__flag
@@ -163,10 +236,14 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
                 saturated_thickness(subsurface_flow) .* subsurface_flow.parameters.area .*
                 storativity(subsurface_flow)
         end
-        # only set active cells for river (ignore boundary conditions/ghost points)
-        (; flow_width, flow_length) = domain.river.parameters
-        river_v.storage[1:nriv] .=
-            river_v.h[1:nriv] .* flow_width[1:nriv] .* flow_length[1:nriv]
+
+        if river_routing__flag
+            river_v = routing.river_flow.variables
+            # only set active cells for river (ignore boundary conditions/ghost points)
+            (; flow_width, flow_length) = domain.river.parameters
+            river_v.storage[1:nriv] .=
+                river_v.h[1:nriv] .* flow_width[1:nriv] .* flow_length[1:nriv]
+        end
 
         if floodplain_1d__flag && river_routing != RoutingType.kinematic_wave
             initialize_storage!(routing.river_flow, domain, nriv)

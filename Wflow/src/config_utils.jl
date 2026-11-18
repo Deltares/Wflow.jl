@@ -77,6 +77,10 @@ const log_level_map::Dict{Union{Int, String}, LogLevel} =
 Base.dirname(config::Config) = dirname(config.path)
 
 do_water_demand(config::Config) = config.model.water_demand._was_specified
+do_water_demand_allocation(config::Config) = do_water_demand(config) && !config.model.external_water_allocation__flag
+do_water_demand_external_allocation(config::Config) = do_water_demand(config) && config.model.external_water_allocation__flag
+do_water_allocation(config::Config) = do_water_demand_allocation(config) || do_water_demand_external_allocation(config)
+do_irrigation(config::Config) = config.model.water_demand.paddy__flag || config.model.water_demand.nonpaddy__flag
 do_api(config::Config) = config.API._was_specified
 do_csv(config::Config) = config.output.csv._was_specified
 do_netcdf_scalar(config::Config) = config.output.netcdf_scalar._was_specified

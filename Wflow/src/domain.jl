@@ -85,8 +85,8 @@ each domain that can used by different model components.
 end
 
 "Initialize `Domain` for model types `sbm` and `sbm_gwf`"
-function Domain(dataset::NCDataset, config::Config, ::Union{SbmModel, SbmGwfModel})
-    (; land_routing, river_routing) = config.model
+function Domain(dataset::NCDataset, config::Config, type::Union{SbmModel, SbmGwfModel})
+    (; land_routing, river_routing, river_routing__flag) = config.model
 
     network_land = NetworkLand(dataset, config)
     if land_routing == RoutingType.kinematic_wave ||
@@ -94,33 +94,38 @@ function Domain(dataset::NCDataset, config::Config, ::Union{SbmModel, SbmGwfMode
         network_land = network_subdomains(config, network_land)
     end
 
-    network_river =
-        NetworkRiver(dataset, config, network_land; do_pits = config.model.pit__flag)
-    if river_routing == RoutingType.kinematic_wave
-        network_river = network_subdomains(config, network_river)
-    end
-
     pits = zeros(Bool, network_land.modelsize)
-    nriv = length(network_river.indices)
-    if config.model.reservoir__flag
-        network_reservoir, inds_reservoir_map2river =
-            NetworkReservoir(dataset, config, network_river)
-        pits[network_reservoir.indices_outlet] .= true
-    else
-        network_reservoir = NetworkReservoir()
-        inds_reservoir_map2river = fill(0, nriv)
-    end
-    @reset network_river.reservoir_indices = inds_reservoir_map2river
+    if river_routing__flag
+        network_river =
+            NetworkRiver(dataset, config, network_land; do_pits = config.model.pit__flag)
+        if river_routing == RoutingType.kinematic_wave
+            network_river = network_subdomains(config, network_river)
+        end
 
-    if river_routing == RoutingType.kinematic_wave
-        @reset network_river.upstream_nodes =
-            filter_upstream_nodes(network_river.graph, pits[network_river.indices])
-    elseif river_routing == RoutingType.local_inertial ||
-            river_routing == RoutingType.manning_staggered
-        nodes_at_edge, index_pit = NodesAtEdge(network_river)
-        @reset network_river.nodes_at_edge = nodes_at_edge
-        @reset network_river.pit_indices = network_river.indices[index_pit]
-        @reset network_river.edges_at_node = EdgesAtNode(network_river)
+        nriv = length(network_river.indices)
+        if config.model.reservoir__flag
+            network_reservoir, inds_reservoir_map2river =
+                NetworkReservoir(dataset, config, network_river)
+            pits[network_reservoir.indices_outlet] .= true
+        else
+            network_reservoir = NetworkReservoir()
+            inds_reservoir_map2river = fill(0, nriv)
+        end
+        @reset network_river.reservoir_indices = inds_reservoir_map2river
+
+        if river_routing == RoutingType.kinematic_wave
+            @reset network_river.upstream_nodes =
+                filter_upstream_nodes(network_river.graph, pits[network_river.indices])
+        elseif river_routing == RoutingType.local_inertial ||
+                river_routing == RoutingType.manning_staggered
+            nodes_at_edge, index_pit = NodesAtEdge(network_river)
+            @reset network_river.nodes_at_edge = nodes_at_edge
+            @reset network_river.pit_indices = network_river.indices[index_pit]
+            @reset network_river.edges_at_node = EdgesAtNode(network_river)
+        end
+    else
+        network_river = NetworkRiver()
+        network_reservoir = NetworkReservoir()
     end
 
     if land_routing == RoutingType.kinematic_wave ||
@@ -143,8 +148,9 @@ function Domain(dataset::NCDataset, config::Config, ::Union{SbmModel, SbmGwfMode
         reservoir = DomainReservoir(; network = network_reservoir),
     )
 
-    land_params, river_params = initialize_shared_parameters(dataset, config, domain)
+    land_params = LandParameters(dataset, config, domain.land.network, type)
     @reset domain.land.parameters = land_params
+    river_params = initialize_river_parameters(dataset, config, domain)
     @reset domain.river.parameters = river_params
 
     if config.model.drain__flag
@@ -160,7 +166,7 @@ function Domain(dataset::NCDataset, config::Config, ::Union{SbmModel, SbmGwfMode
         end
     end
 
-    if do_water_demand(config)
+    if do_water_demand_allocation(config)
         allocation_area_indices, river_allocation_indices =
             get_allocation_area_indices(dataset, config, domain)
         @reset domain.land.network.allocation_area_indices = allocation_area_indices
@@ -175,7 +181,7 @@ function Domain(dataset::NCDataset, config::Config, ::Union{SbmModel, SbmGwfMode
     if nthreads() > 1
         min_streamorder_land = config.model.land_streamorder__min_count
         min_streamorder_river = config.model.river_streamorder__min_count
-        if river_routing == RoutingType.kinematic_wave
+        if river_routing__flag && river_routing == RoutingType.kinematic_wave
             @info "Parallel execution of kinematic wave." min_streamorder_land min_streamorder_river
         elseif land_routing == RoutingType.kinematic_wave ||
                 subsurface_routing(config) == RoutingType.kinematic_wave
@@ -187,7 +193,7 @@ function Domain(dataset::NCDataset, config::Config, ::Union{SbmModel, SbmGwfMode
 end
 
 "Initialize `Domain` for model type `sediment`"
-function Domain(dataset::NCDataset, config::Config, ::SedimentModel)
+function Domain(dataset::NCDataset, config::Config, type::SedimentModel)
     network_land = NetworkLand(dataset, config)
     network_river = NetworkRiver(dataset, config, network_land)
 
@@ -196,14 +202,15 @@ function Domain(dataset::NCDataset, config::Config, ::SedimentModel)
 
     domain = Domain(; land = domain_land, river = domain_river)
 
-    land_params, river_params = initialize_shared_parameters(dataset, config, domain)
+    land_params = LandParameters(dataset, config, network_land, type)
     @reset domain.land.parameters = land_params
+    river_params = initialize_river_parameters(dataset, config, domain)
     @reset domain.river.parameters = river_params
     return domain
 end
 
 "Initialize (shared) land parameters for model type `sediment`"
-function LandParameters(dataset::NCDataset, config::Config, network::NetworkLand)
+function LandParameters(dataset::NCDataset, config::Config, network::NetworkLand, ::SedimentModel)
     x_length, y_length = get_cell_lengths(dataset, config, network)
     area = x_length .* y_length
     flow_width = map(get_flow_width, network.local_drain_direction, x_length, y_length)
@@ -224,9 +231,7 @@ function LandParameters(dataset::NCDataset, config::Config, network::NetworkLand
 end
 
 "Initialize (shared) land parameters for model types `sbm` and `sbm_gwf`"
-function LandParameters(dataset::NCDataset, config::Config, domain::Domain)
-    (; land_indices) = domain.river.network
-    (; network) = domain.land
+function LandParameters(dataset::NCDataset, config::Config, network::NetworkLand, ::Union{SbmModel, SbmGwfModel})
     (; indices) = network
     x_length, y_length = get_cell_lengths(dataset, config, network)
     area = x_length .* y_length
@@ -242,6 +247,7 @@ function LandParameters(dataset::NCDataset, config::Config, domain::Domain)
     surface_flow_width =
         map(get_surface_width, flow_width, flow_length, land_area, river_location)
 
+    land_indices = findall(!isequal(0), river_location)
     flow_fraction_to_river = get_flow_fraction_to_river(
         network.graph,
         network.local_drain_direction,
@@ -278,7 +284,7 @@ function LandParameters(dataset::NCDataset, config::Config, domain::Domain)
     return land_parameters
 end
 
-"Initialize (shared) river parameters"
+"Initialize (shared) river parameters `flow_length`, `flow_width` and `slope`"
 function RiverParameters(dataset::NCDataset, config::Config, network::NetworkRiver)
     (; indices) = network
     flow_length = ncread(dataset, config, "river__length", Routing; sel = indices)
@@ -294,18 +300,20 @@ function RiverParameters(dataset::NCDataset, config::Config, network::NetworkRiv
     return river_parameters
 end
 
-"Initialize (shared) parameters for the river and land domains"
-function initialize_shared_parameters(dataset::NCDataset, config::Config, domain::Domain)
-    land_params = LandParameters(dataset, config, domain)
-    river_params = RiverParameters(dataset, config, domain.river.network)
+"Initialize (shared) river parameters"
+function initialize_river_parameters(dataset::NCDataset, config::Config, domain::Domain)
+    return if config.model.river_routing__flag
+        river_params = RiverParameters(dataset, config, domain.river.network)
 
-    @reset river_params.cell_area = land_params.area[domain.river.network.land_indices]
-    @reset river_params.reservoir_coverage =
-        land_params.reservoir_coverage[domain.river.network.land_indices]
-    @reset river_params.reservoir_outlet =
-        land_params.reservoir_outlet[domain.river.network.land_indices]
-
-    return land_params, river_params
+        @reset river_params.cell_area = domain.land.parameters.area[domain.river.network.land_indices]
+        @reset river_params.reservoir_coverage =
+            domain.land.parameters.reservoir_coverage[domain.river.network.land_indices]
+        @reset river_params.reservoir_outlet =
+            domain.land.parameters.reservoir_outlet[domain.river.network.land_indices]
+    else
+        river_params = RiverParameters()
+    end
+    return river_params
 end
 
 "Return open water fraction (excluding rivers)"

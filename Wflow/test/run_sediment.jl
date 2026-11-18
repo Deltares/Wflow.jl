@@ -1,6 +1,5 @@
 @testitem "Run sediment" begin
     using Statistics: mean
-    dt = 86400.0
     tomlpath = joinpath(@__DIR__, "sediment_config.toml")
     config = Wflow.Config(tomlpath)
     config.dir_output = mktempdir()
@@ -114,7 +113,6 @@ end
     config.dir_output = mktempdir()
     config.model.cold_start__flag = false
     model = Wflow.Model(config)
-    dt = Wflow.tosecond(model.clock.dt)
     @testset "initial warm states" begin
         river = model.routing.river_flow
         @test mean(river.sediment_flux.variables.store_clay) ≈ 68.81654169660432
@@ -143,7 +141,6 @@ end
 
     model = Wflow.Model(config)
     (; domain, clock) = model
-    dt = Wflow.tosecond(clock.dt)
 
     Wflow.run_timestep!(model)
 
@@ -521,7 +518,6 @@ end
     config.model.land_transport = "govers"
 
     model = Wflow.Model(config)
-    dt = Wflow.tosecond(model.clock.dt)
 
     # run the first and second timestep
     Wflow.run_timestep!(model)
@@ -553,7 +549,6 @@ end
     config.model.land_transport = "yalin"
 
     model = Wflow.Model(config)
-    dt = Wflow.tosecond(model.clock.dt)
 
     # run the first and second timestep
     Wflow.run_timestep!(model)
@@ -585,7 +580,6 @@ end
     config.model.river_transport = "yang"
 
     model = Wflow.Model(config)
-    dt = Wflow.tosecond(model.clock.dt)
 
     # run the first and second timestep
     Wflow.run_timestep!(model)
@@ -613,7 +607,6 @@ end
     config.model.river_transport = "kodatie"
 
     model = Wflow.Model(config)
-    dt = Wflow.tosecond(model.clock.dt)
 
     # run the first and second timestep
     Wflow.run_timestep!(model)
@@ -643,7 +636,6 @@ end
     config.model.river_transport = "molinas"
 
     model = Wflow.Model(config)
-    dt = Wflow.tosecond(model.clock.dt)
 
     # run the first and second timestep
     Wflow.run_timestep!(model)

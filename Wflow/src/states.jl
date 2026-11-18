@@ -76,6 +76,7 @@ function extract_required_states(config::Config)
     model_type = config.model.type
 
     # Extract model settings
+    do_river_routing = config.model.river_routing__flag
     do_snow = config.model.snow__flag
     do_glaciers = config.model.glacier__flag
     do_reservoirs = config.model.reservoir__flag
@@ -119,9 +120,11 @@ function extract_required_states(config::Config)
     # River states
     river_states = if model_type == ModelType.sediment
         river_states = get_sediment_states()
-    else
+    elseif do_river_routing
         # :local_inertial_river_state yields the same results
         get_states_by_tag(Routing, :kinematic_wave_river_state)
+    else
+        String[]
     end
 
     # Floodplain states
