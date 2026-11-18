@@ -143,3 +143,22 @@ irrigated_non_paddy_area__count = "nonpaddy_irrigation_areas"
 [state.variables]
 paddy_surface_water__depth = "h_paddy"
 ```
+
+## Excluding river flow routing
+For model types `sbm` and `sbm_gwf` it is possible to run without river flow routing. This
+can be useful for coupling to an external model with routing capabilities as a hydraulic
+model like Delft3D or HEC-RAS or a water allocation model like Ribasim. River input
+parameters as location, length and width are required (e.g. to compute river fraction,
+required for computing vertical water flux at the soil surface).
+
+```toml
+[input]
+river_location__mask = "wflow_river"
+
+[input.static]
+river__length = "wflow_riverlength"
+river__width = "wflow_riverwidth"
+
+[model]
+river_routing__flag = false
+```
