@@ -123,6 +123,7 @@ website:
           - file: model_docs/parameters_landhydrology_sbm.qmd
           - file: model_docs/parameters_sediment.qmd
           - file: model_docs/parameters_routing.qmd
+          - file: model_docs/parameters_no-river_routing.qmd
           - file: model_docs/parameters_mass_balance.qmd
     - title: Developments
       contents:
