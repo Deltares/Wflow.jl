@@ -1070,6 +1070,10 @@ function update_water_allocation_model!(
     return nothing
 end
 
+"""
+No-op for `NoAllocationLandModel` when water demand and allocation computations are not
+enabled.
+"""
 update_water_allocation_model!(
     allocation_model::NoAllocationLandModel,
     demand_model::NoDemandModel,

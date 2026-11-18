@@ -17,6 +17,11 @@ struct NoAllocationRiverModel <: AbstractAllocationModel
     n::Int
 end
 
+"""
+Struct for storing river boundary conditions when river routing is switched off. Lateral
+inflow is stored as it can be useful for an external river routing model. The `reservoir`
+boundary condition is set to `nothing`.
+"""
 @with_kw struct NoRiverFlowBC
     n::Int
     # Lateral inflow [m³ s⁻¹]
@@ -25,6 +30,10 @@ end
     reservoir::Nothing = nothing
 end
 
+"""
+Struct for storing boundary conditions and allocation when river routing is switched off.
+River `allocation` is set to `NoAllocationRiverModel`.
+"""
 @kwdef struct NoRiverFlowModel <: AbstractRiverFlowModel
     boundary_conditions::NoRiverFlowBC
     allocation::NoAllocationRiverModel
