@@ -37,6 +37,11 @@ The Tables in this subsection show the available models settings for the model t
 | `land_surface_wind__speed_reference_height` | Wind speed (forcing) reference height | m | 100 |
 : {.striped .hover}
 
+### External water allocation model
+| Setting | Description | Unit | Default |
+| ----- | ----- | -- | -- |
+| `external_water_allocation__flag` | External coupling with a water allocation model  | - | `false` |
+
 ### Routing method
 | Setting | Description | Unit | Default |
 | --- | ----- | - | - |
