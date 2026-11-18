@@ -491,6 +491,8 @@ ul.task-list li input[type="checkbox"] {
   <ul class="collapse">
   <li><a href="#water-mass-balance" id="toc-water-mass-balance" class="nav-link" data-scroll-target="#water-mass-balance">Water mass balance</a></li>
   <li><a href="#land-hydrology-sbm" id="toc-land-hydrology-sbm" class="nav-link" data-scroll-target="#land-hydrology-sbm">Land Hydrology <code>SBM</code></a></li>
+  <li><a href="#external-water-allocation-model" id="toc-external-water-allocation-model" class="nav-link" data-scroll-target="#external-water-allocation-model">External water allocation model</a></li>
+  <li><a href="#river-routing" id="toc-river-routing" class="nav-link" data-scroll-target="#river-routing">River routing</a></li>
   <li><a href="#routing-method" id="toc-routing-method" class="nav-link" data-scroll-target="#routing-method">Routing method</a></li>
   <li><a href="#kinematic-wave-routing" id="toc-kinematic-wave-routing" class="nav-link" data-scroll-target="#kinematic-wave-routing">Kinematic wave routing</a></li>
   <li><a href="#local-inertial-routing" id="toc-local-inertial-routing" class="nav-link" data-scroll-target="#local-inertial-routing">Local inertial routing</a></li>
@@ -666,6 +668,54 @@ ul.task-list li input[type="checkbox"] {
 <td>Wind speed (forcing) reference height</td>
 <td>m</td>
 <td>100</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="external-water-allocation-model" class="level3">
+<h3 class="anchored" data-anchor-id="external-water-allocation-model">External water allocation model</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 35%">
+<col style="width: 35%">
+<col style="width: 14%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Setting</th>
+<th>Description</th>
+<th>Unit</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>external_water_allocation__flag</code></td>
+<td>External coupling with a water allocation model</td>
+<td>-</td>
+<td><code>false</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="river-routing" class="level3">
+<h3 class="anchored" data-anchor-id="river-routing">River routing</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Setting</th>
+<th>Description</th>
+<th>Unit</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>river_routing__flag</code></td>
+<td>Include river routing model</td>
+<td>-</td>
+<td><code>true</code></td>
 </tr>
 </tbody>
 </table>
