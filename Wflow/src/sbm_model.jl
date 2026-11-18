@@ -56,7 +56,7 @@ function Model(config::Config, type::SbmModel)
     return model
 end
 
-"update the `sbm` model type for a single timestep"
+"Update the `sbm` or `sbm_gwf` model type for a single timestep"
 function update_model!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
     update_interception_model!(model)
     update_snow_model!(model)
@@ -73,54 +73,63 @@ function update_model!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
     return nothing
 end
 
+"Update interception model component of model type `sbm` or `sbm_gwf for a single timestep"
 function update_interception_model!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
     (; land, clock) = model
     update_interception_model!(land, clock.dt)
     return nothing
 end
 
+"Update snow model component of model type `sbm` or `sbm_gwf for a single timestep"
 function update_snow_model!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
     (; land, domain, config, clock) = model
     update_snow_model!(land, domain, config, clock.dt)
     return nothing
 end
 
+"Update glacier model component of model type `sbm` or `sbm_gwf for a single timestep"
 function update_glacier_model!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
     (; land, clock) = model
     update_glacier_model!(land, clock.dt)
     return nothing
 end
 
+"Update open water runoff model component of model type `sbm` or `sbm_gwf for a single timestep"
 function update_open_water_runoff_model!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
     (; land, routing, domain, clock) = model
     update_open_water_runoff_model!(land, routing, domain, clock.dt)
     return nothing
 end
 
+"Update water demand model component of model type `sbm` or `sbm_gwf for a single timestep"
 function update_water_demand_model!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
     (; land, config, clock) = model
     update_water_demand_model!(land, config, clock.dt)
     return nothing
 end
 
+"Update water allocation model component of model type `sbm` or `sbm_gwf for a single timestep"
 function update_water_allocation_model!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
     (; land, routing, domain, clock) = model
     update_water_allocation_model!(land, routing, domain, clock.dt)
     return nothing
 end
 
+"Update soil water model component of model type `sbm` or `sbm_gwf for a single timestep"
 function update_soil_water_model!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
     (; land, domain, config, clock) = model
     update_soil_water_model!(land, domain, config, clock.dt)
     return nothing
 end
 
+"Update land surface temperature model component of model type `sbm` or `sbm_gwf for a single timestep"
 function update_land_surface_temperature!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
     (; land, domain, config) = model
     update_land_surface_temperature!(land, domain, config)
     return nothing
 end
 
+"Update subsurface flow model component of model type `sbm` for a single timestep"
 function update_subsurface_flow_model!(model::AbstractModel{<:SbmModel})
 
     (; routing, land, domain, config, clock) = model
@@ -145,6 +154,7 @@ function update_subsurface_flow_model!(model::AbstractModel{<:SbmModel})
     return nothing
 end
 
+"Update soil water storage of model type `sbm` for a single timestep"
 function update_soil_water_storage!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
     (; land, routing, clock) = model
     update_soil_water_storage!(land, routing, clock.dt)

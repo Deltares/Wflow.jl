@@ -1087,6 +1087,10 @@ function update_water_allocation_model!(
     return nothing
 end
 
+"""
+No-op for `NoAllocationLandModel` when water demand and allocation computations are not
+enabled.
+"""
 update_water_allocation_model!(
     allocation_model::NoAllocationLandModel,
     demand_model::NoDemandModel,
@@ -1095,6 +1099,10 @@ update_water_allocation_model!(
     dt::Float64,
 ) = nothing
 
+"""
+No-op for `AllocationLandExternalModel`, water allocation for land domain is handled by an
+external allocation model, water demand is computed internally.
+"""
 update_water_allocation_model!(
     allocation_model::AllocationLandExternalModel,
     demand_model::DemandModel,

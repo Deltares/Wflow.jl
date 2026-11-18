@@ -64,6 +64,8 @@ end
     variables::V
 end
 
+
+"No-op for `NoRiverFlowModel` (river routing is switched off)."
 function update_river_flow_model!(
         river_flow_model::NoRiverFlowModel,
         domain::Domain,
@@ -72,6 +74,10 @@ function update_river_flow_model!(
     return nothing
 end
 
+"""
+No-op for `NoRiverFlowModel` (river routing is switched off), update of reservoir model
+inflow is not required.
+"""
 function update_inflow!(
         reservoir_model::Nothing,
         river_flow_model::NoRiverFlowModel,

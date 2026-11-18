@@ -91,6 +91,7 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
     )
 end
 
+"Update interception model component of `LandHydrologySBM` for a single timestep"
 function update_interception_model!(
         land_hydrology_model::LandHydrologySBM,
         dt::Float64,
@@ -105,6 +106,7 @@ function update_interception_model!(
     return nothing
 end
 
+"Update snow model component of `LandHydrologySBM` for a single timestep"
 function update_snow_model!(
         land_hydrology_model::LandHydrologySBM,
         domain::Domain,
@@ -126,6 +128,7 @@ function update_snow_model!(
     return nothing
 end
 
+"Update glacier model component of `LandHydrologySBM` for a single timestep"
 function update_glacier_model!(
         land_hydrology_model::LandHydrologySBM,
         dt::Float64,
@@ -140,6 +143,7 @@ function update_glacier_model!(
     return nothing
 end
 
+"Update open water runoff model component of `LandHydrologySBM` for a single timestep"
 function update_open_water_runoff_model!(
         land_hydrology_model::LandHydrologySBM,
         routing::Routing,
@@ -166,6 +170,7 @@ function update_open_water_runoff_model!(
     return nothing
 end
 
+"Update water demand model component of `LandHydrologySBM` for a single timestep"
 function update_water_demand_model!(
         land_hydrology_model::LandHydrologySBM,
         config::Config,
@@ -186,6 +191,7 @@ function update_water_demand_model!(
     return nothing
 end
 
+"Update water allocation model component of `LandHydrologySBM` for a single timestep"
 function update_water_allocation_model!(
         land_hydrology_model::LandHydrologySBM,
         routing::Routing,
@@ -198,6 +204,7 @@ function update_water_allocation_model!(
     return nothing
 end
 
+"Update soil water model component of `LandHydrologySBM` for a single timestep"
 function update_soil_water_model!(
         land_hydrology_model::LandHydrologySBM,
         domain::Domain,
@@ -229,6 +236,7 @@ function update_soil_water_model!(
     return nothing
 end
 
+"Update land surface temperature model component of `LandHydrologySBM` for a single timestep"
 function update_land_surface_temperature!(
         land_hydrology_model::LandHydrologySBM,
         domain::Domain,
@@ -253,6 +261,7 @@ function update_land_surface_temperature!(
     return nothing
 end
 
+"Update soil water storage of `LandHydrologySBM` for a single timestep"
 function update_soil_water_storage!(
         land_hydrology_model::LandHydrologySBM,
         routing::Routing,

@@ -57,6 +57,7 @@ function get_water_flux_surface!(
     return nothing
 end
 
+"Return river water depth at river cells of the land domain"
 function update_river_water_depth!(
         waterdepth_river::Vector{Float64},
         land_indices::Vector{Int},
@@ -69,6 +70,7 @@ function update_river_water_depth!(
     return nothing
 end
 
+"No-op for updating river water depth when river routing is switched off"
 function update_river_water_depth!(
         waterdepth_river::Vector{Float64},
         land_indices::Vector{Int},
@@ -76,7 +78,6 @@ function update_river_water_depth!(
     )
     return nothing
 end
-
 
 "Update boundary conditions of the open water runoff model for a single timestep"
 function update_bc_open_water_runoff_model!(
@@ -100,6 +101,9 @@ function update_bc_open_water_runoff_model!(
     return nothing
 end
 
+"""
+Update runoff, evaporation and net runoff of river cells in the land domain.
+"""
 function update_river_runoff_model!(
         open_water_runoff_model::OpenWaterRunoff,
         river_flow_model::AbstractRiverFlowModel,
@@ -123,6 +127,12 @@ function update_river_runoff_model!(
     return nothing
 end
 
+"""
+Update river runoff based on the river water fraction when river routing is switched off.
+Only runoff is updated as it is used to compute the water flux at the soil surface. Net
+river runoff of the `OpenWaterRunoff` model is set to zero by default. When coupled to an
+external river routing model, it is assumed that net river runoff is handled by this model.
+"""
 function update_river_runoff_model!(
         open_water_runoff_model::OpenWaterRunoff,
         river_flow_model::NoRiverFlowModel,
@@ -138,6 +148,10 @@ function update_river_runoff_model!(
     return nothing
 end
 
+"""
+Update runoff, evaporation and net runoff from land based on the open water fraction
+(excluding river water fraction).
+"""
 function update_land_runoff_model!(
         open_water_runoff_model::OpenWaterRunoff,
         potential_evaporation::Vector{Float64},
