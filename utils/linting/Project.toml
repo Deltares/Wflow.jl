@@ -1,9 +1,14 @@
 [deps]
+JuliaWorkspaces = "e554591c-7f10-434f-9f27-2097f62a04fd"
 LintApp = "0ca8a2e7-ee8a-47e9-8624-e03a53d93e73"
 
 [sources]
-# Until https://github.com/julia-vscode/LintApp.jl/pull/12 (JSON v1 compat) is released
-LintApp = {url = "https://github.com/visr/LintApp.jl", rev = "json-v1"}
+# The `security` lint preset and CWE metadata in SARIF, until they are released in
+# JuliaWorkspaces and LintApp (the LintApp branch includes the JSON v1 compat of
+# https://github.com/julia-vscode/LintApp.jl/pull/12)
+JuliaWorkspaces = {url = "https://github.com/evetion/JuliaWorkspaces.jl", rev = "feat/security-preset"}
+LintApp = {url = "https://github.com/evetion/LintApp.jl", rev = "feat/security-sarif"}
 
 [compat]
+JuliaWorkspaces = "13"
 LintApp = "1.0"
