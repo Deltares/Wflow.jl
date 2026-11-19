@@ -1,2 +1,2 @@
 exclude = ["/.pixi/", "/build/create_binaries/wflow_bundle/"]
-preset = "default"
+preset = "security"
