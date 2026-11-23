@@ -3,12 +3,12 @@
     "dataLicense": "CC0-1.0",
     "SPDXID": "SPDXRef-DOCUMENT",
     "name": "Wflow.jl",
-    "documentNamespace": "https://github.com/Deltares/Wflow.jl/Wflow.spdx.json-18785a0f-5979-453c-a406-e145a5471043",
+    "documentNamespace": "https://github.com/Deltares/Wflow.jl/Wflow.spdx.json-afe44b83-0726-4894-948a-c5be19841a0e",
     "creationInfo": {
         "creators": [
             "Organization:  Deltares  (software@deltares.nl)"
         ],
-        "created": "2026-11-03T18:56:50Z",
+        "created": "2026-11-23T15:05:04Z",
         "comment": "Target Platform: Platform(\"x86_64\", \"linux\"; libgfortran_version = \"5.0.0\", cxxstring_abi = \"cxx11\", libc = \"glibc\", libstdcxx_version = \"3.4.30\", julia_version = \"1.13.1\")"
     },
     "comment": "Registries used for populating Package data:\nGeneral registry: https://github.com/JuliaRegistries/General.git\nOfficial general Julia package registry where people can\nregister any package they want without too much debate about\nnaming and without enforced standards on documentation or\ntesting. We nevertheless encourage documentation, testing and\nsome amount of consideration when choosing package names.\n",
