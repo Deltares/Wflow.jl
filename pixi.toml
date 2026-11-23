@@ -92,6 +92,21 @@ quarto = ">=1.8.26,<2"
 prek = "*"
 typos = "*"
 
+# Environment to rebuild the test data in Wflow/test with HydroMT,
+# see utils/hydromt_test_data/README.md
+[feature.hydromt.dependencies]
+python = "3.12.*"
+hydromt = "1.4.*"
+hydromt_wflow = "1.1.*"
+gcsfs = "*"
+zarr = "*"
+
+[feature.hydromt.tasks]
+build-test-data = { cmd = "python utils/hydromt_test_data/build_test_data.py", cwd = "." }
+
+[environments]
+hydromt = { features = ["hydromt"], no-default-feature = true }
+
 [target.unix.activation]
 scripts = ["scripts/load-env.sh"]
 

@@ -8,3 +8,6 @@ puls = "puls"
 theis = "theis"
 stichting = "stichting"
 zink = "zink"
+# netCDF variable names of the test data
+flagg = "flagg"
+hav = "hav"
