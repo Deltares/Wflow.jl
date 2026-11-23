@@ -9,7 +9,9 @@ execute:
 ## Excluding river routing
 For model types `sbm` and `sbm_gwf` it is possible to run without river flow routing. The
 following input parameters are required (e.g. to compute river fraction) and lateral inflow
-to river (output variable) is available for coupling with an external routing model.
+to river (output variable) is available for coupling with an external routing model. River
+evaporation and runoff (from precipitation) are not part of lateral inflow to river and
+should be computed by the external routing model.
 
 ```toml
 [model]
