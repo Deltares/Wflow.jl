@@ -97,6 +97,7 @@ website:
           - file: user_guide/bmi.qmd
           - file: user_guide/fews.qmd
           - file: user_guide/zmq_server.qmd
+          - file: user_guide/water_allocation.qmd
         - text: Frequently asked questions
           file: user_guide/faq.qmd
     - title: Examples
