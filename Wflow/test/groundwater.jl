@@ -209,23 +209,6 @@ end
         @test gwf_model.variables.q_net_bnds[2] == 100.0 * (2.0 - 7.5) / 86400.0
     end
 
-    @testset "headboundary" begin
-        parameters = Wflow.HeadBoundaryParameters(; conductance = [100.0, 100.0] / 86400.0)
-        variables = Wflow.HeadBoundaryVariables(;
-            head = [2.0, 2.0],
-            flux = [0.0, 0.0],
-            flux_cumulative = zeros(2),
-            flux_average = zeros(2),
-        )
-
-        headboundary = Wflow.HeadBoundary(; parameters, variables)
-        gwf_model.variables.q_net_bnds .= 0.0
-        index = [1, 2]
-        Wflow.flux!(headboundary, gwf_model, index, dt)
-        @test gwf_model.variables.q_net_bnds[1] == 100.0 * (2.0 - 0.0) / 86400.0
-        @test gwf_model.variables.q_net_bnds[2] == 100.0 * (2.0 - 7.5) / 86400.0
-    end
-
     @testset "recharge" begin
         n = 3
 
@@ -235,20 +218,6 @@ end
         index = [1, 2, 3]
         Wflow.flux!(recharge_model, gwf_model, index, dt)
         @test all(gwf_model.variables.q_net_bnds .== 1.0e-3 * 100.0 / 86400.0)
-    end
-
-    @testset "well" begin
-        variables = Wflow.WellVariables(;
-            volumetric_rate = [-1000.0 / 86400.0],
-            flux = [0.0],
-            flux_average = [0.0],
-            flux_cumulative = [0.0],
-        )
-        well_model = Wflow.WellModel(; variables)
-        gwf_model.variables.q_net_bnds .= 0.0
-        index = [2]
-        Wflow.flux!(well_model, gwf_model, index, dt)
-        @test gwf_model.variables.q_net_bnds[2] == -1000.0 / 86400.0
     end
 end
 

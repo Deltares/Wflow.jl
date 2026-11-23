@@ -242,38 +242,6 @@ flux in a cell where net recharge occurs. For model type `sbm_gwf`, the recharge
 $\SIb{}{mm\ t^{-1}}$ from the `SBM` `soil` model is used to update the recharge rate
 $\subtext{R}{net}$ of the recharge boundary each time step.
 
-### Head boundary
-This boundary is a fixed head with time (not affected by the model stresses over time) outside
-of the model domain, and is generally used to avoid an unnecessary extension of the model
-domain to the location of the fixed boundary (for example a large lake). The flux from the
-boundary $\SIb{Q_{hb}}{L^3\ T^{-1}}$ is calculated as follows:
-
-$$
-Q_{hb} = C_{hb} (h_{hb} - h)
-$$
-
-with $\SIb{C_{hb}}{L^2\ T^{-1}}$ the conductance of the head boundary, $\SIb{h_{hb}}{L}$
-the head of the head boundary and $h$ the head of the aquifer cell.
-
-The head boundary flux $Q_{hb}$ is an output variable, and is used to update the total flux
-in a cell where this type of boundary occurs. The parameter Head $h_{hb}$ can be
-specified as a fixed or time dependent value.
-
-::: {.callout-note}
-This boundary is not (yet) part of model type `sbm_gwf`.
-:::
-
-### Well boundary
-A volumetric well rate $\SIb{}{L^3\ T^{-1}}$ can be specified as a boundary condition.
-
-The volumetric well rate $\subtext{Q}{well}$ can be can be specified as a fixed or time
-dependent value. If a cell is dry, the actual well flux is set to zero (see also the last
-note on this page).
-
-::: {.callout-note}
-This boundary is not (yet) part model type `sbm_gwf`.
-:::
-
 ::: {.callout-note}
 The boundary fluxes are checked, in case of a dry aquifer cell a negative flux is not
 allowed.

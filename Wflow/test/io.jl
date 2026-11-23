@@ -96,11 +96,6 @@ end
     @test clock.iteration == 2
     @test clock.dt == dt
 
-    Wflow.rewind!(clock)
-    @test clock.time == DateTimeStandard(2000, 2, 29)
-    @test clock.iteration == 1
-    @test clock.dt == dt
-
     config = Wflow.Config(tomlpath)
     config.time.starttime = starttime
     config.time.timestepsecs = Dates.value(Second(dt))
@@ -126,11 +121,6 @@ end
     Wflow.advance!(clock)
     @test clock.time == DateTime360Day(2000, 3, 1)
     @test clock.iteration == 2
-    @test clock.dt == dt
-
-    Wflow.rewind!(clock)
-    @test clock.time == DateTime360Day(2000, 2, 30)
-    @test clock.iteration == 1
     @test clock.dt == dt
 
     config = Wflow.Config(tomlpath)

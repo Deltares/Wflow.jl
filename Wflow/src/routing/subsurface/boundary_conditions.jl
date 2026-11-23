@@ -161,45 +161,6 @@ function flux!(
     return nothing
 end
 
-@with_kw struct HeadBoundaryParameters
-    # [m² s⁻¹]
-    conductance::Vector{Float64}
-end
-
-@with_kw struct HeadBoundaryVariables
-    # [m]
-    head::Vector{Float64}
-    # [m³ s⁻¹]
-    flux::Vector{Float64}
-    # [m³]
-    flux_cumulative::Vector{Float64}
-    # [m³ s⁻¹]
-    flux_average::Vector{Float64}
-end
-
-@with_kw struct HeadBoundary <: AbstractSubsurfaceFlowBC
-    parameters::HeadBoundaryParameters
-    variables::HeadBoundaryVariables
-end
-
-function flux!(
-        headboundary::HeadBoundary,
-        subsurface_flow_model::GroundwaterFlowModel,
-        indices::Vector{Int},
-        dt::Float64,
-    )
-    for (i, index) in enumerate(indices)
-        cond = headboundary.parameters.conductance[i]
-        delta_head =
-            headboundary.variables.head[i] - subsurface_flow_model.variables.head[index]
-        flux = check_flux(cond * delta_head, subsurface_flow_model, index)
-        headboundary.variables.flux[i] = flux
-        headboundary.variables.flux_cumulative[i] += flux * dt
-        subsurface_flow_model.variables.q_net_bnds[index] += flux
-    end
-    return nothing
-end
-
 @with_kw struct RechargeVariables
     n::Int
     # [m s⁻¹]
@@ -230,40 +191,6 @@ function flux!(
         )
         recharge_model.variables.flux[i] = flux
         recharge_model.variables.flux_cumulative[i] += flux * dt
-        subsurface_flow_model.variables.q_net_bnds[index] += flux
-    end
-    return nothing
-end
-
-@with_kw struct WellVariables
-    # [m³ s⁻¹]
-    volumetric_rate::Vector{Float64}
-    # [m³ s⁻¹]
-    flux::Vector{Float64}
-    # [m³]
-    flux_cumulative::Vector{Float64}
-    # [m³ s⁻¹]
-    flux_average::Vector{Float64}
-end
-
-@with_kw struct WellModel <: AbstractSubsurfaceFlowBC
-    variables::WellVariables
-end
-
-function flux!(
-        well_model::WellModel,
-        subsurface_flow_model::GroundwaterFlowModel,
-        indices::Vector{Int},
-        dt::Float64,
-    )
-    for (i, index) in enumerate(indices)
-        flux = check_flux(
-            well_model.variables.volumetric_rate[i],
-            subsurface_flow_model,
-            index,
-        )
-        well_model.variables.flux[i] = flux
-        well_model.variables.flux_cumulative[i] += flux * dt
         subsurface_flow_model.variables.q_net_bnds[index] += flux
     end
     return nothing
