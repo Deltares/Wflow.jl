@@ -368,15 +368,6 @@
     "allow_missing": false,
     "allow_dynamic_input": true
   },
-  "land_surface_water__abstraction_volume_flux": {
-    "unit": "mm Δt-1",
-    "default": null,
-    "fill": null,
-    "type": "Float64",
-    "description": "Actual surface water abstraction",
-    "allow_missing": false,
-    "allow_dynamic_input": false
-  },
   "land_surface_water__potential_evaporation_volume_flux": {
     "unit": "mm Δt-1",
     "default": null,

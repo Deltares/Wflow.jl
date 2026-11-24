@@ -293,6 +293,14 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
         description = "Actual abstraction based on external negative inflow",
         tags = [:kinematic_wave_river_output, :local_inertial_river_output],
     ),
+    "river_water__abstraction_volume_flux" => ParameterMetadata(;
+        lens = @optic(
+            _.routing.river_flow.allocation.variables.actual_surfacewater_abstraction
+        ),
+        unit = Unit(; mm = 1, dt = -1),
+        description = "Actual river water abstraction",
+        tags = [:demand_allocation_output],
+    ),
     ### Land/overland flow parameters
     #### input
     "land_surface_water_flow__manning_n_parameter" => ParameterMetadata(;

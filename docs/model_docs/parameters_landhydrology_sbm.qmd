@@ -160,7 +160,7 @@ generate_table(Wflow.LandHydrologySBM, :demand_allocation_input; relative_widths
 #### Output
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.LandHydrologySBM, :demand_allocation_output; relative_widths = [3, 3, 1, 1, 2])
+generate_table([Wflow.LandHydrologySBM, Wflow.Routing], :demand_allocation_output; relative_widths = [3, 3, 1, 1, 2])
 ```
 
 ## Land surface temperature
