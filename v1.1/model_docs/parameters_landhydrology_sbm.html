@@ -77,9 +77,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-32b17a4e0c144038911ab3fe2fb5928b.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../site_libs/bootstrap/bootstrap-dark-f4e3ee3894f05a62d8c158f935ea14d4.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="../site_libs/bootstrap/bootstrap-32b17a4e0c144038911ab3fe2fb5928b.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-00cf4ecdb176d32579d697961d52213c.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-3e5715a77b495840af7f45c7924b37ec.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-00cf4ecdb176d32579d697961d52213c.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -2145,7 +2145,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div id="48" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>demand_allocation_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>([Wflow.LandHydrologySBM, Wflow.Routing], <span class="op">:</span>demand_allocation_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
@@ -2183,14 +2183,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">m s⁻¹</td>
 </tr>
 <tr class="dataRow even">
-<td style="text-align: left;"><code>land_surface_water__abstraction_volume_flux</code></td>
-<td style="text-align: left;">Actual surface water abstraction</td>
+<td style="text-align: left;"><code>subsurface_water__abstraction_volume_flux</code></td>
+<td style="text-align: left;">Actual groundwater abstraction</td>
 <td style="text-align: left;">mm Δt⁻¹</td>
 <td style="text-align: left;">m s⁻¹</td>
 </tr>
 <tr class="dataRow odd">
-<td style="text-align: left;"><code>subsurface_water__abstraction_volume_flux</code></td>
-<td style="text-align: left;">Actual groundwater abstraction</td>
+<td style="text-align: left;"><code>river_water__abstraction_volume_flux</code></td>
+<td style="text-align: left;">Actual river water abstraction</td>
 <td style="text-align: left;">mm Δt⁻¹</td>
 <td style="text-align: left;">m s⁻¹</td>
 </tr>
