@@ -96,8 +96,7 @@ function Domain(dataset::NCDataset, config::Config, type::Union{SbmModel, SbmGwf
 
     pits = zeros(Bool, network_land.modelsize)
     if river_routing__flag
-        network_river =
-            NetworkRiver(dataset, config, network_land; do_pits = config.model.pit__flag)
+        network_river = NetworkRiver(dataset, config, network_land)
         if river_routing == RoutingType.kinematic_wave
             network_river = network_subdomains(config, network_river)
         end
@@ -124,7 +123,7 @@ function Domain(dataset::NCDataset, config::Config, type::Union{SbmModel, SbmGwf
             @reset network_river.edges_at_node = EdgesAtNode(network_river)
         end
     else
-        network_river = NetworkRiver()
+        network_river = init_network_river_indices(dataset, config, network_land)
         network_reservoir = NetworkReservoir()
     end
 
@@ -284,8 +283,8 @@ function LandParameters(dataset::NCDataset, config::Config, network::NetworkLand
     return land_parameters
 end
 
-"Initialize (shared) river parameters `flow_length`, `flow_width` and `slope`"
-function RiverParameters(dataset::NCDataset, config::Config, network::NetworkRiver)
+"Initialize (shared) river parameters `flow_length` and `flow_width`"
+function init_river_width_length(dataset::NCDataset, config::Config, network::NetworkRiver)
     (; indices) = network
     flow_length = ncread(dataset, config, "river__length", Routing; sel = indices)
     minimum(flow_length) > 0 || error("river length must be positive on river cells")
@@ -293,25 +292,21 @@ function RiverParameters(dataset::NCDataset, config::Config, network::NetworkRiv
     flow_width = ncread(dataset, config, "river__width", Routing; sel = indices)
     minimum(flow_width) > 0 || error("river width must be positive on river cells")
 
-    slope = ncread(dataset, config, "river_bottom_surface__slope", Routing; sel = indices)
-    clamp!(slope, 0.00001, Inf)
-
-    river_parameters = RiverParameters(; flow_width, flow_length, slope)
+    river_parameters = RiverParameters(; flow_width, flow_length)
     return river_parameters
 end
 
 "Initialize (shared) river parameters"
 function initialize_river_parameters(dataset::NCDataset, config::Config, domain::Domain)
-    return if config.model.river_routing__flag
-        river_params = RiverParameters(dataset, config, domain.river.network)
-
-        @reset river_params.cell_area = domain.land.parameters.area[domain.river.network.land_indices]
+    river_params = init_river_width_length(dataset, config, domain.river.network)
+    @reset river_params.cell_area = domain.land.parameters.area[domain.river.network.land_indices]
+    if config.model.river_routing__flag
+        river_slope = get_river_slope(dataset, config, domain.river.network)
+        @reset river_params.slope = river_slope
         @reset river_params.reservoir_coverage =
             domain.land.parameters.reservoir_coverage[domain.river.network.land_indices]
         @reset river_params.reservoir_outlet =
             domain.land.parameters.reservoir_outlet[domain.river.network.land_indices]
-    else
-        river_params = RiverParameters()
     end
     return river_params
 end
@@ -387,6 +382,13 @@ end
 "Return land surface slope"
 function get_landsurface_slope(dataset::NCDataset, config::Config, network::NetworkLand)
     slope = ncread(dataset, config, "land_surface__slope", Routing; sel = network.indices)
+    clamp!(slope, 0.00001, Inf)
+    return slope
+end
+
+"Return river slope"
+function get_river_slope(dataset::NCDataset, config::Config, network::NetworkRiver)
+    slope = ncread(dataset, config, "river_bottom_surface__slope", Routing; sel = network.indices)
     clamp!(slope, 0.00001, Inf)
     return slope
 end
