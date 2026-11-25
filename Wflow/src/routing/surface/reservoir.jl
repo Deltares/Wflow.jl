@@ -379,7 +379,7 @@ end
 function update_index_hq!(reservoir_model::ReservoirModel, clock::Clock)
     (; outflow_curve_type, col_index_hq) = reservoir_model.parameters
     if ReservoirOutflowType.rating_curve in outflow_curve_type
-        col_index_hq[1] = julian_day(clock.time - clock.dt)
+        col_index_hq[1] = julian_day(clock.time - clock.dt_sec)
     end
     return nothing
 end

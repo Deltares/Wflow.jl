@@ -531,23 +531,6 @@ function equal_size_vectors(x::Tuple)
 end
 
 """
-    tosecond(x::Period)
-
-Convert a Period into a Float64, which represents the number of seconds. Will fail if this
-is not well defined, such as for Month.
-
-# Examples
-```julia-repl
-julia> tosecond(Day(1))
-86400.0
-```
-"""
-tosecond(x::Hour) = Float64(Dates.value(Second(x)))
-tosecond(x::Minute) = Float64(Dates.value(Second(x)))
-tosecond(x::T) where {T <: DatePeriod} = Float64(Dates.value(Second(x)))
-tosecond(x::T) where {T <: TimePeriod} = x / convert(T, Second(1))
-
-"""
     adjacent_nodes_at_edge(graph)
 
 Return the source node `src` and destination node `dst` of each edge of a directed `graph`.
