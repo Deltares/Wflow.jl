@@ -356,6 +356,16 @@ function compute_flow_balance!(
     return nothing
 end
 
+"No-op for `NoRiverFlowModel` (river routing is switched off)."
+function compute_flow_balance!(
+        river_flow_model::NoRiverFlowModel,
+        water_balance::NoMassBalance,
+        network::NetworkRiver,
+        dt::Float64,
+    )
+    return nothing
+end
+
 "Helper function to add `inflow` to incoming flow `qin` or outgoing flow `qout`"
 function add_inflow(qin, qout, inflow)
     for q in inflow
