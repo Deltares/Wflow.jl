@@ -119,6 +119,10 @@ floodplain_bottom_surface__slope = "floodplain_slope"
   local inertial overland flow, through an optional per-cell parameter
   `land_surface_depression__max_depth`. Only the water depth above the maximum surface
   depression storage depth contributes to overland flow.
+- Support to exclude river flow routing for the available surface routing schemes, except
+  for the local inertial river (1D) and land (2D) routing scheme. Excluding river flow
+  routing can be useful for coupling to an external model with routing capabilities as a
+  hydraulic model like Delft3D or HEC-RAS or a water allocation model like Ribasim.
 
 ## v1.0.4 - 2026-07-24
 

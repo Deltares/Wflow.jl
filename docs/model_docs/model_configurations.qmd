@@ -27,9 +27,11 @@ supported in wflow:
 The river flow routing schemes support an optional 1D floodplain schematization (routing is
 done separately for the river channel and floodplain).
 
-It is also possible to exclude river flow routing, which can be useful for coupling to an
-external model with routing capabilities as a hydraulic model like Delft3D or HEC-RAS or a
-water allocation model like Ribasim.
+It is also possible to exclude river flow routing for the available surface routing schemes,
+except for the local inertial river (1D) and land (2D) routing scheme as for this model
+overland and river flow are more integrated (subgrid channel). Excluding river routing can
+be useful for coupling to an external model with routing capabilities as a hydraulic model
+like Delft3D or HEC-RAS or a water allocation model like Ribasim.
 
 Below, some explanation will be given on how to prepare a basic wflow\_sbm model. Example
 data for other model configurations is provided in the section with [sample
