@@ -51,7 +51,11 @@ function initialize_overland_flow(dataset::NCDataset, config::Config, domain::Do
     if land_routing == RoutingType.kinematic_wave
         overland_flow = init_kinematic_wave_overland_flow(dataset, config, domain.land)
     elseif land_routing == RoutingType.local_inertial
-        overland_flow = init_local_inertial_overland_flow(dataset, config, domain)
+        if config.model.river_routing__flag
+            overland_flow = init_local_inertial_overland_flow(dataset, config, domain)
+        else
+            error("Excluding river routing is not supported for local inertial model with 1D river and 2D overland flow routing")
+        end
     end
     return overland_flow
 end
