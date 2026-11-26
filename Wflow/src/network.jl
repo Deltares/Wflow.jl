@@ -208,15 +208,9 @@ end
 end
 
 """
-Initialize `NetworkRiver` fields related to river location (active indices model domain) and
-river drainage network.
+Initialize `NetworkRiver` fields related to river location (active indices model domain).
 """
-function NetworkRiver(
-        dataset::NCDataset,
-        config::Config,
-        network::NetworkLand;
-        do_pits = false,
-    )
+function init_network_river_indices(dataset::NCDataset, config::Config, network::NetworkLand)
     # read river mask only at land-domain cells; same order as network.indices
     river_location = ncread(
         dataset,
@@ -239,22 +233,43 @@ function NetworkRiver(
         reverse_indices[ind] = i
     end
 
-    graph, local_drain_direction =
-        get_drainage_network(dataset, config, indices; do_pits, logging = false)
-    order = topological_sort_by_dfs(graph)
-    streamorder = network.streamorder[land_indices]
-
-    network = NetworkRiver(;
+    network_river = NetworkRiver(;
         indices,
         reverse_indices,
-        local_drain_direction,
-        graph,
-        order,
-        streamorder,
         land_indices,
     )
+    return network_river
+end
 
-    return network
+"""
+Initialize `NetworkRiver` fields related to river drainage network.
+"""
+function init_drainage_network_river(
+        dataset::NCDataset,
+        config::Config,
+        network_river::NetworkRiver,
+        network_land::NetworkLand;
+        do_pits = false,
+    )
+
+    graph, local_drain_direction =
+        get_drainage_network(dataset, config, network_river.indices; do_pits, logging = false)
+    order = topological_sort_by_dfs(graph)
+    streamorder = network_land.streamorder[network_river.land_indices]
+
+    @reset network_river.graph = graph
+    @reset network_river.local_drain_direction = local_drain_direction
+    @reset network_river.order = order
+    @reset network_river.streamorder = streamorder
+
+    return network_river
+end
+
+"Initialize `NetworkRiver`"
+function NetworkRiver(dataset, config, network_land)
+    network_river = init_network_river_indices(dataset, config, network_land)
+    network_river = init_drainage_network_river(dataset, config, network_river, network_land; do_pits = config.model.pit__flag)
+    return network_river
 end
 
 """

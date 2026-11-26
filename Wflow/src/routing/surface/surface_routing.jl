@@ -30,7 +30,7 @@ function surface_routing!(model)
     # update lateral inflow river flow
     update_lateral_inflow!(
         river_flow,
-        (; allocation = river_flow.allocation, runoff, overland_flow, subsurface_flow),
+        (; runoff, overland_flow, subsurface_flow),
         domain,
         dt,
     )

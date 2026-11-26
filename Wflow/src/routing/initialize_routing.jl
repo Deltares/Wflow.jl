@@ -51,29 +51,40 @@ function initialize_overland_flow(dataset::NCDataset, config::Config, domain::Do
     if land_routing == RoutingType.kinematic_wave
         overland_flow = init_kinematic_wave_overland_flow(dataset, config, domain.land)
     elseif land_routing == RoutingType.local_inertial
-        overland_flow = init_local_inertial_overland_flow(dataset, config, domain)
+        if config.model.river_routing__flag
+            overland_flow = init_local_inertial_overland_flow(dataset, config, domain)
+        else
+            error("Excluding river routing is not supported for local inertial model with 1D river and 2D overland flow routing")
+        end
     end
     return overland_flow
 end
 
 """
-Initialize kinematic wave or local inertial overland flow routing, including optional
+Initialize kinematic wave or local inertial river flow routing, including optional
 reservoirs.
 """
 function initialize_river_flow(dataset::NCDataset, config::Config, domain::Domain)
-    (; river_routing) = config.model
+    (; river_routing, river_routing__flag) = config.model
 
-    reservoir =
-        config.model.reservoir__flag ?
-        ReservoirModel(dataset, config, domain.reservoir.network) : nothing
+    if river_routing__flag
+        reservoir =
+            config.model.reservoir__flag ?
+            ReservoirModel(dataset, config, domain.reservoir.network) : nothing
 
-    return if river_routing == RoutingType.kinematic_wave
-        river_flow =
-            init_kinematic_wave_river_flow(dataset, config, domain.river, reservoir)
-    elseif river_routing == RoutingType.local_inertial ||
-            river_routing == RoutingType.manning_staggered
-        river_flow = init_staggered_river_flow(dataset, config, domain.river, reservoir)
+        if river_routing == RoutingType.kinematic_wave
+            river_flow =
+                init_kinematic_wave_river_flow(dataset, config, domain.river, reservoir)
+        elseif river_routing == RoutingType.local_inertial ||
+                river_routing == RoutingType.manning_staggered
+            river_flow = init_staggered_river_flow(dataset, config, domain.river, reservoir)
+        end
+    else
+        n = length(domain.river.network.indices)
+        boundary_conditions = NoRiverFlowBC(; n)
+        river_flow = NoRiverFlowModel(; boundary_conditions, allocation = NoAllocationRiverModel(n))
     end
+    return river_flow
 end
 
 "Initialize `Routing` for model types `sbm` and `sbm_gwf`"

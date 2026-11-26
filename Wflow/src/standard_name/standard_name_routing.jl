@@ -201,14 +201,14 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
         unit = Unit(; m = 1),
         fill = 0.0,
         description = "River length",
-        tags = [:kinematic_wave_river_flow_input, :local_inertial_river_input],
+        tags = [:kinematic_wave_river_flow_input, :local_inertial_river_input, :no_river_flow_input],
     ),
     "river__width" => ParameterMetadata(;
         lens = @optic(_.domain.river.parameters.flow_width),
         unit = Unit(; m = 1),
         fill = 0.0,
         description = "River width",
-        tags = [:kinematic_wave_river_flow_input, :local_inertial_river_input],
+        tags = [:kinematic_wave_river_flow_input, :local_inertial_river_input, :no_river_flow_input],
     ),
     "river_water_flow__manning_n_parameter" => ParameterMetadata(;
         lens = @optic(_.routing.river_flow.parameters.flow.mannings_n),
@@ -283,7 +283,7 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
         lens = @optic(_.routing.river_flow.boundary_conditions.inwater),
         unit = Unit(; m = 3, s = -1),
         description = "Lateral inflow to river",
-        tags = [:kinematic_wave_river_output],
+        tags = [:kinematic_wave_river_output, :no_river_flow_output],
     ),
     "river_water__external_abstraction_volume_flow_rate" => ParameterMetadata(;
         lens = @optic(
