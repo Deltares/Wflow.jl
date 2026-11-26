@@ -68,6 +68,7 @@ function update_river_flow_model!(
         river_flow_model::NoRiverFlowModel,
         domain::Domain,
         clock::Clock,
+        dt::Float64,
     )
     return nothing
 end
