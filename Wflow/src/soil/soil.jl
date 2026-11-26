@@ -421,7 +421,7 @@ function SbmSoilParameters(
         config,
         "vegetation_root__feddes_critical_pressure_head_h2";
         sel = indices,
-        defaults = -100.0,
+        defaults = -25.0,
         type = Float64,
     )
     h3_high = ncread(

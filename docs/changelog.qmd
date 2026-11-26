@@ -41,6 +41,9 @@ river_water__abstraction_volume_flux = "abstraction_river"
   `land_surface_water__abstraction_volume_flux` to `river_water__abstraction_volume_flux`
   ([#1148](https://github.com/Deltares/Wflow.jl/pull/1148)). This standard name is also
   consistent with other standard names that refer to the river domain.
+- Default value for critical pressure head `h2` of Feddes reduction function, changed to -25
+  cm. According to literature values, including calibration ranges, a value of -100 cm
+  (field capacity) seems too low.
 
 ## v1.0.4 - 2026-07-24
 
