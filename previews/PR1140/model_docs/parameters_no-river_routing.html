@@ -563,7 +563,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <section id="excluding-river-routing" class="level2">
 <h2 class="anchored" data-anchor-id="excluding-river-routing">Excluding river routing</h2>
-<p>For model types <code>sbm</code> and <code>sbm_gwf</code> it is possible to run without river flow routing. The following input parameters are required (e.g.&nbsp;to compute river fraction) and lateral inflow to river (output variable) is available for coupling with an external routing model. River evaporation and runoff (from precipitation) are not part of lateral inflow to river and should be computed by the external routing model.</p>
+<p>For model types <code>sbm</code> and <code>sbm_gwf</code> it is possible to run without river flow routing, except for the local inertial river (1D) and land (2D) routing scheme. The following input parameters are required (e.g.&nbsp;to compute river fraction) and lateral inflow to river (output variable) is available for coupling with an external routing model. River evaporation and runoff (from precipitation) are not part of lateral inflow to river and should be computed by the external routing model.</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dt">river_routing__flag</span> <span class="op">=</span> <span class="cn">false</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <section id="input" class="level3">

@@ -649,7 +649,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="excluding-river-flow-routing" class="level2">
 <h2 class="anchored" data-anchor-id="excluding-river-flow-routing">Excluding river flow routing</h2>
-<p>For model types <code>sbm</code> and <code>sbm_gwf</code> it is possible to run without river flow routing. This can be useful for coupling to an external model with routing capabilities as a hydraulic model like Delft3D or HEC-RAS or a water allocation model like Ribasim. River input parameters as location, length and width are required (e.g.&nbsp;to compute river fraction, required for computing vertical water flux at the soil surface).</p>
+<p>For model types <code>sbm</code> and <code>sbm_gwf</code> it is possible to run without river flow routing, except for the local inertial river (1D) and land (2D) routing scheme. This can be useful for coupling to an external model with routing capabilities as a hydraulic model like Delft3D or HEC-RAS or a water allocation model like Ribasim. River input parameters as location, length and width are required (e.g.&nbsp;to compute river fraction, required for computing vertical water flux at the soil surface).</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input]</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="dt">river_location__mask</span> <span class="op">=</span> <span class="st">"wflow_river"</span></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
