@@ -1018,7 +1018,7 @@
   },
   "vegetation_root__feddes_critical_pressure_head_h2": {
     "unit": "cm",
-    "default": -100.0,
+    "default": -25.0,
     "fill": null,
     "type": "Float64",
     "description": "Critical pressure head h2 of the root water uptake reduction function (Feddes)",
