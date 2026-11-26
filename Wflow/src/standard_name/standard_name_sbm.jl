@@ -719,7 +719,7 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
     "vegetation_root__feddes_critical_pressure_head_h2" => ParameterMetadata(;
         lens = @optic(_.land.soil.parameters.h2),
         unit = Unit(; cm = 1),
-        default = -100.0,
+        default = -25.0,
         description = "Critical pressure head h2 of the root water uptake reduction function (Feddes)",
         tags = [:soil_input],
     ),

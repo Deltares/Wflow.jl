@@ -242,7 +242,7 @@
                 :cf_soil => 0.038,
                 :theta_fc => 0.30670581485821735,
                 :maximum_leakage => 0.0,
-                :h2 => -1,
+                :h2 => -0.25,
                 :wet_root_distribution_parameter => -500000.0,
                 :alpha_h1 => 1.0,
                 :soil_water_capacity => 0.5057182462428663,
