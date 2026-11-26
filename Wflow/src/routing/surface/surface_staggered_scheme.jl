@@ -280,7 +280,7 @@ function init_staggered_river_flow(
         parameters,
         variables,
         floodplain,
-        allocation = do_water_demand(config) ? AllocationRiverModel(; n) :
+        allocation = do_water_demand_allocation(config) ? AllocationRiverModel(; n) :
             NoAllocationRiverModel(n),
         routing_method,
     )
@@ -801,11 +801,11 @@ function update_river_flow_model!(
         river_flow_model::RiverFlowModel{<:AbstractStaggeredRoutingMethod},
         domain::Domain,
         clock::Clock,
-        dt::Float64;
         update_h = true,
     )
     (; reservoir) = river_flow_model.boundary_conditions
     (; flow_length) = domain.river.parameters
+    (; dt) = clock
 
     set_reservoir_vars!(reservoir)
     update_index_hq!(reservoir, clock)
@@ -1155,11 +1155,11 @@ function update_overland_flow_model!(
         river_flow_model::RiverFlowModel{<:LocalInertial},
         domain::Domain,
         clock::Clock,
-        dt::Float64;
         update_h = false,
     )
     (; reservoir) = river_flow_model.boundary_conditions
     (; flow_length) = domain.river.parameters
+    (; dt) = clock
     land_parameters = domain.land.parameters
 
     set_reservoir_vars!(reservoir)

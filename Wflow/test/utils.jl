@@ -1,18 +1,3 @@
-@testitem "unit: tosecond" begin
-    using Dates:
-        Month, Week, Day, Hour, Minute, Second, Millisecond, Microsecond, Nanosecond
-
-    @test_throws MethodError Wflow.tosecond(Month(2))
-    @test Wflow.tosecond(Week(2)) == 86400 * 14
-    @test Wflow.tosecond(Day(2)) == 86400 * 2
-    @test Wflow.tosecond(Hour(2)) == 3600 * 2
-    @test Wflow.tosecond(Minute(2)) == 60 * 2
-    @test Wflow.tosecond(Second(2)) == 2
-    @test Wflow.tosecond(Millisecond(2)) == 2.0e-3
-    @test Wflow.tosecond(Microsecond(2)) == 2.0e-6
-    @test Wflow.tosecond(Nanosecond(2)) == 2.0e-9
-end
-
 @testitem "unit: julian_day (leap days are not counted)" begin
     using Dates: DateTime
     using CFTime

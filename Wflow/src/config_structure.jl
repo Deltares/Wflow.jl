@@ -65,6 +65,7 @@ end
     cold_start__flag::Bool = true
     cell_length_in_meter__flag::Bool = false
     reservoir__flag::Bool = false
+    river_routing__flag::Bool = true
     # Model types sbm and sbm_gwf
     snow__flag::Bool = false
     snow_gravitational_transport__flag::Bool = false
@@ -115,6 +116,8 @@ end
     river_transport::RiverTransportType.T = RiverTransportType.bagnold
     # Water demand
     water_demand::WaterDemandSubSection = WaterDemandSubSection(; _was_specified = false)
+    # Water allocation (external)
+    external_water_allocation__flag::Bool = false
 end
 
 ###

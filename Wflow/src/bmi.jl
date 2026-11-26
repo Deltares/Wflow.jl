@@ -50,14 +50,14 @@ end
 
 function BMI.update_until(model::Model, time::Float64)
     t = BMI.get_current_time(model)
-    _div, _rem = divrem(time - t, model.clock.dt.value)
+    _div, _rem = divrem(time - t, model.clock.dt)
     steps = Int(_div)
     if steps < 0
         error("The current model timestamp $t is larger than provided `time` $time")
     elseif abs(_rem) > eps()
         error_message = string(
             "Provided `time` $time minus the current model timestamp $t",
-            " is not an integer multiple of model time step $(model.clock.dt.value)",
+            " is not an integer multiple of model time step $(model.clock.dt)",
         )
         error(error_message)
     end

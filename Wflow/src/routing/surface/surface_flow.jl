@@ -64,6 +64,29 @@ end
     variables::V
 end
 
+
+"No-op for `NoRiverFlowModel` (river routing is switched off)."
+function update_river_flow_model!(
+        river_flow_model::NoRiverFlowModel,
+        domain::Domain,
+        clock::Clock,
+    )
+    return nothing
+end
+
+"""
+No-op for `NoRiverFlowModel` (river routing is switched off), update of reservoir model
+inflow is not required.
+"""
+function update_inflow!(
+        reservoir_model::Nothing,
+        river_flow_model::NoRiverFlowModel,
+        external_models::NamedTuple,
+        network::NetworkReservoir,
+    )
+    return nothing
+end
+
 "Compute wetted perimeter for a rectangular river channel "
 function wetted_perimeter_channel(h::Float64, flow_width::Float64)
     channel_perimeter = 2.0 * h + flow_width

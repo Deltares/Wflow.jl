@@ -60,7 +60,8 @@ end
 
     @test clock.time == DateTimeProlepticGregorian(2000, 1, 1)
     @test clock.iteration == 0
-    @test clock.dt == Second(Day(1))
+    @test clock.dt_sec == Second(Day(1))
+    @test clock.dt == 86400.0
     # test that the missing keys have been added to the config
     @test config.time.starttime == DateTime(2000, 1, 1)
     @test config.time.endtime == DateTime(2001, 1, 1)
@@ -76,7 +77,8 @@ end
     clock = Wflow.Clock(config, reader)
     @test clock.time == DateTimeStandard(2003, 4, 5)
     @test clock.iteration == 0
-    @test clock.dt == Second(Hour(1))
+    @test clock.dt_sec == Second(Hour(1))
+    @test clock.dt == 3600.0
 end
 
 @testitem "unit: Clock{DateTimeStandard}" begin
@@ -87,28 +89,32 @@ end
 
     # 29 days in this February due to leap year
     starttime = DateTimeStandard(2000, 2, 28)
-    dt = Day(1)
-    clock = Wflow.Clock(starttime, 0, Second(dt))
+    dt = 86400.0
+    dt_sec = Second(dt)
+    clock = Wflow.Clock(starttime, 0, dt_sec, dt)
 
     Wflow.advance!(clock)
     Wflow.advance!(clock)
     @test clock.time == DateTimeStandard(2000, 3, 1)
     @test clock.iteration == 2
     @test clock.dt == dt
+    @test clock.dt_sec == dt_sec
 
     Wflow.rewind!(clock)
     @test clock.time == DateTimeStandard(2000, 2, 29)
     @test clock.iteration == 1
     @test clock.dt == dt
+    @test clock.dt_sec == dt_sec
 
     config = Wflow.Config(tomlpath)
     config.time.starttime = starttime
-    config.time.timestepsecs = Dates.value(Second(dt))
+    config.time.timestepsecs = dt
 
     Wflow.reset_clock!(clock, config)
     @test clock.time == starttime
     @test clock.iteration == 0
     @test clock.dt == dt
+    @test clock.dt_sec == dt_sec
 end
 
 @testitem "unit: Clock{DateTime360Day}" begin
@@ -119,30 +125,34 @@ end
 
     # 30 days in each month
     starttime = DateTime360Day(2000, 2, 29)
-    dt = Day(1)
-    clock = Wflow.Clock(starttime, 0, Second(dt))
+    dt = 86400.0
+    dt_sec = Second(dt)
+    clock = Wflow.Clock(starttime, 0, dt_sec, dt)
 
     Wflow.advance!(clock)
     Wflow.advance!(clock)
     @test clock.time == DateTime360Day(2000, 3, 1)
     @test clock.iteration == 2
     @test clock.dt == dt
+    @test clock.dt_sec == dt_sec
 
     Wflow.rewind!(clock)
     @test clock.time == DateTime360Day(2000, 2, 30)
     @test clock.iteration == 1
     @test clock.dt == dt
+    @test clock.dt_sec == dt_sec
 
     config = Wflow.Config(tomlpath)
     config.time.starttime = "2020-02-29"
     config.time.calendar = "360_day"
-    config.time.timestepsecs = Dates.value(Second(dt))
+    config.time.timestepsecs = 86400.0
 
     Wflow.reset_clock!(clock, config)
     @test clock.time isa DateTime360Day
     @test string(clock.time) == "2020-02-29T00:00:00"
     @test clock.iteration == 0
     @test clock.dt == dt
+    @test clock.dt_sec == dt_sec
 end
 
 @testitem "Calendar noleap (DateTimeNoLeap) for time and clock" begin
@@ -172,8 +182,8 @@ end
     @test clock.time == DateTimeNoLeap(2000, 1, 1)
 
     starttime = DateTimeNoLeap(2000, 2, 28)
-    dt = Day(1)
-    clock = Wflow.Clock(starttime, 0, Second(dt))
+    dt = 86400.0
+    clock = Wflow.Clock(starttime, 0, Second(dt), dt)
     Wflow.advance!(clock)
     @test clock.time == DateTimeNoLeap(2000, 3, 1)
 end

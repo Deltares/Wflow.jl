@@ -119,7 +119,7 @@ function init_kinematic_wave_river_flow(
     timestepping = init_kinematic_wave_timestepping(config, n; domain = "river")
 
     allocation =
-        do_water_demand(config) ? AllocationRiverModel(; n) : NoAllocationRiverModel(n)
+        do_water_demand_allocation(config) ? AllocationRiverModel(; n) : NoAllocationRiverModel(n)
 
     variables = if config.model.floodplain_1d__flag
         # When floodplain is enabled, q_channel fields must be separate from q fields
@@ -619,13 +619,13 @@ function update_river_flow_model!(
         river_flow_model::RiverFlowModel{<:KinematicWave},
         domain::Domain,
         clock::Clock,
-        dt::Float64,
     )
     (; floodplain) = river_flow_model
     (; reservoir, inwater) = river_flow_model.boundary_conditions
     (; flow_length) = domain.river.parameters
     (; qlat, qin_average, qin_cumulative) = river_flow_model.variables
     (; adaptive) = river_flow_model.timestepping
+    (; dt) = clock
 
     @. qlat = inwater / flow_length
     set_flow_vars!(river_flow_model)
@@ -718,9 +718,10 @@ function update_lateral_inflow!(
         domain::Domain,
         dt::Float64,
     )
-    (; allocation, runoff, overland_flow, subsurface_flow) = external_models
+    (; runoff, overland_flow, subsurface_flow) = external_models
     (; inwater) = river_flow_model.boundary_conditions
     (; net_runoff_river) = runoff.variables
+    (; allocation) = river_flow_model
 
     (; land_indices) = domain.river.network
     (; cell_area) = domain.river.parameters

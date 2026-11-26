@@ -219,6 +219,46 @@ end
     @test domestic.variables.returnflow[[1, end]] ≈ [2.557552523083157e-9, 0.0]
 end
 
+@testitem "Piave water demand and external allocation, including switching off river routing" begin
+    using Statistics: mean
+
+    tomlpath = joinpath(@__DIR__, "sbm_piave_demand_external-allocation_config.toml")
+    config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
+    model = Wflow.Model(config)
+    Wflow.run_timestep!(model)
+    (; allocation) = model.land
+    (; river_flow) = model.routing
+    demand_external_allocation = model.land.demand
+
+    @test isa(allocation, Wflow.AllocationLandExternalModel)
+    @test isa(allocation.variables, Wflow.AllocationLandExternalVariables)
+    @test isa(river_flow, Wflow.NoRiverFlowModel)
+
+    tomlpath = joinpath(@__DIR__, "sbm_piave_demand_config.toml")
+    config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
+    model = Wflow.Model(config)
+    Wflow.run_timestep!(model)
+    (; demand) = model.land
+
+    @test mean(demand_external_allocation.paddy.variables.h) ≈ mean(demand.paddy.variables.h)
+    @test mean(demand_external_allocation.nonpaddy.variables.demand_gross) ≈ mean(demand.nonpaddy.variables.demand_gross)
+    @test mean(demand_external_allocation.industry.demand.demand_gross) ≈ mean(demand.industry.demand.demand_gross)
+    @test mean(demand_external_allocation.industry.demand.demand_net) ≈ mean(demand.industry.demand.demand_net)
+    @test mean(demand_external_allocation.industry.variables.returnflow) == 0.0
+    @test demand.industry.variables.returnflow[[1, end]] ≈ [1.8276017659378273e-9, 4.2114045721030344e-10]
+    @test mean(demand_external_allocation.livestock.demand.demand_gross) ≈ mean(demand.livestock.demand.demand_gross)
+    @test mean(demand_external_allocation.livestock.demand.demand_net) ≈ mean(demand.livestock.demand.demand_net)
+    @test mean(demand_external_allocation.livestock.variables.returnflow) == 0.0
+    @test demand.livestock.variables.returnflow[[1, end]] ≈ [0.0, 0.0]
+    @test mean(demand_external_allocation.domestic.demand.demand_gross) ≈ mean(demand.domestic.demand.demand_gross)
+    @test mean(demand_external_allocation.domestic.demand.demand_net) ≈ mean(demand.domestic.demand.demand_net)
+    @test mean(demand_external_allocation.domestic.variables.returnflow) == 0.0
+    @test demand.domestic.variables.returnflow[[1, end]] ≈ [2.557552523083157e-9, 0.0]
+end
+
+
 @testitem "Piave activate river boundary (river subsurface exchange)" begin
     using Statistics: mean
     tomlpath = joinpath(@__DIR__, "sbm_piave_config.toml")

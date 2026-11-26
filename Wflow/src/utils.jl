@@ -159,7 +159,6 @@ and set states in `model` object. Active cells are selected with the correspondi
 """
 function set_states!(instate_path::AbstractString, model; dimname = nothing)::Nothing
     (; domain, config, clock, land) = model
-    dt_val = tosecond(clock.dt)
 
     # Check if required states are covered
     state_ncnames = check_states(config)
@@ -188,7 +187,7 @@ function set_states!(instate_path::AbstractString, model; dimname = nothing)::No
                 if dimname == :layer
                     A = replace!(A, missing => NaN)
                 end
-                A = apply_unit_and_type_transform!(A, metadata; dt_val)
+                A = apply_unit_and_type_transform!(A, metadata; dt_val = clock.dt)
                 # set state in model object
                 metadata.lens(model) .= svectorscopy(A, Val{size(A)[1]}())
                 # 3 dims (x,y,time)
@@ -196,7 +195,7 @@ function set_states!(instate_path::AbstractString, model; dimname = nothing)::No
                 A = read_standardized(ds, ncname, (x = :, y = :, time = 1))
                 A = A[sel]
                 A = nomissing(A)
-                A = apply_unit_and_type_transform!(A, metadata; dt_val)
+                A = apply_unit_and_type_transform!(A, metadata; dt_val = clock.dt)
                 # set state in model object, only set active cells ([1:n]) (ignore boundary conditions/ghost points)
                 lens = get_metadata(state, typeof(land), Routing; model).lens
                 lens(model)[1:n] .= A
@@ -530,23 +529,6 @@ function equal_size_vectors(x::Tuple)
     end
     return x
 end
-
-"""
-    tosecond(x::Period)
-
-Convert a Period into a Float64, which represents the number of seconds. Will fail if this
-is not well defined, such as for Month.
-
-# Examples
-```julia-repl
-julia> tosecond(Day(1))
-86400.0
-```
-"""
-tosecond(x::Hour) = Float64(Dates.value(Second(x)))
-tosecond(x::Minute) = Float64(Dates.value(Second(x)))
-tosecond(x::T) where {T <: DatePeriod} = Float64(Dates.value(Second(x)))
-tosecond(x::T) where {T <: TimePeriod} = x / convert(T, Second(1))
 
 """
     adjacent_nodes_at_edge(graph)

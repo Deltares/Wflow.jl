@@ -1,0 +1,40 @@
+---
+title: Coupling to water allocation model
+---
+
+It is possible to couple an external water allocation model:
+
+```toml
+[model]
+external_water_allocation__flag = true
+```
+
+For this coupling to work it is required to implement a custom timestep coupling of Wflow
+update functions (at `model` level) and the update of the water allocation model. This
+implementation can for example be based on the `run_timestep!` function while replacing
+sub-function `update_func(model)`. First the water demand needs to be computed by running
+the following sub-functions of `update_model!`:
+
+```julia
+    update_interception_model!(model)
+    update_snow_model!(model)
+    update_glacier_model!(model)
+    update_open_water_runoff_model!(model)
+    update_water_demand_model!(model)
+```
+
+Then the update of the external water allocation model is possible based on the computed
+water demand by Wflow and water allocated can be set in Wflow (e.g.
+`land__allocated_irrigation_water_volume_flux`).
+
+Finally, the remaining sub-functions of `update_model!` can be called:
+
+```julia
+    update_water_allocation_model!(model)
+    update_soil_water_model!(model)
+    update_land_surface_temperature!(model)
+    update_subsurface_flow_model!(model)
+    update_soil_water_storage!(model)
+    surface_routing!(model)
+    update_total_water_storage!(model)
+```
